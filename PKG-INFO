@@ -1,0 +1,19 @@
+Metadata-Version: 1.0
+Name: fdb
+Version: 0.7.0
+Summary: Firebird RDBMS bindings for Python.
+Home-page: http://www.firebirdsql.org/en/python-devel-status/
+Author: Pavel Cisar
+Author-email: pcisar@users.sourceforge.net
+License: BSD
+Description: fdb package is a set of Firebird RDBMS bindings for python.
+        It works on Python 2.6+ (support for Python 3.x is planned)
+        
+        
+Keywords: Firebird
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Database

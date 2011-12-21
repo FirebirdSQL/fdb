@@ -1,0 +1,16 @@
+LICENSE.TXT
+MANIFEST.in
+README
+setup.py
+fdb/__init__.py
+fdb/fbcore.py
+fdb/ibase.py
+fdb/services.py
+fdb.egg-info/PKG-INFO
+fdb.egg-info/SOURCES.txt
+fdb.egg-info/dependency_links.txt
+fdb.egg-info/entry_points.txt
+fdb.egg-info/not-zip-safe
+fdb.egg-info/top_level.txt
+test/fbtest.fdb
+test/testfdb.py

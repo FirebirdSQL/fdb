@@ -1,0 +1,2 @@
+fdb package is a set of Firebird RDBMS bindings for python.
+It works on Python 2.6+ (support for Python 3.x is planned)
