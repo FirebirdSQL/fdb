@@ -26,6 +26,7 @@ import os
 import types
 import ibase
 import ctypes, struct
+import warnings
 
 # The following SHUT_* constants are to be passed as the $shutdownMethod
 # parameter to Connection.shutdown:
