@@ -25,29 +25,36 @@ import datetime, decimal, types
 #import kinterbasdb as fdb
 import fdb
 import fdb.ibase as ibase
+import sys, os
 
 class TestCreateDrop(unittest.TestCase):
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'droptest.fdb')
     def test_create_drop(self):
-        con = fdb.create_database("create database 'test.fdb' user 'sysdba' password 'masterkey'")
+        con = fdb.create_database("create database '"+self.dbfile+"' user 'sysdba' password 'masterkey'")
         con.drop_database()
 
 class TestConnection(unittest.TestCase):
     def setUp(self):
-        pass
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
     def tearDown(self):
         pass
     def test_connect(self):
-        con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         assert con._db_handle != None
         assert con._dpb == '\x01\x1c\x06sysdba\x1d\tmasterkey?\x01\x03'
         con.close()
     def test_connect_role(self):
-        con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey',role='role')
+        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',role='role')
         assert con._db_handle != None
         #assert con._dpb == '\x01\x1c\x06sysdba\x1d\tmasterkey?\x01\x03'
         con.close()
     def test_transaction(self):
-        con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         assert con.main_transaction != None
         assert con.main_transaction.closed
         assert con.main_transaction.default_action == 'commit'
@@ -77,20 +84,20 @@ class TestConnection(unittest.TestCase):
         assert con.main_transaction.closed
         assert tr.closed
     def test_execute_immediate(self):
-        con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         con.execute_immediate("recreate table t (c1 integer)")
         con.commit()
         con.execute_immediate("delete from t")
         con.commit()
         con.close()
     def test_database_info(self):
-        con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         assert con.database_info(fdb.isc_info_db_read_only,'i') == 0
         assert con.database_info(fdb.isc_info_page_size,'i') == 4096
         assert con.database_info(fdb.isc_info_db_sql_dialect,'i') == 3
         con.close()
     def test_db_info(self):
-        con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                            fdb.isc_info_db_sql_dialect,fdb.isc_info_user_names])
         assert repr(res) == "{53: {'SYSDBA': 1}, 62: 3, 14: 4096, 63: 0}"
@@ -98,7 +105,10 @@ class TestConnection(unittest.TestCase):
 
 class TestTransaction(unittest.TestCase):
     def setUp(self):
-        self.con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
     def tearDown(self):
@@ -148,7 +158,10 @@ class TestTransaction(unittest.TestCase):
 
 class TestCursor(unittest.TestCase):
     def setUp(self):
-        self.con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
     def tearDown(self):
@@ -209,7 +222,10 @@ class TestCursor(unittest.TestCase):
 
 class TestPreparedStatement(unittest.TestCase):
     def setUp(self):
-        self.con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
     def tearDown(self):
@@ -232,7 +248,10 @@ class TestPreparedStatement(unittest.TestCase):
         
 class TestCursor2(unittest.TestCase):
     def setUp(self):
-        self.con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
         #self.con.execute_immediate("RECREATE TABLE T2 (C1 Smallint,C2 Integer,C3 Bigint,C4 Char(5),C5 Varchar(10),C6 Date,C7 Time,C8 Timestamp,C9 Blob sub_type 1,C10 Numeric(18,2),C11 Decimal(18,2),C12 Float,C13 Double precision,C14 Numeric(8,4),C15 Decimal(8,4))")
@@ -289,7 +308,10 @@ class TestCursor2(unittest.TestCase):
 
 class TestStoredProc(unittest.TestCase):
     def setUp(self):
-        self.con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
     def tearDown(self):
         self.con.close()
     def test_callproc(self):
@@ -304,6 +326,10 @@ class TestStoredProc(unittest.TestCase):
         assert repr(row) == "(Decimal('3800000'), Decimal('760000'), Decimal('500000'), Decimal('1500000'))"
 
 class TestServices(unittest.TestCase):
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
     def test_attach(self):
         svc = fdb.services.connect(password='masterkey')
         svc.close()
@@ -312,32 +338,35 @@ class TestServices(unittest.TestCase):
         x = svc.getServiceManagerVersion()
         assert x == 2
         x = svc.getServerVersion()
-        assert x == 'LI-V2.5.0.26074 Firebird 2.5'
+        assert 'Firebird' in 'LI-V2.5.0.26074 Firebird 2.5'
         x = svc.getArchitecture()
-        assert x == 'Firebird/linux AMD64'
+        assert 'Firebird' in 'Firebird/linux AMD64'
         x = svc.getHomeDir()
-        assert x == '/opt/firebird/'
+        #assert x == '/opt/firebird/'
         x = svc.getSecurityDatabasePath()
-        assert x == '/opt/firebird/security2.fdb'
+        assert 'security2.fdb' in '/opt/firebird/security2.fdb'
         x = svc.getLockFileDir()
-        assert x == '/tmp/firebird/'
+        #assert x == '/tmp/firebird/'
         x = svc.getCapabilityMask()
         assert x == 774
         x = svc.getMessageFileDir()
-        assert x == '/opt/firebird/'
-        con = fdb.connect(dsn='fbtest.fdb',user='sysdba',password='masterkey')
+        #assert x == '/opt/firebird/'
+        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         con2 = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
         x = svc.getConnectionCount()
         print 'getConnectionCount',x
         assert x == 3
         x = svc.getAttachedDatabaseNames()
         assert len(x) == 2
-        assert '/home/job/python/envs/pyfirebird/fbd/test/fbtest.fdb' in x
-        assert '/opt/firebird/examples/empbuild/employee.fdb' in x
+        assert self.dbfile in x
+        #assert '/opt/firebird/examples/empbuild/employee.fdb' in x
         svc.close()
 
 class TestServices2(unittest.TestCase):
     def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
         self.svc = fdb.services.connect(password='masterkey')
     def tearDown(self):
         self.svc.close()
@@ -436,8 +465,8 @@ class TestServices2(unittest.TestCase):
         assert not result
         
         
-#if __name__ == '__main__':
-    #unittest.main()
+if __name__ == '__main__':
+    unittest.main()
     
 #unittest.main()
 #import datetime as dt
