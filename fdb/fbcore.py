@@ -96,7 +96,7 @@ from exceptions import NotImplementedError
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 apilevel = '2.0'
 threadsafety = 1
 paramstyle = 'qmark'
@@ -539,6 +539,8 @@ class Connection(object):
         return self._main_transaction
     def __get_transactions(self):
         return tuple(self._transactions)
+    def __get_closed(self):
+        return self._db_handle == None
     def __default_tpb_get(self):
         return self._default_tpb
     def __default_tpb_set(self, value):
@@ -580,7 +582,7 @@ class Connection(object):
           Unlike plain file deletion, this method behaves responsibly, in that
         it removes shadow files and other ancillary files for this database.
         """
-        saved_handle = self._db_handle
+        saved_handle = ibase.isc_db_handle(self._db_handle.value)
         self.close(detach=False)
         ibase.isc_drop_database(self._isc_status,saved_handle)
         if db_api_error(self._isc_status):
@@ -681,6 +683,21 @@ class Connection(object):
             In this case, a mapping of (info request code -> result) is
             returned.
         """
+        def _extractDatabaseInfoCounts(buf):
+            # Extract a raw binary sequence of (unsigned short, signed int) pairs into
+            # a corresponding Python dictionary.
+            uShortSize = struct.calcsize('<H')
+            intSize = struct.calcsize('<i')
+            pairSize = uShortSize + intSize
+            pairCount = len(buf) / pairSize
+        
+            counts = {}
+            for i in range(pairCount):
+                bufForThisPair = buf[i*pairSize:(i+1)*pairSize]
+                relationId = struct.unpack('<H', bufForThisPair[:uShortSize])[0]
+                count      = struct.unpack('<i', bufForThisPair[uShortSize:])[0]
+                counts[relationId] = count
+            return counts
         # Notes:
         #
         # - IB 6 API Guide page 391:  "In InterBase, integer values...
@@ -855,6 +872,17 @@ class Connection(object):
         if tpb:
             self._main_transaction.tpb = tpb
         self._main_transaction.begin()
+    def savepoint(self, name):
+        """
+          Establishes a SAVEPOINT named $name.
+          To rollback to this SAVEPOINT, use rollback(savepoint=name).
+
+          Example:
+            con.savepoint('BEGINNING_OF_SOME_SUBTASK')
+            ...
+            con.rollback(savepoint='BEGINNING_OF_SOME_SUBTASK')
+        """
+        return self._main_transaction.savepoint(name)
     def commit(self,retaining=False):
         self.__check_attached()
         self._main_transaction.commit(retaining)
@@ -884,6 +912,7 @@ class Connection(object):
     transactions = property(__get_transactions)
     main_transaction = property(__get_main_transaction)
     default_tpb = property(__default_tpb_get,__default_tpb_set)
+    closed = property(__get_closed)
 
 class PreparedStatement(object):
     """
@@ -908,6 +937,7 @@ class PreparedStatement(object):
         self.statement_type = None
         self.__executed = False
         self.__prepared = False
+        self.__closed = False
         self.__description = None
         self.__output_cache = None
         #self.out_buffer = None
@@ -1474,10 +1504,11 @@ class PreparedStatement(object):
                 elif vartype == ibase.SQL_ARRAY:
                     raise NotImplemented
     def _free_handle(self):
-        if self._stmt_handle != None:
+        if self._stmt_handle != None and not self.__closed:
             ibase.isc_dsql_free_statement(self._isc_status,self._stmt_handle,
                                           ibase.DSQL_close)
             self.__executed = False
+            self.__closed = True
             self.__output_cache = None
             self._name = None
             if db_api_error(self._isc_status):
@@ -1492,6 +1523,7 @@ class PreparedStatement(object):
             self._stmt_handle = None
             self.__executed = False
             self.__prepared = False
+            self.__closed = False
             self.__description = None
             self.__output_cache = None
             self._name = None
@@ -1735,7 +1767,10 @@ class Transaction(object):
         sql_len = ctypes.c_short(len(sql))
         ibase.isc_execute_immediate(self._isc_status,self._connections[0]()._db_handle,
                                     self._tr_handle,
-                                    sql_len,sql,self._connections[0]().sql_dialect,None)
+                                    sql_len,sql)
+#        ibase.isc_execute_immediate(self._isc_status,self._connections[0]()._db_handle,
+#                                    self._tr_handle,
+#                                    sql_len,sql,self._connections[0]().sql_dialect,None)
         if db_api_error(self._isc_status):
             raise exception_from_status(DatabaseError,self._isc_status,
                                   "Error while executing SQL statement:")
@@ -1744,15 +1779,23 @@ class Transaction(object):
         self._tr_handle = ibase.isc_tr_handle(0)
         if isinstance(self.tpb,TPB):
             _tpb = self.tpb.render()
-        else:
+        elif isinstance(self.tpb,(types.ListType,types.TupleType)):
+            _tpb = bs(self.tpb)
+        elif isinstance(self.tpb,types.StringType):
             _tpb = self.tpb
+        else:
+            raise ProgrammingError("TPB must be either string, list/tuple of numeric constants or TPB instance.")
+        if _tpb[0] != bs([isc_tpb_version3]):
+            _tpb = bs([isc_tpb_version3]) + _tpb
         if len(self._connections) == 1:
             ibase.isc_start_transaction(self._isc_status,self._tr_handle,1,
                                         self._connections[0]()._db_handle,len(_tpb),_tpb)
             if db_api_error(self._isc_status):
+                self._tr_handle = None
                 raise exception_from_status(DatabaseError,self._isc_status,
                                       "Error while starting transaction:")
         elif len(self._connections) > 1:
+            self._tr_handle = None
             raise NotImplementedError("Transaction.begin(multiple connections)")
         else:
             raise ProgrammingError("Transaction.begin requires at least one database handle")
@@ -1783,6 +1826,9 @@ class Transaction(object):
             self._tr_handle = None
     def close(self):
         if self._tr_handle != None:
+            for cursor in self._cursors:
+                cursor().close()
+            self._cursors = []
             if self.default_action == 'commit':
                 self.commit()
             else:
@@ -2291,9 +2337,3 @@ def _normalizeDatabaseIdentifier(ident):
         # Everything else is normalized to uppercase to support case-
         # insensitive lookup.
         return ident.upper()
-
-
-if __name__=='__main__':
-    pass
-    #unittest.main()
-    

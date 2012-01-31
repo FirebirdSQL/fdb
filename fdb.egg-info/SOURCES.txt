@@ -1,6 +1,8 @@
 LICENSE.TXT
 MANIFEST.in
+PKG-INFO
 README
+setup.cfg
 setup.py
 fdb/__init__.py
 fdb/fbcore.py

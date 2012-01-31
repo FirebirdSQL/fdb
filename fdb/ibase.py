@@ -22,9 +22,13 @@
 
 from ctypes import *
 from ctypes.util import find_library
+import sys
 
 fb_library_name = find_library('fbclient')
-fb_library = CDLL(fb_library_name)
+if 'win' in sys.platform:
+    fb_library = WinDLL(fb_library_name)
+else:
+    fb_library = CDLL(fb_library_name)
 
 #-------------------
 
@@ -77,6 +81,8 @@ charset_map = {
     'KOI8-U'              :   'koi8_u', # (Firebird 2.0+)
     'WIN1258'             :   'cp1258', # (Firebird 2.0+)
     }
+
+DB_CHAR_SET_NAME_TO_PYTHON_ENCODING_MAP = charset_map
 
 # C integer limit constants
 
@@ -1219,9 +1225,16 @@ isc_start_multiple = fb_library.isc_start_multiple
 isc_start_multiple.restype = ISC_STATUS
 isc_start_multiple.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle), c_short, c_void_p]
 
-isc_start_transaction = fb_library.isc_start_transaction
-isc_start_transaction.restype = ISC_STATUS
-isc_start_transaction.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle), c_short,POINTER(isc_db_handle),c_short, STRING]
+### 
+if 'win' in sys.platform:
+    P_isc_start_transaction = CFUNCTYPE(ISC_STATUS,POINTER(ISC_STATUS), POINTER(isc_tr_handle), c_short,POINTER(isc_db_handle),c_short, STRING)
+    isc_start_transaction = P_isc_start_transaction(('isc_start_transaction',fb_library))
+else:
+    isc_start_transaction = fb_library.isc_start_transaction
+    isc_start_transaction.restype = ISC_STATUS
+    isc_start_transaction.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle), c_short,POINTER(isc_db_handle),c_short, STRING]
+
+
 
 isc_sqlcode = fb_library.isc_sqlcode
 isc_sqlcode.restype = ISC_LONG
@@ -1580,31 +1593,31 @@ imaxdiv_t._fields_ = [
 ]
 intmax_t = c_long
 
-imaxabs = fb_library.imaxabs
-imaxabs.restype = intmax_t
-imaxabs.argtypes = [intmax_t]
+#imaxabs = fb_library.imaxabs
+#imaxabs.restype = intmax_t
+#imaxabs.argtypes = [intmax_t]
 
-imaxdiv = fb_library.imaxdiv
-imaxdiv.restype = imaxdiv_t
-imaxdiv.argtypes = [intmax_t, intmax_t]
+#imaxdiv = fb_library.imaxdiv
+#imaxdiv.restype = imaxdiv_t
+#imaxdiv.argtypes = [intmax_t, intmax_t]
 
-strtoimax = fb_library.strtoimax
-strtoimax.restype = intmax_t
-strtoimax.argtypes = [STRING, POINTER(STRING), c_int]
+#strtoimax = fb_library.strtoimax
+#strtoimax.restype = intmax_t
+#strtoimax.argtypes = [STRING, POINTER(STRING), c_int]
 
 uintmax_t = c_ulong
 
-strtoumax = fb_library.strtoumax
-strtoumax.restype = uintmax_t
-strtoumax.argtypes = [STRING, POINTER(STRING), c_int]
+#strtoumax = fb_library.strtoumax
+#strtoumax.restype = uintmax_t
+#strtoumax.argtypes = [STRING, POINTER(STRING), c_int]
 
-wcstoimax = fb_library.wcstoimax
-wcstoimax.restype = intmax_t
-wcstoimax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
+#wcstoimax = fb_library.wcstoimax
+#wcstoimax.restype = intmax_t
+#wcstoimax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
 
-wcstoumax = fb_library.wcstoumax
-wcstoumax.restype = uintmax_t
-wcstoumax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
+#wcstoumax = fb_library.wcstoumax
+#wcstoumax.restype = uintmax_t
+#wcstoumax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
 
 int8_t = c_int8
 int16_t = c_int16
