@@ -24,8 +24,11 @@ from ctypes import *
 from ctypes.util import find_library
 import sys
 
-fb_library_name = find_library('fbclient')
-if 'win' in sys.platform:
+if sys.platform == 'darwin':
+    fb_library_name = find_library('Firebird')
+else:
+    fb_library_name = find_library('fbclient')
+if sys.platform in ['win32','cygwin','os2','os2emx']:
     fb_library = WinDLL(fb_library_name)
 else:
     fb_library = CDLL(fb_library_name)
@@ -1226,7 +1229,7 @@ isc_start_multiple.restype = ISC_STATUS
 isc_start_multiple.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle), c_short, c_void_p]
 
 ### 
-if 'win' in sys.platform:
+if sys.platform in ['win32','cygwin','os2','os2emx']:
     P_isc_start_transaction = CFUNCTYPE(ISC_STATUS,POINTER(ISC_STATUS), POINTER(isc_tr_handle), c_short,POINTER(isc_db_handle),c_short, STRING)
     isc_start_transaction = P_isc_start_transaction(('isc_start_transaction',fb_library))
 else:
@@ -1542,9 +1545,10 @@ isc_version = fb_library.isc_version
 isc_version.restype = c_int
 isc_version.argtypes = [POINTER(isc_db_handle), ISC_VERSION_CALLBACK, c_void_p]
 
-isc_reset_fpe = fb_library.isc_reset_fpe
-isc_reset_fpe.restype = ISC_LONG
-isc_reset_fpe.argtypes = [ISC_USHORT]
+# deprecated
+#isc_reset_fpe = fb_library.isc_reset_fpe
+#isc_reset_fpe.restype = ISC_LONG
+#isc_reset_fpe.argtypes = [ISC_USHORT]
 
 isc_service_attach = fb_library.isc_service_attach
 isc_service_attach.restype = ISC_STATUS
