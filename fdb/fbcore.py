@@ -26,69 +26,69 @@ import types
 import unittest
 import ibase
 import ctypes, struct, time, datetime, decimal, weakref
-from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow, 
-    isc_dpb_address_path, isc_dpb_allocation, isc_dpb_begin_log, 
-    isc_dpb_buffer_length, isc_dpb_cache_manager, isc_dpb_cdd_pathname, 
-    isc_dpb_connect_timeout, isc_dpb_damaged, isc_dpb_dbkey_scope, isc_dpb_debug, 
-    isc_dpb_delete_shadow, isc_dpb_disable_journal, isc_dpb_disable_wal, 
-    isc_dpb_drop_walfile, isc_dpb_dummy_packet_interval, isc_dpb_enable_journal, 
-    isc_dpb_encrypt_key, isc_dpb_force_write, isc_dpb_garbage_collect, 
-    isc_dpb_gbak_attach, isc_dpb_gfix_attach, isc_dpb_gsec_attach, 
-    isc_dpb_gstat_attach, isc_dpb_interp, isc_dpb_journal, isc_dpb_lc_ctype, 
-    isc_dpb_lc_messages, isc_dpb_license, isc_dpb_no_garbage_collect, 
-    isc_dpb_no_reserve, isc_dpb_num_buffers, isc_dpb_number_of_users, 
-    isc_dpb_old_dump_id, isc_dpb_old_file, isc_dpb_old_file_size, 
-    isc_dpb_old_num_files, isc_dpb_old_start_file, isc_dpb_old_start_page, 
-    isc_dpb_old_start_seqno, isc_dpb_online, isc_dpb_online_dump, 
-    isc_dpb_overwrite, isc_dpb_page_size, isc_dpb_password, isc_dpb_password_enc, 
-    isc_dpb_quit_log, isc_dpb_reserved, isc_dpb_sec_attach, 
-    isc_dpb_set_db_charset, isc_dpb_set_db_readonly, isc_dpb_set_db_sql_dialect, 
-    isc_dpb_set_page_buffers, isc_dpb_shutdown, isc_dpb_shutdown_delay, 
-    isc_dpb_sql_dialect, isc_dpb_sql_role_name, isc_dpb_sweep, 
-    isc_dpb_sweep_interval, isc_dpb_sys_user_name, isc_dpb_sys_user_name_enc, 
-    isc_dpb_trace, isc_dpb_user_name, isc_dpb_verify, isc_dpb_version1, 
-    isc_dpb_wal_backup_dir, isc_dpb_wal_bufsize, isc_dpb_wal_chkptlen, 
-    isc_dpb_wal_grp_cmt_wait, isc_dpb_wal_numbufs, isc_dpb_working_directory, 
-    isc_info_active_tran_count, isc_info_active_transactions, isc_info_allocation, 
-    isc_info_attachment_id, isc_info_backout_count, isc_info_base_level, 
-    isc_info_bpage_errors, isc_info_creation_date, isc_info_cur_log_part_offset, 
-    isc_info_cur_logfile_name, isc_info_current_memory, isc_info_db_SQL_dialect, 
-    isc_info_db_class, isc_info_db_id, isc_info_db_provider, isc_info_db_read_only, 
-    isc_info_db_size_in_pages, isc_info_db_sql_dialect, isc_info_delete_count, 
-    isc_info_dpage_errors, isc_info_expunge_count, isc_info_fetches, 
-    isc_info_firebird_version, isc_info_forced_writes, isc_info_implementation, 
-    isc_info_insert_count, isc_info_ipage_errors, isc_info_isc_version, 
-    isc_info_license, isc_info_limbo, isc_info_logfile, isc_info_marks, 
-    isc_info_max_memory, isc_info_next_transaction, isc_info_no_reserve, 
-    isc_info_num_buffers, isc_info_num_wal_buffers, isc_info_ods_minor_version, 
-    isc_info_ods_version, isc_info_oldest_active, isc_info_oldest_snapshot, 
-    isc_info_oldest_transaction, isc_info_page_errors, isc_info_page_size, 
-    isc_info_ppage_errors, isc_info_purge_count, isc_info_read_idx_count, 
-    isc_info_read_seq_count, isc_info_reads, isc_info_record_errors, 
-    isc_info_set_page_buffers, isc_info_sql_stmt_commit, isc_info_sql_stmt_ddl, 
-    isc_info_sql_stmt_delete, isc_info_sql_stmt_exec_procedure, 
-    isc_info_sql_stmt_get_segment, isc_info_sql_stmt_insert, 
-    isc_info_sql_stmt_put_segment, isc_info_sql_stmt_rollback, 
-    isc_info_sql_stmt_savepoint, isc_info_sql_stmt_select, 
-    isc_info_sql_stmt_select_for_upd, isc_info_sql_stmt_set_generator, 
-    isc_info_sql_stmt_start_trans, isc_info_sql_stmt_update, isc_info_sweep_interval, 
-    isc_info_tpage_errors, isc_info_tra_access, isc_info_tra_concurrency, 
-    isc_info_tra_consistency, isc_info_tra_id, isc_info_tra_isolation, 
-    isc_info_tra_lock_timeout, isc_info_tra_no_rec_version, isc_info_tra_oldest_active, 
-    isc_info_tra_oldest_interesting, isc_info_tra_oldest_snapshot, 
-    isc_info_tra_read_committed, isc_info_tra_readonly, isc_info_tra_readwrite, 
-    isc_info_tra_rec_version, isc_info_update_count, isc_info_user_names, 
-    isc_info_version, isc_info_wal_avg_grpc_size, isc_info_wal_avg_io_size, 
-    isc_info_wal_buffer_size, isc_info_wal_ckpt_length, 
-    isc_info_wal_cur_ckpt_interval, isc_info_wal_grpc_wait_usecs, 
-    isc_info_wal_num_commits, isc_info_wal_num_io, isc_info_wal_prv_ckpt_fname, 
-    isc_info_wal_prv_ckpt_poffset, isc_info_wal_recv_ckpt_fname, 
-    isc_info_wal_recv_ckpt_poffset, isc_info_window_turns, isc_info_writes, 
-    isc_tpb_autocommit, isc_tpb_commit_time, isc_tpb_concurrency, 
-    isc_tpb_consistency, isc_tpb_exclusive, isc_tpb_ignore_limbo, isc_tpb_lock_read, 
-    isc_tpb_lock_timeout, isc_tpb_lock_write, isc_tpb_no_auto_undo, 
-    isc_tpb_no_rec_version, isc_tpb_nowait, isc_tpb_protected, isc_tpb_read, 
-    isc_tpb_read_committed, isc_tpb_rec_version, isc_tpb_restart_requests, 
+from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
+    isc_dpb_address_path, isc_dpb_allocation, isc_dpb_begin_log,
+    isc_dpb_buffer_length, isc_dpb_cache_manager, isc_dpb_cdd_pathname,
+    isc_dpb_connect_timeout, isc_dpb_damaged, isc_dpb_dbkey_scope, isc_dpb_debug,
+    isc_dpb_delete_shadow, isc_dpb_disable_journal, isc_dpb_disable_wal,
+    isc_dpb_drop_walfile, isc_dpb_dummy_packet_interval, isc_dpb_enable_journal,
+    isc_dpb_encrypt_key, isc_dpb_force_write, isc_dpb_garbage_collect,
+    isc_dpb_gbak_attach, isc_dpb_gfix_attach, isc_dpb_gsec_attach,
+    isc_dpb_gstat_attach, isc_dpb_interp, isc_dpb_journal, isc_dpb_lc_ctype,
+    isc_dpb_lc_messages, isc_dpb_license, isc_dpb_no_garbage_collect,
+    isc_dpb_no_reserve, isc_dpb_num_buffers, isc_dpb_number_of_users,
+    isc_dpb_old_dump_id, isc_dpb_old_file, isc_dpb_old_file_size,
+    isc_dpb_old_num_files, isc_dpb_old_start_file, isc_dpb_old_start_page,
+    isc_dpb_old_start_seqno, isc_dpb_online, isc_dpb_online_dump,
+    isc_dpb_overwrite, isc_dpb_page_size, isc_dpb_password, isc_dpb_password_enc,
+    isc_dpb_quit_log, isc_dpb_reserved, isc_dpb_sec_attach,
+    isc_dpb_set_db_charset, isc_dpb_set_db_readonly, isc_dpb_set_db_sql_dialect,
+    isc_dpb_set_page_buffers, isc_dpb_shutdown, isc_dpb_shutdown_delay,
+    isc_dpb_sql_dialect, isc_dpb_sql_role_name, isc_dpb_sweep,
+    isc_dpb_sweep_interval, isc_dpb_sys_user_name, isc_dpb_sys_user_name_enc,
+    isc_dpb_trace, isc_dpb_user_name, isc_dpb_verify, isc_dpb_version1,
+    isc_dpb_wal_backup_dir, isc_dpb_wal_bufsize, isc_dpb_wal_chkptlen,
+    isc_dpb_wal_grp_cmt_wait, isc_dpb_wal_numbufs, isc_dpb_working_directory,
+    isc_info_active_tran_count, isc_info_active_transactions, isc_info_allocation,
+    isc_info_attachment_id, isc_info_backout_count, isc_info_base_level,
+    isc_info_bpage_errors, isc_info_creation_date, isc_info_cur_log_part_offset,
+    isc_info_cur_logfile_name, isc_info_current_memory, isc_info_db_SQL_dialect,
+    isc_info_db_class, isc_info_db_id, isc_info_db_provider, isc_info_db_read_only,
+    isc_info_db_size_in_pages, isc_info_db_sql_dialect, isc_info_delete_count,
+    isc_info_dpage_errors, isc_info_expunge_count, isc_info_fetches,
+    isc_info_firebird_version, isc_info_forced_writes, isc_info_implementation,
+    isc_info_insert_count, isc_info_ipage_errors, isc_info_isc_version,
+    isc_info_license, isc_info_limbo, isc_info_logfile, isc_info_marks,
+    isc_info_max_memory, isc_info_next_transaction, isc_info_no_reserve,
+    isc_info_num_buffers, isc_info_num_wal_buffers, isc_info_ods_minor_version,
+    isc_info_ods_version, isc_info_oldest_active, isc_info_oldest_snapshot,
+    isc_info_oldest_transaction, isc_info_page_errors, isc_info_page_size,
+    isc_info_ppage_errors, isc_info_purge_count, isc_info_read_idx_count,
+    isc_info_read_seq_count, isc_info_reads, isc_info_record_errors,
+    isc_info_set_page_buffers, isc_info_sql_stmt_commit, isc_info_sql_stmt_ddl,
+    isc_info_sql_stmt_delete, isc_info_sql_stmt_exec_procedure,
+    isc_info_sql_stmt_get_segment, isc_info_sql_stmt_insert,
+    isc_info_sql_stmt_put_segment, isc_info_sql_stmt_rollback,
+    isc_info_sql_stmt_savepoint, isc_info_sql_stmt_select,
+    isc_info_sql_stmt_select_for_upd, isc_info_sql_stmt_set_generator,
+    isc_info_sql_stmt_start_trans, isc_info_sql_stmt_update, isc_info_sweep_interval,
+    isc_info_tpage_errors, isc_info_tra_access, isc_info_tra_concurrency,
+    isc_info_tra_consistency, isc_info_tra_id, isc_info_tra_isolation,
+    isc_info_tra_lock_timeout, isc_info_tra_no_rec_version, isc_info_tra_oldest_active,
+    isc_info_tra_oldest_interesting, isc_info_tra_oldest_snapshot,
+    isc_info_tra_read_committed, isc_info_tra_readonly, isc_info_tra_readwrite,
+    isc_info_tra_rec_version, isc_info_update_count, isc_info_user_names,
+    isc_info_version, isc_info_wal_avg_grpc_size, isc_info_wal_avg_io_size,
+    isc_info_wal_buffer_size, isc_info_wal_ckpt_length,
+    isc_info_wal_cur_ckpt_interval, isc_info_wal_grpc_wait_usecs,
+    isc_info_wal_num_commits, isc_info_wal_num_io, isc_info_wal_prv_ckpt_fname,
+    isc_info_wal_prv_ckpt_poffset, isc_info_wal_recv_ckpt_fname,
+    isc_info_wal_recv_ckpt_poffset, isc_info_window_turns, isc_info_writes,
+    isc_tpb_autocommit, isc_tpb_commit_time, isc_tpb_concurrency,
+    isc_tpb_consistency, isc_tpb_exclusive, isc_tpb_ignore_limbo, isc_tpb_lock_read,
+    isc_tpb_lock_timeout, isc_tpb_lock_write, isc_tpb_no_auto_undo,
+    isc_tpb_no_rec_version, isc_tpb_nowait, isc_tpb_protected, isc_tpb_read,
+    isc_tpb_read_committed, isc_tpb_rec_version, isc_tpb_restart_requests,
     isc_tpb_shared, isc_tpb_verb_time, isc_tpb_version3, isc_tpb_wait, isc_tpb_write
     )
 
@@ -192,16 +192,16 @@ ISOLATION_LEVEL_SERIALIZABLE = 3
 
 transaction_parameter_block = {
     ISOLATION_LEVEL_READ_UNCOMMITTED:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait, 
+    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
         isc_tpb_read_committed, isc_tpb_no_rec_version]),
     ISOLATION_LEVEL_READ_COMMITED:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait, 
+    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
         isc_tpb_read_committed, isc_tpb_rec_version]),
     ISOLATION_LEVEL_REPEATABLE_READ:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait, 
+    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
         isc_tpb_concurrency]),
     ISOLATION_LEVEL_SERIALIZABLE:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait, 
+    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
         isc_tpb_consistency]),
 }
 
@@ -319,10 +319,10 @@ def exception_from_status(error, status, preamble=None):
     sqlcode = ibase.isc_sqlcode(status)
     error_code = status[1]
     msglist.append('- SQLCODE: %i' % sqlcode)
-    
+
     ibase.isc_sql_interprete(sqlcode,msg,512)
     msglist.append('- '+msg.value)
-    
+
     pvector = ctypes.cast(ctypes.addressof(status),ibase.ISC_STATUS_PTR)
     result = 0
 
@@ -393,10 +393,10 @@ def connect(*args, **kwargs):
     db_key_scope = kwargs.get('db_key_scope',None)
     isolation_level = kwargs.get('isolation_level',ISOLATION_LEVEL_READ_COMMITED)
     #port = kwargs.get('port',3050)
-    
+
     if sql_dialect not in [1,2,3]:
         raise ProgrammingError("SQl Dialect must be either 1, 2 or 3")
-        
+
     if (   (not dsn and not host and not database)
             or (dsn and (host or database))
             or (host and not database)
@@ -421,17 +421,17 @@ def connect(*args, **kwargs):
 
     if _FS_ENCODING:
         dsn = dsn.encode(_FS_ENCODING)
-    
+
     dpb = build_dpb(user,password,sql_dialect,role,charset,buffers,force_write,no_reserve,db_key_scope)
-    
+
     _isc_status = ibase.ISC_STATUS_ARRAY()
     _db_handle = ibase.isc_db_handle(0)
-    
+
     ibase.isc_attach_database(_isc_status,len(dsn),dsn,_db_handle,len(dpb),dpb)
     if db_api_error(_isc_status):
         raise exception_from_status(DatabaseError,_isc_status,
                               "Error while connecting to database:")
-    
+
     return Connection(_db_handle,dpb,sql_dialect,charset)
 
 def create_database(*args):
@@ -453,12 +453,12 @@ def create_database(*args):
     else:
         dialect = 3
     sql = args[0]
-    
+
     isc_status = ibase.ISC_STATUS_ARRAY(0)
     trans_handle = ibase.isc_tr_handle(0)
     db_handle = ibase.isc_db_handle(0)
     xsqlda = xsqlda_factory(1)
-    
+
     # For yet unknown reason, the isc_dsql_execute_immediate segfaults when
     # NULL (None) is passed as XSQLDA, so we provide one here
     ibase.isc_dsql_execute_immediate(isc_status,db_handle,trans_handle,
@@ -467,7 +467,7 @@ def create_database(*args):
     if db_api_error(isc_status):
         raise exception_from_status(ProgrammingError,isc_status,
                               "Error while creating database:")
-    
+
     return Connection(db_handle)
 
 class Connection(object):
@@ -481,13 +481,13 @@ class Connection(object):
     """
 
     def __init__(self, db_handle, dpb = None, sql_dialect = 3, charset = None):
-        
+
         self._main_transaction = Transaction([self])
         self._transactions = [self._main_transaction]
         self._cursors = []  # Weak references to cursors
         self.__precision_cache = {}
         self._default_tpb = transaction_parameter_block[ISOLATION_LEVEL_READ_COMMITED]
-        
+
         self.sql_dialect = sql_dialect
         self._dpb = dpb
         self._charset = charset
@@ -657,7 +657,7 @@ class Connection(object):
             raise InternalError("Result code does not match request code.")
         if result_type.upper() == 'I':
             return bytes_to_int(res_buf[3:3+bytes_to_int(res_buf[1:3])])
-        elif (result_type.upper() == 'S' 
+        elif (result_type.upper() == 'S'
               and info_code not in _DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS):
             # The result buffers for a few request codes don't follow the generic
             # conventions, so we need to return their full contents rather than
@@ -690,7 +690,7 @@ class Connection(object):
             intSize = struct.calcsize('<i')
             pairSize = uShortSize + intSize
             pairCount = len(buf) / pairSize
-        
+
             counts = {}
             for i in range(pairCount):
                 bufForThisPair = buf[i*pairSize:(i+1)*pairSize]
@@ -916,12 +916,12 @@ class Connection(object):
 
 class PreparedStatement(object):
     """
-    Represents a prepared statement, an "inner" database cursor, which is used 
-    to manage the context of a fetch operation. 
+    Represents a prepared statement, an "inner" database cursor, which is used
+    to manage the context of a fetch operation.
     """
     RESULT_SET_EXHAUSTED = 100
     NO_FETCH_ATTEMPTED_YET = -1
-    
+
     def __init__(self,operation,cursor,internal=True):
         self.sql = operation
         self.__internal = internal
@@ -1050,10 +1050,10 @@ class PreparedStatement(object):
         return ((data_type in [ibase.SQL_SHORT,ibase.SQL_LONG,ibase.SQL_INT64]
                   and (subtype or scale)
                  )
-                 or ((dialect < 3) and scale and 
+                 or ((dialect < 3) and scale and
                      (data_type in [ibase.SQL_DOUBLE,ibase.SQL_D_FLOAT]))
                 )
-        
+
     def __get_external_data_type_name(self,dialect,data_type,subtype,scale):
         if data_type == ibase.SQL_TEXT:
             return 'CHAR'
@@ -1129,7 +1129,7 @@ class PreparedStatement(object):
                     if vartype in [ibase.SQL_TEXT,ibase.SQL_VARYING]:
                         vtype = types.StringType
                         dispsize = sqlvar.sqllen
-                    elif (vartype in [ibase.SQL_SHORT,ibase.SQL_LONG,ibase.SQL_INT64] 
+                    elif (vartype in [ibase.SQL_SHORT,ibase.SQL_LONG,ibase.SQL_INT64]
                           and (sqlvar.sqlsubtype or scale)):
                         vtype = decimal.Decimal
                         precision = self.__get_connection()._determine_field_precision(sqlvar)
@@ -1190,7 +1190,7 @@ class PreparedStatement(object):
                 raise InternalError("Cursor.get_rowcount:\n"
                                     "first byte must be 'isc_info_sql_records'")
             res_walk = 3
-            short_size = ctypes.sizeof(ctypes.c_short) 
+            short_size = ctypes.sizeof(ctypes.c_short)
             while ord(info[res_walk]) != ibase.isc_info_end:
                 cur_count_type = ord(info[res_walk])
                 res_walk += 1
@@ -1415,7 +1415,7 @@ class PreparedStatement(object):
             elif vartype == ibase.SQL_ARRAY:
                 value = []
             values.append(value)
-            
+
         return tuple(values)
     def __Tuple2XSQLDA(self,xsqlda,parameters):
         """Move data from parameters to input XSQLDA.
@@ -1437,7 +1437,7 @@ class PreparedStatement(object):
                 if ((sqlvar.sqltype & 1) != 0):
                     sqlvar.sqlind = ctypes.pointer(ibase.ISC_SHORT(0))
                 # Fill in value by type
-                if ((vartype != ibase.SQL_BLOB and isinstance(value,(types.StringTypes))) 
+                if ((vartype != ibase.SQL_BLOB and isinstance(value,(types.StringTypes)))
                     or vartype in [ibase.SQL_TEXT,ibase.SQL_VARYING]):
                     # Place for Implicit Conversion of Input Parameters from Strings
                     if isinstance(value,types.UnicodeType):
@@ -1574,6 +1574,7 @@ class PreparedStatement(object):
                                       "Error while executing SQL statement:")
             self.__output_cache = None
         self.__executed = True
+        self.__closed = False
         self._last_fetch_status = ibase.ISC_STATUS(self.NO_FETCH_ATTEMPTED_YET)
     def _fetchone(self):
         if self.__executed:
@@ -1618,17 +1619,17 @@ keeps it prepared for another execution."""
 
 class Cursor(object):
     """
-    Represents a database cursor, which is used to manage the context 
-    of a fetch operation. 
+    Represents a database cursor, which is used to manage the context
+    of a fetch operation.
     """
     arraysize = 1
-    
+
     def __init__(self,connection,transaction):
         self._prepared_statements = {}
         self._connection = connection
         self._transaction = transaction
         self._ps = None # current prepared statement
-        
+
     def next(self):
         row = self.fetchone()
         if row:
@@ -1754,7 +1755,7 @@ class Transaction(object):
         self._cursors = []  # Weak references to cursors
         self._isc_status = ibase.ISC_STATUS_ARRAY()
         self._tr_handle = None
-        
+
     def __remove_cursor(self,cursor_ref):
         self._cursors.remove(cursor_ref)
     def __get_closed(self):
@@ -1851,7 +1852,7 @@ class Transaction(object):
         requestIsSingleton = isinstance(request, int)
         if requestIsSingleton:
             request = (request,)
-    
+
         results = {}
         for infoCode in request:
             # The global().get(...) workaround is here because only recent versions
@@ -1876,7 +1877,7 @@ class Transaction(object):
                 # isc_info_tra_isolation is the only known return value of
                 # isc_transaction_info that's not a simple integer.
                 results[infoCode] = self.transaction_info(infoCode, 'i')
-    
+
         if requestIsSingleton:
             return results[request[0]]
         else:
@@ -1927,7 +1928,7 @@ class Transaction(object):
     def __del__(self):
         if self._tr_handle != None:
             self.close()
-    
+
     closed = property(__get_closed)
 
 class Iterator(object):
@@ -2049,7 +2050,7 @@ class _RequestBufferBuilder(object):
         if isinstance(code, str):
             assert len(code) == 1
             code = ord(code)
-    
+
         # The database engine considers little-endian integers "portable"; they
         # need to have been converted to little-endianness before being sent across
         # the network.
@@ -2123,15 +2124,15 @@ class TPB(_RequestBufferBuilder):
         elif isolation_level == isc_tpb_read_committed:
             suboption = isc_tpb_rec_version
 
-        if isolation_level not in (isc_tpb_concurrency, 
-                                   isc_tpb_consistency, 
+        if isolation_level not in (isc_tpb_concurrency,
+                                   isc_tpb_consistency,
                                    isc_tpb_read_committed):
             raise ProgrammingError('Isolation level must be one of'
                 ' (isc_tpb_concurrency, isc_tpb_consistency,'
                 ' isc_tpb_read_committed).')
 
         if isolation_level == isc_tpb_read_committed:
-            if suboption not in (isc_tpb_rec_version, 
+            if suboption not in (isc_tpb_rec_version,
                                  isc_tpb_no_rec_version):
                 raise ProgrammingError('With isolation level'
                     ' isc_tpb_read_committed, suboption must be one of'
