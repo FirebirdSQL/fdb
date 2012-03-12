@@ -554,9 +554,7 @@ def create_database(*args):
     # For yet unknown reason, the isc_dsql_execute_immediate segfaults when
     # NULL (None) is passed as XSQLDA, so we provide one here
     ibase.isc_dsql_execute_immediate(isc_status, db_handle, trans_handle,
-                                     ctypes.c_ushort(len(ibase.b(sql))),
-                                     ibase.b(sql),
-                                     dialect,
+                                     ctypes.c_ushort(len(sql)), sql, dialect,
                                      ctypes.cast(ctypes.pointer(xsqlda),
                                                  ctypes.POINTER(ibase.XSQLDA)))
     if db_api_error(isc_status):

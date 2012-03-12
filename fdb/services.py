@@ -213,8 +213,8 @@ class Connection(object):
                                        " password can't exceed 118 bytes.")
         # spb_length = 2 + 1 + 1 + len(self.user) + 1 + 1 + len(self.password)
         spb = fdb.bs([ibase.isc_spb_version, ibase.isc_spb_current_version,
-                      ibase.isc_spb_user_name, len(self.user)])
-        self.user + fdb.bs([ibase.isc_spb_password,
+                      ibase.isc_spb_user_name, len(self.user)]) + self.user + \
+                      fdb.bs([ibase.isc_spb_password,
                             len(self.password)]) + self.password
         ibase.isc_service_attach(self._isc_status, len(self.host), self.host,
                                  self._svc_handle, len(spb), spb)
