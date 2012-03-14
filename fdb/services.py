@@ -584,7 +584,8 @@ class Connection(object):
         garbageCollect=1,
         transportable=1,
         convertExternalTablesToInternalTables=1,
-        expand=1  # YYY:What is this?
+        expand=1,  # YYY:What is this?
+        nodbtriggers=0
       ):
         # Begin parameter validation section.
         _checkString(sourceDatabase)
@@ -641,6 +642,8 @@ class Connection(object):
             optionMask |= ibase.isc_spb_bkp_convert
         if expand:
             optionMask |= ibase.isc_spb_bkp_expand
+        if nodbtriggers:
+            optionMask |= ibase.isc_spb_bkp_no_triggers
         # End option bitmask setup section.
 
         # Construct the request buffer.
@@ -678,7 +681,9 @@ class Connection(object):
         doNotRestoreShadows=0,
         doNotEnforceConstraints=0,
         commitAfterEachTable=0,
-        useAllPageSpace=0
+        useAllPageSpace=0,
+        nodbtriggers=0,
+        metadataOnly=0
       ):
         # Begin parameter validation section.
         sourceFilenames = self._requireStrOrTupleOfStr(
@@ -710,6 +715,10 @@ class Connection(object):
             optionMask |= ibase.isc_spb_res_one_at_a_time
         if useAllPageSpace:
             optionMask |= ibase.isc_spb_res_use_all_space
+        if nodbtriggers:
+            optionMask |= ibase.isc_spb_bkp_no_triggers
+        if metadataOnly:
+            optionMask |= ibase.isc_spb_bkp_metadata_only
         # End option bitmask setup section.
 
         # Construct the request buffer.
@@ -754,6 +763,69 @@ class Connection(object):
 
         # Return the results to the caller synchronously.
         return self._collectUnformattedResults()
+
+    # nbackup methods:
+
+    def nbackup(self, sourceDatabase, destFilename, nbackup_level=0,
+                nodbtriggers=0):
+        # Begin parameter validation section.
+        _checkString(sourceDatabase)
+        sourceDatabase = self._str_to_bytes(sourceDatabase)
+        _checkString(destFilename)
+        destFilename = self._str_to_bytes(destFilename)
+
+        # Begin option bitmask setup section.
+        optionMask = 0
+        if nodbtriggers:
+            optionMask |= ibase.isc_spb_bkp_no_triggers
+        # End option bitmask setup section.
+
+        # Construct the request buffer.
+        request = _ServiceActionRequestBuilder(ibase.isc_action_svc_nbak)
+
+        # Source database filename:
+        request.addDatabaseName(sourceDatabase)
+
+        # Backup filename:
+        request.addString(ibase.isc_spb_nbk_file, destFilename)
+
+        # backup level
+        request.addNumeric(ibase.isc_spb_nbk_level, nbackup_level)
+
+        # Options bitmask:
+        request.addNumeric(ibase.isc_spb_options, optionMask)
+
+        # Done constructing the request buffer.
+        return self._act(request)
+
+    def nrestore(self, sourceFilenames, destFilename, nodbtriggers=0):
+        # Begin parameter validation section.
+        sourceFilenames = self._requireStrOrTupleOfStr(
+            self._str_to_bytes(sourceFilenames)
+            )
+        destFilename = self._str_to_bytes(destFilename)
+
+        # Begin option bitmask setup section.
+        optionMask = 0
+        if nodbtriggers:
+            optionMask |= ibase.isc_spb_bkp_no_triggers
+        # End option bitmask setup section.
+
+        # Construct the request buffer.
+        request = _ServiceActionRequestBuilder(ibase.isc_action_svc_nrest)
+
+        # Backup filenames:
+        request.addSequenceOfStrings(ibase.isc_spb_nbk_file, sourceFilenames)
+
+        # Source database filename:
+        request.addString(ibase.isc_spb_dbname, destFilename)
+
+        # Options bitmask:
+        request.addNumeric(ibase.isc_spb_options, optionMask)
+
+        # Done constructing the request buffer.
+        return self._act(request)
+
     # Database property alteration methods:
 
     def setDefaultPageBuffers(self, database, n):

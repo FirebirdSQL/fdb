@@ -350,7 +350,7 @@ def bytes_to_int(b):            # Read as little endian.
     return struct.unpack(fmt, b)[0]
 
 
-def bint_to_bytes(val, nbytes): # Convert int value to big endian bytes.
+def bint_to_bytes(val, nbytes):  # Convert int value to big endian bytes.
     if nbytes == 1:
         fmt = 'b'
     elif nbytes == 2:

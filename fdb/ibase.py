@@ -558,6 +558,17 @@ isc_action_svc_remove_license = 10  # Removes a license from the license file
 isc_action_svc_db_stats = 11        # Retrieves database statistics
 isc_action_svc_get_ib_log = 12      # Retrieves the InterBase log file from the server
 isc_action_svc_get_fb_log = 12      # Retrieves the Firebird log file from the server
+isc_action_svc_nbak = 20
+isc_action_svc_nrest = 21
+isc_action_svc_trace_start = 22
+isc_action_svc_trace_stop = 23
+isc_action_svc_trace_suspend = 24
+isc_action_svc_trace_resume = 25
+isc_action_svc_trace_list = 26
+isc_action_svc_set_mapping = 27
+isc_action_svc_drop_mapping = 28
+isc_action_svc_display_user_adm = 29
+isc_action_svc_last = 30
 
 # Service information items
 isc_info_svc_svr_db_info = 50    # Retrieves the number of attachments and databases */
@@ -599,6 +610,7 @@ isc_spb_bkp_old_descriptions = 0x10
 isc_spb_bkp_non_transportable = 0x20
 isc_spb_bkp_convert = 0x40
 isc_spb_bkp_expand = 0x80
+isc_spb_bkp_no_triggers = 0x8000
 
 # Parameters for isc_action_svc_properties
 isc_spb_prp_page_buffers = 5
@@ -666,6 +678,11 @@ isc_spb_res_one_at_a_time = 0x0800
 isc_spb_res_replace = 0x1000
 isc_spb_res_create = 0x2000
 isc_spb_res_use_all_space = 0x4000
+isc_spb_res_metadata_only = 0x04
+
+# Parameters for isc_action_svc_nbak
+isc_spb_nbk_level = 5
+isc_spb_nbk_file = 6
 
 # Parameters for isc_spb_res_access_mode
 isc_spb_res_am_readonly = isc_spb_prp_am_readonly
