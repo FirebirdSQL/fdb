@@ -204,9 +204,9 @@ class Connection(object):
         self._svc_handle = ibase.isc_svc_handle(0)
         self._isc_status = ibase.ISC_STATUS_ARRAY()
         self.charset = charset
-        self.host = self._str_to_bytes(host)
-        self.user = self._str_to_bytes(user)
-        self.password = self._str_to_bytes(password)
+        self.host = ibase.b(host)
+        self.user = ibase.b(user)
+        self.password = ibase.b(password)
 
         if len(self.host) + len(self.user) + len(self.password) > 118:
             raise fdb.ProgrammingError("The combined length of host, user and"
@@ -230,18 +230,6 @@ class Connection(object):
                 raise fdb.exception_from_status(fdb.DatabaseError,
                               self._isc_status, "Services/isc_service_detach:")
             self._svc_handle = None
-
-    def _bytes_to_str(self, sb):
-        if ibase.PYTHON_MAJOR_VER == 3:
-            return sb.decode(ibase.charset_map.get(self.charset, self.charset))
-        else:
-            return sb.encode(ibase.charset_map.get(self.charset, self.charset))
-
-    def _str_to_bytes(self, st):
-        if ibase.PYTHON_MAJOR_VER == 3:
-            return st.encode(ibase.charset_map.get(self.charset, self.charset))
-        else:
-            return st
 
     def _extract_int(self, raw, index):
         new_index = index + ctypes.sizeof(ctypes.c_ushort)
@@ -421,16 +409,15 @@ class Connection(object):
                 if not isinstance(element, theTypesToExclude)]
 
     def _requireStrOrTupleOfStr(self, x):
-        if isinstance(x, ibase.mybytes):
+        if isinstance(x, str):
             x = (x,)
         elif isinstance(x, ibase.myunicode):
           # We know the following call to _checkString will raise an exception,
           # but calling it anyway allows us to centralize the error message
           # generation:
             _checkString(x)
-        if ibase.PYTHON_MAJOR_VER != 3:
-            for el in x:
-                _checkString(el)
+        for el in x:
+            _checkString(el)
         return x
 
     def _propertyAction(self, database, partialReqBuf):
@@ -496,7 +483,7 @@ class Connection(object):
 
     def getLimboTransactionIDs(self, database):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
 
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.addOptionMask(ibase.isc_spb_rpr_list_limbo_trans)
@@ -523,19 +510,19 @@ class Connection(object):
 
     def _resolveLimboTransaction(self, resolution, database, transactionID):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
 
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.addNumeric(resolution, transactionID)
         self._repairAction(database, reqBuf)
 
     def commitLimboTransaction(self, database, transactionID):
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         return self._resolveLimboTransaction(ibase.isc_spb_rpr_commit_trans,
                                              database, transactionID)
 
     def rollbackLimboTransaction(self, database, transactionID):
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         return self._resolveLimboTransaction(ibase.isc_spb_rpr_rollback_trans,
                                              database, transactionID)
 
@@ -549,7 +536,7 @@ class Connection(object):
         showRecordVersions=0
       ):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
 
         reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_db_stats)
 
@@ -589,9 +576,8 @@ class Connection(object):
       ):
         # Begin parameter validation section.
         _checkString(sourceDatabase)
-        sourceDatabase = self._str_to_bytes(sourceDatabase)
-        destFilenames = self._requireStrOrTupleOfStr(
-            self._str_to_bytes(destFilenames))
+        sourceDatabase = ibase.b(sourceDatabase)
+        destFilenames = self._requireStrOrTupleOfStr(destFilenames)
 
         destFilenamesCount = len(destFilenames)
         # 2004.07.17: YYY: Temporary warning:
@@ -686,12 +672,8 @@ class Connection(object):
         metadataOnly=0
       ):
         # Begin parameter validation section.
-        sourceFilenames = self._requireStrOrTupleOfStr(
-            self._str_to_bytes(sourceFilenames)
-            )
-        destFilenames = self._requireStrOrTupleOfStr(
-            self._str_to_bytes(destFilenames)
-            )
+        sourceFilenames = self._requireStrOrTupleOfStr(sourceFilenames)
+        destFilenames = self._requireStrOrTupleOfStr(destFilenames)
 
         self._validateCompanionStringNumericSequences(
             destFilenames, destFilePages,
@@ -770,9 +752,9 @@ class Connection(object):
                 nodbtriggers=0):
         # Begin parameter validation section.
         _checkString(sourceDatabase)
-        sourceDatabase = self._str_to_bytes(sourceDatabase)
+        sourceDatabase = ibase.b(sourceDatabase)
         _checkString(destFilename)
-        destFilename = self._str_to_bytes(destFilename)
+        destFilename = ibase.b(destFilename)
 
         # Begin option bitmask setup section.
         optionMask = 0
@@ -800,10 +782,9 @@ class Connection(object):
 
     def nrestore(self, sourceFilenames, destFilename, nodbtriggers=0):
         # Begin parameter validation section.
-        sourceFilenames = self._requireStrOrTupleOfStr(
-            self._str_to_bytes(sourceFilenames)
-            )
-        destFilename = self._str_to_bytes(destFilename)
+        sourceFilenames = self._requireStrOrTupleOfStr(sourceFilenames)
+        _checkString(destFilename)
+        destFilename = ibase.b(destFilename)
 
         # Begin option bitmask setup section.
         optionMask = 0
@@ -826,23 +807,78 @@ class Connection(object):
         # Done constructing the request buffer.
         return self._act(request)
 
+    # Trace
+    def trace_start(self, cfg=None, name=None, callback=None):
+        if not name == None:
+            _checkString(name)
+        _checkString(cfg)
+        # Construct the request buffer.
+        reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_trace_start)
+        # trace name:
+        if not name == None:
+            reqBuf.addString(ibase.isc_spb_trc_name, name)
+        # trace configuration:
+        reqBuf.addString(ibase.isc_spb_trc_cfg, cfg)
+        if callback:
+            return self._actAndReturnTextualResults(reqBuf)
+        else:
+            return self._act(reqBuf)
+
+    def trace_stop(self, trace_id, callback=None):
+        # Construct the request buffer.
+        reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_trace_stop)
+        reqBuf.addNumeric(ibase.isc_spb_trc_id, trace_id)
+        # Return the results to the caller synchronously.
+        if callback:
+            return self._actAndReturnTextualResults(reqBuf)
+        else:
+            return self._act(reqBuf)
+
+    def trace_suspend(self, trace_id, callback=None):
+        # Construct the request buffer.
+        reqBuf = _ServiceActionRequestBuilder(
+                                            ibase.isc_action_svc_trace_suspend)
+        reqBuf.addNumeric(ibase.isc_spb_trc_id, trace_id)
+        # Return the results to the caller synchronously.
+        if callback:
+            return self._actAndReturnTextualResults(reqBuf)
+        else:
+            return self._act(reqBuf)
+
+    def trace_resume(self, trace_id, callback=None):
+        # Construct the request buffer.
+        reqBuf = _ServiceActionRequestBuilder(
+                                             ibase.isc_action_svc_trace_resume)
+        reqBuf.addNumeric(ibase.isc_spb_trc_id, trace_id)
+        # Return the results to the caller synchronously.
+        if callback:
+            return self._actAndReturnTextualResults(reqBuf)
+        else:
+            return self._act(reqBuf)
+
+    def trace_list(self):
+        # Construct the request buffer.
+        reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_trace_list)
+        # Return the results to the caller synchronously.
+        return self._actAndReturnTextualResults(reqBuf)
+
     # Database property alteration methods:
 
     def setDefaultPageBuffers(self, database, n):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         return self._propertyActionWithSingleNumericCode(database,
             ibase.isc_spb_prp_page_buffers, n)
 
     def setSweepInterval(self, database, n):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         return self._propertyActionWithSingleNumericCode(database,
             ibase.isc_spb_prp_sweep_interval, n)
 
     def shutdown(self, database, shutdownMethod, timeout):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         if shutdownMethod not in (
             SHUT_FORCE, SHUT_DENY_NEW_TRANSACTIONS, SHUT_DENY_NEW_ATTACHMENTS
           ):
@@ -856,14 +892,14 @@ class Connection(object):
 
     def bringOnline(self, database):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.addOptionMask(ibase.isc_spb_prp_db_online)
         return self._propertyAction(database, reqBuf)
 
     def setShouldReservePageSpace(self, database, shouldReserve):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         if shouldReserve:
             reserveCode = ibase.isc_spb_prp_res
         else:
@@ -873,7 +909,7 @@ class Connection(object):
 
     def setWriteMode(self, database, mode):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         if mode not in (WRITE_FORCED, WRITE_BUFFERED):
             raise ValueError('mode must be one of the following constants:'
                 '  services.WRITE_FORCED, services.WRITE_BUFFERED.'
@@ -884,7 +920,7 @@ class Connection(object):
 
     def setAccessMode(self, database, mode):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         if mode not in (ACCESS_READ_WRITE, ACCESS_READ_ONLY):
             raise ValueError('mode must be one of the following constants:'
                 '  services.ACCESS_READ_WRITE, services.ACCESS_READ_ONLY.'
@@ -894,7 +930,7 @@ class Connection(object):
 
     def setSQLDialect(self, database, dialect):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         # The IB 6 API Guide says that dialect "must be 1 or 3", but other
         # dialects may become valid in future versions, so don't require
         #   dialect in (1, 3)
@@ -903,7 +939,7 @@ class Connection(object):
 
     def activateShadowFile(self, database):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.addOptionMask(ibase.isc_spb_prp_activate)
         return self._propertyAction(database, reqBuf)
@@ -911,7 +947,7 @@ class Connection(object):
     # Database repair/maintenance methods:
     def sweep(self, database, markOutdatedRecordsAsFreeSpace=1):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         reqBuf = _ServiceActionRequestBuilder()
         optionMask = 0
         if markOutdatedRecordsAsFreeSpace:
@@ -927,7 +963,7 @@ class Connection(object):
                releaseUnassignedPages=1,
                releaseUnassignedRecordFragments=1):
         _checkString(database)
-        database = self._str_to_bytes(database)
+        database = ibase.b(database)
         # YYY: With certain option combinations, this method raises errors
         # that may not be very comprehensible to a Python programmer who's not
         # well versed with IB/FB.  Should option combination filtering be
@@ -970,7 +1006,7 @@ class Connection(object):
         if username is not None:
             if isinstance(username, ibase.myunicode):
                 _checkString(username)
-                username = self._str_to_bytes(username)
+                username = ibase.b(username)
         reqBuf = _ServiceActionRequestBuilder(
                                               ibase.isc_action_svc_display_user
                                               )
@@ -1028,13 +1064,13 @@ class Connection(object):
             raise fdb.ProgrammingError('You must specify a username.')
         else:
             _checkString(user.username)
-            user.username = self._str_to_bytes(user.username)
+            user.username = ibase.b(user.username)
 
         if not user.password:
             raise fdb.ProgrammingError('You must specify a password.')
         else:
             _checkString(user.password)
-            user.password = self._str_to_bytes(user.password)
+            user.password = ibase.b(user.password)
 
         reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_add_user)
 
@@ -1042,13 +1078,13 @@ class Connection(object):
         reqBuf.addString(ibase.isc_spb_sec_password, user.password)
 
         if user.firstName:
-            user.firstName = self._str_to_bytes(user.firstName)
+            user.firstName = ibase.b(user.firstName)
             reqBuf.addString(ibase.isc_spb_sec_firstname, user.firstName)
         if user.middleName:
-            user.middleName = self._str_to_bytes(user.middleName)
+            user.middleName = ibase.b(user.middleName)
             reqBuf.addString(ibase.isc_spb_sec_middlename, user.middleName)
         if user.lastName:
-            user.lastName = self._str_to_bytes(user.lastName)
+            user.lastName = ibase.b(user.lastName)
             reqBuf.addString(ibase.isc_spb_sec_lastname, user.lastName)
 
         self._actAndReturnTextualResults(reqBuf)
@@ -1057,20 +1093,20 @@ class Connection(object):
         reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_modify_user)
 
         if isinstance(user.username, str):
-            user.username = self._str_to_bytes(user.username)
+            user.username = ibase.b(user.username)
         reqBuf.addString(ibase.isc_spb_sec_username, user.username)
         if isinstance(user.password, str):
-            user.password = self._str_to_bytes(user.password)
+            user.password = ibase.b(user.password)
         reqBuf.addString(ibase.isc_spb_sec_password, user.password)
         # Change the optional attributes whether they're empty or not.
         if isinstance(user.firstName, str):
-            user.firstName = self._str_to_bytes(user.firstName)
+            user.firstName = ibase.b(user.firstName)
         reqBuf.addString(ibase.isc_spb_sec_firstname, user.firstName)
         if isinstance(user.middleName, str):
-            user.middleName = self._str_to_bytes(user.middleName)
+            user.middleName = ibase.b(user.middleName)
         reqBuf.addString(ibase.isc_spb_sec_middlename, user.middleName)
         if isinstance(user.lastName, str):
-            user.lastName = self._str_to_bytes(user.lastName)
+            user.lastName = ibase.b(user.lastName)
         reqBuf.addString(ibase.isc_spb_sec_lastname, user.lastName)
 
         self._actAndReturnTextualResults(reqBuf)
@@ -1084,7 +1120,7 @@ class Connection(object):
             username = user.username
         else:
             _checkString(user)
-            user = self._str_to_bytes(user)
+            user = ibase.b(user)
             username = user
 
         reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_delete_user)
@@ -1152,7 +1188,7 @@ class _ServiceActionRequestBuilder(object):
 
     def addString(self, code, s):
 #        _checkString(s)
-        _string2spb(self._buffer, code, s)
+        _string2spb(self._buffer, code, ibase.b(s))
 
     def addSequenceOfStrings(self, code, stringSequence):
         for s in stringSequence:
