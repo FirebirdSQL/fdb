@@ -505,11 +505,10 @@ def connect(*args, **kwargs):
         else:
             dsn = database
 
-    if ibase.PYTHON_MAJOR_VER == 3:
-        dsn = ibase.b(dsn)
+    if _FS_ENCODING:
+        dsn = dsn.encode(_FS_ENCODING)
     else:
-        if _FS_ENCODING:
-            dsn = dsn.encode(_FS_ENCODING)
+        dsn = ibase.b(dsn)
 
     dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,
                     force_write, no_reserve, db_key_scope)
