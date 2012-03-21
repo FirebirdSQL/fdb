@@ -103,7 +103,7 @@ class TestConnection(unittest.TestCase):
         con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                            fdb.isc_info_db_sql_dialect,fdb.isc_info_user_names])
-        assert repr(res) == "{53: {'SYSDBA': 1}, 62: 3, 14: 4096, 63: 0}"
+        assert repr(res) == "{53: {u'SYSDBA': 1}, 62: 3, 14: 4096, 63: 0}"
         con.close()
 
 class TestTransaction(unittest.TestCase):
@@ -268,40 +268,40 @@ class TestCursor(unittest.TestCase):
         if ibase.PYTHON_MAJOR_VER==3:
             assert repr(cur.description) == "(('COUNTRY', <class 'str'>, 15, 15, 0, 0, False), ('CURRENCY', <class 'str'>, 10, 10, 0, 0, False))"
         else:
-            assert repr(cur.description) == "(('COUNTRY', <type 'str'>, 15, 15, 0, 0, False), ('CURRENCY', <type 'str'>, 10, 10, 0, 0, False))"
+            assert repr(cur.description) == "((u'COUNTRY', <type 'str'>, 15, 15, 0, 0, False), (u'CURRENCY', <type 'str'>, 10, 10, 0, 0, False))"
         cur.execute('select country as CT, currency as CUR from country')
         assert len(cur.description) == 2
         cur.execute('select * from customer')
         if ibase.PYTHON_MAJOR_VER==3:
             assert repr(cur.description) == "(('CUST_NO', <class 'int'>, 11, 4, 0, 0, False), ('CUSTOMER', <class 'str'>, 25, 25, 0, 0, False), ('CONTACT_FIRST', <class 'str'>, 15, 15, 0, 0, True), ('CONTACT_LAST', <class 'str'>, 20, 20, 0, 0, True), ('PHONE_NO', <class 'str'>, 20, 20, 0, 0, True), ('ADDRESS_LINE1', <class 'str'>, 30, 30, 0, 0, True), ('ADDRESS_LINE2', <class 'str'>, 30, 30, 0, 0, True), ('CITY', <class 'str'>, 25, 25, 0, 0, True), ('STATE_PROVINCE', <class 'str'>, 15, 15, 0, 0, True), ('COUNTRY', <class 'str'>, 15, 15, 0, 0, True), ('POSTAL_CODE', <class 'str'>, 12, 12, 0, 0, True), ('ON_HOLD', <class 'str'>, 1, 1, 0, 0, True))"
         else:
-            assert repr(cur.description) == "(('CUST_NO', <type 'int'>, 11, 4, 0, 0, False), ('CUSTOMER', <type 'str'>, 25, 25, 0, 0, False), ('CONTACT_FIRST', <type 'str'>, 15, 15, 0, 0, True), ('CONTACT_LAST', <type 'str'>, 20, 20, 0, 0, True), ('PHONE_NO', <type 'str'>, 20, 20, 0, 0, True), ('ADDRESS_LINE1', <type 'str'>, 30, 30, 0, 0, True), ('ADDRESS_LINE2', <type 'str'>, 30, 30, 0, 0, True), ('CITY', <type 'str'>, 25, 25, 0, 0, True), ('STATE_PROVINCE', <type 'str'>, 15, 15, 0, 0, True), ('COUNTRY', <type 'str'>, 15, 15, 0, 0, True), ('POSTAL_CODE', <type 'str'>, 12, 12, 0, 0, True), ('ON_HOLD', <type 'str'>, 1, 1, 0, 0, True))"
+            assert repr(cur.description) == "((u'CUST_NO', <type 'int'>, 11, 4, 0, 0, False), (u'CUSTOMER', <type 'str'>, 25, 25, 0, 0, False), (u'CONTACT_FIRST', <type 'str'>, 15, 15, 0, 0, True), (u'CONTACT_LAST', <type 'str'>, 20, 20, 0, 0, True), (u'PHONE_NO', <type 'str'>, 20, 20, 0, 0, True), (u'ADDRESS_LINE1', <type 'str'>, 30, 30, 0, 0, True), (u'ADDRESS_LINE2', <type 'str'>, 30, 30, 0, 0, True), (u'CITY', <type 'str'>, 25, 25, 0, 0, True), (u'STATE_PROVINCE', <type 'str'>, 15, 15, 0, 0, True), (u'COUNTRY', <type 'str'>, 15, 15, 0, 0, True), (u'POSTAL_CODE', <type 'str'>, 12, 12, 0, 0, True), (u'ON_HOLD', <type 'str'>, 1, 1, 0, 0, True))"
         cur.execute('select * from job')
         if ibase.PYTHON_MAJOR_VER==3:
             assert repr(cur.description) == "(('JOB_CODE', <class 'str'>, 5, 5, 0, 0, False), ('JOB_GRADE', <class 'int'>, 6, 2, 0, 0, False), ('JOB_COUNTRY', <class 'str'>, 15, 15, 0, 0, False), ('JOB_TITLE', <class 'str'>, 25, 25, 0, 0, False), ('MIN_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('MAX_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('JOB_REQUIREMENT', <class 'str'>, 0, 8, 0, 1, True), ('LANGUAGE_REQ', <class 'list'>, -1, 8, 0, 0, True))"
         else:
-            assert repr(cur.description) == "(('JOB_CODE', <type 'str'>, 5, 5, 0, 0, False), ('JOB_GRADE', <type 'int'>, 6, 2, 0, 0, False), ('JOB_COUNTRY', <type 'str'>, 15, 15, 0, 0, False), ('JOB_TITLE', <type 'str'>, 25, 25, 0, 0, False), ('MIN_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('MAX_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('JOB_REQUIREMENT', <type 'str'>, 0, 8, 0, 1, True), ('LANGUAGE_REQ', <type 'list'>, -1, 8, 0, 0, True))"
+            assert repr(cur.description) == "((u'JOB_CODE', <type 'str'>, 5, 5, 0, 0, False), (u'JOB_GRADE', <type 'int'>, 6, 2, 0, 0, False), (u'JOB_COUNTRY', <type 'str'>, 15, 15, 0, 0, False), (u'JOB_TITLE', <type 'str'>, 25, 25, 0, 0, False), (u'MIN_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), (u'MAX_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), (u'JOB_REQUIREMENT', <type 'str'>, 0, 8, 0, 1, True), (u'LANGUAGE_REQ', <type 'list'>, -1, 8, 0, 0, True))"
     def test_fetchone(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
         row = cur.fetchone()
         assert len(row) == 2
-        assert repr(row) == "('USA', 'Dollar')"
+        assert repr(row) == "(u'USA', u'Dollar')"
     def test_fetchall(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchall()
         assert len(rows) == 14
-        assert repr(rows) == "[('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'), ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'), ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'), ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'), ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')]"
+        assert repr(rows) == "[(u'USA', u'Dollar'), (u'England', u'Pound'), (u'Canada', u'CdnDlr'), (u'Switzerland', u'SFranc'), (u'Japan', u'Yen'), (u'Italy', u'Lira'), (u'France', u'FFranc'), (u'Germany', u'D-Mark'), (u'Australia', u'ADollar'), (u'Hong Kong', u'HKDollar'), (u'Netherlands', u'Guilder'), (u'Belgium', u'BFranc'), (u'Austria', u'Schilling'), (u'Fiji', u'FDollar')]"
     def test_fetchmany(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchmany(10)
         assert len(rows) == 10
-        assert repr(rows) == "[('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'), ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'), ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'), ('Hong Kong', 'HKDollar')]"
+        assert repr(rows) == "[(u'USA', u'Dollar'), (u'England', u'Pound'), (u'Canada', u'CdnDlr'), (u'Switzerland', u'SFranc'), (u'Japan', u'Yen'), (u'Italy', u'Lira'), (u'France', u'FFranc'), (u'Germany', u'D-Mark'), (u'Australia', u'ADollar'), (u'Hong Kong', u'HKDollar')]"
         rows = cur.fetchmany(10)
         assert len(rows) == 4
-        assert repr(rows) == "[('Netherlands', 'Guilder'), ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')]"
+        assert repr(rows) == "[(u'Netherlands', u'Guilder'), (u'Belgium', u'BFranc'), (u'Austria', u'Schilling'), (u'Fiji', u'FDollar')]"
         rows = cur.fetchmany(10)
         assert len(rows) == 0
     def test_fetchonemap(self):
@@ -309,22 +309,22 @@ class TestCursor(unittest.TestCase):
         cur.execute('select * from country')
         row = cur.fetchonemap()
         assert len(row) == 2
-        assert repr(row.items()) == "[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')]"
+        assert repr(row.items()) == "[(u'COUNTRY', u'USA'), (u'CURRENCY', u'Dollar')]"
     def test_fetchallmap(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchallmap()
         assert len(rows) == 14
-        assert repr([row.items() for row in rows]) == "[[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')], [('COUNTRY', 'England'), ('CURRENCY', 'Pound')], [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')], [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')], [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')], [('COUNTRY', 'Italy'), ('CURRENCY', 'Lira')], [('COUNTRY', 'France'), ('CURRENCY', 'FFranc')], [('COUNTRY', 'Germany'), ('CURRENCY', 'D-Mark')], [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')], [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')], [('COUNTRY', 'Netherlands'), ('CURRENCY', 'Guilder')], [('COUNTRY', 'Belgium'), ('CURRENCY', 'BFranc')], [('COUNTRY', 'Austria'), ('CURRENCY', 'Schilling')], [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')]]"
+        assert repr([row.items() for row in rows]) == "[[(u'COUNTRY', u'USA'), (u'CURRENCY', u'Dollar')], [(u'COUNTRY', u'England'), (u'CURRENCY', u'Pound')], [(u'COUNTRY', u'Canada'), (u'CURRENCY', u'CdnDlr')], [(u'COUNTRY', u'Switzerland'), (u'CURRENCY', u'SFranc')], [(u'COUNTRY', u'Japan'), (u'CURRENCY', u'Yen')], [(u'COUNTRY', u'Italy'), (u'CURRENCY', u'Lira')], [(u'COUNTRY', u'France'), (u'CURRENCY', u'FFranc')], [(u'COUNTRY', u'Germany'), (u'CURRENCY', u'D-Mark')], [(u'COUNTRY', u'Australia'), (u'CURRENCY', u'ADollar')], [(u'COUNTRY', u'Hong Kong'), (u'CURRENCY', u'HKDollar')], [(u'COUNTRY', u'Netherlands'), (u'CURRENCY', u'Guilder')], [(u'COUNTRY', u'Belgium'), (u'CURRENCY', u'BFranc')], [(u'COUNTRY', u'Austria'), (u'CURRENCY', u'Schilling')], [(u'COUNTRY', u'Fiji'), (u'CURRENCY', u'FDollar')]]"
     def test_fetchmanymap(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchmanymap(10)
         assert len(rows) == 10
-        assert repr([row.items() for row in rows]) == "[[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')], [('COUNTRY', 'England'), ('CURRENCY', 'Pound')], [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')], [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')], [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')], [('COUNTRY', 'Italy'), ('CURRENCY', 'Lira')], [('COUNTRY', 'France'), ('CURRENCY', 'FFranc')], [('COUNTRY', 'Germany'), ('CURRENCY', 'D-Mark')], [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')], [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')]]"
+        assert repr([row.items() for row in rows]) == "[[(u'COUNTRY', u'USA'), (u'CURRENCY', u'Dollar')], [(u'COUNTRY', u'England'), (u'CURRENCY', u'Pound')], [(u'COUNTRY', u'Canada'), (u'CURRENCY', u'CdnDlr')], [(u'COUNTRY', u'Switzerland'), (u'CURRENCY', u'SFranc')], [(u'COUNTRY', u'Japan'), (u'CURRENCY', u'Yen')], [(u'COUNTRY', u'Italy'), (u'CURRENCY', u'Lira')], [(u'COUNTRY', u'France'), (u'CURRENCY', u'FFranc')], [(u'COUNTRY', u'Germany'), (u'CURRENCY', u'D-Mark')], [(u'COUNTRY', u'Australia'), (u'CURRENCY', u'ADollar')], [(u'COUNTRY', u'Hong Kong'), (u'CURRENCY', u'HKDollar')]]"
         rows = cur.fetchmanymap(10)
         assert len(rows) == 4
-        assert repr([row.items() for row in rows]) == "[[('COUNTRY', 'Netherlands'), ('CURRENCY', 'Guilder')], [('COUNTRY', 'Belgium'), ('CURRENCY', 'BFranc')], [('COUNTRY', 'Austria'), ('CURRENCY', 'Schilling')], [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')]]"
+        assert repr([row.items() for row in rows]) == "[[(u'COUNTRY', u'Netherlands'), (u'CURRENCY', u'Guilder')], [(u'COUNTRY', u'Belgium'), (u'CURRENCY', u'BFranc')], [(u'COUNTRY', u'Austria'), (u'CURRENCY', u'Schilling')], [(u'COUNTRY', u'Fiji'), (u'CURRENCY', u'FDollar')]]"
         rows = cur.fetchmany(10)
         assert len(rows) == 0
     def test_rowcount(self):
@@ -399,7 +399,7 @@ class TestCursor2(unittest.TestCase):
         self.con.commit()
         cur.execute('select C1,C4,C5 from T2 where C1 = 2')
         rows = cur.fetchall()
-        assert repr(rows) == "[(2, 'AA   ', 'AA')]"
+        assert repr(rows) == "[(2, u'AA   ', u'AA')]"
     def test_insert_datetime(self):
         cur = self.con.cursor()
         now = datetime.datetime(2011,11,13,15,00,1,200)
@@ -478,13 +478,13 @@ class TestServices(unittest.TestCase):
         #assert x == '/opt/firebird/'
         con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         con2 = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
-        x = svc.getConnectionCount()
-        print 'getConnectionCount',x
-        assert x == 3
         x = svc.getAttachedDatabaseNames()
         assert len(x) == 2
         assert self.dbfile in x
         #assert '/opt/firebird/examples/empbuild/employee.fdb' in x
+        x = svc.getConnectionCount()
+        print 'getConnectionCount',x
+        assert x == 3
         svc.close()
 
 class TestServices2(unittest.TestCase):

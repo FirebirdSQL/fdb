@@ -632,11 +632,11 @@ class Connection(object):
         if ibase.PYTHON_MAJOR_VER == 3:
             return b.decode(ibase.charset_map.get(self.charset, self.charset))
         else:
-            if self.charset:
-                return b.encode(ibase.charset_map.get(self.charset,
+            #if self.charset:
+                return b.decode(ibase.charset_map.get(self.charset,
                                                       self.charset))
-            else:
-                return b
+            #else:
+                #return b
     def _str_to_bytes(self, s):
         if ibase.PYTHON_MAJOR_VER == 3:
             return s.encode(ibase.charset_map.get(self.charset, self.charset))
@@ -1531,10 +1531,10 @@ class PreparedStatement(object):
                     value = sqlvar.sqldata[:sqlvar.sqllen]
                 else:
                     value = str(sqlvar.sqldata[:sqlvar.sqllen])
-                if self.__get_connection().charset:
-                    value = value.decode(ibase.charset_map.get(
-                        self.__get_connection().charset,
-                        self.__get_connection().charset))
+                #if self.__get_connection().charset:
+                value = value.decode(ibase.charset_map.get(
+                    self.__get_connection().charset,
+                    self.__get_connection().charset))
             elif vartype == ibase.SQL_VARYING:
                 size = bytes_to_int(sqlvar.sqldata[:1])
                 #value = ctypes.string_at(sqlvar.sqldata[2],2+size)
@@ -1543,10 +1543,10 @@ class PreparedStatement(object):
                     value = bytes(sqlvar.sqldata[2:2 + size])
                 else:
                     value = str(sqlvar.sqldata[2:2 + size])
-                if self.__get_connection().charset:
-                    value = value.decode(ibase.charset_map.get(
-                        self.__get_connection().charset,
-                        self.__get_connection().charset))
+                #if self.__get_connection().charset:
+                value = value.decode(ibase.charset_map.get(
+                    self.__get_connection().charset,
+                    self.__get_connection().charset))
             elif vartype in [ibase.SQL_SHORT, ibase.SQL_LONG, ibase.SQL_INT64]:
                 value = bytes_to_int(sqlvar.sqldata[:sqlvar.sqllen])
                 # It's scalled integer?
