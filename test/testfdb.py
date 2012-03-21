@@ -414,7 +414,7 @@ class TestCursor2(unittest.TestCase):
         self.con.commit()
         cur.execute('select C1,C9 from T2 where C1 = 4')
         rows = cur.fetchall()
-        assert repr(rows) == "[(4, 'This is a BLOB!')]"
+        assert repr(rows) == "[(4, u'This is a BLOB!')]"
     def test_insert_float_double(self):
         cur = self.con.cursor()
         cur.execute('insert into T2 (C1,C12,C13) values (?,?,?)',[5,1.0,1.0])
