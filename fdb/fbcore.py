@@ -629,14 +629,7 @@ class Connection(object):
         s = s % 60
         return (h, m, s, (n % 10000) * 100)
     def _bytes_to_str(self, b):
-        if ibase.PYTHON_MAJOR_VER == 3:
-            return b.decode(ibase.charset_map.get(self.charset, self.charset))
-        else:
-            #if self.charset:
-                return b.decode(ibase.charset_map.get(self.charset,
-                                                      self.charset))
-            #else:
-                #return b
+        return b.decode(ibase.charset_map.get(self.charset,self.charset))
     def _str_to_bytes(self, s):
         if ibase.PYTHON_MAJOR_VER == 3:
             return s.encode(ibase.charset_map.get(self.charset, self.charset))
@@ -1531,7 +1524,6 @@ class PreparedStatement(object):
                     value = sqlvar.sqldata[:sqlvar.sqllen]
                 else:
                     value = str(sqlvar.sqldata[:sqlvar.sqllen])
-                #if self.__get_connection().charset:
                 value = value.decode(ibase.charset_map.get(
                     self.__get_connection().charset,
                     self.__get_connection().charset))
@@ -1543,7 +1535,6 @@ class PreparedStatement(object):
                     value = bytes(sqlvar.sqldata[2:2 + size])
                 else:
                     value = str(sqlvar.sqldata[2:2 + size])
-                #if self.__get_connection().charset:
                 value = value.decode(ibase.charset_map.get(
                     self.__get_connection().charset,
                     self.__get_connection().charset))
@@ -1631,10 +1622,9 @@ class PreparedStatement(object):
                 # Finish
                 ibase.isc_close_blob(self._isc_status, blob_handle)
                 value = blob.value
-                if self.__get_connection().charset:
-                    value = value.decode(ibase.charset_map.get(
-                        self.__get_connection().charset,
-                        self.__get_connection().charset))
+                value = value.decode(ibase.charset_map.get(
+                    self.__get_connection().charset,
+                    self.__get_connection().charset))
             elif vartype == ibase.SQL_ARRAY:
                 value = []
             values.append(value)
