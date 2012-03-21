@@ -24,6 +24,7 @@
 from ctypes import *
 from ctypes.util import find_library
 import sys
+import locale
 import types
 import operator
 
@@ -41,14 +42,14 @@ else:
 #-------------------
 
 if PYTHON_MAJOR_VER == 3:
-    def b(st):
+    def b(st,charset="latin-1"):
         if st == None:
             return st
         elif isinstance(st, bytes):
             return st
         else:
             try:
-                return st.encode("latin-1")
+                return st.encode(charset)
             except UnicodeEncodeError:
                 return st
 
@@ -80,8 +81,16 @@ if PYTHON_MAJOR_VER == 3:
     xrange = range
 
 else:
-    def b(st):
-        return st
+    def b(st,charset="latin-1"):
+        if st == None:
+            return st
+        elif isinstance(st, types.StringType):
+            return st
+        else:
+            try:
+                return st.encode(charset)
+            except UnicodeEncodeError:
+                return st
 
     int2byte = chr
     s = str
@@ -107,6 +116,8 @@ MAX_BLOB_SEGMENT_SIZE = 65535
 charset_map = {
     # DB CHAR SET NAME    :   PYTHON CODEC NAME (CANONICAL)
     # -------------------------------------------------------------------------
+    None                  :   locale.getpreferredencoding(),
+    'NONE'                :   locale.getpreferredencoding(),
     'OCTETS'              :   None,  # Allow to pass through unchanged.
     'UNICODE_FSS'         :   'utf_8',
     'UTF8'                :   'utf_8',  # (Firebird 2.0+)
@@ -153,7 +164,6 @@ charset_map = {
     }
 
 DB_CHAR_SET_NAME_TO_PYTHON_ENCODING_MAP = charset_map
-DEFAULT_CHARSET = 'UTF8'
 
 # C integer limit constants
 
@@ -1033,6 +1043,13 @@ paramvary._fields_ = [
 ]
 PARAMVARY = paramvary
 
+class ISC_TEB(Structure):
+    pass
+ISC_TEB._fields_ = [
+    ('db_ptr', POINTER(isc_db_handle)),
+    ('tpb_len', ISC_SHORT),
+    ('tpb_ptr', STRING)
+]
 
 class XSQLVAR(Structure):
     pass
@@ -1454,6 +1471,8 @@ isc_portable_integer = fb_library.isc_portable_integer
 isc_portable_integer.restype = ISC_INT64
 isc_portable_integer.argtypes = [POINTER(ISC_UCHAR), c_short]
 
+def portable_int (buf):
+    pass
 
 class USER_SEC_DATA(Structure):
     pass
@@ -2084,3 +2103,4 @@ __all__ = ['isc_info_base_level', 'isc_start_and_send',
            'isc_info_db_impl_isc_rt_aix',
            'isc_get_client_major_version', 'isc_dsql_fetch',
            'isc_info_update_count', 'int_least8_t']
+
