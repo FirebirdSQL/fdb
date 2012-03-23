@@ -1082,6 +1082,8 @@ XSQLDA._fields_ = [
     ('sqlvar', XSQLVAR * 1),
 ]
 
+XSQLDA_PTR = POINTER(XSQLDA)
+
 isc_attach_database = fb_library.isc_attach_database
 isc_attach_database.restype = ISC_STATUS
 isc_attach_database.argtypes = [POINTER(ISC_STATUS), c_short, STRING,
