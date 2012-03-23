@@ -1,0 +1,32 @@
+Release Notes
+=============
+
+The primary goal is to make FDB as much compatible with KInterbasDB as possible,
+but there are some differences:
+
+1. No need for initialization
+-----------------------------
+
+FDB doesn't support various configurations of automatic type translations like 
+KDB, so it's no longer necessary to initialize the driver before any feature is
+used.
+
+2. Distributed transactions
+---------------------------
+
+Support for Distributed Transactions works in slightly differently than in KDB.
+FDB uses ConnectionGroup class like KDB with the same interface, but DT is not
+bound to main transaction of individual connections managed by group. That means
+that Cursor instances obtained from Connection don't work in DT if connection is
+part of ConnectionGroup, but work normally in connection context. To get Cursor
+for specific connection that works in DT, use ConnectionGroup.cursor() method
+and pass the connection as parameter. We believe that this arrangement is more
+logical and flexible than KDB's way.
+
+Transaction context for cursor objects depends on how cursor is obtained/created:
+
+a) Connection.cursor() - Works in context of "main" transaction for connection.
+b) Transaction.cursor() - Works in context of this transaction.
+c) ConnectionGroup.cursor() - Works in context of Distributed Transaction
+
+
