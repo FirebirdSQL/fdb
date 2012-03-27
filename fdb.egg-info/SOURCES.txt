@@ -2,6 +2,7 @@ LICENSE.TXT
 MANIFEST.in
 PKG-INFO
 README
+ReleaseNotes.txt
 setup.cfg
 setup.py
 fdb/__init__.py
