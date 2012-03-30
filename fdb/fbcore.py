@@ -1541,22 +1541,30 @@ class PreparedStatement(object):
             elif vartype == SQL_TEXT:
                 #value = ctypes.string_at(sqlvar.sqldata,sqlvar.sqllen)
                 ### Todo: verify handling of P version differences
-                if PYTHON_MAJOR_VER == 3:
-                    value = sqlvar.sqldata[:sqlvar.sqllen]
-                    value = value.decode(charset_map.get(
-                        self.__get_connection().charset,
-                        self.__get_connection().charset))
+                if sqlvar.sqlsubtype in (4, 69):  # UTF8 and GB18030
+                    reallength = sqlvar.sqllen // 4
+                elif sqlvar.sqlsubtype == 3:  # UNICODE_FSS
+                    reallength = sqlvar.sqllen // 3
                 else:
-                    value = str(sqlvar.sqldata[:sqlvar.sqllen])
+                    reallength = sqlvar.sqllen
+                if PYTHON_MAJOR_VER == 3:
+                    value = sqlvar.sqldata[:reallength]
+                    if sqlvar.sqlsubtype != 1:   # non OCTETS
+                        value = value.decode(charset_map.get(
+                            self.__get_connection().charset,
+                            self.__get_connection().charset))
+                else:
+                    value = str(sqlvar.sqldata[:reallength])
             elif vartype == SQL_VARYING:
                 size = bytes_to_int(sqlvar.sqldata[:1])
                 #value = ctypes.string_at(sqlvar.sqldata[2],2+size)
                 ### Todo: verify handling of P version differences
                 if PYTHON_MAJOR_VER == 3:
                     value = bytes(sqlvar.sqldata[2:2 + size])
-                    value = value.decode(charset_map.get(
-                        self.__get_connection().charset,
-                        self.__get_connection().charset))
+                    if sqlvar.sqlsubtype != 1:  # non OCTETS
+                        value = value.decode(charset_map.get(
+                            self.__get_connection().charset,
+                            self.__get_connection().charset))
                 else:
                     value = str(sqlvar.sqldata[2:2 + size])
             elif vartype in [SQL_SHORT, SQL_LONG, SQL_INT64]:
@@ -1643,7 +1651,7 @@ class PreparedStatement(object):
                 # Finish
                 ibase.isc_close_blob(self._isc_status, blob_handle)
                 value = blob.value
-                if PYTHON_MAJOR_VER == 3:
+                if PYTHON_MAJOR_VER == 3 and sqlvar.sqlsubtype == 1:
                     value = value.decode(charset_map.get(
                         self.__get_connection().charset,
                         self.__get_connection().charset))
