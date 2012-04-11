@@ -845,24 +845,36 @@ class Connection(object):
                 # (IB 6 API Guide page 52)
                 buf = self.database_info(infoCode, 's')
                 # Ignore the first byte.
-                baseLevel = struct.unpack('B', int2byte(buf[1]))[0]
+                if PYTHON_MAJOR_VER == 3:
+                    baseLevel = struct.unpack('B', int2byte(buf[1]))[0]
+                else:
+                    baseLevel = struct.unpack('B', buf[1])[0]
                 results[infoCode] = baseLevel
             elif infoCode == isc_info_db_id:
                 # (IB 6 API Guide page 52)
                 buf = self.database_info(infoCode, 's')
                 pos = 0
 
-                conLocalityCode = struct.unpack('B',
+                if PYTHON_MAJOR_VER == 3:
+                    conLocalityCode = struct.unpack('B',
                                                 int2byte(buf[pos]))[0]
+                else:
+                    conLocalityCode = struct.unpack('B', buf[pos])[0]
                 pos += 1
 
-                dbFilenameLen = struct.unpack('B', int2byte(buf[1]))[0]
+                if PYTHON_MAJOR_VER == 3:
+                    dbFilenameLen = struct.unpack('B', int2byte(buf[1]))[0]
+                else:
+                    dbFilenameLen = struct.unpack('B', buf[1])[0]
                 pos += 1
 
                 dbFilename = buf[pos:pos + dbFilenameLen]
                 pos += dbFilenameLen
 
-                siteNameLen = struct.unpack('B', int2byte(buf[pos]))[0]
+                if PYTHON_MAJOR_VER == 3:
+                    siteNameLen = struct.unpack('B', int2byte(buf[pos]))[0]
+                else:
+                    siteNameLen = struct.unpack('B', buf[pos])[0]
                 pos += 1
 
                 siteName = buf[pos:pos + siteNameLen]
@@ -877,10 +889,16 @@ class Connection(object):
                 # Skip the first four bytes.
                 pos = 1
 
-                implNumber = struct.unpack('B', int2byte(buf[pos]))[0]
+                if PYTHON_MAJOR_VER == 3:
+                    implNumber = struct.unpack('B', int2byte(buf[pos]))[0]
+                else:
+                    implNumber = struct.unpack('B', buf[pos])[0]
                 pos += 1
 
-                classNumber = struct.unpack('B', int2byte(buf[pos]))[0]
+                if PYTHON_MAJOR_VER == 3:
+                    classNumber = struct.unpack('B', int2byte(buf[pos]))[0]
+                else:
+                    classNumber = struct.unpack('B', buf[pos])[0]
                 pos += 1
 
                 results[infoCode] = (implNumber, classNumber)
@@ -890,8 +908,11 @@ class Connection(object):
                 # Skip the first byte.
                 pos = 1
 
-                versionStringLen = (struct.unpack('B',
+                if PYTHON_MAJOR_VER == 3:
+                    versionStringLen = (struct.unpack('B',
                                                   int2byte(buf[pos]))[0])
+                else:
+                    versionStringLen = (struct.unpack('B', buf[pos])[0])
                 pos += 1
 
                 versionString = buf[pos:pos + versionStringLen]
