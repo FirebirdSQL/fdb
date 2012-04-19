@@ -404,15 +404,17 @@ def exception_from_status(error, status, preamble=None):
         msglist.append('- ' + msg.value)
 
     pvector = ctypes.cast(ctypes.addressof(status), ISC_STATUS_PTR)
-    result = 0
 
-    while result == 0:
+    while True:
         result = fb_interpret(msg, 512, pvector)
-        if PYTHON_MAJOR_VER == 3:
-            ### Todo: trouble? decode from connection charset?
-            msglist.append('- ' + (msg.value).decode('utf_8'))
+        if result != 0:
+            if PYTHON_MAJOR_VER == 3:
+                ### Todo: trouble? decode from connection charset?
+                msglist.append('- ' + (msg.value).decode('utf_8'))
+            else:
+                msglist.append('- ' + msg.value)
         else:
-            msglist.append('- ' + msg.value)
+            break
     return error('\n'.join(msglist), sqlcode, error_code)
 
 def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
