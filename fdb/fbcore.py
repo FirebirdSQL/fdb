@@ -1826,11 +1826,12 @@ class PreparedStatement(object):
             self.__output_cache = None
             self._name = None
             if self.statement_type == isc_info_sql_stmt_select:
-                ibase.isc_dsql_free_statement(self._isc_status, self._stmt_handle,
-                                          ibase.DSQL_close)
+                ibase.isc_dsql_free_statement(self._isc_status,
+                                              self._stmt_handle,
+                                              ibase.DSQL_close)
                 if db_api_error(self._isc_status):
                     raise exception_from_status(DatabaseError, self._isc_status,
-                                            "Error while releasing SQL statement handle:")
+                                  "Error while releasing SQL statement handle:")
     def _callproc(self, procname, parameters=None):
         raise NotImplementedError('Cursor.callproc')
     def _close(self):
