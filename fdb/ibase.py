@@ -27,6 +27,7 @@ import sys
 import locale
 import types
 import operator
+import platform
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
@@ -885,7 +886,13 @@ isc_spb_trc_cfg = 3
 isc_segment = 335544366
 
 FB_API_HANDLE = c_uint
-intptr_t = c_long
+if platform.architecture() == ('64bit', 'WindowsPE'):
+    intptr_t = c_longlong
+    uintptr_t = c_ulonglong
+else:
+    intptr_t = c_long
+    uintptr_t = c_ulong
+  
 ISC_STATUS = intptr_t
 ISC_STATUS_PTR = POINTER(ISC_STATUS)
 ISC_STATUS_ARRAY = ISC_STATUS * 20
@@ -1924,7 +1931,6 @@ uint_fast8_t = c_ubyte
 uint_fast16_t = c_ulong
 uint_fast32_t = c_ulong
 uint_fast64_t = c_ulong
-uintptr_t = c_ulong
 ptrdiff_t = c_long
 size_t = c_ulong
 
