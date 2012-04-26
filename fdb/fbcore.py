@@ -1821,14 +1821,15 @@ class PreparedStatement(object):
                     raise NotImplementedError('array')
     def _free_handle(self):
         if self._stmt_handle != None and not self.__closed:
-            ibase.isc_dsql_free_statement(self._isc_status, self._stmt_handle,
-                                          ibase.DSQL_close)
             self.__executed = False
             self.__closed = True
             self.__output_cache = None
             self._name = None
-            if db_api_error(self._isc_status):
-                raise exception_from_status(DatabaseError, self._isc_status,
+            if self.statement_type == isc_info_sql_stmt_select:
+                ibase.isc_dsql_free_statement(self._isc_status, self._stmt_handle,
+                                          ibase.DSQL_close)
+                if db_api_error(self._isc_status):
+                    raise exception_from_status(DatabaseError, self._isc_status,
                                             "Error while releasing SQL statement handle:")
     def _callproc(self, procname, parameters=None):
         raise NotImplementedError('Cursor.callproc')
