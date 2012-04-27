@@ -28,6 +28,25 @@ import fdb
 import fdb.ibase as ibase
 import sys, os
 
+def printData(cur):
+    """Print data from open cursor to stdout."""
+    # Print a header.
+    for fieldDesc in cur.description:
+        print fieldDesc[fdb.DESCRIPTION_NAME].ljust(fieldDesc[fdb.DESCRIPTION_DISPLAY_SIZE]) ,
+    print
+    for fieldDesc in cur.description:
+        print "-" * max((len(fieldDesc[fdb.DESCRIPTION_NAME]),fieldDesc[fdb.DESCRIPTION_DISPLAY_SIZE])),
+    print
+    # For each row, print the value of each field left-justified within
+    # the maximum possible width of that field.
+    fieldIndices = range(len(cur.description))
+    for row in cur:
+        for fieldIndex in fieldIndices:
+            fieldValue = str(row[fieldIndex])
+            fieldMaxWidth = max((len(cur.description[fieldIndex][fdb.DESCRIPTION_NAME]),cur.description[fieldIndex][fdb.DESCRIPTION_DISPLAY_SIZE]))
+            print fieldValue.ljust(fieldMaxWidth) ,
+        print
+
 
 class TestCreateDrop(unittest.TestCase):
     def setUp(self):
@@ -429,6 +448,11 @@ class TestCursor2(unittest.TestCase):
         cur.execute('select C1,C10,C11 from T2 where C1 = 6')
         rows = cur.fetchall()
         assert repr(rows) == "[(6, Decimal('1.1'), Decimal('1.1')), (6, Decimal('100.11'), Decimal('100.11'))]"
+    def test_insert_returning(self):
+        cur = self.con.cursor()
+        cur.execute('insert into T2 (C1,C10,C11) values (?,?,?) returning C1',[6,1.1,1.1])
+        result = cur.fetchall()
+        assert repr(result) == '[(6,)]'
 
 class TestStoredProc(unittest.TestCase):
     def setUp(self):
@@ -483,7 +507,7 @@ class TestServices(unittest.TestCase):
         #assert '/opt/firebird/examples/empbuild/employee.fdb' in x
         x = svc.getConnectionCount()
         print 'getConnectionCount',x
-        assert x == 3
+        assert x == 2
         svc.close()
 
 class TestServices2(unittest.TestCase):
@@ -547,8 +571,8 @@ class TestServices2(unittest.TestCase):
     def test_setSQLDialect(self):
         result = self.svc.setSQLDialect(self.rfdb,1)
         assert not result
-        #result = self.svc.setSQLDialect('test_employee.fdb',3)
-        #assert not result
+        result = self.svc.setSQLDialect(self.rfdb,3)
+        assert not result
     def test_activateShadowFile(self):
         result = self.svc.activateShadowFile(self.rfdb)
         assert not result
@@ -598,6 +622,116 @@ class TestServices2(unittest.TestCase):
         assert not result
 
 
+class TestWork(unittest.TestCase):
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbwork.fdb')
+        self.con = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.dbfile)
+    def tearDown(self):
+        self.con.close()
+        if os.path.exists(self.dbfile):
+            os.remove(self.dbfile)
+    #def test_functional_fkey_unique_insert_07(self):
+        ## SetUp
+        #c = self.con.cursor()
+        #c.execute("""CREATE TABLE MASTER_TABLE (
+    #ID     INTEGER PRIMARY KEY,
+    #UF     INTEGER UNIQUE,
+    #INT_F  INTEGER
+#);""")
+        #c.execute("""CREATE TABLE DETAIL_TABLE (
+    #ID    INTEGER PRIMARY KEY,
+    #FKEY  INTEGER
+#);""")
+        #self.con.commit()
+        #c.execute("ALTER TABLE DETAIL_TABLE ADD CONSTRAINT FK_DETAIL_TABLE FOREIGN KEY (FKEY) REFERENCES MASTER_TABLE (UF);")
+        #self.con.commit()
+        #c.execute("INSERT INTO MASTER_TABLE (ID, UF, INT_F) VALUES (1, 1, 10);")
+        #self.con.commit()
+        #c.close()
+        ## Test
+        #TPB_master = (
+              #chr(fdb.isc_tpb_write)
+            #+ chr(fdb.isc_tpb_read_committed) + chr(fdb.isc_tpb_rec_version)
+            #+ chr(fdb.isc_tpb_nowait)
+                          #)
+        #TPB_detail = (
+              #chr(fdb.isc_tpb_write)
+            #+ chr(fdb.isc_tpb_read_committed) + chr(fdb.isc_tpb_rec_version)
+            #+ chr(fdb.isc_tpb_nowait)
+                          #)
+        #self.con.begin(tpb=TPB_master)
+        #c = self.con.cursor()
+        #c.execute('DELETE FROM MASTER_TABLE WHERE ID=1')        
+        #self.con.commit()
+        ##Create second connection for change detail table
+        #con_detail = fdb.connect(dsn=self.dbfile,user='SYSDBA',password='masterkey')        
+        
+        #try:
+            #con_detail.begin(tpb=TPB_detail)
+            #cd = con_detail.cursor()
+            #cd.execute("INSERT INTO DETAIL_TABLE (ID, FKEY) VALUES (1,1)")
+            #con_detail.commit()
+        #except Exception, e:
+            ##for msg in e: print msg
+            #print e[0]   
+        #else:
+            #con_detail.close()
+    #def test_functional_trigger_database_connect_04(self):
+        ## SetUp
+        #cmds = ["create table LOG (ID integer, MSG varchar(100));",
+                #"create generator LOGID;",
+                #"create exception CONNECTERROR 'Exception in ON CONNECT trigger';",
+                #"create role TEST;",
+                #"grant TEST to PUBLIC;",
+                #"""create trigger LOG_BI for LOG active before insert position 0
+#as
+#begin
+  #if (new.ID is null) then
+    #new.ID = gen_id(LOGID,1);
+#end""", """create trigger ONCONNECT_1 on connect position 0
+#as
+#begin
+  #insert into LOG (MSG) values ('Connect T1 as ' || current_role);
+#end""","""create trigger ONCONNECT_2 on connect position 0
+#as
+#begin
+  #insert into LOG (MSG) values ('Connect T2 as ' || current_role);
+  #if (current_role ='TEST') then
+      #exception CONNECTERROR;
+#end""","""create trigger ONCONNECT_3 on connect position 20
+#as
+#begin
+  #insert into LOG (MSG) values ('Connect T3 as ' || current_role);
+#end""",'COMMIT']
+        #c = self.con.cursor()
+        #for cmd in cmds:
+            #if cmd == 'COMMIT':
+                #self.con.commit()
+            #else:
+                #c.execute(cmd)
+        #c.close()
+        #self.con.close()
+        ## Test
+        #self.con = fdb.connect(dsn=self.dbfile,user='SYSDBA',password='masterkey')
+        #try:
+            #con2 = fdb.connect(dsn=self.dbfile,user='SYSDBA',password='masterkey',role='TEST')
+        #except Exception,e:
+            #for msg in e: print msg
+        #else:
+            #con2.close()
+        
+        #c = self.con.cursor()
+        #c.execute('select * from LOG')
+        #printData(c)        
+    def test_functional_intfunc_string_ascii_val_01(self):
+        # SetUp
+        c = self.con.cursor()
+        c.execute("select ascii_val('') from rdb$database")
+        c.fetchall()
+        
+    
 if __name__ == '__main__':
     unittest.main()
 
