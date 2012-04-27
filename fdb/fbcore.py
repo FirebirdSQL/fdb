@@ -1836,8 +1836,7 @@ class PreparedStatement(object):
         raise NotImplementedError('Cursor.callproc')
     def _close(self):
         if self._stmt_handle != None:
-            ibase.isc_dsql_free_statement(self._isc_status, self._stmt_handle,
-                                          ibase.DSQL_drop)
+            stmt_handle = self._stmt_handle
             self._stmt_handle = None
             self.__executed = False
             self.__prepared = False
@@ -1846,9 +1845,12 @@ class PreparedStatement(object):
             self.__output_cache = None
             self._name = None
             #self.out_buffer = None
-            if db_api_error(self._isc_status):
-                raise exception_from_status(DatabaseError, self._isc_status,
-                                            "Error while closing SQL statement:")
+            if not self.__get_connection().closed:
+                ibase.isc_dsql_free_statement(self._isc_status, stmt_handle,
+                                              ibase.DSQL_drop)
+                if db_api_error(self._isc_status):
+                    raise exception_from_status(DatabaseError, self._isc_status,
+                                                "Error while closing SQL statement:")
     def _execute(self, parameters=None):
         # Bind parameters
         if parameters:
