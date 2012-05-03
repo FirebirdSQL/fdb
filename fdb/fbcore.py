@@ -1218,9 +1218,13 @@ class PreparedStatement(object):
         return self.__get_connection()._bytes_to_str(b)
     def __get_connection(self):
         if self.__internal:
-            return self.cursor()._connection
+            cur = self.cursor()
         else:
-            return self.cursor._connection
+            cur = self.cursor
+        if cur:
+            return cur._connection
+        else:
+            return None
     def __get_transaction(self):
         if self.__internal:
             return self.cursor()._transaction
@@ -1845,7 +1849,8 @@ class PreparedStatement(object):
             self.__output_cache = None
             self._name = None
             #self.out_buffer = None
-            if not self.__get_connection().closed:
+            connection = self.__get_connection()
+            if connection and not connection.closed:
                 ibase.isc_dsql_free_statement(self._isc_status, stmt_handle,
                                               ibase.DSQL_drop)
                 if db_api_error(self._isc_status):
