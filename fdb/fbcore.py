@@ -1335,7 +1335,7 @@ class PreparedStatement(object):
     def __get_description(self):
         if not self.__description:
             desc = []
-            if self.__executed and (self.out_sqlda.sqld > 0):
+            if self.__prepared and (self.out_sqlda.sqld > 0):
                 for sqlvar in self.out_sqlda.sqlvar[:self.out_sqlda.sqld]:
                     # Field name (or alias)
                     sqlname = self._bytes_to_str(
