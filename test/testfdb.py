@@ -27,6 +27,8 @@ import datetime, decimal, types
 import fdb
 import fdb.ibase as ibase
 import sys, os
+import threading
+import time
 
 def printData(cur):
     """Print data from open cursor to stdout."""
@@ -622,6 +624,109 @@ class TestServices2(unittest.TestCase):
         assert not result
 
 
+class TestEvents(unittest.TestCase):
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbevents.fdb')
+        if os.path.exists(self.dbfile):
+            os.remove(self.dbfile)
+        self.con = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.dbfile)
+        c = self.con.cursor()
+        c.execute("CREATE TABLE T (PK Integer, C1 Integer)")
+        c.execute("""CREATE TRIGGER EVENTS_AU FOR T ACTIVE
+BEFORE UPDATE POSITION 0
+AS 
+BEGIN 
+    if (old.C1 <> new.C1) then
+        post_event 'c1_updated' ;
+END""")
+        c.execute("""CREATE TRIGGER EVENTS_AI FOR T ACTIVE
+AFTER INSERT POSITION 0
+AS 
+BEGIN 
+    if (new.c1 = 1) then
+        post_event 'insert_1' ;
+    else if (new.c1 = 2) then
+        post_event 'insert_2' ;
+    else if (new.c1 = 3) then
+        post_event 'insert_3' ;
+    else
+        post_event 'insert_other' ;
+END""")
+        self.con.commit()
+    def tearDown(self):
+        self.con.drop_database()
+        self.con.close()
+    def test_one_event(self):
+        def send_events(command_list):
+            c = self.con.cursor()
+            for cmd in command_list:
+                c.execute(cmd)
+            self.con.commit()
+        
+        timed_event = threading.Timer(3.0,send_events,args=[["insert into T (PK,C1) values (1,1)",]])
+        events = self.con.event_conduit(['insert_1'])
+        timed_event.start()
+        e = events.wait()
+        events.close()
+        assert repr(e) == "{'insert_1': 1}"
+    def test_multiple_events(self):
+        def send_events(command_list):
+            c = self.con.cursor()
+            for cmd in command_list:
+                c.execute(cmd)
+            self.con.commit()
+        cmds = ["insert into T (PK,C1) values (1,1)",
+                "insert into T (PK,C1) values (1,2)",
+                "insert into T (PK,C1) values (1,3)",
+                "insert into T (PK,C1) values (1,1)",
+                "insert into T (PK,C1) values (1,2)",]
+        timed_event = threading.Timer(3.0,send_events,args=[cmds])
+        events = self.con.event_conduit(['insert_1','insert_3'])
+        timed_event.start()
+        e = events.wait()
+        events.close()
+        assert repr(e) == "{'insert_3': 1, 'insert_1': 2}"
+    def test_20_events(self):
+        def send_events(command_list):
+            c = self.con.cursor()
+            for cmd in command_list:
+                c.execute(cmd)
+            self.con.commit()
+        cmds = ["insert into T (PK,C1) values (1,1)",
+                "insert into T (PK,C1) values (1,2)",
+                "insert into T (PK,C1) values (1,3)",
+                "insert into T (PK,C1) values (1,1)",
+                "insert into T (PK,C1) values (1,2)",]
+        self.e = {}
+        timed_event = threading.Timer(1.0,send_events,args=[cmds])
+        events = self.con.event_conduit(['insert_1','A','B','C','D',
+                                         'E','F','G','H','I','J','K','L','M',
+                                         'N','O','P','Q','R','insert_3'])
+        timed_event.start()
+        time.sleep(3)
+        e = events.wait()
+        events.close()
+        assert repr(e) == "{'A': 0, 'C': 0, 'B': 0, 'E': 0, 'D': 0, 'G': 0, 'insert_1': 2, 'I': 0, 'H': 0, 'K': 0, 'J': 0, 'M': 0, 'L': 0, 'O': 0, 'N': 0, 'Q': 0, 'P': 0, 'R': 0, 'insert_3': 1, 'F': 0}"
+    def test_flush_events(self):
+        def send_events(command_list):
+            c = self.con.cursor()
+            for cmd in command_list:
+                c.execute(cmd)
+            self.con.commit()
+        
+        timed_event = threading.Timer(3.0,send_events,args=[["insert into T (PK,C1) values (1,1)",]])
+        events = self.con.event_conduit(['insert_1'])
+        send_events(["insert into T (PK,C1) values (1,1)",
+                     "insert into T (PK,C1) values (1,1)"])
+        time.sleep(2)
+        events.flush()
+        timed_event.start()
+        e = events.wait()
+        events.close()
+        assert repr(e) == "{'insert_1': 1}"
+
 class TestWork(unittest.TestCase):
     def setUp(self):
         self.cwd = os.getcwd()
@@ -629,9 +734,8 @@ class TestWork(unittest.TestCase):
         self.dbfile = os.path.join(self.dbpath,'fbwork.fdb')
         self.con = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.dbfile)
     def tearDown(self):
+        self.con.drop_database()
         self.con.close()
-        if os.path.exists(self.dbfile):
-            os.remove(self.dbfile)
     #def test_functional_fkey_unique_insert_07(self):
         ## SetUp
         #c = self.con.cursor()
@@ -735,19 +839,3 @@ class TestWork(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-#unittest.main()
-#import datetime as dt
-#con = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
-#con.execute_immediate("recreate table t (c1 integer)")
-#c = con.cursor()
-#ts = dt.datetime.now()
-#c.execute('insert into T2 (C1,C9) values (?,?)',[5,"This is a BLOB!"])
-#c.execute('select * from project')
-#print c.rowcount
-#print c.fetchone()
-#print c.rowcount
-#c.execute('insert into t (c1) values(1)')
-#con.commit()
-#con = fdb.create_database("create database 'test.fdb' user 'sysdba' password 'masterkey'")
-#con.execute_immediate("recreate table t (c1 integer)")
-#con.commit()

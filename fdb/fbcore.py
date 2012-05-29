@@ -30,6 +30,8 @@ import time
 import datetime
 import decimal
 import weakref
+import threading
+from itertools import izip_longest
 from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_dpb_address_path, isc_dpb_allocation, isc_dpb_begin_log,
     isc_dpb_buffer_length, isc_dpb_cache_manager, isc_dpb_cdd_pathname,
@@ -580,6 +582,7 @@ class Connection(object):
         self._transactions = [self._main_transaction]
         self._cursors = []  # Weak references to cursors
         self.__precision_cache = {}
+        self.__conduits = []
         self._default_tpb = transaction_parameter_block[
             ISOLATION_LEVEL_READ_COMMITED]
         self.__group = None
@@ -1041,6 +1044,8 @@ class Connection(object):
                                        " is a member of a ConnectionGroup.")
         if self._db_handle != None:
             self.__ic.close()
+            for conduit in self.__conduits:
+                conduit.close()
             for cursor in self._cursors:
                 cursor().close()
             for transaction in self._transactions:
@@ -1075,6 +1080,10 @@ class Connection(object):
         c = Cursor(self, self.main_transaction)
         self._cursors.append(weakref.ref(c, self.__remove_cursor))
         return c
+    def event_conduit(self,event_names):
+        conduit = EventConduit(self._db_handle,event_names)
+        self.__conduits.append(conduit)
+        return conduit
     def __del__(self):
         if self._db_handle != None:
             self.close()
@@ -1107,6 +1116,116 @@ class Connection(object):
     default_tpb = property(__default_tpb_get, __default_tpb_set)
     closed = property(__get_closed)
 
+class EventBlock(object):
+    def __init__(self,queue,db_handle,event_names):
+        self.__first = True
+        def callback(result, length, updated):
+            ctypes.memmove(result,updated,length)
+            self.__queue.put((ibase.OP_RECORD_AND_REREGISTER,self))
+            return 0
+        
+        self.__queue = queue
+        self._db_handle = db_handle
+        self._isc_status = ISC_STATUS_ARRAY(0)
+        self.event_names = list(event_names)
+
+        self.__results = ibase.RESULT_VECTOR(0)
+        self.__closed = False
+        self.__callback = ibase.ISC_EVENT_CALLBACK(callback)
+        
+        self.event_buf = ctypes.pointer(ibase.ISC_UCHAR(0))
+        self.result_buf = ctypes.pointer(ibase.ISC_UCHAR(0))
+        self.buf_length = 0
+        self.event_id = ibase.ISC_LONG(0)
+
+        self.buf_length = ibase.isc_event_block(ctypes.pointer(self.event_buf),
+                                                  ctypes.pointer(self.result_buf),
+                                                  *event_names)
+        self.__wait_for_events()
+    def __wait_for_events(self):
+        ibase.isc_que_events(self._isc_status,self._db_handle,self.event_id,
+                             self.buf_length,self.event_buf,
+                             self.__callback,self.result_buf)
+        if db_api_error(self._isc_status):
+            raise exception_from_status(DatabaseError, self._isc_status,
+                                        "Error while waiting for events:")
+    def count_and_reregister(self):
+        result = {}
+        ibase.isc_event_counts(self.__results, self.buf_length,
+                               self.event_buf, self.result_buf)
+        if self.__first:
+            # Ignore the first call, it's for setting up the table
+            self.__first = False
+            self.__wait_for_events()
+            return None
+        
+        for i in xrange(len(self.event_names)):
+            result[self.event_names[i]] = int(self.__results[i])
+        self.__wait_for_events()
+        return result
+    def close(self):
+        if not self.closed:
+            ibase.isc_cancel_events(self._isc_status,self._db_handle,self.event_id)
+            self.__closed = True
+            if db_api_error(self._isc_status):
+                raise exception_from_status(DatabaseError, self._isc_status,
+                                            "Error while canceling events:")
+    def __get_closed(self):
+        return self.__closed
+    def __del__(self):
+        self.close()
+    closed = property(__get_closed)
+
+
+class EventConduit(object):
+    def __init__(self,db_handle,event_names):
+        def event_process(queue):
+            while True:
+                operation, data = queue.get()
+                if operation == ibase.OP_RECORD_AND_REREGISTER:
+                    events = data.count_and_reregister()
+                    if events:
+                        for key,value in events.items():
+                            self.__events[key] += value
+                        self.__events_ready.set()
+                elif operation == ibase.OP_DIE:
+                    return
+
+        self._db_handle = db_handle
+        self._isc_status = ISC_STATUS_ARRAY(0)
+        self.__event_names = list(event_names)
+        self.__events = {}.fromkeys(self.__event_names,0)
+        self.__event_blocks = []
+        self.__closed = False
+        self.__queue = ibase.PriorityQueue()
+        self.__events_ready = threading.Event()
+        self.__process_thread = threading.Thread(target=event_process,args=(self.__queue,))
+        self.__process_thread.start()
+
+        blocks = [[x for x in y if x] for y in izip_longest(*[iter(event_names)]*15)]
+        for block_events in blocks:
+            self.__event_blocks.append(EventBlock(self.__queue,db_handle,block_events))
+
+    def wait(self,timeout=None):
+        if not self.closed:
+            self.__events_ready.wait(timeout)
+            return self.__events.copy()
+    def flush(self):
+        if not self.closed:
+            self.__events_ready.clear()
+            self.__events = {}.fromkeys(self.__event_names,0)
+    def close(self):
+        if not self.closed:
+            for block in self.__event_blocks:
+                block.close()
+            self.__queue.put((ibase.OP_DIE,self))
+            self.__process_thread.join()
+            self.__closed = True
+    def __get_closed(self):
+        return self.__closed
+    def __del__(self):
+        self.close()
+    closed = property(__get_closed)
 
 class PreparedStatement(object):
     """

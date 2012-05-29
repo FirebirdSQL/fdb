@@ -43,6 +43,7 @@ else:
 #-------------------
 
 if PYTHON_MAJOR_VER == 3:
+    from queue import PriorityQueue
     def b(st,charset="latin-1"):
         if st == None:
             return st
@@ -82,6 +83,7 @@ if PYTHON_MAJOR_VER == 3:
     xrange = range
 
 else:
+    from Queue import PriorityQueue
     def b(st,charset="latin-1"):
         if st == None:
             return st
@@ -113,6 +115,11 @@ else:
     xrange = xrange
 
 MAX_BLOB_SEGMENT_SIZE = 65535
+
+# Event queue operation (and priority) codes
+
+OP_DIE      = 1
+OP_RECORD_AND_REREGISTER = 2
 
 charset_map = {
     # DB CHAR SET NAME    :   PYTHON CODEC NAME (CANONICAL)
@@ -932,12 +939,12 @@ isc_req_handle = FB_API_HANDLE
 isc_stmt_handle = FB_API_HANDLE
 isc_svc_handle = FB_API_HANDLE
 isc_tr_handle = FB_API_HANDLE
-isc_callback = CFUNCTYPE(None)
 isc_resv_handle = ISC_LONG
 
+ISC_CALLBACK = CFUNCTYPE(None)
 ISC_PRINT_CALLBACK = CFUNCTYPE(None, c_void_p, c_short, STRING)
 ISC_VERSION_CALLBACK = CFUNCTYPE(None, c_void_p, STRING)
-ISC_EVENT_CALLBACK = CFUNCTYPE(None, c_void_p, c_ushort, POINTER(ISC_UCHAR))
+ISC_EVENT_CALLBACK = CFUNCTYPE(None, POINTER(ISC_UCHAR), c_ushort, POINTER(ISC_UCHAR))
 
 
 class ISC_ARRAY_BOUND(Structure):
@@ -1333,14 +1340,25 @@ isc_encode_timestamp = fb_library.isc_encode_timestamp
 isc_encode_timestamp.restype = None
 isc_encode_timestamp.argtypes = [c_void_p, POINTER(ISC_TIMESTAMP)]
 
-isc_event_block = fb_library.isc_event_block
-isc_event_block.restype = ISC_LONG
-isc_event_block.argtypes = [POINTER(POINTER(ISC_UCHAR)),
-                            POINTER(POINTER(ISC_UCHAR)), ISC_USHORT]
+P_isc_event_block = CFUNCTYPE(ISC_LONG,POINTER(POINTER(ISC_UCHAR)),
+                            POINTER(POINTER(ISC_UCHAR)), ISC_USHORT)
+C_isc_event_block = P_isc_event_block(('isc_event_block',fb_library))
+P_isc_event_block_args = C_isc_event_block.argtypes
 
+def isc_event_block(event_buffer,result_buffer,*args):
+    if len(args) > 15:
+        raise Exception("isc_event_block takes no more than 15 event names")
+    newargs = list(P_isc_event_block_args)
+    for x in args:
+        newargs.append(STRING)
+    C_isc_event_block.argtypes = newargs
+    result = C_isc_event_block(event_buffer,result_buffer,len(args),*args)
+    return result
+
+RESULT_VECTOR = ISC_ULONG * 15
 isc_event_counts = fb_library.isc_event_counts
 isc_event_counts.restype = None
-isc_event_counts.argtypes = [POINTER(ISC_ULONG), c_short, POINTER(ISC_UCHAR),
+isc_event_counts.argtypes = [POINTER(RESULT_VECTOR), c_short, POINTER(ISC_UCHAR),
                              POINTER(ISC_UCHAR)]
 
 isc_expand_dpb = fb_library.isc_expand_dpb
@@ -1422,7 +1440,7 @@ isc_que_events = fb_library.isc_que_events
 isc_que_events.restype = ISC_STATUS
 isc_que_events.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
                            POINTER(ISC_LONG), c_short, POINTER(ISC_UCHAR),
-                           ISC_EVENT_CALLBACK, c_void_p]
+                           ISC_EVENT_CALLBACK, POINTER(ISC_UCHAR)]
 
 isc_rollback_retaining = fb_library.isc_rollback_retaining
 isc_rollback_retaining.restype = ISC_STATUS
@@ -1438,7 +1456,6 @@ isc_start_multiple.restype = ISC_STATUS
 isc_start_multiple.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
                                c_short, c_void_p]
 
-###
 if sys.platform in ['win32', 'cygwin', 'os2', 'os2emx']:
     P_isc_start_transaction = CFUNCTYPE(ISC_STATUS, POINTER(ISC_STATUS),
                                         POINTER(isc_tr_handle), c_short,
@@ -2031,7 +2048,7 @@ __all__ = ['isc_info_base_level', 'isc_start_and_send',
            'isc_info_writes', 'int_fast8_t', 'isc_modify_dpb',
            'isc_info_ppage_errors', 'isc_info_db_last_value',
            'isc_get_client_minor_version', 'isc_embed_dsql_close',
-           'isc_callback', 'bstream', 'isc_array_gen_sdl',
+           'ISC_CALLBACK', 'bstream', 'isc_array_gen_sdl',
            'isc_info_db_code_firebird',
            'isc_req_handle', 'isc_info_db_class_sam_srvr',
            'frb_info_att_charset', 'isc_info_attachment_id',
