@@ -31,7 +31,12 @@ import datetime
 import decimal
 import weakref
 import threading
-from itertools import izip_longest
+try:
+    # Python 2
+    from itertools import izip_longest
+except ImportError:
+    # Python 3
+    from itertools import zip_longest as izip_longest
 from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_dpb_address_path, isc_dpb_allocation, isc_dpb_begin_log,
     isc_dpb_buffer_length, isc_dpb_cache_manager, isc_dpb_cdd_pathname,
@@ -1140,7 +1145,7 @@ class EventBlock(object):
 
         self.buf_length = ibase.isc_event_block(ctypes.pointer(self.event_buf),
                                                   ctypes.pointer(self.result_buf),
-                                                  *event_names)
+                                                  *[b(x) for x in event_names])
         self.__wait_for_events()
     def __wait_for_events(self):
         ibase.isc_que_events(self._isc_status,self._db_handle,self.event_id,
