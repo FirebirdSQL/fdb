@@ -13,7 +13,7 @@ New Features
 Bug Fixes
 ---------
 
-    -PYFB-16 database_info(isc_info_firebird_version) fails opn amd64 linux (http://tracker.firebirdsql.org/browse/PYFB-16)
-    -PYFB-15 more than 2 consecutive cursor open execute and iter fail (http://tracker.firebirdsql.org/browse/PYFB-15
+    - database_info(isc_info_firebird_version) fails opn amd64 linux (http://tracker.firebirdsql.org/browse/PYFB-16)
+    - more than 2 consecutive cursor open execute and iter fail (http://tracker.firebirdsql.org/browse/PYFB-15
 
 
