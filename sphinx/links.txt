@@ -23,22 +23,16 @@ Python + Databases
     + `PEP 249 - Augmented Python DB-API Spec 2.0
       <http://www.python.org/peps/pep-0249.html>`__
 
-+ `Google's Python Database Module Directory <http://directory.google.
-  com/Top/Computers/Programming/Languages/Python/Modules/Databases_and_P
-  ersistence/>`__
-+ `Vaults of Parnassus - Database section
-  <http://py.vaults.ca/parnassus/apyllo.py/973100124>`__
-
-Zope Database Adapters for Interbase®/Firebird
+Zope Database Adapters for Firebird
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-+ `fdbDA <http://old.zope.org/Members/mwoj/kinterbasdbDA>`__
-  (based on fdb)
++ `kinterbasdbDA <http://old.zope.org/Members/mwoj/kinterbasdbDA>`__
+  (based on kinterbasdb)
 + `ZKInterbasdbDA
   <http://old.zope.org/Members/nakagami/ZKInterbasdbDA>`__ (based on
-  fdb)
+  kinterbasdb)
 + `ZFireBirdDA <http://savannah.nongnu.org/projects/zfirebirdda/>`__
-  (based on fdb)
+  (based on kinterbasdb)
 + `gvibDA <http://www.zope.org/Members/bkc/gvibDA>`__ (based on gvib)
 
 Firebird
