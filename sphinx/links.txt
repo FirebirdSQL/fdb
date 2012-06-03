@@ -45,7 +45,6 @@ Firebird
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 + `Firebird <http://www.firebirdsql.org/>`__
-+ `Interbase® <http://www.interbase.com>`__dd
 + `IBPhoenix <http://www.ibphoenix.com>`__
 
     + `IBPhoenix Contributed Downloads <http://ibphoenix.com/download/tools/>`__
