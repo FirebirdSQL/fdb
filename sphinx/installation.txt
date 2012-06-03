@@ -27,10 +27,8 @@ dependencies (see the download links below).
 
 #. `Firebird <http://www.firebirdsql.org>`__ 2.0 or later - client or server 
    installation [`download here <http://sourceforge.net/project/showfiles.php?group_id=9028>`__]
-   If you want to use FDB 3.3 with Firebird 1.5 and older or InterBase, you
-   will need to do `installation from source distribution`_ instead.
 #. `Python <http://www.python.org>`__ [`download here
-   <http://www.python.org/download/>`__] 2.5 or later (including Python 3.x) It was tested with cpython , jython, ironpython and pypy
+   <http://www.python.org/download/>`__] 2.5 or later (including Python 3.x) It was tested with cpython
 
 Installation from binary distribution
 *************************************
@@ -305,7 +303,7 @@ standard Python `site-packages` directory), then verify the
 importability of your FDB installation by issuing the
 following command::
 
-  python -c "import fdb as k; print k.__version__"
+  python -c "import fdb as fb; print fb.__version__"
 
 If the import attempt does not encounter any errors and the version
 number is what you expected, you are finished. Next, consider reading
