@@ -28,7 +28,7 @@ dependencies (see the download links below).
 #. `Firebird <http://www.firebirdsql.org>`__ 2.0 or later - client or server 
    installation [`download here <http://sourceforge.net/project/showfiles.php?group_id=9028>`__]
 #. `Python <http://www.python.org>`__ [`download here
-   <http://www.python.org/download/>`__] 2.5 or later (including Python 3.x) It was tested with cpython
+   <http://www.python.org/download/>`__] 2.5 or later (including Python 3.x) It was tested with CPython
 
 Installation from binary distribution
 *************************************
@@ -90,7 +90,7 @@ on Windows, and GCC to compile it on Linux/POSIX.
 Once you have successfully installed the dependencies, you may proceed
 with the installation of FDB itself.
 
-Beginning with version 3.0, FDB has full support for the
+FDB has full support for the
 `distutils <http://www.python.org/sigs/distutils-sig/>`__, the
 standard facility for Python package distribution and installation.
 Full instructions for using the distutils are available `here
@@ -112,7 +112,7 @@ proceed without incident.
 
 On Windows, compilers other than Microsoft Visual C++ usually require
 some library conversion to work with Python or Firebird. With Firebird
-1.5 and MinGW or Firebird 1.0 and Borland C++, :file:`setup.py` will perform
+2.x and MinGW , :file:`setup.py` will perform
 this conversion automatically. If the automatic conversion fails,
 ensure that your compiler is installed properly (especially that its
 :file:`bin` directory is in your :file:`PATH`). For more information, see
@@ -135,7 +135,7 @@ the following table:
 |                      |                                                                      |
 |                      | Using a text editor, you will need to manually specify the relevant  |
 |                      | paths in the `manual_config` section of the setup configuration file,|
-|                      | :file:`setup.cfg` (in the root directory of the FDB source   |
+|                      | :file:`setup.cfg` (in the root directory of the FDB source           |
 |                      | distribution). Uncomment the item in question and provide a value    |
 |                      | appropriate to your system. Save the newly modified                  |
 |                      | :file:`setup.cfg`, then repeat the compilation step.                 |
@@ -143,7 +143,7 @@ the following table:
 |                      | If manually specifying the library paths fails to solve the problem: |
 |                      |   - Your C compiler or linker may not be properly configured.        |
 |                      |   - You may have a corrupt or incomplete installation of one or more |
-|                      |     FDB dependencies.                                        |
+|                      |     FDB dependencies.                                                |
 |                      +----------------------------------------------------------------------+
 |                      | *Note for non-Windows platforms:*                                    |
 |                      | If the compiler indicates that it cannot find the include file       |
@@ -155,7 +155,7 @@ the following table:
 |                      | core Python distribution into :file:`python-{x.y.z}`, :file:`python- |
 |                      | devel-{x.y.z}` and :file:`python-docs-{x.y.z}` packages.             |
 |                      | You'll need to install the :file:`python-devel-{x.y.z}` package      |
-|                      | in order to compile FDB.                                     |
+|                      | in order to compile FDB.                                             |
 |                      |                                                                      |
 |                      | The use of C extensions to Python is quite common, so Python         |
 |                      | repackagers such as Linux distributions should include the files     |
@@ -187,8 +187,8 @@ the following table:
 |                      | of detecting them.                                                   |
 +----------------------+----------------------------------------------------------------------+
 | **KINTERBASDB        | The setup script cannot find a file that was supposed to be included |
-| DISTRIBUTION ERROR** | with the FDB source distribution. Try downloading the        |
-|                      | FDB source distribution again and decompressing it into a    |
+| DISTRIBUTION ERROR** | with the FDB source distribution. Try downloading the                |
+|                      | FDB source distribution again and decompressing it into a            |
 |                      | fresh temporary directory, then repeat the compilation step.         |
 +----------------------+----------------------------------------------------------------------+
 | **LIBRARY MANUAL     | One of the library paths specified in :file:`setup.cfg` is not valid.|
@@ -224,10 +224,7 @@ Compiler-Specific Notes
            in the temporary directory into which you decompressed FDB:
            :command:`python setup.py build`
 
-    + `MinGW <http://mingw.org>`__ (Windows port of GCC) Note that
-      FDB supports MinGW only with Firebird 1.5 or later, not
-      Firebird 1.0 or Interbase®. With earlier versions of the database,
-      use Microsoft Visual C++.
+    + `MinGW <http://mingw.org>`__ (Windows port of GCC) 
 
         #. Make sure that the :file:`bin` subdirectory of the directory where you
            installed MinGW is in your PATH. FDB requires numerous MinGW
