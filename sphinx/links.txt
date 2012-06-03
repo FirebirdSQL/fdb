@@ -1,9 +1,9 @@
 
-KInterbasDB Links
+FDB Links
 =================
 
 
-KInterbasDB
+FDB
 ^^^^^^^^^^^
 + `Home Page <http://www.firebirdsql.org/en/python-driver/>`__
 
@@ -32,13 +32,13 @@ Python + Databases
 Zope Database Adapters for Interbase®/Firebird
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-+ `kinterbasdbDA <http://old.zope.org/Members/mwoj/kinterbasdbDA>`__
-  (based on kinterbasdb)
++ `fdbDA <http://old.zope.org/Members/mwoj/kinterbasdbDA>`__
+  (based on fdb)
 + `ZKInterbasdbDA
   <http://old.zope.org/Members/nakagami/ZKInterbasdbDA>`__ (based on
-  kinterbasdb)
+  fdb)
 + `ZFireBirdDA <http://savannah.nongnu.org/projects/zfirebirdda/>`__
-  (based on kinterbasdb)
+  (based on fdb)
 + `gvibDA <http://www.zope.org/Members/bkc/gvibDA>`__ (based on gvib)
 
 Interbase® and Firebird
@@ -64,7 +64,7 @@ Help
     + `An Especially Good SQL Tutorial
       <http://www.onlamp.com/pub/ct/19>`__
 
-+ `KInterbasDB User forum
++ `FDB User forum
   <http://sourceforge.net/forum/forum.php?forum_id=30917>`__ (on
   SourceForge)
 + `Firebird-Python list <http://groups.yahoo.com/group/firebird-

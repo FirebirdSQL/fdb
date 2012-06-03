@@ -1,12 +1,12 @@
 
 ##############################
-KInterbasDB Installation Guide
+FDB Installation Guide
 ##############################
 
 Dependencies
 ************
 
-KInterbasDB requires a valid combination of the dependencies in
+FDB requires a valid combination of the dependencies in
 the list below.
 
 Detailed instructions on how to install each dependency are beyond the
@@ -15,7 +15,7 @@ installation instructions.
 
 Satisfying the dependencies is not difficult! For mainstream
 operating systems -- including Windows and Linux -- easily installable
-binary distributions are available for *all* of KInterbasDB's
+binary distributions are available for *all* of FDB's
 dependencies (see the download links below).
 
 
@@ -28,7 +28,7 @@ dependencies (see the download links below).
 
 #. `Firebird <http://www.firebirdsql.org>`__ 2.0 or later - client or server 
    installation [`download here <http://sourceforge.net/project/showfiles.php?group_id=9028>`__]
-   If you want to use KInterbasDB 3.3 with Firebird 1.5 and older or InterBase, you
+   If you want to use FDB 3.3 with Firebird 1.5 and older or InterBase, you
    will need to do `installation from source distribution`_ instead.
 #. `Python <http://www.python.org>`__ [`download here
    <http://www.python.org/download/>`__] 2.4 or later
@@ -36,7 +36,7 @@ dependencies (see the download links below).
    <http://www.lemburg.com/files/python/eGenix-mx-Extensions.html>`__,
    version 2.0.1 or later [`download here
    <http://www.lemburg.com/files/python/eGenix-mx-Extensions.html
-   #Download-mxBASE>`__] By default, KInterbasDB uses the `DateTime`
+   #Download-mxBASE>`__] By default, FDB uses the `DateTime`
    module of the eGenix.com `mx` Extensions to represent date and time
    values, as recommended by the
    *Python Database API Specification*. *However, it is not strictly necessary
@@ -47,33 +47,33 @@ dependencies (see the download links below).
 Installation from binary distribution
 *************************************
 
-Note: If a binary distribution of KInterbasDB (e.g., a Windows
+Note: If a binary distribution of FDB (e.g., a Windows
 executable installer) is not available for your platform, Python or Firebird
 version, you will need to do `installation from source distribution`_ instead.
 
 Windows
 =======
 
-Binary distributions of KInterbasDB for Windows come in the form of a
+Binary distributions of FDB for Windows come in the form of a
 conventional executable installer or MSI package. Just invoke the installer and
 follow the wizard prompts.
 
-Because KInterbasDB is compatible with numerous versions of Python, 
+Because FDB is compatible with numerous versions of Python, 
 you must choose a binary distribution that matches your Python version. 
-There are currently Windows binary distributions of KInterbasDB 
+There are currently Windows binary distributions of FDB 
 compiled for use with Firebird 2.x for each of Python 2.4, 2.5 and 2.6.
 
 Linux and Other Unix Variants
 =============================
 
 Currently, Linux users must typically install from `source distribution`_
-as only Mandriva Linux offer the pre-built KInterbasDB package.
+as only Mandriva Linux offer the pre-built FDB package.
 
 The source distribution will *probably* also install (and function) on most 
 other POSIX-compliant Unix variants, as long as all of the dependencies_
 are also installed and functional.
 
-Because the KInterbasDB source distribution supports the standard
+Because the FDB source distribution supports the standard
 Python package installation facility (`distutils
 <http://www.python.org/sigs/distutils-sig/>`__), installing the source
 distribution on a typical Linux system is downright easy.
@@ -86,25 +86,25 @@ Installation from source distribution
 
 Shortcut for the Experienced and Impatient::
 
-  (decompress KInterbasDB into *temp_dir*)
+  (decompress FDB into *temp_dir*)
   cd *temp_dir*
   python setup.py build
   python setup.py install
-  python -c "import kinterbasdb"
+  python -c "import fdb"
   (delete *temp_dir*)
 
 Then hit the `Usage Guide <usage.html>`__.
 
-Compile KInterbasDB
+Compile FDB
 ===================
 
-You will need a C compiler for that. VC or MinGW to compile KInterbasDB
+You will need a C compiler for that. VC or MinGW to compile FDB
 on Windows, and GCC to compile it on Linux/POSIX.
 
 Once you have successfully installed the dependencies, you may proceed
-with the installation of KInterbasDB itself.
+with the installation of FDB itself.
 
-Beginning with version 3.0, KInterbasDB has full support for the
+Beginning with version 3.0, FDB has full support for the
 `distutils <http://www.python.org/sigs/distutils-sig/>`__, the
 standard facility for Python package distribution and installation.
 Full instructions for using the distutils are available `here
@@ -112,7 +112,7 @@ Full instructions for using the distutils are available `here
 skip them unless you have an otherwise insoluble problem.
 
 Open a command prompt, change to the directory where you decompressed
-the kinterbasdb source distribution, and type::
+the fdb source distribution, and type::
 
   python setup.py build
 
@@ -149,7 +149,7 @@ the following table:
 |                      |                                                                      |
 |                      | Using a text editor, you will need to manually specify the relevant  |
 |                      | paths in the `manual_config` section of the setup configuration file,|
-|                      | :file:`setup.cfg` (in the root directory of the KInterbasDB source   |
+|                      | :file:`setup.cfg` (in the root directory of the FDB source   |
 |                      | distribution). Uncomment the item in question and provide a value    |
 |                      | appropriate to your system. Save the newly modified                  |
 |                      | :file:`setup.cfg`, then repeat the compilation step.                 |
@@ -157,7 +157,7 @@ the following table:
 |                      | If manually specifying the library paths fails to solve the problem: |
 |                      |   - Your C compiler or linker may not be properly configured.        |
 |                      |   - You may have a corrupt or incomplete installation of one or more |
-|                      |     KInterbasDB dependencies.                                        |
+|                      |     FDB dependencies.                                        |
 |                      +----------------------------------------------------------------------+
 |                      | *Note for non-Windows platforms:*                                    |
 |                      | If the compiler indicates that it cannot find the include file       |
@@ -169,7 +169,7 @@ the following table:
 |                      | core Python distribution into :file:`python-{x.y.z}`, :file:`python- |
 |                      | devel-{x.y.z}` and :file:`python-docs-{x.y.z}` packages.             |
 |                      | You'll need to install the :file:`python-devel-{x.y.z}` package      |
-|                      | in order to compile KInterbasDB.                                     |
+|                      | in order to compile FDB.                                     |
 |                      |                                                                      |
 |                      | The use of C extensions to Python is quite common, so Python         |
 |                      | repackagers such as Linux distributions should include the files     |
@@ -201,8 +201,8 @@ the following table:
 |                      | of detecting them.                                                   |
 +----------------------+----------------------------------------------------------------------+
 | **KINTERBASDB        | The setup script cannot find a file that was supposed to be included |
-| DISTRIBUTION ERROR** | with the KInterbasDB source distribution. Try downloading the        |
-|                      | KInterbasDB source distribution again and decompressing it into a    |
+| DISTRIBUTION ERROR** | with the FDB source distribution. Try downloading the        |
+|                      | FDB source distribution again and decompressing it into a    |
 |                      | fresh temporary directory, then repeat the compilation step.         |
 +----------------------+----------------------------------------------------------------------+
 | **LIBRARY MANUAL     | One of the library paths specified in :file:`setup.cfg` is not valid.|
@@ -216,7 +216,7 @@ the following table:
 +----------------------+----------------------------------------------------------------------+
 
 If the problem persists after you have followed the advice in the
-error message itself and in the table above, visit the `KInterbasDB support list 
+error message itself and in the table above, visit the `FDB support list 
 <http://www.firebirdsql.org/index.php?op=lists#firebird-python>`__ and report your problem.
 
 
@@ -235,16 +235,16 @@ Compiler-Specific Notes
            the :file:`bin` subdirectory of your Visual C++ installation. By default,
            this directory is :file:`C:\\Program Files\\Microsoft Visual Studio\\VC98\\bin`
         #. Use the * same * command prompt window to run the following command
-           in the temporary directory into which you decompressed KInterbasDB:
+           in the temporary directory into which you decompressed FDB:
            :command:`python setup.py build`
 
     + `MinGW <http://mingw.org>`__ (Windows port of GCC) Note that
-      KInterbasDB supports MinGW only with Firebird 1.5 or later, not
+      FDB supports MinGW only with Firebird 1.5 or later, not
       Firebird 1.0 or Interbase®. With earlier versions of the database,
       use Microsoft Visual C++.
 
         #. Make sure that the :file:`bin` subdirectory of the directory where you
-           installed MinGW is in your PATH. KInterbasDB requires numerous MinGW
+           installed MinGW is in your PATH. FDB requires numerous MinGW
            sub-packages, so it's easiest to install the monolithic distribution
            of MinGW, rather than piecing together individual sub-packages. The
            monolithic distribution is an executable installer; installation is
@@ -257,21 +257,21 @@ Compiler-Specific Notes
             + mingw-utils
             + w32api
 
-           KInterbasDB's setup script will automatically perform all of the
+           FDB's setup script will automatically perform all of the
            required preparatory steps for compiling an extension with MinGW on
            your Python installation.
-        #. In the temporary directory into which you decompressed KInterbasDB,
+        #. In the temporary directory into which you decompressed FDB,
            run the command: :command:`python setup.py build --compiler=mingw32`
 
 
 
-Install KInterbasDB
+Install FDB
 ===================
 
-During this step, the setup script moves the KInterbasDB package
+During this step, the setup script moves the FDB package
 (including the newly compiled C extensions) to the standard package
 directory of your Python installation so that Python will be able to
-:command:`import kinterbasdb` and :command:`import kinterbasdb.services`
+:command:`import fdb` and :command:`import kinterbasdb.services`
 
 In addition to the Python code and shared library files actually used
 by the Python interpreter, the setup script typically installs some
@@ -283,7 +283,7 @@ interpreter.
 Run the following command:
 :command:`python setup.py install`
 
-The setup script will install KInterbasDB, listing each file it
+The setup script will install FDB, listing each file it
 installs.
 
 Errors during this step are rare because compilation (the finicky part
@@ -296,36 +296,36 @@ try one of the following:
   - Log in as a user who has the required file system permissions and
     repeatthe installation step.
 
-  - Manually copy the directory :file:`build/lib.{platform}-{pyver}/kinterbasdb` 
+  - Manually copy the directory :file:`build/lib.{platform}-{pyver}/fdb` 
     (which contains the Python modules and compiled library files created during 
     the compilation step) to a directory in your PYTHONPATH. This approach will 
     not install the supporting files, but they are for the benefit of the programmer 
     rather than the Python interpreter anyway.
 
 
-Test your KInterbasDB installation
+Test your FDB installation
 **********************************
 
-KInterbasDB has an extensive test suite, but it is not really intended for
+FDB has an extensive test suite, but it is not really intended for
 routine public use.
 
-To verify that KInterbasDB is installed properly, switch to a
+To verify that FDB is installed properly, switch to a
 directory *other than the temporary directory into which you
 decompressed the source distribution* (to avoid conflict between the
-copy of kinterbasdb in that directory and the copy placed under the
+copy of fdb in that directory and the copy placed under the
 standard Python `site-packages` directory), then verify the
-importability of your KInterbasDB installation by issuing the
+importability of your FDB installation by issuing the
 following command::
 
-  python -c "import kinterbasdb as k; print k.__version__"
+  python -c "import fdb as k; print k.__version__"
 
 If the import attempt does not encounter any errors and the version
 number is what you expected, you are finished. Next, consider reading
-the KInterbasDB Usage Guide.
+the FDB Usage Guide.
 
 You should not encounter any errors at this stage since you have
 already completed the compilation and installation steps successfully.
-If you do, please report them to the `KInterbasDB support list 
+If you do, please report them to the `FDB support list 
 <http://www.firebirdsql.org/index.php?op=lists#firebird-python>`__.
 
 

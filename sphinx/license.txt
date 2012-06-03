@@ -1,5 +1,5 @@
 ###################
-KInterbasDB LICENSE
+FDB LICENSE
 ###################
 
 The following contributors hold Copyright (C) over their respective
@@ -20,7 +20,7 @@ maintained through version 3.3:]
 
 [Significant Contributors:]
 
-  2001-2002 [maz]   Marek Isalski         <kinterbasdb@maz.nu>
+  2001-2002 [maz]   Marek Isalski         <fdb@maz.nu>
 
     Marek made important first steps in removing the limitations of
     version 2.0 in preparation for version 3.0.

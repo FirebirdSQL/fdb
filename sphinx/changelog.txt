@@ -1,5 +1,5 @@
 #####################
-KInterbasDB Changelog
+FDB Changelog
 #####################
 
 Version 3.3
@@ -9,19 +9,19 @@ New Features
 ------------
 
     - It is now possible to use multiple transactions simultaneously on a
-      single kinterbasdb.Connection.
+      single fdb.Connection.
       See discussion:
       http://sourceforge.net/forum/forum.php?thread_id=1597658&forum_id=30917
 
     - If a unicode object is passed as the SQL statement to any of
 
-        + kinterbasdb.create_database
+        + fdb.create_database
         + Connection.execute_immediate
         + Cursor.prep
         + Cursor.execute
 
-      KInterbasDB will attempt to encode it to the character set of file system
-      (in the case of kinterbasdb.create_database), or to the character set of
+      FDB will attempt to encode it to the character set of file system
+      (in the case of fdb.create_database), or to the character set of
       the connection, in the other cases.  Previously, only unicode objects
       that could be encoded to ASCII were accepted.
 
@@ -32,14 +32,14 @@ Backward-incompatibilities
 --------------------------
 
     - Default type conversion setting was changed to `type_conv=200`. Applications
-      that doesn't call :func:`kinterbasdb.init()` and rely on Python older than 2.4
+      that doesn't call :func:`fdb.init()` and rely on Python older than 2.4
       and/or mx.DateTime and/or explicit unicode conversion must call 
-      :func:`kinterbasdb.init()` with `type_conv=1` as first thing after `kinterbasdb`
-      import. Applications that explicitly call :func:`kinterbasdb.init()` doesn't need
+      :func:`fdb.init()` with `type_conv=1` as first thing after `kinterbasdb`
+      import. Applications that explicitly call :func:`fdb.init()` doesn't need
       to be changed at all.
 
       Details about new default setting are described in `Parameter Conversion` section
-      `Deferred Loading of Dynamic Type Translators` of KInterbasDB documentation.
+      `Deferred Loading of Dynamic Type Translators` of FDB documentation.
 
 
 Version 3.2.2
@@ -62,7 +62,7 @@ Bug Fixes
     - Inadequate compatibility with Interbase 7's boolean data type.
       All official Win32 binaries are compiled and linked against Firebird, not
       Interbase.  Typically, Interbase users either compile their own
-      KInterbasDB binaries or use the official Firebird 1.0-oriented binaries.
+      FDB binaries or use the official Firebird 1.0-oriented binaries.
       Previously, the latter were not fully compatible with Interbase 7's
       boolean type.
 
@@ -81,7 +81,7 @@ Bug Fixes
       SF bug 1554643:
       http://sourceforge.net/tracker/index.php?func=detail&aid=1554643&group_id=9913&atid=109913
 
-    - Removed unnecessary reference to <semaphore.h> that prevented KInterbasDB
+    - Removed unnecessary reference to <semaphore.h> that prevented FDB
       from compiling on some primitive Unixy operating systems.
 
     - An assertion was triggered when BLOB DTT {'mode': 'materialized'} was set
@@ -91,11 +91,11 @@ Bug Fixes
       SF bug 1652413:
       http://sourceforge.net/tracker/index.php?func=detail&aid=1652413&group_id=9913&atid=109913
 
-    - KInterbasDB had various problems when any of the following were installed
+    - FDB had various problems when any of the following were installed
       at a path that contained non-ASCII characters:
 
         - Python
-        - KInterbasDB
+        - FDB
         - Firebird
 
       It now works properly.
@@ -113,14 +113,14 @@ Bug Fixes
 ---------
 
     - At concurrency_level 1, it was possible for a deadlock to occur if
-      KInterbasDB simultaneously raised an exception in one thread while
+      FDB simultaneously raised an exception in one thread while
       executing a SQL statement in another.  This problem did not affect
       concurrency_level 2.
 
       `Thanks to Atsuo Ishimoto for reporting this bug.`
 
     - The official implementation of the automagic TEXT_UNICODE type translator
-      (in the kinterbasdb.typeconv_text_unicode module) was missing support for
+      (in the fdb.typeconv_text_unicode module) was missing support for
       the new character sets introduced in Firebird 2.0 (namely, the corrected
       version of UTF8, plus KOI8-R, KOI8-U, and WIN1258).
 
@@ -133,7 +133,7 @@ Version 3.2rc1
 Bug Fixes
 ---------
 
-    - KInterbasDB's "Implicit Conversion of Input Parameters from Strings" now
+    - FDB's "Implicit Conversion of Input Parameters from Strings" now
       accepts not only str objects, but also unicode objects, as long as
       they're convertible to ASCII.
 
@@ -141,12 +141,12 @@ Bug Fixes
 
       For general info about the "Implicit Conversion of Input Parameters
       from Strings" feature, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_param_conv_implicit_from_string
+      http://fdb.sf.net/dist_docs/usage.html#adv_param_conv_implicit_from_string
 
 New Features
 ------------
 
-    - KInterbasDB now stores and retrieves the undocumented sub-second
+    - FDB now stores and retrieves the undocumented sub-second
       component of TIME and TIMESTAMP fields.
 
       `Thanks to Petr Jakes and Helen Borrie for bringing the availability of
@@ -166,10 +166,10 @@ New Features
 
       `Thanks to Alexandr Zamaraev for suggesting this feature.`
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#PreparedStatement_description
+      http://fdb.sf.net/dist_docs/usage.html#PreparedStatement_description
 
     - The following query and resolution methods for limbo transactions have
-      been added to the kinterbasdb.services.Connection class:
+      been added to the fdb.services.Connection class:
       getLimboTransactionIDs, commitLimboTransaction, rollbackLimboTransaction.
 
 Backward-incompatibilities
@@ -188,36 +188,36 @@ Version 3.2b1
 Bug Fixes
 ---------
 
-    - Previously, if KInterbasDB detected that the field to which a NULL value
-      was bound was defined as NOT NULL, KInterbasDB itself immediately raised
+    - Previously, if FDB detected that the field to which a NULL value
+      was bound was defined as NOT NULL, FDB itself immediately raised
       an exception.  This caused problems for fields defined as NOT NULL but
-      populated by BEFORE triggers, so KInterbasDB now submits the illegal NULL
+      populated by BEFORE triggers, so FDB now submits the illegal NULL
       and allows the database engine to make the decision.
 
     - Fixed an obscure memory leak in Connection.drop_database.
 
     - Fixed a few more compatibility problems with Interbase 7.x.
 
-    - kinterbasdb.Cursor can again be used as a base class for user-defined
-      subclasses.  This capability had been removed in KInterbasDB 3.2a1.
+    - fdb.Cursor can again be used as a base class for user-defined
+      subclasses.  This capability had been removed in FDB 3.2a1.
 
 New Features
 ------------
 
-    - Connection timeouts:  KInterbasDB connections can now be asked to time
+    - Connection timeouts:  FDB connections can now be asked to time
       out after a specified period of inactivity.  This feature is not
       supported by the Firebird C API, so it is implemented entirely at the
-      KInterbasDB level.
+      FDB level.
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_ct
+      http://fdb.sf.net/dist_docs/usage.html#adv_ct
 
     - Added a TPB class to assist with the construction of complex Transaction
       Parameter Buffers.
 
       This feature has not yet been documented.  In the meantime, you can
-      find example code in the test_transactions.py module of the KInterbasDB
+      find example code in the test_transactions.py module of the FDB
       test suite:
-      http://kinterbasdb.sf.net/test-suite/releases/
+      http://fdb.sf.net/test-suite/releases/
 
     - Added methods Connection.transaction_info and Connection.trans_info.
       transaction_info is a thin wrapper around the C function
@@ -225,24 +225,24 @@ New Features
       transaction_info.
 
       This feature has not yet been documented.  In the meantime, you can
-      find example code in the test_services.py module of the KInterbasDB test
+      find example code in the test_services.py module of the FDB test
       suite:
-      http://kinterbasdb.sf.net/test-suite/releases/
+      http://fdb.sf.net/test-suite/releases/
 
     - Exposed the Firebird header constant FB_API_VER as
-      kinterbasdb.FB_API_VER.  This integer represents the version of Firebird
-      against which KInterbasDB was compiled, as follows:
+      fdb.FB_API_VER.  This integer represents the version of Firebird
+      against which FDB was compiled, as follows:
 
         - Any version of Interbase, or Firebird 1.0.x:      10
         - Firebird 1.5.x:                                   15
         - Firebird 2.0.x:                                   20
 
-    - KInterbasDB now raises a kinterbasdb.TransactionConflict exception
+    - FDB now raises a fdb.TransactionConflict exception
       (instead of the rather generic ProgrammingError) when it receives a
       server-side transaction conflict notification.  This makes it easier for
       the client programmer to detect and resolve deadlocks.
 
-      TransactionConflict is a subclass of kinterbasdb.OperationalError.
+      TransactionConflict is a subclass of fdb.OperationalError.
 
 Backward-incompatibilities
 --------------------------
@@ -254,7 +254,7 @@ Backward-incompatibilities
 
         try:
           ...
-        except kinterbasdb.TransactionConflict:
+        except fdb.TransactionConflict:
           ...
 
       instead.
@@ -270,47 +270,47 @@ New Features
 
     - Better concurrency support.  This requires a capable database client
       library, and must be explicitly activated by specifying keyword argument
-      concurrency_level to function kinterbasdb.init.
+      concurrency_level to function fdb.init.
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#special_issue_concurrency
+      http://fdb.sf.net/dist_docs/usage.html#special_issue_concurrency
 
     - Streaming blob support (blobs can now be handled without fully
       materializing them in memory).
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_param_conv_blobs
+      http://fdb.sf.net/dist_docs/usage.html#adv_param_conv_blobs
 
     - Support for manual creation and manipulation of prepared statements.
-      KInterbasDB has always used prepared statements under the hood, but now
+      FDB has always used prepared statements under the hood, but now
       they're directly manipulable by the client programmer.  The implicit
       prepared statement cache has also become more sophisticated.
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_prepared_statements
+      http://fdb.sf.net/dist_docs/usage.html#adv_prepared_statements
 
     - Database event system entirely rewritten.  Client programs can now create
       any number of EventConduits per process, and a given conduit can listen
       for more than 15 events (the limit is in the hundreds, but the specific
       limit depends on the database server version and operating system rather
-      than on KInterbasDB).
+      than on FDB).
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_event
+      http://fdb.sf.net/dist_docs/usage.html#adv_event
 
     - Added method Connection.db_info, a Pythonic wrapper around
       Connection.database_info.  Thanks to Pavel Cisar for implementing this.
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_prog_maint_db_info
+      http://fdb.sf.net/dist_docs/usage.html#adv_prog_maint_db_info
 
     - Positional Dynamic Type Translation:  It's now possible to specify DTT
       settings at the Cursor-column level in addition to the previously
       available levels.
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_param_conv_dynamic_type_translation_positional
+      http://fdb.sf.net/dist_docs/usage.html#adv_param_conv_dynamic_type_translation_positional
 
     - Added official support for the Python 2.4+ standard library decimal
-      module, including a new kinterbasdb.init(type_conv=200) convenience code.
+      module, including a new fdb.init(type_conv=200) convenience code.
       For more info, see:
-      http://kinterbasdb.sf.net/dist_docs/usage.html#adv_param_conv_dynamic_type_translation_deferred_loading
+      http://fdb.sf.net/dist_docs/usage.html#adv_param_conv_dynamic_type_translation_deferred_loading
 
-    - KInterbasDB now detects the "PSQL Stack Trace" generated by FB 2.0+, and
+    - FDB now detects the "PSQL Stack Trace" generated by FB 2.0+, and
       includes a nicely formatted rendition of the stack trace in the exception
       message.
       For more info, see:
@@ -320,25 +320,25 @@ New Features
 Bug Fixes
 ---------
 
-    - KInterbasDB should now compile and run out of the box with Interbase
-      7.x.  DSR doesn't have that version of Interbase, however, so KInterbasDB
+    - FDB should now compile and run out of the box with Interbase
+      7.x.  DSR doesn't have that version of Interbase, however, so FDB
       is not actually tested with it.
 
 
 Backward-incompatibilities
 --------------------------
 
-    - KInterbasDB 3.2 has dropped support for Python versions earlier than 2.3,
+    - FDB 3.2 has dropped support for Python versions earlier than 2.3,
       and (officially) supports only Firebird 1.0 and later.  However,
       Interbase 7.x support has been considerably enhanced, so it could be said
       that Interbase is "unofficially" supported.
 
-    - Most Python classes in KInterbasDB have become new-style, for symmetry
-      with the new-style C classes added in 3.2.  Notably, kinterbasdb.Cursor
+    - Most Python classes in FDB have become new-style, for symmetry
+      with the new-style C classes added in 3.2.  Notably, fdb.Cursor
       is now a new-style class written in pure C.
 
         Impact rating:  Low (There is practically no reason for a client
-        program to access the affected KInterbasDB classes in such a way that
+        program to access the affected FDB classes in such a way that
         this change would matter.)
 
     - Previously, the "infinite timeout value" for EventConduit.wait was 0.0.
@@ -347,7 +347,7 @@ Backward-incompatibilities
       in fact created an infinite timeout.  The new "infinite timeout value" is
       -1.0.
 
-        Impact rating:  Low-Medium (The Usage Guide for KInterbasDB 3.1
+        Impact rating:  Low-Medium (The Usage Guide for FDB 3.1
         specified that "The default timeout is infinite.", but it did not
         guarantee a particular value.  Client programs that use both events and
         event timeouts should be checked, however.)
@@ -368,7 +368,7 @@ Bug Fixes
       http://sf.net/forum/forum.php?thread_id=1380653&forum_id=30917
 
     - The database engine's Services API makes no provision for Unicode
-      handling.  kinterbasdb should have gracefully rejected Python unicode
+      handling.  fdb should have gracefully rejected Python unicode
       objects submitted to the Services API, but instead, it choked.
 
       `Thanks to Garrett Smith for reporting this bug.`
@@ -385,7 +385,7 @@ Bug Fixes
     - Attempting to apply dynamic type translation settings dictionaries that
       had non-string keys caused a segfault under some some circumstances.
 
-    - kinterbasdb's Services API infrastructure parsed integer results from
+    - fdb's Services API infrastructure parsed integer results from
       the engine as recommended by the IB 6 API Guide, but this was
       inappropriate on non-Windows x86-64, and could cause invalid memory
       access.
@@ -401,7 +401,7 @@ Bug Fixes
       dialect 1 connections (dialect 1 databases store NUMERIC/DECIMAL values
       with precisions 10-18 internally as floating point).
 
-    - Documentation bug:  The "Using KInterbasDB with Embedded Firebird"
+    - Documentation bug:  The "Using FDB with Embedded Firebird"
       section of the Usage Guide stated that the Services API did not work with
       the embedded server architecture.  That was written when Firebird 1.5 was
       in alpha; the Services API *does* work with embedded Firebird 1.5.2.
@@ -413,15 +413,15 @@ Version 3.1.1
 Bug Fixes
 ---------
 
-    - kinterbasdb.init(type_conv=100|200) didn't work under Python 2.4.
+    - fdb.init(type_conv=100|200) didn't work under Python 2.4.
       Late in the Python 2.4 development cycle, additional constraints were
-      introduced in Python's funcobject.c that defeated kinterbasdb's attempts
+      introduced in Python's funcobject.c that defeated fdb's attempts
       to manipulate the 'func_code' attribute of some functions during the
-      execution of kinterbasdb.init.
+      execution of fdb.init.
 
     - C type ConnectionType's destructor was called directly (rather than as a
-      result of DECREF) if an error arose in kinterbasdb.connect or
-      kinterbasdb.create_database.  This triggered a refcount assertion in
+      result of DECREF) if an error arose in fdb.connect or
+      fdb.create_database.  This triggered a refcount assertion in
       debug builds of Python.
 
     - Fixed a reference count leak in the C layer's central exception-raising
@@ -430,7 +430,7 @@ Bug Fixes
     - Fixed some potential memory handling problems in exceptional situations
       in the event handling code.
 
-    - A trivial problem prevented kinterbasdb 3.1 from compiling with the
+    - A trivial problem prevented fdb 3.1 from compiling with the
       prereleases of Firebird 2.0.
 
 
@@ -468,46 +468,46 @@ New Features
 Bug Fixes
 ---------
 
-    - kinterbasdb sometimes caused an exception to be raised during the Python
+    - fdb sometimes caused an exception to be raised during the Python
       interpreter's shutdown process.
       Refs:
       http://sourceforge.net/tracker/index.php?func=detail&aid=1011513&group_id=9913&atid=109913
 
     - Fixed a potential concurrency problem regarding memory allocation in
-      kinterbasdb's event handling code.
+      fdb's event handling code.
 
 
 Version 3.1_pre8
 ================
 
-Version 3.1_pre8 is the recommended stable version of kinterbasdb.
+Version 3.1_pre8 is the recommended stable version of fdb.
 
 New Features
 ------------
 
-    - kinterbasdb._RowMapping has a richer dict-like interface (now implements
+    - fdb._RowMapping has a richer dict-like interface (now implements
       __len__, __getitem__, get, __contains__, keys, values, items, __iter__,
       iterkeys, itervalues, iteritems).
 
 Bug Fixes
 ---------
 
-    - The kinterbasdb.typeconv_fixed_fixedpoint.fixed_conv_out_precise dynamic
+    - The fdb.typeconv_fixed_fixedpoint.fixed_conv_out_precise dynamic
       type translator was unable to convert some NUMERIC/DECIMAL database
       values.
       Refs:
       http://sourceforge.net/tracker/index.php?func=detail&aid=949669&group_id=9913&atid=109913
 
-    - The kinterbasdb.typeconv_text_unicode.unicode_conv_[in|out] dynamic type
+    - The fdb.typeconv_text_unicode.unicode_conv_[in|out] dynamic type
       translators did not work with non-default collations.
       Refs:
       http://sourceforge.net/tracker/index.php?func=detail&aid=876564&group_id=9913&atid=109913
 
-    - The kinterbasdb.services.Connection.getLog method should not have
+    - The fdb.services.Connection.getLog method should not have
       accepted a database parameter; it no longer does.
 
-    - The kinterbasdb.services.Connection.backup method now returns a
-      gbak-style log string (as the kinterbasdb.services.Connection.restore
+    - The fdb.services.Connection.backup method now returns a
+      gbak-style log string (as the fdb.services.Connection.restore
       method has done all along).
 
     - Applied Mac OS X compatibility patch to setup.py.
@@ -523,27 +523,27 @@ Bug Fixes
 Backward-incompatibilities
 --------------------------
 
-    - The kinterbasdb.services.Connection.getEnvironmentMessage method has been
+    - The fdb.services.Connection.getEnvironmentMessage method has been
       renamed to getMessageFileDir.
 
-    - The kinterbasdb.services.Connection.getLog method should not have
+    - The fdb.services.Connection.getLog method should not have
       accepted a database parameter; it no longer does.
 
 DOCUMENTATION CHANGES
 ---------------------
 
-    - Documented about 66% of the Services API (kinterbasdb.services module) in
-      the KInterbasDB Usage Guide.
+    - Documented about 66% of the Services API (fdb.services module) in
+      the FDB Usage Guide.
 
 KNOWN ISSUES
 ------------
 
     - The third-party fixedpoint.py module contains an incompatibility with
       Python 2.1 that is exposed by a bugfix applied to the
-      kinterbasdb.typeconv_fixed_fixedpoint module in 3.1_pre8.
+      fdb.typeconv_fixed_fixedpoint module in 3.1_pre8.
 
       No attempt will be made to fix this problem (which is a fixedpoint bug,
-      not a kinterbasdb bug); users should either upgrade to a newer version of
+      not a fdb bug); users should either upgrade to a newer version of
       Python or refrain from using fixedpoint.
 
 
@@ -559,11 +559,11 @@ New Features
     - Introduced dynamic type translation slot TEXT_UNICODE, which applies to
       all CHAR/VARCHAR fields except those with character sets NONE, OCTETS,
       or ASCII.  Used in combination with the official translators in the
-      kinterbasdb.typeconv_text_unicode module, TEXT_UNICODE enables automatic
+      fdb.typeconv_text_unicode module, TEXT_UNICODE enables automatic
       encoding/decoding of Unicode values.
 
-      This translator is not active by default except when kinterbasdb is
-      initialized with kinterbasdb.init(type_conv=100); the backward
+      This translator is not active by default except when fdb is
+      initialized with fdb.init(type_conv=100); the backward
       compatibility implications are discussed in detail in the
       Backward-incompatibilities section below.
 
@@ -572,7 +572,7 @@ New Features
 
     - Added read-only .charset attribute to Connection.
 
-    - On Windows, kinterbasdb now conforms to the client library loading scheme
+    - On Windows, fdb now conforms to the client library loading scheme
       introduced in FB 1.5 RC7, so fbclient.dll need not be explicitly placed
       in a directory on the PATH if the registry settings are present.
 
@@ -608,14 +608,14 @@ Backward-incompatibilities
       Refs:
       docs/usage.html#faq_fep_unicode
 
-    - Convenience code 100 for the kinterbasdb.init function now activates the
+    - Convenience code 100 for the fdb.init function now activates the
       new TEXT_UNICODE translation slot, so unicode values are automatically
       encoded and decoded.
 
       Convenience code 1 remains the default, however, and it does not
       activate the TEXT_UNICODE slot.  Programs that do BOTH of the following:
 
-        - invoke kinterbasdb.init(type_conv=100)
+        - invoke fdb.init(type_conv=100)
         - use unicode database fields
 
       will need to be updated to take the new TEXT_UNICODE slot into account.
@@ -639,7 +639,7 @@ New Features
 
       This is useful when integrating with third-party transaction managers.
 
-    - KInterbasDB can now be compiled "out of the box" with MinGW when building
+    - FDB can now be compiled "out of the box" with MinGW when building
       against Firebird 1.5 (but not Firebird 1.0 or Interbase).
 
       See docs/installation-source.html for instructions.
@@ -664,8 +664,8 @@ Bug Fixes
       passed through the FIXED dynamic type translator because the database
       engine does not flag dynamically defined fields properly.
 
-      Though this is a bug in the database engine rather than KInterbasDB, a
-      workaround was added to KInterbasDB.
+      Though this is a bug in the database engine rather than FDB, a
+      workaround was added to FDB.
 
       `Thanks to Bert Hughes for reporting this bug.`
 
@@ -687,15 +687,15 @@ New Features
 
     - Deferred loading of dynamic type translators:
 
-      KInterbasDB's choice of initial dynamic type translators for date/time
+      FDB's choice of initial dynamic type translators for date/time
       and fixed point types is now deferred as late as possible, and the
       programmer has the *option* of controlling the choice via the type_conv
-      parameter of the new kinterbasdb.init function.
+      parameter of the new fdb.init function.
 
       This feature is documented in the Usage Guide at:
       usage.html#adv_param_conv_dynamic_type_translation_deferred_loading
 
-    - KInterbasDB's setup script is now capable of compiling the source
+    - FDB's setup script is now capable of compiling the source
       distribution "out of the box" with MinGW on Windows, but only with
       Firebird 1.5 or later (Borland C++ can be used with Firebird 1.0).
 
@@ -714,7 +714,7 @@ Bug Fixes
       to the appropriate internal types was accidentally disallowed in
       3.1_pre4.  This feature has been enabled again.
 
-    - The Services API method kinterbasdb.services.Connection.restore was
+    - The Services API method fdb.services.Connection.restore was
       incapable of restoring a backup into a multi-file database because it
       sent the wrong cluster identifier for destination file page counts.
 
@@ -722,8 +722,8 @@ Backward-incompatibilities
 --------------------------
 
     - Because of the new "Deferred loading of dynamic type translators" feature,
-      the DB API type comparison singleton kinterbasdb.DATETIME will not compare
-      equal to *any* type until the kinterbasdb.init function has been called
+      the DB API type comparison singleton fdb.DATETIME will not compare
+      equal to *any* type until the fdb.init function has been called
       (whether explicitly or implicitly).
 
       This issue--which is expected to affect little or no existing code--is
@@ -742,13 +742,13 @@ Version 3.1_pre4 should be considered a late beta release.  It is thought
 to be stable, and there are no plans to add new features before 3.1 final
 (only to fix bugs and finish updating the documentation).
 
-Note that the KInterbasDB Usage Guide has been considerably updated, though
+Note that the FDB Usage Guide has been considerably updated, though
 it is not quite complete.  When complete, it will document all of the
-numerous new features in kinterbasdb 3.1; it's a "must read" even now.
+numerous new features in fdb 3.1; it's a "must read" even now.
 
-The Usage Guide is distributed with KInterbasDB
-(kinterbasdb-installation-dir/docs/usage.html), and is available online at:
-http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/*checkout*/kinterbasdb/Kinterbasdb-3.0/docs/usage.html
+The Usage Guide is distributed with FDB
+(fdb-installation-dir/docs/usage.html), and is available online at:
+http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/*checkout*/fdb/Kinterbasdb-3.0/docs/usage.html
 
 
 New Features
@@ -763,24 +763,24 @@ New Features
       http://sourceforge.net/tracker/index.php?func=detail&aid=637796&group_id=9913&atid=109913
 
     - DISTRIBUTED TRANSACTIONS are now supported via the
-      kinterbasdb.ConnectionGroup class.
+      fdb.ConnectionGroup class.
 
       Although the Usage Guide does not yet fully document this feature, it
       does contain an example program and a few hints:
-      http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/*checkout*/kinterbasdb/Kinterbasdb-3.0/docs/usage.html#adv_trans_control_distributed
+      http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/*checkout*/fdb/Kinterbasdb-3.0/docs/usage.html#adv_trans_control_distributed
 
     - DYNAMIC TYPE TRANSLATION
 
-      KInterbasDB 3.1_pre4 implements two-way "dynamic type translation".
+      FDB 3.1_pre4 implements two-way "dynamic type translation".
       This feature allows the client programmer to change the type conversion
       methods for specific SQL data types and achieve complete "type
-      transparency".  For example, KInterbasDB 3.1_pre4 includes reference
+      transparency".  For example, FDB 3.1_pre4 includes reference
       implementations of converters for both input and output of
       'mx.DateTime' and Python 2.3 stdlib 'datetime' for TIME/DATE/TIMESTAMP
       fields.
 
       One consequence of two-way dynamic type translation support is that
-      KInterbasDB 3.1_pre4 can be used with Python 2.3's datetime module
+      FDB 3.1_pre4 can be used with Python 2.3's datetime module
       occupying the former role mx.DateTime.  For backward compatibility,
       mx.DateTime is still the default, and it will remain so.
 
@@ -804,7 +804,7 @@ New Features
       of PEP 249:
 
         - Access to a cursor's connection via the Cursor.connection attribute.
-        - Access to kinterbasdb's exception classes via connection attributes.
+        - Access to fdb's exception classes via connection attributes.
 
       Refs:
       http://www.python.org/peps/pep-0249.html
@@ -815,11 +815,11 @@ Bug Fixes
 ---------
 
     - Passing the wrong number of parameters for a parameterized SQL statement
-      sometimes caused a crash instead of an exception with kinterbasdb 3.1_pre3.
+      sometimes caused a crash instead of an exception with fdb 3.1_pre3.
       This would not have affected client programs that were written correctly,
       but it was still a bug.
 
-    - The kinterbasdb.create_database function leaked memory if it encountered
+    - The fdb.create_database function leaked memory if it encountered
       an error.
 
     - Additional Windows binaries are being released to avoid dynamic linking
@@ -829,7 +829,7 @@ Bug Fixes
       http://sourceforge.net/tracker/index.php?func=detail&aid=707644&group_id=9913&atid=109913
       http://sourceforge.net/forum/forum.php?thread_id=855348&forum_id=30917
 
-    - kinterbasdb now builds with less hassle on FreeBSD.
+    - fdb now builds with less hassle on FreeBSD.
 
       Refs:
       http://sourceforge.net/tracker/index.php?func=detail&aid=720021&group_id=9913&atid=109913
@@ -883,7 +883,7 @@ Bug Fixes
 INTERNAL CHANGES
 ----------------
 
-    - kinterbasdb now implements its standard date/time and fixed point
+    - fdb now implements its standard date/time and fixed point
       handling via the new, general-purpose dynamic type translation feature.
 
       This eliminates the C-compile-time dependency on mx.DateTime.  Although
@@ -951,7 +951,7 @@ New Features
 
     - retaining commit/retaining rollback
 
-      The commit() and rollback() methods of kinterbasdb.Connection now
+      The commit() and rollback() methods of fdb.Connection now
       accept an optional boolean parameter 'retaining' (default False).  If
       retaining is True, the infrastructural support for the transaction active
       at the time of the method call will be "retained" (efficiently and
@@ -969,9 +969,9 @@ New Features
 
     - unicode strings can now be executed via:
 
-        - kinterbasdb.Cursor.execute[many]()
-        - kinterbasdb.Cursor.callproc()
-        - kinterbasdb.Connection.execute_immediate()
+        - fdb.Cursor.execute[many]()
+        - fdb.Cursor.callproc()
+        - fdb.Connection.execute_immediate()
 
       However, the encoding of the incoming unicode string is rather
       simplistic--via PyUnicode_AsASCIIString.
@@ -982,28 +982,28 @@ Bug Fixes
 
     - Addressed buffer overflow potential in:
 
-      - kinterbasdb.create_database()
-      - kinterbasdb.connect()
-      - kinterbasdb.Connection.begin()
-      - kinterbasdb.Connection.execute_immediate()
-      - kinterbasdb.Cursor.execute() (and thence, executemany() and callproc())
+      - fdb.create_database()
+      - fdb.connect()
+      - fdb.Connection.begin()
+      - fdb.Connection.execute_immediate()
+      - fdb.Cursor.execute() (and thence, executemany() and callproc())
 
     - Fixed reference count leaks in:
 
       - exception handling (_exception_functions.c)
       - field precision determination (_kiconversion_field_precision.c)
 
-    - Fixed kinterbasdb.Connection.close() bug:  The physical connection to
+    - Fixed fdb.Connection.close() bug:  The physical connection to
       the database server was not actually closed until the
-      kinterbasdb.Connection instance was garbage collected.
+      fdb.Connection instance was garbage collected.
 
-    - Fixed a bug in the kinterbasdb.services.Connection.userExists() method.
+    - Fixed a bug in the fdb.services.Connection.userExists() method.
       Usernames are now normalized to upper case.
 
     - Database version compatibility:
 
-      - kinterbasdb compiles properly against Firebird 1.5.
-      - kinterbasdb compiles against and ought to work with (but has not been
+      - fdb compiles properly against Firebird 1.5.
+      - fdb compiles against and ought to work with (but has not been
         tested with) Interbase 5.5, albeit with some lost functionality,
         namely:
 
@@ -1054,7 +1054,7 @@ Backward-incompatibilities
       http://www.python.org/doc/current/lib/module-warnings.html
 
     - Official support for database event handling has been deferred until 3.2.
-      A Win32-only prototype will still be included with the kinterbasdb 3.1
+      A Win32-only prototype will still be included with the fdb 3.1
       source distribution (but not compiled by default).
 
       Refs:
@@ -1069,35 +1069,35 @@ New Features
 
     - Global Interpreter Lock management
 
-      Previously, kinterbasdb operated in a serial manner, with the sole
+      Previously, fdb operated in a serial manner, with the sole
       exception of the event handling code, whose parallelism is "under the
-      hood".  Aside from event handling, all kinterbasdb operations, including
+      hood".  Aside from event handling, all fdb operations, including
       potentially long-running Firebird API calls, were serialized by the
       Python GIL.
 
-      With the advent of kinterbasdb 3.1_pre2, kinterbasdb releases the GIL
+      With the advent of fdb 3.1_pre2, kinterbasdb releases the GIL
       where appropriate--that is, when it is about to make a potentially long-
       running Firebird API call, and can do so without invoking the Python API,
       or otherwise operating on Python structures.
 
       However, the Firebird client library itself is not threadsafe, so
-      Firebird API calls must also be serialized.  To that end, kinterbasdb
+      Firebird API calls must also be serialized.  To that end, fdb
       maintains a process-wide thread lock around which all Firebird API calls
       are serialized.
 
-      When kinterbasdb is about to make a potentially long-running Firebird
+      When fdb is about to make a potentially long-running Firebird
       API call, it follows these steps:
 
         1.  Extract necessary parameter data from Python structures
         2.  Release the Python GIL
-        3.  Acquire the kinterbasdb process-wide Firebird client thread lock
+        3.  Acquire the fdb process-wide Firebird client thread lock
         4.  Execute the Firebird API call
-        5.  Release the kinterbasdb process-wide Firebird client thread lock
+        5.  Release the fdb process-wide Firebird client thread lock
         6.  Acquire the Python GIL
         7.  Modify Python structures to reflect the results of the Firebird API
               call
 
-      The addition of GIL management should improve kinterbasdb's maximum
+      The addition of GIL management should improve fdb's maximum
       possible throughput for multi-threaded Python programs on multi-processor
       systems (one processor can run the Python interpreter while another
       executes a Firebird client library operation).  GIL management may also
@@ -1121,7 +1121,7 @@ New Features
 
       .. sourcecode:: python
 
-          con = ... # establish a kinterbasdb.Connection
+          con = ... # establish a fdb.Connection
           curScroll = con.cursor()
           curUpdate = con.cursor()
 
@@ -1142,9 +1142,9 @@ Version 3.1_pre1 should be considered an early alpha release.
 New Features
 ------------
 
-This list of new features represents the state of kinterbasdb 3.1_pre1,
+This list of new features represents the state of fdb 3.1_pre1,
 which does not include some features slated for inclusion in the final
-release of kinterbasdb 3.1.  For a discussion of the ultimate goals of
+release of fdb 3.1.  For a discussion of the ultimate goals of
 version 3.1, see:
 http://sourceforge.net/forum/forum.php?thread_id=696302&forum_id=30917
 
@@ -1154,7 +1154,7 @@ those who need to use the new features must refer to the source code.
 
 
     - Cursor Iteration Support
-        When used with Python 2.2 or later, kinterbasdb's Cursors now support
+        When used with Python 2.2 or later, fdb's Cursors now support
       "natural" iteration.  For example:
 
       .. sourcecode:: python
@@ -1190,7 +1190,7 @@ those who need to use the new features must refer to the source code.
     - Implicit Parameter Conversion
 
       Implicit parameter conversion allows any SQL datatype supported by
-      kinterbasdb to be passed to the database engine as a Python string.
+      fdb to be passed to the database engine as a Python string.
 
       This is especially useful for parameterized statements that involve
       date/time datatypes, because they can now accept server-computed "magic"
@@ -1213,13 +1213,13 @@ those who need to use the new features must refer to the source code.
       I've wrapped nearly the entire Services API in a thick Python API of
       my own design.  My API design is only provisional; I seek feedback as
       to how it could be made more elegant.  The Services API support is
-      accessible via the kinterbasdb.services module.
+      accessible via the fdb.services module.
 
     - Database Event Support (see IB 6 API Guide Chapter 11)
 
       The database engine allows client programs to register to be informed
       of the occurrence of database events, which can be raised with the
-      POST_EVENT statement in stored procedures or triggers.  kinterbasdb 3.1
+      POST_EVENT statement in stored procedures or triggers.  fdb 3.1
       supports a subset of this functionality (synchronous waiting only) via
       the Connection.wait(eventNames) method.
 
@@ -1254,13 +1254,13 @@ Bug Fixes
 Backward-incompatibilities
 --------------------------
 
-    - Although kinterbasdb 3.1 is significantly different internally, there is
+    - Although fdb 3.1 is significantly different internally, there is
       only one known API incompatibility with version 3.0.2.  It would only arise
       in code that relies on the erroneous behavior of the mapping-fetch bug
       mentioned above.
 
     - Python versions prior to 2.1 are no longer officially supported.
-      Although kinterbasdb might still compile against Python 2.0 and earlier,
+      Although fdb might still compile against Python 2.0 and earlier,
       I will not go out of my way to ensure that it does.
 
 
@@ -1272,7 +1272,7 @@ Bug Fixes
 
     - Fixed a CHAR-handling bug that caused CHAR values inserted into the
       database to lack their trailing spaces.  Instead, the values were null-
-      terminated.  This left CHAR values inserted by kinterbasdb incompatible
+      terminated.  This left CHAR values inserted by fdb incompatible
       with standard tools, which expect trailing spaces.
 
       For more information, see
@@ -1318,7 +1318,7 @@ Backward-incompatibilities
       datetime bugfix discussion above).
 
       Code that uses the mx.DateTime module directly (rather than the
-      kinterbasdb DB API datetime constructors) should not be affected.
+      fdb DB API datetime constructors) should not be affected.
 
       For details, see the comments in the code block in __init__.py tagged
       with "DSR:2002.07.19".
@@ -1329,7 +1329,7 @@ Version 3.0.1_pre3
 Bug Fixes
 ---------
 
-    - Bug #572326 (which was not present in kinterbasdb 3.0 and never affected
+    - Bug #572326 (which was not present in fdb 3.0 and never affected
       Python 2.2+) caused several numeric types to not be transferred from
       Python to the database engine when they were passed as query parameters.
 
@@ -1349,7 +1349,7 @@ Bug Fixes
 
       CHARs are no longer returned with their trailing blanks intact.  The
       trailing blanks have been abandoned because they were in fact NULL
-      characters, not spaces.  kinterbasdb would fill in the spaces manually,
+      characters, not spaces.  fdb would fill in the spaces manually,
       except for the problems that approach causes with multibyte character
       sets.
 
@@ -1370,7 +1370,7 @@ New Features
 ------------
 
     - It is now possible to connect to a database under a specific role by using
-      the 'role' keyword argument of the kinterbasdb.connect function.
+      the 'role' keyword argument of the fdb.connect function.
 
     - The following methods now accept any sequence except a string for their
       'parameter' argument, rather than demanding a tuple:  Cursor.execute,
@@ -1379,11 +1379,11 @@ New Features
 Bug Fixes
 ---------
 
-    - kinterbasdb supports IB 5.x again.
+    - fdb supports IB 5.x again.
 
       Various identifiers specific to IB 6.x/Firebird had crept into unguarded
-      areas of __init__.py and _kinterbasdb.c, but this has been changed so
-      that kinterbasdb compiles gracefully with IB 5.x.
+      areas of __init__.py and _fdb.c, but this has been changed so
+      that fdb compiles gracefully with IB 5.x.
       See:
       http://sourceforge.net/tracker/index.php?func=detail&aid=553184&group_id=9913&atid=209913
 
@@ -1441,7 +1441,7 @@ Bug Fixes
       accept the value 12.5 because 125 fits in a short.
 
     - When operating in imprecise mode (connection.precision_mode == 0),
-      kinterbasdb 3.0 sometimes interpreted integer values as though it were
+      fdb 3.0 sometimes interpreted integer values as though it were
       operating in precise mode.
 
 
@@ -1451,7 +1451,7 @@ Version 3.0 versus 2.0-0.3.1
 New Features
 ------------
 
-    The new features are thoroughly documented in the KInterbasDB Usage Guide
+    The new features are thoroughly documented in the FDB Usage Guide
     (usage.html); they need not be reiterated here.
     However, backward-incompatible changes *have* been documented in this
     changelog (see the Backward-incompatibilities section).
@@ -1460,7 +1460,7 @@ Bug Fixes
 ---------
 
     Many bugs have been fixed, including (but not limited to) the following,
-    which were registered with the KInterbasDB bug tracker at SourceForge
+    which were registered with the FDB bug tracker at SourceForge
     ( http://sourceforge.net/tracker/index.php?group_id=9913&atid=109913 ):
 
       - 433090  cannot connect to firebird server
@@ -1496,7 +1496,7 @@ Backward-incompatibilities
         the fetch(one|many|all)map methods.
 
         Note the "'absolutely no guarantees' except..." caveats in the
-        KInterbasDB Usage Guide regarding the return types of the
+        FDB Usage Guide regarding the return types of the
         Cursor.fetch* methods and the contents of the Cursor.description
         attribute.
 
@@ -1513,24 +1513,24 @@ Backward-incompatibilities
 
         A Connection.precision_mode attribute has been added so that precise
         representation of fixed point values as scaled Python integers (as in
-        KInterbasDB 2.x) can be used at will.
+        FDB 2.x) can be used at will.
 
-        For more information, see the KInterbasDB Usage Guide.
+        For more information, see the FDB Usage Guide.
 
       - Connection.dialect
 
-        In KInterbasDB 2.x, the default connection dialect was 1 (the
+        In FDB 2.x, the default connection dialect was 1 (the
         backward-compatibility dialect for use with Interbase 5.5 and earlier).
 
-        KInterbasDB 3.0 is being released into quite a different climate.
+        FDB 3.0 is being released into quite a different climate.
         Interbase 6.0 was released nearly two years ago, and Firebird 1.0 has
-        recently been released.  Because it is expected that KInterbasDB 3.0
+        recently been released.  Because it is expected that FDB 3.0
         will be used most frequently with Interbase 6.0+ and Firebird, the
         default connection dialect is 3.
 
-        Using KInterbasDB 3.0 with Interbase 5.5 and earlier is still
-        possible, though untested by the developers of KInterbasDB 3.0.  See
-        the Connection.dialect documentation in the KInterbasDB Usage Guide
+        Using FDB 3.0 with Interbase 5.5 and earlier is still
+        possible, though untested by the developers of FDB 3.0.  See
+        the Connection.dialect documentation in the FDB Usage Guide
         for an explanation of how to initialize a connection with a dialect
         other than 3.
 
@@ -1541,20 +1541,20 @@ Backward-incompatibilities
         the numerous Interbase variants that exist today (including Firebird,
         which does not fit neatly into the Interbase version progression).
 
-        For more information, see the KInterbasDB Usage Guide.
+        For more information, see the FDB Usage Guide.
 
-      - kinterbasdb.execute_immediate
+      - fdb.execute_immediate
 
-        The kinterbasdb.execute_immediate function has been removed.  A
-        similar function named kinterbasdb.create_database has been added.
-        The primary differences between kinterbasdb.execute_immediate and
-        kinterbasdb.create_database are:
+        The fdb.execute_immediate function has been removed.  A
+        similar function named fdb.create_database has been added.
+        The primary differences between fdb.execute_immediate and
+        fdb.create_database are:
 
-          - kinterbasdb.create_database is not as general
-          - kinterbasdb.create_database actually works
+          - fdb.create_database is not as general
+          - fdb.create_database actually works
 
         The execute_immediate method of the Connection class has been
         retained.
 
-        For more information, see the KInterbasDB Usage Guide.
+        For more information, see the FDB Usage Guide.
 
