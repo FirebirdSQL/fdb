@@ -82,7 +82,7 @@ database. Transactions left unresolved by the programmer will be
 `rollback`ed when the connection is garbage collected.
 
 Remember that because of `ACID 
-<http://philip.greenspun.com/panda/databases-choosing#acid>`__,
+<http://www.firebirdsql.org/file/documentation/papers_presentations/html/paper-fbent-acid.html>`__,
 every data manipulation operation in the Firebird database engine
 takes place in the context of a transaction, including operations
 that are conceptually "read-only", such as a typical `SELECT`.
