@@ -41,7 +41,7 @@ Zope Database Adapters for Interbase®/Firebird
   (based on fdb)
 + `gvibDA <http://www.zope.org/Members/bkc/gvibDA>`__ (based on gvib)
 
-Interbase® and Firebird
+Firebird
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 + `Firebird <http://www.firebirdsql.org/>`__
@@ -50,8 +50,10 @@ Interbase® and Firebird
 
     + `IBPhoenix Contributed Downloads <http://ibphoenix.com/download/tools/>`__
 
-+ `Google's Interbase® Directory <http://directory.google.com/Top/Com
-  puters/Software/Databases/InterBase/>`__
++ `Dmoz's Firebird Directory <http://www.dmoz.org/Computers/Software/Databases/Firebird/>`__
++ `Turbobird - nice open source cross platform  GUI for Firebird
+  <http://code.sd/turbobird/>`__
++ `Flamerobin - nice open source and cross platform GUI for Firebird <http://flamerobin.org>`__
 
 Help
 ^^^^

@@ -21,28 +21,16 @@ dependencies (see the download links below).
 
 #. Operating System - one of:
 
-    + Win32 (NT 4, 2000, XP, 2003, ...)
-    + Win64 (Should work fine, but no binary distributions are available.)
-    + Linux (Known to work fine on both x86 and x86-64.)
-    + Other Unix or Unix-like operating system
+    + Windows (32/64)
+    + Linux Any Cpu (Known to work fine on both x86 and x86-64.)
+    + Other Unix or Unix-like operating system (Macosx)
 
 #. `Firebird <http://www.firebirdsql.org>`__ 2.0 or later - client or server 
    installation [`download here <http://sourceforge.net/project/showfiles.php?group_id=9028>`__]
    If you want to use FDB 3.3 with Firebird 1.5 and older or InterBase, you
    will need to do `installation from source distribution`_ instead.
 #. `Python <http://www.python.org>`__ [`download here
-   <http://www.python.org/download/>`__] 2.4 or later
-#. `eGenix.com mx Extensions for Python
-   <http://www.lemburg.com/files/python/eGenix-mx-Extensions.html>`__,
-   version 2.0.1 or later [`download here
-   <http://www.lemburg.com/files/python/eGenix-mx-Extensions.html
-   #Download-mxBASE>`__] By default, FDB uses the `DateTime`
-   module of the eGenix.com `mx` Extensions to represent date and time
-   values, as recommended by the
-   *Python Database API Specification*. *However, it is not strictly necessary
-   to use the `mx.DateTime` module to handle dates and times, especially when you're
-   using Python 2.5 and newer.* See `this
-   FAQ <usage.html#faq_fep_is_mxdatetime_required>`__.
+   <http://www.python.org/download/>`__] 2.5 or later (including Python 3.x) It was tested with cpython , jython, ironpython and pypy
 
 Installation from binary distribution
 *************************************
