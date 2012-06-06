@@ -1824,6 +1824,9 @@ class PreparedStatement(object):
                 # Set the null flag whether sqlvar definition allows it or not,
                 # to give BEFORE triggers to act on value without
                 # our interference.
+                if (sqlvar.sqltype & 1) == 0:
+                    # NULLs were not allowed, so set it allowed or FB will complain
+                    sqlvar.sqltype += 1
                 sqlvar.sqlind = ctypes.pointer(ISC_SHORT(-1))
                 sqlvar.sqldata = None
             else:
