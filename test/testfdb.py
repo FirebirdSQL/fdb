@@ -444,6 +444,21 @@ class TestCursor2(unittest.TestCase):
         cur.execute('select C1,C4,C5 from T2 where C1 = 2')
         rows = cur.fetchall()
         assert repr(rows) == "[(2, 'AA   ', 'AA')]"
+        # Too long values
+        try:
+            cur.execute('insert into T2 (C1,C4) values (?,?)',[3,'123456'])
+            self.con.commit()
+        except Exception as e:
+            assert e.args == ('Value of parameter (1) is too long, expected 5, found 6',)
+        else:
+            raise ProgrammingError('Exception expected')
+        try:
+            cur.execute('insert into T2 (C1,C5) values (?,?)',[3,'12345678901'])
+            self.con.commit()
+        except Exception as e:
+            assert e.args == ('Value of parameter (1) is too long, expected 10, found 11',)
+        else:
+            raise ProgrammingError('Exception expected')
     def test_insert_datetime(self):
         cur = self.con.cursor()
         now = datetime.datetime(2011,11,13,15,00,1,200)
@@ -452,6 +467,12 @@ class TestCursor2(unittest.TestCase):
         cur.execute('select C1,C6,C7,C8 from T2 where C1 = 3')
         rows = cur.fetchall()
         assert repr(rows) == "[(3, datetime.date(2011, 11, 13), datetime.time(15, 0, 1, 200), datetime.datetime(2011, 11, 13, 15, 0, 1, 200))]"
+
+        cur.execute('insert into T2 (C1,C6,C7,C8) values (?,?,?,?)',[4,'2011-11-13','15:0:1:200','2011-11-13 15:0:1:200'])
+        self.con.commit()
+        cur.execute('select C1,C6,C7,C8 from T2 where C1 = 4')
+        rows = cur.fetchall()
+        assert repr(rows) == "[(4, datetime.date(2011, 11, 13), datetime.time(15, 0, 1, 200000), datetime.datetime(2011, 11, 13, 15, 0, 1, 200000))]"
     def test_insert_blob(self):
         cur = self.con.cursor()
         cur.execute('insert into T2 (C1,C9) values (?,?)',[4,'This is a BLOB!'])

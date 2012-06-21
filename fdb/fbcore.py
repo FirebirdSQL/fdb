@@ -1884,7 +1884,7 @@ class PreparedStatement(object):
                     if PYTHON_MAJOR_VER != 3:
                         if not isinstance(value, StringType):
                             value = str(value)
-                    if len(value) > sqlvar.sqllen:
+                    if vartype in [SQL_TEXT, SQL_VARYING] and len(value) > sqlvar.sqllen:
                         raise ValueError("Value of parameter (%i) is too long,"
                                          " expected %i, found %i" % (i, sqlvar.sqllen,
                                                                      len(value)))
