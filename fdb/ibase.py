@@ -546,6 +546,27 @@ isc_tpb_restart_requests = 19
 isc_tpb_no_auto_undo = 20
 isc_tpb_lock_timeout = 21
 
+# BLOB parameter buffer
+
+isc_bpb_version1          = 1
+isc_bpb_source_type       = 1
+isc_bpb_target_type       = 2
+isc_bpb_type              = 3
+isc_bpb_source_interp     = 4
+isc_bpb_target_interp     = 5
+isc_bpb_filter_parameter  = 6
+isc_bpb_storage           = 7
+
+isc_bpb_type_segmented    = 0x0
+isc_bpb_type_stream       = 0x1
+isc_bpb_storage_main      = 0x0
+isc_bpb_storage_temp      = 0x2
+
+# BLOB codes
+
+isc_segment    = 335544366L
+isc_segstr_eof = 335544367L
+
 # Services API
 # Service parameter block stuff
 isc_spb_current_version = 2
@@ -1005,8 +1026,8 @@ class bstream(Structure):
     pass
 bstream._fields_ = [
     ('bstr_blob', isc_blob_handle),
-    ('bstr_buffer', STRING),
-    ('bstr_ptr', STRING),
+    ('bstr_buffer', POINTER(c_char)), # STRING
+    ('bstr_ptr', POINTER(c_char)), # STRING
     ('bstr_length', c_short),
     ('bstr_cnt', c_short),
     ('bstr_mode', c_char),
@@ -1406,7 +1427,7 @@ isc_open_blob2 = fb_library.isc_open_blob2
 isc_open_blob2.restype = ISC_STATUS
 isc_open_blob2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
                            POINTER(isc_tr_handle), POINTER(isc_blob_handle),
-                           POINTER(ISC_QUAD), ISC_USHORT, POINTER(ISC_UCHAR)]
+                           POINTER(ISC_QUAD), ISC_USHORT, STRING] # POINTER(ISC_UCHAR)
 
 isc_prepare_transaction2 = fb_library.isc_prepare_transaction2
 isc_prepare_transaction2.restype = ISC_STATUS

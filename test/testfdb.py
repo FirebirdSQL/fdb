@@ -29,6 +29,7 @@ import fdb.ibase as ibase
 import sys, os
 import threading
 import time
+import StringIO
 
 def printData(cur):
     """Print data from open cursor to stdout."""
@@ -281,6 +282,29 @@ class TestCursor(unittest.TestCase):
         self.con.execute_immediate("delete from t")
         self.con.commit()
         self.con.close()
+    def test_iteration(self):
+        data = [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'), 
+                ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'), 
+                ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'), 
+                ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'), 
+                ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')]
+        cur = self.con.cursor()
+        cur.execute('select * from country')
+        rows = [row for row in cur]
+        assert len(rows) == 14
+        assert repr(rows) == "[('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'), ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'), ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'), ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'), ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')]"
+        cur.execute('select * from country')
+        rows = []
+        for row in cur:
+            rows.append(row)
+        assert len(rows) == 14
+        assert repr(rows) == "[('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'), ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'), ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'), ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'), ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')]"
+        cur.execute('select * from country')
+        i = 0
+        for row in cur:
+            i += 1
+            assert row in data
+        assert i == 14
     def test_description(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
@@ -726,6 +750,112 @@ END""")
         e = events.wait()
         events.close()
         assert repr(e) == "{'insert_1': 1}"
+
+class TestStreamBLOBs(unittest.TestCase):
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        #self.con.execute_immediate("recreate table t (c1 integer)")
+        #self.con.commit()
+        #self.con.execute_immediate("RECREATE TABLE T2 (C1 Smallint,C2 Integer,C3 Bigint,C4 Char(5),C5 Varchar(10),C6 Date,C7 Time,C8 Timestamp,C9 Blob sub_type 1,C10 Numeric(18,2),C11 Decimal(18,2),C12 Float,C13 Double precision,C14 Numeric(8,4),C15 Decimal(8,4))")
+        #self.con.commit()
+    def tearDown(self):
+        self.con.execute_immediate("delete from t")
+        self.con.execute_immediate("delete from t2")
+        self.con.commit()
+        self.con.close()
+    def testBlobBasic(self):
+        blob = """Firebird supports two types of blobs, stream and segmented.
+The database stores segmented blobs in chunks.
+Each chunk starts with a two byte length indicator followed by however many bytes of data were passed as a segment.
+Stream blobs are stored as a continuous array of data bytes with no length indicators included."""
+        cur = self.con.cursor()
+        cur.execute('insert into T2 (C1,C9) values (?,?)',[4,StringIO.StringIO(blob)])
+        self.con.commit()
+        p = cur.prep('select C1,C9 from T2 where C1 = 4')
+        p.set_stream_blob('C9')
+        cur.execute(p)
+        row = cur.fetchone()
+        blob_reader = row[1]
+        try:
+            assert blob_reader.read(20) == 'Firebird supports tw'
+            assert blob_reader.read(20) == 'o types of blobs, st'
+            assert blob_reader.read(400) == 'ream and segmented.\nThe database stores segmented blobs in chunks.\nEach chunk starts with a two byte length indicator followed by however many bytes of data were passed as a segment.\nStream blobs are stored as a continuous array of data bytes with no length indicators included.'
+            assert blob_reader.read(20) == ''
+            assert blob_reader.tell() == 318
+            blob_reader.seek(20)
+            assert blob_reader.tell() == 20
+            assert blob_reader.read(20) == 'o types of blobs, st'
+            blob_reader.seek(0)
+            assert blob_reader.tell() == 0
+            assert blob_reader.readlines() == StringIO.StringIO(blob).readlines()
+            blob_reader.seek(0)
+            for line in blob_reader:
+                assert line.rstrip('\n') in blob.split('\n')
+            #blob_reader.seek(50)
+            #print blob_reader.tell()
+            #print repr(blob_reader.readline())
+            blob_reader.seek(0)
+            assert blob_reader.read() == blob
+            blob_reader.seek(-9,os.SEEK_END)
+            assert blob_reader.read() == 'included.'
+            blob_reader.seek(-20,os.SEEK_END)
+            blob_reader.seek(11,os.SEEK_CUR)
+            assert blob_reader.read() == 'included.'
+            blob_reader.seek(60)
+            assert blob_reader.readline() == 'The database stores segmented blobs in chunks.\n'
+        finally:
+            # Necessary to avoid bad BLOB handle on BlobReader.close in tearDown
+            # because BLOB handle is no longer valid after table purge
+            p.close()
+    def testBlobExtended(self):
+        blob = """Firebird supports two types of blobs, stream and segmented.
+The database stores segmented blobs in chunks.
+Each chunk starts with a two byte length indicator followed by however many bytes of data were passed as a segment.
+Stream blobs are stored as a continuous array of data bytes with no length indicators included."""
+        cur = self.con.cursor()
+        cur.execute('insert into T2 (C1,C9) values (?,?)',[1,StringIO.StringIO(blob)])
+        cur.execute('insert into T2 (C1,C9) values (?,?)',[2,StringIO.StringIO(blob)])
+        self.con.commit()
+        p = cur.prep('select C1,C9 from T2')
+        p.set_stream_blob('C9')
+        cur.execute(p)
+        #rows = [row for row in cur]
+        try:
+            for row in cur:
+                blob_reader = row[1]
+                assert blob_reader.read(20) == 'Firebird supports tw'
+                assert blob_reader.read(20) == 'o types of blobs, st'
+                assert blob_reader.read(400) == 'ream and segmented.\nThe database stores segmented blobs in chunks.\nEach chunk starts with a two byte length indicator followed by however many bytes of data were passed as a segment.\nStream blobs are stored as a continuous array of data bytes with no length indicators included.'
+                assert blob_reader.read(20) == ''
+                assert blob_reader.tell() == 318
+                blob_reader.seek(20)
+                assert blob_reader.tell() == 20
+                assert blob_reader.read(20) == 'o types of blobs, st'
+                blob_reader.seek(0)
+                assert blob_reader.tell() == 0
+                assert blob_reader.readlines() == StringIO.StringIO(blob).readlines()
+                blob_reader.seek(0)
+                for line in blob_reader:
+                    assert line.rstrip('\n') in blob.split('\n')
+                #blob_reader.seek(50)
+                #print blob_reader.tell()
+                #print repr(blob_reader.readline())
+                blob_reader.seek(0)
+                assert blob_reader.read() == blob
+                blob_reader.seek(-9,os.SEEK_END)
+                assert blob_reader.read() == 'included.'
+                blob_reader.seek(-20,os.SEEK_END)
+                blob_reader.seek(11,os.SEEK_CUR)
+                assert blob_reader.read() == 'included.'
+                blob_reader.seek(60)
+                assert blob_reader.readline() == 'The database stores segmented blobs in chunks.\n'
+        finally:
+            # Necessary to avoid bad BLOB handle on BlobReader.close in tearDown
+            # because BLOB handle is no longer valid after table purge
+            p.close()
 
 class TestBugs(unittest.TestCase):
     def setUp(self):
