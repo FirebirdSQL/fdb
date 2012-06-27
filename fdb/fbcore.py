@@ -1153,6 +1153,8 @@ class EventBlock(object):
                                                   ctypes.pointer(self.result_buf),
                                                   *[b(x) for x in event_names])
         self.__wait_for_events()
+    def __lt__(self,other):
+        return self.event_id < other.event_id
     def __wait_for_events(self):
         ibase.isc_que_events(self._isc_status,self._db_handle,self.event_id,
                              self.buf_length,self.event_buf,
@@ -1764,7 +1766,9 @@ class PreparedStatement(object):
                 if use_stream:
                     # Stream BLOB
                     value = BlobReader(blobid,self.__get_connection()._db_handle,
-                                       self.__get_transaction()._tr_handle)
+                                       self.__get_transaction()._tr_handle,
+                                       sqlvar.sqlsubtype == 1,
+                                       self.__get_connection().charset)
                     self.__blob_readers.append(value)
                 else:
                     # Materialized BLOB
@@ -1958,7 +1962,7 @@ class PreparedStatement(object):
                         sqlvar.sqldata = ctypes.cast(ctypes.pointer(blobid),
                                                      buf_pointer)
                         blob = ctypes.create_string_buffer(MAX_BLOB_SEGMENT_SIZE)
-                        blob.raw = value.read(MAX_BLOB_SEGMENT_SIZE)
+                        blob.raw = ibase.b(value.read(MAX_BLOB_SEGMENT_SIZE))
                         while len(blob.value) > 0:
                             ibase.isc_put_segment(self._isc_status, blob_handle,
                                                   len(blob.value),
@@ -1969,7 +1973,7 @@ class PreparedStatement(object):
                                                             self._isc_status,
                                                             "Cursor.write_input_blob/isc_put_segment:")
                             ctypes.memset(blob,0,MAX_BLOB_SEGMENT_SIZE)
-                            blob.raw = value.read(MAX_BLOB_SEGMENT_SIZE)
+                            blob.raw = ibase.b(value.read(MAX_BLOB_SEGMENT_SIZE))
                         ibase.isc_close_blob(self._isc_status, blob_handle)
                         if db_api_error(self._isc_status):
                             raise exception_from_status(DatabaseError,
@@ -2681,7 +2685,7 @@ class BlobReader(object):
     """
     
     """
-    def __init__(self, blobid, db_handle, tr_handle):
+    def __init__(self, blobid, db_handle, tr_handle, is_text, charset):
         self.__closed = False
         self.__mode = 'r'
         self.__bytes_read = 0
@@ -2690,6 +2694,8 @@ class BlobReader(object):
         #self.__bstream = ibase.Bopen(blobid, db_handle, tr_handle, self.__mode)
         self.__db_handle = db_handle
         self.__tr_handle = tr_handle
+        self.__is_text = is_text
+        self.__charset = charset
         self.__blobid = blobid
         self.__opened = False
         self._blob_handle = ibase.isc_blob_handle()
@@ -2780,6 +2786,7 @@ class BlobReader(object):
             return line
         else:
             raise StopIteration
+    __next__ = next
     def __iter__(self):
         return self
     def read(self, size = -1):
@@ -2807,7 +2814,10 @@ class BlobReader(object):
             self.__pos += to_copy
             self.__buf_pos += to_copy
             to_read -= to_copy
-        return result.value
+        result = result.value
+        if PYTHON_MAJOR_VER == 3 and self.__is_text:
+            result = result.decode(charset_map.get(self.__charset,self.__charset))
+        return result
     def readline(self):
         if not self.__opened:
             self.__open()
@@ -2826,12 +2836,14 @@ class BlobReader(object):
             pos = 0
             result = ''
             while pos < to_scan:
-                if self.__buf[self.__buf_pos+pos] == '\n':
+                if self.__buf[self.__buf_pos+pos] == ibase.b('\n'):
                     found = True
                     pos += 1
                     break
                 pos += 1
             result = ctypes.string_at(ctypes.byref(self.__buf,self.__buf_pos), pos)
+            if PYTHON_MAJOR_VER == 3 and self.__is_text:
+                result = result.decode(charset_map.get(self.__charset,self.__charset))
             line.append(result)
             self.__buf_pos += pos
             self.__pos += pos

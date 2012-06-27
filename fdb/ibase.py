@@ -564,8 +564,8 @@ isc_bpb_storage_temp      = 0x2
 
 # BLOB codes
 
-isc_segment    = 335544366L
-isc_segstr_eof = 335544367L
+isc_segment    = 335544366
+isc_segstr_eof = 335544367
 
 # Services API
 # Service parameter block stuff

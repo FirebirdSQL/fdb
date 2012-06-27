@@ -29,26 +29,30 @@ import fdb.ibase as ibase
 import sys, os
 import threading
 import time
-import StringIO
 
-def printData(cur):
-    """Print data from open cursor to stdout."""
-    # Print a header.
-    for fieldDesc in cur.description:
-        print fieldDesc[fdb.DESCRIPTION_NAME].ljust(fieldDesc[fdb.DESCRIPTION_DISPLAY_SIZE]) ,
-    print
-    for fieldDesc in cur.description:
-        print "-" * max((len(fieldDesc[fdb.DESCRIPTION_NAME]),fieldDesc[fdb.DESCRIPTION_DISPLAY_SIZE])),
-    print
-    # For each row, print the value of each field left-justified within
-    # the maximum possible width of that field.
-    fieldIndices = range(len(cur.description))
-    for row in cur:
-        for fieldIndex in fieldIndices:
-            fieldValue = str(row[fieldIndex])
-            fieldMaxWidth = max((len(cur.description[fieldIndex][fdb.DESCRIPTION_NAME]),cur.description[fieldIndex][fdb.DESCRIPTION_DISPLAY_SIZE]))
-            print fieldValue.ljust(fieldMaxWidth) ,
-        print
+if ibase.PYTHON_MAJOR_VER == 3:
+    from io import StringIO
+else:
+    from StringIO import StringIO
+
+#def printData(cur):
+#    """Print data from open cursor to stdout."""
+#    # Print a header.
+#    for fieldDesc in cur.description:
+#        print fieldDesc[fdb.DESCRIPTION_NAME].ljust(fieldDesc[fdb.DESCRIPTION_DISPLAY_SIZE]) ,
+#    print
+#    for fieldDesc in cur.description:
+#        print "-" * max((len(fieldDesc[fdb.DESCRIPTION_NAME]),fieldDesc[fdb.DESCRIPTION_DISPLAY_SIZE])),
+#    print
+#    # For each row, print the value of each field left-justified within
+#    # the maximum possible width of that field.
+#    fieldIndices = range(len(cur.description))
+#    for row in cur:
+#        for fieldIndex in fieldIndices:
+#            fieldValue = str(row[fieldIndex])
+#            fieldMaxWidth = max((len(cur.description[fieldIndex][fdb.DESCRIPTION_NAME]),cur.description[fieldIndex][fdb.DESCRIPTION_DISPLAY_SIZE]))
+#            print fieldValue.ljust(fieldMaxWidth) ,
+#        print
 
 
 class TestCreateDrop(unittest.TestCase):
@@ -71,7 +75,7 @@ class TestConnection(unittest.TestCase):
         con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         assert con._db_handle != None
         #print 'con._dpb:',repr(con._dpb)
-        assert con._dpb == '\x01\x1c\x06sysdba\x1d\tmasterkey?\x01\x03'
+        assert con._dpb == ibase.b('\x01\x1c\x06sysdba\x1d\tmasterkey?\x01\x03')
         con.close()
     def test_connect_role(self):
         con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',role='role')
@@ -550,10 +554,10 @@ class TestServices(unittest.TestCase):
         con2 = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
         x = svc.getAttachedDatabaseNames()
         assert len(x) == 2
-        assert self.dbfile in x
+        assert self.dbfile.upper() in x
         #assert '/opt/firebird/examples/empbuild/employee.fdb' in x
         x = svc.getConnectionCount()
-        print 'getConnectionCount',x
+#        print 'getConnectionCount',x
         assert x == 2
         svc.close()
 
@@ -793,7 +797,7 @@ The database stores segmented blobs in chunks.
 Each chunk starts with a two byte length indicator followed by however many bytes of data were passed as a segment.
 Stream blobs are stored as a continuous array of data bytes with no length indicators included."""
         cur = self.con.cursor()
-        cur.execute('insert into T2 (C1,C9) values (?,?)',[4,StringIO.StringIO(blob)])
+        cur.execute('insert into T2 (C1,C9) values (?,?)',[4,StringIO(blob)])
         self.con.commit()
         p = cur.prep('select C1,C9 from T2 where C1 = 4')
         p.set_stream_blob('C9')
@@ -811,7 +815,7 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
             assert blob_reader.read(20) == 'o types of blobs, st'
             blob_reader.seek(0)
             assert blob_reader.tell() == 0
-            assert blob_reader.readlines() == StringIO.StringIO(blob).readlines()
+            assert blob_reader.readlines() == StringIO(blob).readlines()
             blob_reader.seek(0)
             for line in blob_reader:
                 assert line.rstrip('\n') in blob.split('\n')
@@ -837,8 +841,8 @@ The database stores segmented blobs in chunks.
 Each chunk starts with a two byte length indicator followed by however many bytes of data were passed as a segment.
 Stream blobs are stored as a continuous array of data bytes with no length indicators included."""
         cur = self.con.cursor()
-        cur.execute('insert into T2 (C1,C9) values (?,?)',[1,StringIO.StringIO(blob)])
-        cur.execute('insert into T2 (C1,C9) values (?,?)',[2,StringIO.StringIO(blob)])
+        cur.execute('insert into T2 (C1,C9) values (?,?)',[1,StringIO(blob)])
+        cur.execute('insert into T2 (C1,C9) values (?,?)',[2,StringIO(blob)])
         self.con.commit()
         p = cur.prep('select C1,C9 from T2')
         p.set_stream_blob('C9')
@@ -857,7 +861,7 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
                 assert blob_reader.read(20) == 'o types of blobs, st'
                 blob_reader.seek(0)
                 assert blob_reader.tell() == 0
-                assert blob_reader.readlines() == StringIO.StringIO(blob).readlines()
+                assert blob_reader.readlines() == StringIO(blob).readlines()
                 blob_reader.seek(0)
                 for line in blob_reader:
                     assert line.rstrip('\n') in blob.split('\n')
