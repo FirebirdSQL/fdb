@@ -897,10 +897,9 @@ class TestCharsetConversion(unittest.TestCase):
         self.con.commit()
         self.con.close()
     def testCharVarchar(self):
-        if ibase.PYTHON_MAJOR_VER == 3:
-            s = 'Introdução'
-        else:
-            s = u'Introdução'
+        s = 'Introdução'
+        if ibase.PYTHON_MAJOR_VER != 3:
+            s = s.decode('utf8')
         assert len(s) == 10
         data = tuple([1,s,s])
         cur = self.con.cursor()
@@ -910,20 +909,15 @@ class TestCharsetConversion(unittest.TestCase):
         row = cur.fetchone()
         assert row == data
     def testBlob(self):
-        if ibase.PYTHON_MAJOR_VER == 3:
-            s = """Introdução
+        s = """Introdução
 
 Este artigo descreve como você pode fazer o InterBase e o Firebird 1.5 
 coehabitarem pacificamente seu computador Windows. Por favor, note que esta 
 solução não permitirá que o Interbase e o Firebird rodem ao mesmo tempo. 
 Porém você poderá trocar entre ambos com um mínimo de luta. """
-        else:
-            s = u"""Introdução
-
-Este artigo descreve como você pode fazer o InterBase e o Firebird 1.5 
-coehabitarem pacificamente seu computador Windows. Por favor, note que esta 
-solução não permitirá que o Interbase e o Firebird rodem ao mesmo tempo. 
-Porém você poderá trocar entre ambos com um mínimo de luta. """
+        if ibase.PYTHON_MAJOR_VER != 3:
+            s = s.decode('utf8')
+        assert len(s) == 295
         data = tuple([2,s])
         b_data = tuple([3,ibase.b('bytestring')])
         cur = self.con.cursor()
