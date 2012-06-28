@@ -554,7 +554,7 @@ class TestServices(unittest.TestCase):
         con2 = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
         x = svc.getAttachedDatabaseNames()
         assert len(x) == 2
-        assert self.dbfile.upper() in x
+        assert self.dbfile in x
         #assert '/opt/firebird/examples/empbuild/employee.fdb' in x
         x = svc.getConnectionCount()
 #        print 'getConnectionCount',x
