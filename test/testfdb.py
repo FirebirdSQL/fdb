@@ -419,7 +419,7 @@ class TestPreparedStatement(unittest.TestCase):
         ps = cur.prep('select * from country')
         assert ps.plan == "PLAN (COUNTRY NATURAL)"
 
-class TestCursor2(unittest.TestCase):
+class TestCursorInsert(unittest.TestCase):
     def setUp(self):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
@@ -881,6 +881,72 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
             # Necessary to avoid bad BLOB handle on BlobReader.close in tearDown
             # because BLOB handle is no longer valid after table purge
             p.close()
+
+class TestCharsetConversion(unittest.TestCase):
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',charset='utf8')
+        #self.con.execute_immediate("recreate table t (c1 integer)")
+        #self.con.commit()
+        #self.con.execute_immediate("RECREATE TABLE T2 (C1 Smallint,C2 Integer,C3 Bigint,C4 Char(5),C5 Varchar(10),C6 Date,C7 Time,C8 Timestamp,C9 Blob sub_type 1,C10 Numeric(18,2),C11 Decimal(18,2),C12 Float,C13 Double precision,C14 Numeric(8,4),C15 Decimal(8,4))")
+        #self.con.commit()
+    def tearDown(self):
+        self.con.execute_immediate("delete from t3")
+        self.con.commit()
+        self.con.close()
+    def testCharVarchar(self):
+        if ibase.PYTHON_MAJOR_VER == 3:
+            s = 'Introdução'
+        else:
+            s = u'Introdução'
+        assert len(s) == 10
+        data = tuple([1,s,s])
+        cur = self.con.cursor()
+        cur.execute('insert into T3 (C1,C2,C3) values (?,?,?)',data)
+        self.con.commit()
+        cur.execute('select C1,C2,C3 from T3 where C1 = 1')
+        row = cur.fetchone()
+        assert row == data
+    def testBlob(self):
+        if ibase.PYTHON_MAJOR_VER == 3:
+            s = """Introdução
+
+Este artigo descreve como você pode fazer o InterBase e o Firebird 1.5 
+coehabitarem pacificamente seu computador Windows. Por favor, note que esta 
+solução não permitirá que o Interbase e o Firebird rodem ao mesmo tempo. 
+Porém você poderá trocar entre ambos com um mínimo de luta. """
+        else:
+            s = u"""Introdução
+
+Este artigo descreve como você pode fazer o InterBase e o Firebird 1.5 
+coehabitarem pacificamente seu computador Windows. Por favor, note que esta 
+solução não permitirá que o Interbase e o Firebird rodem ao mesmo tempo. 
+Porém você poderá trocar entre ambos com um mínimo de luta. """
+        data = tuple([2,s])
+        b_data = tuple([3,ibase.b('bytestring')])
+        cur = self.con.cursor()
+        # Text BLOB
+        cur.execute('insert into T3 (C1,C4) values (?,?)',data)
+        self.con.commit()
+        cur.execute('select C1,C4 from T3 where C1 = 2')
+        row = cur.fetchone()
+        assert row == data
+        # Insert Unicode into non-textual BLOB
+        try:
+            cur.execute('insert into T3 (C1,C5) values (?,?)',data)
+            self.con.commit()
+        except Exception as e:
+            assert e.args == ('Unicode strings are not acceptable input for a non-textual BLOB column.',)
+        else:
+            raise ProgrammingError('Exception expected')
+        # Read binary from non-textual BLOB
+        cur.execute('insert into T3 (C1,C5) values (?,?)',b_data)
+        self.con.commit()
+        cur.execute('select C1,C5 from T3 where C1 = 3')
+        row = cur.fetchone()
+        assert row == b_data
 
 class TestBugs(unittest.TestCase):
     def setUp(self):

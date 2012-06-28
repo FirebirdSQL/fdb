@@ -246,10 +246,7 @@ _FS_ENCODING = sys.getfilesystemencoding()
 DIST_TRANS_MAX_DATABASES = 16
 
 def bs(byte_array):
-    if PYTHON_MAJOR_VER == 3:
-        return bytes(byte_array)
-    return ''.join([chr(c) for c in byte_array])
-
+    return bytes(byte_array) if PYTHON_MAJOR_VER == 3 else ''.join([chr(c) for c in byte_array])
 
 ISOLATION_LEVEL_READ_UNCOMMITTED = 0
 ISOLATION_LEVEL_READ_COMMITED = 1
@@ -601,6 +598,8 @@ class Connection(object):
         self.sql_dialect = sql_dialect
         self._dpb = dpb
         self._charset = charset
+        if charset:
+            self._charset = charset.upper()
 
         self._isc_status = ISC_STATUS_ARRAY()
         self._db_handle = db_handle
@@ -1270,6 +1269,8 @@ class PreparedStatement(object):
         self.__output_cache = None
         #self.out_buffer = None
         self._last_fetch_status = ibase.ISC_STATUS(self.NO_FETCH_ATTEMPTED_YET)
+        self.__charset = self.__get_connection().charset
+        self.__sql_dialect = self.__get_connection().sql_dialect
 
         # allocate statement handle
         self._stmt_handle = ibase.isc_stmt_handle(0)
@@ -1285,7 +1286,7 @@ class PreparedStatement(object):
                                self._stmt_handle,
                                len(self._str_to_bytes(operation)),
                                self._str_to_bytes(operation),
-                               self.__get_connection().sql_dialect,
+                               self.__sql_dialect,
                                ctypes.cast(ctypes.pointer(self.out_sqlda),
                                            XSQLDA_PTR))
         if db_api_error(self._isc_status):
@@ -1305,7 +1306,7 @@ class PreparedStatement(object):
         self.statement_type = bytes_to_int(info[3:3 + bytes_to_int(info[1:3])])
         # Init XSQLDA for input parameters
         ibase.isc_dsql_describe_bind(self._isc_status, self._stmt_handle,
-                                     self.__get_connection().sql_dialect,
+                                     self.__sql_dialect,
                                      ctypes.cast(ctypes.pointer(self.in_sqlda),
                                                  XSQLDA_PTR))
         if db_api_error(self._isc_status):
@@ -1314,7 +1315,7 @@ class PreparedStatement(object):
         if self.in_sqlda.sqld > self.in_sqlda.sqln:
             self.in_sqlda = xsqlda_factory(self.in_sqlda.sqld)
             ibase.isc_dsql_describe_bind(self._isc_status, self._stmt_handle,
-                                         self.__get_connection().sql_dialect,
+                                         self.__sql_dialect,
                                          ctypes.cast(ctypes.pointer(self.in_sqlda),
                                                      XSQLDA_PTR))
             if db_api_error(self._isc_status):
@@ -1327,7 +1328,7 @@ class PreparedStatement(object):
             self.in_sqlda_save.append((sqlvar.sqltype, sqlvar.sqllen))
         # Init output XSQLDA
         ibase.isc_dsql_describe(self._isc_status, self._stmt_handle,
-                                self.__get_connection().sql_dialect,
+                                self.__sql_dialect,
                                 ctypes.cast(ctypes.pointer(self.out_sqlda),
                                             XSQLDA_PTR))
         if db_api_error(self._isc_status):
@@ -1336,7 +1337,7 @@ class PreparedStatement(object):
         if self.out_sqlda.sqld > self.out_sqlda.sqln:
             self.out_sqlda = xsqlda_factory(self.out_sqlda.sqld)
             ibase.isc_dsql_describe(self._isc_status, self._stmt_handle,
-                                    self.__get_connection().sql_dialect,
+                                    self.__sql_dialect,
                                     ctypes.cast(ctypes.pointer(self.out_sqlda),
                                                 XSQLDA_PTR))
             if db_api_error(self._isc_status):
@@ -1369,8 +1370,7 @@ class PreparedStatement(object):
         while True:
             info = b(' ') * buf_size
             ibase.isc_dsql_sql_info(self._isc_status, self._stmt_handle, 2,
-                                    bs([ibase.isc_info_sql_get_plan,
-                                        isc_info_end]),
+                                    bs([ibase.isc_info_sql_get_plan,isc_info_end]),
                                     len(info), info)
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
@@ -1393,13 +1393,11 @@ class PreparedStatement(object):
         size = bytes_to_int(info[1:_SIZE_OF_SHORT + 1])
         # Skip first byte: a new line
         ### Todo: Better handling of P version specifics
+        result = ctypes.string_at(info[_SIZE_OF_SHORT + 2:], size - 1)
         if PYTHON_MAJOR_VER == 3:
-            return ((ctypes.string_at(info[_SIZE_OF_SHORT + 2:], size - 1))
-                    .decode(charset_map.get(
-                        self.__get_connection().charset,
-                        self.__get_connection().charset)))
+            return result.decode(charset_map.get(self.__charset,self.__charset))
         else:
-            return ctypes.string_at(info[_SIZE_OF_SHORT + 2:], size - 1)
+            return result
     def __is_fixed_point(self, dialect, data_type, subtype, scale):
         return ((data_type in [SQL_SHORT, SQL_LONG,
                                SQL_INT64]
@@ -1506,7 +1504,7 @@ class PreparedStatement(object):
                                      SQL_D_FLOAT]:
                         # Special case, dialect 1 DOUBLE/FLOAT
                         # could be Fixed point
-                        if (self.__get_connection().sql_dialect < 3) and scale:
+                        if (self.__sql_dialect < 3) and scale:
                             vtype = decimal.Decimal
                             precision = (self.__get_connection()._determine_field_precision(sqlvar))
                         else:
@@ -1700,34 +1698,31 @@ class PreparedStatement(object):
                                                 and sqlvar.sqlind.contents.value == -1):
                 value = None
             elif vartype == SQL_TEXT:
-                #value = ctypes.string_at(sqlvar.sqldata,sqlvar.sqllen)
+                value = ctypes.string_at(sqlvar.sqldata,sqlvar.sqllen)
+                #value = sqlvar.sqldata[:sqlvar.sqllen]
                 ### Todo: verify handling of P version differences
+                if ((self.__charset or PYTHON_MAJOR_VER == 3) 
+                    and sqlvar.sqlsubtype != 1):   # non OCTETS
+                    value = value.decode(charset_map.get(self.__charset,self.__charset))
+                # CHAR with multibyte encoding requires special handling
                 if sqlvar.sqlsubtype in (4, 69):  # UTF8 and GB18030
                     reallength = sqlvar.sqllen // 4
                 elif sqlvar.sqlsubtype == 3:  # UNICODE_FSS
                     reallength = sqlvar.sqllen // 3
                 else:
                     reallength = sqlvar.sqllen
-                if PYTHON_MAJOR_VER == 3:
-                    value = sqlvar.sqldata[:reallength]
-                    if sqlvar.sqlsubtype != 1:   # non OCTETS
-                        value = value.decode(charset_map.get(
-                            self.__get_connection().charset,
-                            self.__get_connection().charset))
-                else:
-                    value = str(sqlvar.sqldata[:reallength])
+                value = value[:reallength]
             elif vartype == SQL_VARYING:
                 size = bytes_to_int(sqlvar.sqldata[:1])
                 #value = ctypes.string_at(sqlvar.sqldata[2],2+size)
                 ### Todo: verify handling of P version differences
                 if PYTHON_MAJOR_VER == 3:
                     value = bytes(sqlvar.sqldata[2:2 + size])
-                    if sqlvar.sqlsubtype != 1:  # non OCTETS
-                        value = value.decode(charset_map.get(
-                            self.__get_connection().charset,
-                            self.__get_connection().charset))
                 else:
                     value = str(sqlvar.sqldata[2:2 + size])
+                if ((self.__charset or PYTHON_MAJOR_VER == 3) 
+                    and sqlvar.sqlsubtype != 1):   # non OCTETS
+                    value = value.decode(charset_map.get(self.__charset,self.__charset))
             elif vartype in [SQL_SHORT, SQL_LONG, SQL_INT64]:
                 value = bytes_to_int(sqlvar.sqldata[:sqlvar.sqllen])
                 # It's scalled integer?
@@ -1768,7 +1763,7 @@ class PreparedStatement(object):
                     value = BlobReader(blobid,self.__get_connection()._db_handle,
                                        self.__get_transaction()._tr_handle,
                                        sqlvar.sqlsubtype == 1,
-                                       self.__get_connection().charset)
+                                       self.__charset)
                     self.__blob_readers.append(value)
                 else:
                     # Materialized BLOB
@@ -1837,10 +1832,10 @@ class PreparedStatement(object):
                                                     self._isc_status,
                                                     "Cursor.read_otput_blob/isc_close_blob:")
                     value = blob.value
-                    if PYTHON_MAJOR_VER == 3 and sqlvar.sqlsubtype == 1:
-                        value = value.decode(charset_map.get(
-                            self.__get_connection().charset,
-                            self.__get_connection().charset))
+                    if ((self.__charset or PYTHON_MAJOR_VER == 3) 
+                        and sqlvar.sqlsubtype == 1):
+                        value = value.decode(charset_map.get(self.__charset,
+                                                             self.__charset))
             elif vartype == SQL_ARRAY:
                 value = []
             values.append(value)
@@ -1881,9 +1876,7 @@ class PreparedStatement(object):
                     # Place for Implicit Conversion of Input Parameters
                     # from Strings
                     if isinstance(value, UnicodeType):
-                        value = value.encode(
-                            charset_map.get(self.__get_connection().charset,
-                                            self.__get_connection().charset))
+                        value = value.encode(charset_map.get(self.__charset,self.__charset))
                     ### Todo: verify handling of P version differences
                     if PYTHON_MAJOR_VER != 3:
                         if not isinstance(value, StringType):
@@ -1910,7 +1903,7 @@ class PreparedStatement(object):
                                             ' acceptable input for'
                                             ' a fixed-point column.' % str(type(value)))
                     self._check_integer_rage(value,
-                                             self.__get_connection().sql_dialect,
+                                             self.__sql_dialect,
                                              vartype, sqlvar.sqlsubtype,
                                              sqlvar.sqlscale)
                     sqlvar.sqldata = ctypes.cast(ctypes.pointer(
@@ -1940,12 +1933,11 @@ class PreparedStatement(object):
                     blobid = ibase.ISC_QUAD(0, 0)
                     blob_handle = ibase.isc_blob_handle()
                     ### Todo: verify handling of P version differences
-                    if PYTHON_MAJOR_VER == 3:
-                        if isinstance(value, str):
-                            value = value.encode(
-                                charset_map.get(
-                                self.__get_connection().charset,
-                                self.__get_connection().charset))
+                    if ((self.__charset or 
+                         (PYTHON_MAJOR_VER == 3 and isinstance(value, str))) 
+                        and sqlvar.sqlsubtype == 1):
+                        value = value.encode(charset_map.get(self.__charset,
+                                                             self.__charset))
                     if hasattr(value,'read'):
                         # It seems we've got file-like object, use stream BLOB
                         ibase.isc_create_blob2(self._isc_status,
@@ -1981,6 +1973,10 @@ class PreparedStatement(object):
                                                         "Cursor.write_input_blob/isc_close_blob:")
                     else:
                         # Non-stream BLOB
+                        if isinstance(value, str if PYTHON_MAJOR_VER == 3 else UnicodeType):
+                            raise TypeError('Unicode strings are not'
+                                            ' acceptable input for'
+                                            ' a non-textual BLOB column.')
                         blob = ctypes.create_string_buffer(value)
                         ibase.isc_create_blob2(self._isc_status,
                                                self.__get_connection()._db_handle,
@@ -2084,7 +2080,7 @@ class PreparedStatement(object):
             ibase.isc_dsql_execute2(self._isc_status,
                                     self.__get_transaction()._tr_handle,
                                     self._stmt_handle,
-                                    self.__get_connection().sql_dialect,
+                                    self.__sql_dialect,
                                     xsqlda_in,
                                     xsqlda_out)
             if db_api_error(self._isc_status):
@@ -2099,7 +2095,7 @@ class PreparedStatement(object):
             ibase.isc_dsql_execute2(self._isc_status,
                                     self.__get_transaction()._tr_handle,
                                     self._stmt_handle,
-                                    self.__get_connection().sql_dialect,
+                                    self.__sql_dialect,
                                     xsqlda_in,
                                     None)
             if db_api_error(self._isc_status):
@@ -2122,7 +2118,7 @@ class PreparedStatement(object):
                 self._last_fetch_status = ibase.isc_dsql_fetch(
                     self._isc_status,
                     self._stmt_handle,
-                    self.__get_connection().sql_dialect,
+                    self.__sql_dialect,
                     ctypes.cast(ctypes.pointer(self.out_sqlda), XSQLDA_PTR))
                 if self._last_fetch_status == 0:
                     return self.__XSQLDA2Tuple(self.out_sqlda)
