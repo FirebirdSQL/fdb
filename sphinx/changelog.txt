@@ -1,6 +1,47 @@
-#####################
-FDB Changelog
-#####################
+#########
+Changelog
+#########
+
+* `Version 0.9`_ (5. 9. 2012)
+* `Version 0.8.5`_ (28. 6. 2012)
+* `Version 0.8`_ (31. 5. 2012)
+* `Version 0.7.2`_ (27. 3. 2012)
+* `Version 0.7.1`_ (31. 1. 2012)
+* `Version 0.7`_ (21. 12. 2011)
+
+Version 0.9
+===========
+
+New Features
+------------
+
+- Documentation; both in-source (in Sphinx autodoc format) and Sphinx (html)
+- Services API completely reworked
+
+Other changes
+-------------
+
+- Unregistered bugs fixed.
+- Various optimizations and cleanup
+- Object reference graph optimalizations
+- Many new tests in test suite
+
+Version 0.8.5
+=============
+
+New Features
+------------
+
+- Support for Firebird stream BLOBs (see ReleaseNotes for details)
+- Documentation (stub, from KInterbasDB 3.3.0)
+
+Bugs Fixed
+----------
+
+- Fix for PYFB-17 and PYFB-18 (see our JIRA tracker for details)
+- Fixes for automatic unicode conversions + refactoring
+- Some optimizations
+
 
 Version 0.8
 ===========
@@ -8,12 +49,46 @@ Version 0.8
 New Features
 ------------
 
-    - Support for Firebird Event Notifications (http://tracker.firebirdsql.org/browse/PYFB-8) 
+- Support for Firebird Event Notifications - `JIRA entry <http://tracker.firebirdsql.org/browse/PYFB-8>`
 
-Bug Fixes
----------
+Bugs Fixes
+----------
 
-    - database_info(isc_info_firebird_version) fails opn amd64 linux (http://tracker.firebirdsql.org/browse/PYFB-16)
-    - more than 2 consecutive cursor open execute and iter fail (http://tracker.firebirdsql.org/browse/PYFB-15
+- database_info (isc_info_firebird_version) fails opn amd64 linux - `JIRA entry <http://tracker.firebirdsql.org/browse/PYFB-16>`
+- more than 2 consecutive cursor open execute and iter fail - `JIRA entry <http://tracker.firebirdsql.org/browse/PYFB-15>`
 
 
+Version 0.7.2
+=============
+
+New Features
+------------
+
+- Python 3 Support (thanks to Philippe Makowski)
+- Support for Distributed Transactions
+
+And as always, some (unregistered) bugs fixed.
+
+Version 0.7.1
+=============
+
+Bug fixes.
+
+Version 0.7
+===========
+
+Initial release.
+
+Almost feature-complete (ready for 95% of users), but it could be still buggy (it’s beta!), and the 
+code wasn’t optimized for size and speed. In all other ways it’s ready for wide testing.
+
+What’s missing
+--------------
+
+- Distributed transactions
+- ARRAY support
+- EVENTs support
+- Stream BLOBs
+- TRACE service
+- Documentation (but you can use KInterbasDB one as FDB is as close to it as possible).
+- Python 3.x support (haven’t had time to test it, but it shouldn’t be hard to make it work there)
