@@ -1036,12 +1036,14 @@ class Connection(object):
                 dest_filename, 
                 nbackup_level=0,
                 no_db_triggers=0):
-        """Request physical (NBACKUP) database backup.
+        """Perform physical (NBACKUP) database backup.
         
         :param string source_database: Source database specification.
         :param dest_filename: Backup file specification.
         :param integer nbackup_level: Incremental backup level.
         :param integer no_db_triggers: `1` to disable database triggers temporarily.
+
+        .. note:: Method call will not return until action is finished.
         """
         self.__check_active()
         # Begin parameter validation section.
@@ -1073,15 +1075,18 @@ class Connection(object):
 
         # Done constructing the request buffer.
         self._act(request)
+        self.wait()
     def nrestore(self, source_filenames, 
                  dest_filename, 
                  no_db_triggers=0):
-        """Request restore from physical (NBACKUP) database backup.
+        """Perform restore from physical (NBACKUP) database backup.
         
         :param source_filenames: Backup file(s) specification.
         :type source_filenames: string or tuple of strings
         :param dest_filename: Database file specification.
         :param integer no_db_triggers: `1` to disable database triggers temporarily.
+
+        .. note:: Method call will not return until action is finished.
         """
         self.__check_active()
         # Begin parameter validation section.
@@ -1108,7 +1113,8 @@ class Connection(object):
         request.add_numeric(ibase.isc_spb_options, optionMask)
 
         # Done constructing the request buffer.
-        return self._act(request)
+        self._act(request)
+        self.wait()
     # Trace
     def trace_start(self, config, name=None):
         """Start new trace session. **(ASYNC service)**

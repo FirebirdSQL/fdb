@@ -784,6 +784,7 @@ class Connection(object):
                            p3fix(sqlvar.sqlname,self._python_charset)))
         result = self.__ic.fetchone()
         if result:
+            self.__ic.close()
             return result[0]
         # Next, try stored procedure output parameter
         self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
@@ -799,6 +800,7 @@ class Connection(object):
                            p3fix(sqlvar.sqlname,self._python_charset)))
         result = self.__ic.fetchone()
         if result:
+            self.__ic.close()
             return result[0]
         # We ran out of options
         return 0
@@ -2337,7 +2339,7 @@ class PreparedStatement(object):
                     raise exception_from_status(DatabaseError, self._isc_status,
                                   "Error while releasing SQL statement handle:")
     def _callproc(self, procname, parameters=None):
-        raise NotImplementedError('Cursor.callproc')
+        raise NotImplementedError('PreparedStatement.callproc')
     def _close(self):
         if self._stmt_handle != None:
             while len(self.__blob_readers) > 0:
@@ -2346,7 +2348,7 @@ class PreparedStatement(object):
             self._stmt_handle = None
             self.__executed = False
             self.__prepared = False
-            self.__closed = False
+            self.__closed = True
             self.__description = None
             self.__output_cache = None
             self._name = None
@@ -3125,13 +3127,13 @@ class Transaction(object):
         if retaining:
             ibase.isc_commit_retaining(self._isc_status, self._tr_handle)
         else:
+            self.__close_cursors()
             ibase.isc_commit_transaction(self._isc_status, self._tr_handle)
         if db_api_error(self._isc_status):
             raise exception_from_status(DatabaseError, self._isc_status,
                                         "Error while commiting transaction:")
         if not retaining:
             self._tr_handle = None
-            self.__close_cursors()
     def rollback(self, retaining=False, savepoint=None):
         """Rollback any pending transaction to the database.
         
@@ -3162,6 +3164,7 @@ class Transaction(object):
             if retaining:
                 ibase.isc_rollback_retaining(self._isc_status, self._tr_handle)
             else:
+                self.__close_cursors()
                 ibase.isc_rollback_transaction(self._isc_status,
                                                self._tr_handle)
             if db_api_error(self._isc_status):
@@ -3169,7 +3172,6 @@ class Transaction(object):
                                             "Error while rolling back transaction:")
             if not retaining:
                 self._tr_handle = None
-                self.__close_cursors()
     def close(self):
         """Permanently closes the Transaction object and severs its associations 
         with other objects (:class:`Cursor` and :class:`Connection` instances).

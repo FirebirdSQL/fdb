@@ -770,7 +770,8 @@ class TestServices(unittest.TestCase):
         x = svc.get_attached_database_names()
         #print repr(x)
         assert len(x) == 2
-        assert self.dbfile in x
+        assert self.dbfile.upper() in [s.upper() for s in x]
+            
         #assert '/opt/firebird/examples/empbuild/employee.fdb' in x
         x = svc.get_connection_count()
         #print 'getConnectionCount',x
@@ -1118,6 +1119,7 @@ END""")
         events = self.con.event_conduit(['insert_1'])
         timed_event.start()
         e = events.wait()
+        timed_event.join()
         events.close()
         assert repr(e) == "{'insert_1': 1}"
     def test_multiple_events(self):
@@ -1135,6 +1137,7 @@ END""")
         events = self.con.event_conduit(['insert_1','insert_3'])
         timed_event.start()
         e = events.wait()
+        timed_event.join()
         events.close()
         assert repr(e) == "{'insert_3': 1, 'insert_1': 2}"
     def test_20_events(self):
@@ -1156,6 +1159,7 @@ END""")
         timed_event.start()
         time.sleep(3)
         e = events.wait()
+        timed_event.join()
         events.close()
         assert repr(e) == "{'A': 0, 'C': 0, 'B': 0, 'E': 0, 'D': 0, 'G': 0, 'insert_1': 2, 'I': 0, 'H': 0, 'K': 0, 'J': 0, 'M': 0, 'L': 0, 'O': 0, 'N': 0, 'Q': 0, 'P': 0, 'R': 0, 'insert_3': 1, 'F': 0}"
     def test_flush_events(self):
@@ -1173,6 +1177,7 @@ END""")
         events.flush()
         timed_event.start()
         e = events.wait()
+        timed_event.join()
         events.close()
         assert repr(e) == "{'insert_1': 1}"
 
