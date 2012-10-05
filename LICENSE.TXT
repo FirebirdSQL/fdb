@@ -1,9 +1,18 @@
-The following contributors hold Copyright (C) over their respective portions 
+=======
+LICENSE
+=======
+
+The following contributors hold Copyright (c) over their respective portions 
 of code and documentation:
 
-The main portion of initial code (~85%); Current maintainer: 
+The main portion of initial code (~95%); Current maintainer: 
 
     Pavel Cisar <pcisar@ibphoenix.cz>
+
+Contributors:
+
+[Initial trace API & nbackup support; Python 3 support]
+    Philippe Makowski <pmakowski@espelida.com>
 
 Some code in inital version is Python code from KInterbasDB 3.3.0. 
 As it's very hard to find out who exactly was the original author of used code, 

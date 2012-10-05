@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """fdb package is a set of Firebird RDBMS bindings for python.
-It works on Python 2.6+ (support for Python 3.x is planned)
+It works on Python 2.6+ and Python 3.x.
 
 """
 from setuptools import setup, find_packages
 from fdb import __version__
 
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'License :: OSI Approved :: BSD License',
     'Operating System :: OS Independent',
     'Programming Language :: Python',

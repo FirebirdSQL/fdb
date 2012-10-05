@@ -584,6 +584,7 @@ isc_spb_address_path = 109
 isc_spb_process_id = 110
 isc_spb_trusted_auth = 111
 isc_spb_process_name = 112
+isc_spb_trusted_role = 113
 
 # Service action items
 isc_action_svc_backup = 1           # Starts database backup process on the server
@@ -638,6 +639,7 @@ isc_spb_sec_groupname = 9
 isc_spb_sec_firstname = 10
 isc_spb_sec_middlename = 11
 isc_spb_sec_lastname = 12
+isc_spb_sec_admin = 13
 
 # Parameters for isc_action_svc_backup
 isc_spb_bkp_file = 5
@@ -665,6 +667,17 @@ isc_spb_prp_access_mode = 13
 isc_spb_prp_set_sql_dialect = 14
 isc_spb_prp_activate = 0x0100
 isc_spb_prp_db_online = 0x0200
+isc_spb_prp_force_shutdown = 41
+isc_spb_prp_attachments_shutdown = 42
+isc_spb_prp_transactions_shutdown = 43
+isc_spb_prp_shutdown_mode = 44
+isc_spb_prp_online_mode = 45
+
+# Parameters for isc_spb_prp_shutdown_mode and isc_spb_prp_online_mode
+isc_spb_prp_sm_normal = 0
+isc_spb_prp_sm_multi = 1
+isc_spb_prp_sm_single = 2
+isc_spb_prp_sm_full = 3
 
 # Parameters for isc_spb_prp_reserve_space
 isc_spb_prp_res_use_full = 35
@@ -712,6 +725,9 @@ isc_spb_res_buffers = 9
 isc_spb_res_page_size = 10
 isc_spb_res_length = 11
 isc_spb_res_access_mode = 12
+isc_spb_res_fix_fss_data = 13
+isc_spb_res_fix_fss_metadata = 14
+isc_spb_res_metadata_only = 0x04
 isc_spb_res_deactivate_idx = 0x0100
 isc_spb_res_no_shadow = 0x0200
 isc_spb_res_no_validity = 0x0400
@@ -719,11 +735,6 @@ isc_spb_res_one_at_a_time = 0x0800
 isc_spb_res_replace = 0x1000
 isc_spb_res_create = 0x2000
 isc_spb_res_use_all_space = 0x4000
-isc_spb_res_metadata_only = 0x04
-
-# Parameters for isc_action_svc_nbak
-isc_spb_nbk_level = 5
-isc_spb_nbk_file = 6
 
 # Parameters for isc_spb_res_access_mode
 isc_spb_res_am_readonly = isc_spb_prp_am_readonly
@@ -742,6 +753,17 @@ isc_spb_sts_sys_relations = 0x10
 isc_spb_sts_record_versions = 0x20
 isc_spb_sts_table = 0x40
 isc_spb_sts_nocreation = 0x80
+
+# Parameters for isc_action_svc_nbak
+isc_spb_nbk_level = 5
+isc_spb_nbk_file = 6
+isc_spb_nbk_direct = 7
+isc_spb_nbk_no_triggers = 0x01
+
+# trace
+isc_spb_trc_id = 1
+isc_spb_trc_name = 2
+isc_spb_trc_cfg = 3
 
 #-------------------
 
@@ -904,11 +926,6 @@ isc_info_db_provider = 108
 isc_info_wal_recv_ckpt_poffset = 45
 isc_info_ods_version = 32
 isc_info_db_impl_isc_sgi = 41
-
-# trace
-isc_spb_trc_id = 1
-isc_spb_trc_name = 2
-isc_spb_trc_cfg = 3
 
 # status codes
 isc_segment = 335544366
@@ -2084,11 +2101,11 @@ __all__ = ['isc_info_base_level', 'isc_start_and_send',
            'isc_info_wal_num_io', 'isc_info_db_impl_freebsd',
            'isc_info_db_code_last_value', 'isc_info_set_page_buffers',
            'isc_database_info', 'isc_encode_date', 'uint16_t',
-           'isc_encode_timestamp', 'wcstoumax', 'blb_got_fragment',
+           'isc_encode_timestamp', 'blb_got_fragment',
            'isc_start_request', 'int32_t',
            'isc_info_db_impl_linux_ia64', 'isc_dsql_sql_info',
-           'isc_start_multiple', 'strtoimax',
-           'isc_info_wal_num_commits', 'strtoumax', 'ISC_QUAD',
+           'isc_start_multiple', 
+           'isc_info_wal_num_commits', 'ISC_QUAD',
            'isc_prepare_transaction', 'isc_info_wal_prv_ckpt_poffset',
            'isc_info_fetches', 'isc_fetch', 'isc_que_events',
            'isc_compile_request', 'isc_embed_dsql_fetch',
@@ -2107,7 +2124,7 @@ __all__ = ['isc_info_base_level', 'isc_start_and_send',
            'isc_dsql_fetch_m', 'isc_info_db_code_rdb_eln',
            'isc_info_db_impl_isc_sun_68k', 'isc_blob_info',
            'isc_service_query', 'isc_open_blob2', 'isc_expand_dpb',
-           'isc_info_db_provider', 'imaxabs', 'int_least32_t',
+           'isc_info_db_provider', 'int_least32_t',
            'isc_dsql_set_cursor_name',
            'isc_info_db_impl_isc_winnt_x86',
            'isc_dsql_execute_immediate', 'isc_vax_integer',
@@ -2133,10 +2150,10 @@ __all__ = ['isc_info_base_level', 'isc_start_and_send',
            'isc_event_counts', 'isc_info_db_impl_linux_mips',
            'uintptr_t', 'isc_info_num_wal_buffers', 'int8_t',
            'blob_lseek_mode', 'isc_embed_dsql_insert',
-           'BLOB_text_load', 'info_db_provider', 'wcstoimax',
+           'BLOB_text_load', 'info_db_provider', 
            'isc_version', 'isc_info_cur_logfile_name',
            'isc_info_delete_count', 'isc_info_db_sql_dialect',
-           'isc_info_logfile', 'imaxdiv', 'isc_add_user',
+           'isc_info_logfile', 'isc_add_user',
            'isc_blob_default_desc', 'isc_info_active_transactions',
            'isc_info_db_impl_isc_next', 'isc_drop_database',
            'isc_ftof', 'int64_t', 'BLOB_text_dump',
@@ -2148,5 +2165,9 @@ __all__ = ['isc_info_base_level', 'isc_start_and_send',
            'BLOB_close', 'intmax_t', 'isc_modify_user',
            'isc_info_db_impl_isc_rt_aix',
            'isc_get_client_major_version', 'isc_dsql_fetch',
-           'isc_info_update_count', 'int_least8_t']
+           'isc_info_update_count', 'int_least8_t'
+           # removed
+           # 'imaxdiv', 'wcstoimax', 'imaxabs', 'strtoumax', 'strtoimax',
+           # 'wcstoumax', 
+           ]
 

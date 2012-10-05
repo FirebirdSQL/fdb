@@ -140,7 +140,8 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '0.8.5'
+__version__ = '0.9'
+
 apilevel = '2.0'
 threadsafety = 1
 paramstyle = 'qmark'
@@ -149,15 +150,24 @@ paramstyle = 'qmark'
 
 
 class Warning(Exception):
+    """Exception raised for important warnings like data
+    truncations while inserting, etc."""
     pass
 
 class Error(Exception):
+    """Exception that is the base class of all other error
+    exceptions. You can use this to catch all errors with one
+    single 'except' statement. Warnings are not considered
+    errors and thus should not use this class as base."""
     pass
 
 class InterfaceError(Error):
+    """Exception raised for errors that are related to the
+    database interface rather than the database itself."""
     pass
 
 class DatabaseError(Error):
+    "Exception raised for errors that are related to the database."
     pass
     #def __init__(self,msg, sqlcode=0,error_code=0):
         #self.sqlcode = sqlcode
@@ -165,21 +175,40 @@ class DatabaseError(Error):
         #self.msg = msg
 
 class DataError(DatabaseError):
+    """Exception raised for errors that are due to problems with
+    the processed data like division by zero, numeric value
+    out of range, etc."""
     pass
 
 class OperationalError(DatabaseError):
+    """Exception raised for errors that are related to the
+    database's operation and not necessarily under the control
+    of the programmer, e.g. an unexpected disconnect occurs,
+    the data source name is not found, a transaction could not
+    be processed, a memory allocation error occurred during
+    processing, etc."""
     pass
 
 class IntegrityError(DatabaseError):
+    """Exception raised when the relational integrity of the
+    database is affected, e.g. a foreign key check fails."""
     pass
 
 class InternalError(DatabaseError):
+    """Exception raised when the database encounters an internal
+    error, e.g. the cursor is not valid anymore, the
+    transaction is out of sync, etc."""
     pass
 
 class ProgrammingError(DatabaseError):
+    """Exception raised for programming errors, e.g. table not
+    found or already exists, syntax error in the SQL
+    statement, wrong number of parameters specified, etc."""
     pass
 
 class NotSupportedError(DatabaseError):
+    """Exception raised in case a method or database API was used
+    which is not supported by the database"""
     pass
 
 class TransactionConflict(DatabaseError):
@@ -199,7 +228,6 @@ DESCRIPTION_SCALE = 5
 DESCRIPTION_NULL_OK = 6
 
 # Types Required by Python DB-API 2.0
-
 
 def Date(year, month, day):
     return datetime.date(year, month, day)
@@ -246,27 +274,33 @@ _FS_ENCODING = sys.getfilesystemencoding()
 DIST_TRANS_MAX_DATABASES = 16
 
 def bs(byte_array):
-    return bytes(byte_array) if PYTHON_MAJOR_VER == 3 else ''.join([chr(c) for c in byte_array])
+    return bytes(byte_array) if PYTHON_MAJOR_VER == 3 else ''.join((chr(c) for c in byte_array))
 
-ISOLATION_LEVEL_READ_UNCOMMITTED = 0
-ISOLATION_LEVEL_READ_COMMITED = 1
-ISOLATION_LEVEL_REPEATABLE_READ = 2
-ISOLATION_LEVEL_SERIALIZABLE = 3
-
-transaction_parameter_block = {
-    ISOLATION_LEVEL_READ_UNCOMMITTED:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
-        isc_tpb_read_committed, isc_tpb_no_rec_version]),
-    ISOLATION_LEVEL_READ_COMMITED:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
-        isc_tpb_read_committed, isc_tpb_rec_version]),
-    ISOLATION_LEVEL_REPEATABLE_READ:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
-        isc_tpb_concurrency]),
-    ISOLATION_LEVEL_SERIALIZABLE:
-    bs([isc_tpb_version3, isc_tpb_write, isc_tpb_wait,
-        isc_tpb_consistency]),
-}
+ISOLATION_LEVEL_READ_COMMITED_LEGACY = bs([isc_tpb_version3, 
+                                           isc_tpb_write, 
+                                           isc_tpb_wait,
+                                           isc_tpb_read_committed, 
+                                           isc_tpb_no_rec_version])
+ISOLATION_LEVEL_READ_COMMITED = bs([isc_tpb_version3, 
+                                    isc_tpb_write, 
+                                    isc_tpb_wait,
+                                    isc_tpb_read_committed, 
+                                    isc_tpb_rec_version])
+ISOLATION_LEVEL_REPEATABLE_READ = bs([isc_tpb_version3, 
+                                      isc_tpb_write, 
+                                      isc_tpb_wait,
+                                      isc_tpb_concurrency])
+ISOLATION_LEVEL_SNAPSHOT = ISOLATION_LEVEL_REPEATABLE_READ
+ISOLATION_LEVEL_SERIALIZABLE = bs([isc_tpb_version3, 
+                                   isc_tpb_write, 
+                                   isc_tpb_wait,
+                                   isc_tpb_consistency])
+ISOLATION_LEVEL_SNAPSHOT_TABLE_STABILITY = ISOLATION_LEVEL_SERIALIZABLE
+ISOLATION_LEVEL_READ_COMMITED_RO = bs([isc_tpb_version3, 
+                                       isc_tpb_read, 
+                                       isc_tpb_wait,
+                                       isc_tpb_read_committed, 
+                                       isc_tpb_rec_version])
 
 _SIZE_OF_SHORT = ctypes.sizeof(ctypes.c_short)
 
@@ -333,6 +367,21 @@ def tebarray_factory(size):
 
 buf_pointer = ctypes.POINTER(ctypes.c_char)
 
+def b2u(st, charset):
+    "Decode to unicode if charset is defined. For conversion of result set data."
+    if charset:
+        return st.decode(charset)
+    else:
+        return st
+
+def p3fix(st, charset):
+    """For P3 convert bytes to string using connection charset, P2 as is. 
+    For conversion of info results to native strings."""
+    if PYTHON_MAJOR_VER == 3:
+        return st.decode(charset)
+    else:
+        return st
+    
 def inc_pointer(pointer):
     t = type(pointer)
     p = ctypes.cast(pointer,ctypes.c_void_p)
@@ -406,12 +455,12 @@ def exception_from_status(error, status, preamble=None):
     error_code = status[1]
     msglist.append('- SQLCODE: %i' % sqlcode)
 
-    isc_sql_interprete(sqlcode, msg, 512)
-    if PYTHON_MAJOR_VER == 3:
-        ### Todo: trouble? decode from connection charset?
-        msglist.append('- ' + (msg.value).decode('utf_8'))
-    else:
-        msglist.append('- ' + msg.value)
+    #isc_sql_interprete(sqlcode, msg, 512)
+    #if PYTHON_MAJOR_VER == 3:
+        #### Todo: trouble? decode from connection charset?
+        #msglist.append('- ' + (msg.value).decode('utf_8'))
+    #else:
+        #msglist.append('- ' + msg.value)
 
     pvector = ctypes.cast(ctypes.addressof(status), ISC_STATUS_PTR)
 
@@ -432,7 +481,7 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
     params = [int2byte(isc_dpb_version1)]
 
     def addString(codeAsByte, s):
-        if PYTHON_MAJOR_VER == 3:
+        if PYTHON_MAJOR_VER == 3 or isinstance(s,UnicodeType):
             s = s.encode(charset_map.get(charset, charset))
         sLen = len(s)
         if sLen >= 256:
@@ -476,25 +525,51 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
         addInt(isc_dpb_dbkey_scope, db_key_scope)
     return b('').join(params)
 
-def connect(*args, **kwargs):
+def connect(dsn='', user=None, password=None, host=None, port=3050, database=None,
+            sql_dialect=3, role=None, charset=None, buffers=None,
+            force_write=None, no_reserve=None, db_key_scope=None,
+            isolation_level=ISOLATION_LEVEL_READ_COMMITED):
     """
-    Establishes a firedb.Connection to a database.
+    Establish a connection to database. 
+    
+    :param dsn: Connection string in format [host[/port]]:database
+    :param string user: User name. If not specified, fdb attempts to use ISC_USER envar.
+    :param string password: User password. If not specified, fdb attempts to use ISC_PASSWORD envar.
+    :param string host: Server host machine specification.
+    :param integer port: Port used by Firebird server **(not used)**.
+    :param string database: Database specification (file spec. or alias)
+    :param sql_dialect: SQL Dialect for connection.
+    :type sql_dialect): 1, 2 or 3
+    :param string role: User role.
+    :param string charset: Character set for connection.
+    :param integer buffers: Page case size override for connection.
+    :param integer force_writes: Forced writes override for connection.
+    :param integer no_reserve: Page space reservation override for connection.
+    :param integer db_key_scope: DBKEY scope override for connection.
+    :param isolation_level: Default transaction isolation level for connection **(not used)**.
+    :type isolation_level: 0, 1, 2 or 3
+    :returns: Connection to database.
+    :rtype: :class:`Connection` instance.
+    
+    :raises ProgrammingError: For bad parameter values.
+    :raises DatabaseError: When connection cannot be established.
+    
+    .. important::  
+    
+       You may specify the database using either `dns` or `database` (with optional `host`), 
+       but not both.
+    
+    Examples:
+    
+    .. code-block:: python
+    
+       con = fdb.connect(dsn='host:/path/database.fdb', user='sysdba', password='pass', charset='UTF8')
+       con = fdb.connect(host='myhost', database='/path/database.fdb', user='sysdba', password='pass', charset='UTF8')
     """
-    dsn = kwargs.get('dsn', '')
-    user = kwargs.get('user', os.environ.get('ISC_USER', None))
-    password = kwargs.get('password', os.environ.get('ISC_PASSWORD', None))
-    host = kwargs.get('host', None)
-    database = kwargs.get('database', None)
-    sql_dialect = kwargs.get('sql_dialect', 3)
-    role = kwargs.get('role', None)
-    charset = kwargs.get('charset', None)
-    buffers = kwargs.get('buffers', None)
-    force_write = kwargs.get('force_write', None)
-    no_reserve = kwargs.get('no_reserve', None)
-    db_key_scope = kwargs.get('db_key_scope', None)
-    isolation_level = kwargs.get('isolation_level',
-                                 ISOLATION_LEVEL_READ_COMMITED)
-    #port = kwargs.get('port',3050)
+    if not user:
+        user = os.environ.get('ISC_USER', None)
+    if not password:
+        password = os.environ.get('ISC_PASSWORD', None)
 
     if sql_dialect not in [1, 2, 3]:
         raise ProgrammingError("SQl Dialect must be either 1, 2 or 3")
@@ -537,26 +612,27 @@ def connect(*args, **kwargs):
 
     return Connection(_db_handle, dpb, sql_dialect, charset)
 
-def create_database(*args):
+def create_database(sql, sql_dialect=3):
     """
-      Creates a new database with the supplied "CREATE DATABASE" statement.
-      Returns an active kinterbasdb.Connection to the newly created database.
+    Creates a new database with the supplied "CREATE DATABASE" statement.
+    
+    :param sql: "CREATE DATABASE" statement.
+    :param sql_dialect: SQL Dialect for newly created database.
+    :type sql_dialect: 1 or 3
+    :returns: Connection to the newly created database.
+    :rtype: :class:`Connection` instance.
+    
+    :raises ProgrammingError: When database creation fails.
 
-    Parameters:
-    $sql: string containing the CREATE DATABASE statement.  Note that you may
-       need to specify a username and password as part of this statement (see
-       the Firebird SQL Reference for syntax).
-    $dialect: (optional) the SQL dialect under which to execute the statement
+    Example:
+    
+    .. code-block:: python
+    
+       con = fdb.create_database("create database '/temp/db.db' user 'sysdba' password 'pass'")
     """
-    if len(args) >= 1 and isinstance(args[0], myunicode):
-        args = (args[0].encode(_FS_ENCODING),) + args[1:]
-
-    if len(args) > 1:
-        dialect = args[1]
-    else:
-        dialect = 3
-    sql = args[0]
-
+    if isinstance(sql, myunicode):
+        sql = sql.encode(_FS_ENCODING)
+        
     isc_status = ISC_STATUS_ARRAY(0)
     trans_handle = ibase.isc_tr_handle(0)
     db_handle = ibase.isc_db_handle(0)
@@ -565,7 +641,7 @@ def create_database(*args):
     # For yet unknown reason, the isc_dsql_execute_immediate segfaults when
     # NULL (None) is passed as XSQLDA, so we provide one here
     isc_dsql_execute_immediate(isc_status, db_handle, trans_handle,
-            ctypes.c_ushort(len(sql)), sql, dialect,
+            ctypes.c_ushort(len(sql)), sql, sql_dialect,
             ctypes.cast(ctypes.pointer(xsqlda),XSQLDA_PTR))
     if db_api_error(isc_status):
         raise exception_from_status(ProgrammingError, isc_status,
@@ -578,34 +654,42 @@ class Connection(object):
     Represents a connection between the database client (the Python process)
     and the database server.
 
-    The basic functionality of this class is documented by the Python DB API
-    Specification 2.0, while the large amount of additional functionality is
-    documented by the FireDB Usage Guide.
+    .. important::
+    
+       DO NOT create instances of this class directly! Use only 
+       :func:`connect` or :func:`create_database` to get Connection instances.
     """
 
     def __init__(self, db_handle, dpb=None, sql_dialect=3,
                  charset=None):
-
-        self._main_transaction = Transaction([self])
-        self._transactions = [self._main_transaction]
-        self._cursors = []  # Weak references to cursors
-        self.__precision_cache = {}
-        self.__conduits = []
-        self._default_tpb = transaction_parameter_block[
-            ISOLATION_LEVEL_READ_COMMITED]
-        self.__group = None
-
-        self.sql_dialect = sql_dialect
-        self._dpb = dpb
-        self._charset = charset
+        """
+        :param db_handle: Database handle provided by factory function.
+        :param dpb: Database Parameter Block associated with database handle.
+        :param integer sql_dialect: SQL Dialect associated with database handle.
+        :param string charset: Character set associated with database handle.
+        """
         if charset:
             self._charset = charset.upper()
+        else:
+            self._charset = None
+        self._python_charset = charset_map.get(self.charset, self.charset)
 
+        self._default_tpb = ISOLATION_LEVEL_READ_COMMITED
+        self._main_transaction = Transaction([self], 
+                                             default_tpb=self._default_tpb)
+        self._transactions = [self._main_transaction]
+        self.__precision_cache = {}
+        self.__conduits = []
+        self.__group = None
+
+        #: (integer) sql_dialect for this connection, do not change.
+        self.sql_dialect = sql_dialect
+        self._dpb = dpb
         self._isc_status = ISC_STATUS_ARRAY()
         self._db_handle = db_handle
-        self.out_sqlda = xsqlda_factory(10)
         # Cursor for internal use
         self.__ic = Cursor(self, self.main_transaction)
+        self.__ic._set_as_internal()
     
     def __remove_cursor(self, cursor_ref):
         self._cursors.remove(cursor_ref)
@@ -621,15 +705,29 @@ class Connection(object):
     def __check_attached(self):
         if self._db_handle == None:
             raise ProgrammingError("Connection object is detached from database")
+    def __close(self, detach=True):
+        if self._db_handle != None:
+            self.__ic.close()
+            for conduit in self.__conduits:
+                conduit.close()
+            for transaction in self._transactions:
+                transaction.default_action = 'rollback' # Required by Python DB API 2.0
+                transaction.close()
+            if detach:
+                ibase.isc_detach_database(self._isc_status, self._db_handle)
+            self._db_handle = None
     def __get_main_transaction(self):
         return self._main_transaction
     def __get_transactions(self):
         return tuple(self._transactions)
     def __get_closed(self):
         return self._db_handle == None
-    def __default_tpb_get(self):
+    def __get_server_version(self):
+        return self.db_info([ibase.isc_info_version])[ibase.isc_info_version]
+        #return self.db_info([ibase.isc_info_firebird_version])[ibase.isc_info_firebird_version]
+    def __get_default_tpb(self):
         return self._default_tpb
-    def __default_tpb_set(self, value):
+    def __set_default_tpb(self, value):
         self._default_tpb = _validateTPB(value)
     def __parse_date(self, raw_value):
         "Convert raw data to datetime.date"
@@ -661,16 +759,6 @@ class Connection(object):
         m = m % 60
         s = s % 60
         return (h, m, s, (n % 10000) * 100)
-    def _bytes_to_str(self, b):
-        if PYTHON_MAJOR_VER == 3:
-            return b.decode(charset_map.get(self.charset,self.charset))
-        else:
-            return b
-    def _str_to_bytes(self, s):
-        if PYTHON_MAJOR_VER == 3:
-            return s.encode(charset_map.get(self.charset, self.charset))
-        else:
-            return s
     def _determine_field_precision(self, sqlvar):
         if sqlvar.relname_length == 0 or sqlvar.sqlname_length == 0:
             # Either or both field name and relation name are not provided,
@@ -686,6 +774,20 @@ class Connection(object):
         # First, try table
         self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
                           " FROM RDB$FIELDS FIELD_SPEC,"
+                          " RDB$RELATION_FIELDS REL_FIELDS"
+                          " WHERE"
+                          " FIELD_SPEC.RDB$FIELD_NAME ="
+                          " REL_FIELDS.RDB$FIELD_SOURCE"
+                          " AND REL_FIELDS.RDB$RELATION_NAME = ?"
+                          " AND REL_FIELDS.RDB$FIELD_NAME = ?",
+                          (p3fix(sqlvar.relname,self._python_charset),
+                           p3fix(sqlvar.sqlname,self._python_charset)))
+        result = self.__ic.fetchone()
+        if result:
+            return result[0]
+        # Next, try stored procedure output parameter
+        self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
+                          " FROM RDB$FIELDS FIELD_SPEC,"
                           " RDB$PROCEDURE_PARAMETERS REL_FIELDS"
                           " WHERE"
                           " FIELD_SPEC.RDB$FIELD_NAME ="
@@ -693,74 +795,87 @@ class Connection(object):
                           " AND RDB$PROCEDURE_NAME = ?"
                           " AND RDB$PARAMETER_NAME = ?"
                           " AND RDB$PARAMETER_TYPE = 1",
-                          (self._bytes_to_str(sqlvar.relname),
-                           self._bytes_to_str(sqlvar.sqlname)))
-        result = self.__ic.fetchone()
-        if result:
-            return result[0]
-        # Next, try stored procedure output parameter
-        self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
-                          " FROM RDB$FIELDS FIELD_SPEC,"
-                          " RDB$RELATION_FIELDS REL_FIELDS"
-                          " WHERE"
-                          " FIELD_SPEC.RDB$FIELD_NAME ="
-                          " REL_FIELDS.RDB$FIELD_SOURCE"
-                          " AND REL_FIELDS.RDB$RELATION_NAME = ?"
-                          " AND REL_FIELDS.RDB$FIELD_NAME = ?",
-                          (self._bytes_to_str(sqlvar.relname),
-                           self._bytes_to_str(sqlvar.sqlname)))
+                          (p3fix(sqlvar.relname,self._python_charset),
+                           p3fix(sqlvar.sqlname,self._python_charset)))
         result = self.__ic.fetchone()
         if result:
             return result[0]
         # We ran out of options
         return 0
     def drop_database(self):
-        """
-          Drops the database to which this connection is attached.
+        """Drops the database to which this connection is attached.
 
-          Unlike plain file deletion, this method behaves responsibly, in that
+        Unlike plain file deletion, this method behaves responsibly, in that
         it removes shadow files and other ancillary files for this database.
+        
+        :raises ProgrammingError: When connection is a member of a :class:`ConnectionGroup`.
+        :raises DatabaseError: When error is returned from server.
         """
         self.__ensure_group_membership(False, "Cannot drop database via"
                     " connection that is part of a ConnectionGroup.")
         saved_handle = ibase.isc_db_handle(self._db_handle.value)
-        self.close(detach=False)
+        self.__close(detach=False)
         ibase.isc_drop_database(self._isc_status, saved_handle)
         if db_api_error(self._isc_status):
             self._db_handle = saved_handle
             raise exception_from_status(DatabaseError, self._isc_status,
                                         "Error while dropping database:")
     def execute_immediate(self, sql):
-        self.__check_attached()
-        if self.main_transaction.closed:
-            self.begin()
-        self.main_transaction._execute_immediate(sql)
-    def database_info(self, info_code, result_type):
+        """Executes a statement in context of :attr:`main_transaction` without 
+        caching its prepared form. 
+        
+        Automatically starts transaction if it's not already started.
+        
+        :param string sql: SQL statement to execute.
+        
+        .. important::
+        
+           **The statement must not be of a type that returns a result set.**
+           In most cases (especially cases in which the same statement – perhaps 
+           a parameterized statement – is executed repeatedly), it is better to 
+           create a cursor using the connection’s cursor method, then execute 
+           the statement using one of the cursor’s execute methods.
+        
+        :param string sql: SQL statement to execute.
+        
+        :raises ProgrammingError: When connection is closed.
+        :raises DatabaseError: When error is returned from server.
         """
-          Wraps the Interbase C API function isc_database_info.
+        self.__check_attached()
+        self.main_transaction.execute_immediate(sql)
+    def database_info(self, info_code, result_type):
+        """Wraps the Firebird C API function `isc_database_info`.
 
-          For documentation, see the IB 6 API Guide section entitled
+        For documentation, see the IB 6 API Guide section entitled
         "Requesting information about an attachment" (p. 51).
 
-          Note that this method is a VERY THIN wrapper around the IB C API
-        function isc_database_info.  This method does NOT attempt to interpret
+        Note that this method is a VERY THIN wrapper around the FB C API
+        function `isc_database_info`. This method does NOT attempt to interpret
         its results except with regard to whether they are a string or an
         integer.
 
-          For example, requesting isc_info_user_names will return a string
+        For example, requesting `isc_info_user_names` will return a string
         containing a raw succession of length-name pairs.  A thicker wrapper
         might interpret those raw results and return a Python tuple, but it
         would need to handle a multitude of special cases in order to cover
         all possible isc_info_* items.
 
-          Note:  Some of the information available through this method would be
-        more easily retrieved with the Services API (see submodule
-        kinterbasdb.services).
+        :param integer info_code: One of the `isc_info_*` constants.
+        :param string result_type: Must be either ‘s’ if you expect a string result, 
+           or ‘i’ if you expect an integer result.
+        
+        :raises DatabaseError: When error is returned from server.
+        :raises OperationalError: When returned information is bigger than SHRT_MAX.
+        :raises InternalError: On unexpected processing condition.
+        :raises ValueError: On illegal `result_type` value.
+        
+        .. seealso:: Extracting data with the database_info function is rather 
+           clumsy. See :meth:`db_info` for higher-level means of accessing the 
+           same information.
 
-        Parameters:
-        $result_type must be either:
-           's' if you expect a string result, or
-           'i' if you expect an integer result
+        .. note::  Some of the information available through this method would be
+           more easily retrieved with the Services API (see submodule
+           :mod:`fdb.services`).
         """
         self.__check_attached()
         request_buffer = bs([info_code])
@@ -807,22 +922,19 @@ class Connection(object):
         elif result_type.upper() == 'S':
             return ctypes.string_at(res_buf, i)
         else:
-            raise InterfaceError("Unknown result type requested "
+            raise ValueError("Unknown result type requested "
                                  "(must be 'i' or 's').")
     def db_info(self, request):
         """
-          Higher-level convenience wrapper around the database_info method that
-        parses the output of database_info into Python-friendly objects instead
-        of returning raw binary buffers in the case of complex result types.
-        If an unrecognized code is requested, ValueError is raised.
+        Higher-level convenience wrapper around the :meth:`database_info` method 
+        that parses the output of `database_info` into Python-friendly objects 
+        instead of returning raw binary buffers in the case of complex result types.
 
-        Parameters:
-        $request must be either:
-          - A single kinterbasdb.isc_info_* info request code.
-            In this case, a single result is returned.
-          - A sequence of such codes.
-            In this case, a mapping of (info request code -> result) is
-            returned.
+        :param request: Single `fdb.isc_info_*` info request code or a sequence 
+                        of such codes.
+        :returns: Mapping of (info request code -> result).
+        :raises ValueError: When requested code is not recognized.
+        :raises OperationalError: On unexpected processing condition.
         """
         def _extractDatabaseInfoCounts(buf):
             # Extract a raw binary sequence
@@ -896,8 +1008,8 @@ class Connection(object):
                 pos += siteNameLen
 
                 results[infoCode] = (conLocalityCode,
-                                     self._bytes_to_str(dbFilename),
-                                     self._bytes_to_str(siteName))
+                                     p3fix(dbFilename,self._python_charset),
+                                     p3fix(siteName,self._python_charset))
             elif infoCode == isc_info_implementation:
                 # (IB 6 API Guide page 52)
                 buf = self.database_info(infoCode, 's')
@@ -932,7 +1044,7 @@ class Connection(object):
 
                 versionString = buf[pos:pos + versionStringLen]
 
-                results[infoCode] = self._bytes_to_str(versionString)
+                results[infoCode] = p3fix(versionString,self._python_charset)
             elif infoCode == isc_info_user_names:
                 # (IB 6 API Guide page 54)
                 #
@@ -973,7 +1085,8 @@ class Connection(object):
                         assert nameLen == nameClusterLen - 1
                         pos += 1
 
-                        usernames.append(self._bytes_to_str(buf[pos:pos + nameLen]))
+                        usernames.append(p3fix(buf[pos:pos + nameLen],
+                                               self._python_charset))
                         pos += nameLen
                     else:
                         if (struct.unpack('B', buf[pos])[0]
@@ -994,7 +1107,8 @@ class Connection(object):
                         assert nameLen == nameClusterLen - 1
                         pos += 1
 
-                        usernames.append(self._bytes_to_str(buf[pos:pos + nameLen]))
+                        usernames.append(p3fix(buf[pos:pos + nameLen],
+                                               self._python_charset))
                         pos += nameLen
 
                 # The client-exposed return value is a dictionary mapping
@@ -1037,66 +1151,167 @@ class Connection(object):
         else:
             return results
     def transaction_info(self, info_code, result_type):
+        """Returns information about active transaction.
+        Thin wrapper around Firebird API `isc_transaction_info` call. 
+        Operates on :attr:`main_transaction`. 
+        See :meth:`Transaction.transaction_info` for details.
+        
+        :param integer info_code: One from next constants:
+        
+                                  * isc_info_tra_id
+                                  * isc_info_tra_oldest_interesting
+                                  * isc_info_tra_oldest_snapshot
+                                  * isc_info_tra_oldest_active
+                                  * isc_info_tra_isolation
+                                  * isc_info_tra_access
+                                  * isc_info_tra_lock_timeout
+
+                                  See Firebird API Guide for details.
+        :param string result_type: String code for result type:
+
+                                   * ‘i’ for Integer
+                                   * ‘s’ fro String
+
+        :returns: Decoded response(s) for specified request code(s). When multiple 
+                  requests are passed, returns a dictionary where key is the 
+                  request code and value is the response from server.
+        :raises ProgrammingError: When transaction is not active.
+        :raises OperationalError: When result is too large to fit into buffer of 
+                                  size SHRT_MAX.
+        :raises InternalError: On unexpected processing condition.
+        :raises ValueError: On illegal result_type value.
+        """
         return self._main_transaction.transaction_info(info_code, result_type)
     def trans_info(self, request):
+        """Pythonic wrapper around :meth:`transaction_info()` call.
+        Operates on :attr:`main_transaction`. 
+        See :meth:`Transaction.trans_info` for details.
+        
+        :param request: One or more information request codes (see 
+                        :meth:`transaction_info` for details). Multiple codes 
+                        must be passed as tuple.
+        :returns: Decoded response(s) for specified request code(s). When multiple 
+                  requests are passed, returns a dictionary where key is the 
+                  request code and value is the response from server.
+        :raises ProgrammingError: When transaction is not active.
+        :raises OperationalError: When result is too large to fit into buffer of 
+                                  size SHRT_MAX.
+        :raises InternalError: On unexpected processing condition.
+        """
         return self._main_transaction.trans_info(request)
-    def trans(self, tpb=None):
+    def trans(self, default_tpb=None):
+        """Creates a new :class:`Transaction` that operates within the context 
+        of this connection. Cursors can be created within that Transaction via 
+        its :meth:`~Transaction.cursor()` method.
+        
+        :param default_tpb: (optional) Transaction Parameter Block for newly created 
+                    Transaction. If not specified, :attr:`default_tpb` is used.
+        :type default_tpb: :class:`TPB` instance, list/tuple of `isc_tpb_*` constants
+                   or `bytestring`
+        :raises ProgrammingError: If Connection is :attr:`closed`.
+        """
         self.__check_attached()
-        if tpb:
-            _tpb = tpb
+        if default_tpb:
+            _tpb = default_tpb
         else:
             _tpb = self._default_tpb
-        transaction = Transaction([self], _tpb)
+        transaction = Transaction([self], default_tpb =_tpb)
         self._transactions.append(transaction)
         return transaction
-    def close(self, detach=True):
+    def close(self):
+        """Close the connection now (rather than whenever `__del__` is called). 
+        The connection will be unusable from this point forward; an :exc:`Error` 
+        (or subclass) exception will be raised if any operation is attempted 
+        with the connection. The same applies to all cursor and transaction 
+        objects trying to use the connection.
+        
+        Also closes all :class:`EventConduit`, :class:`Cursor` and :class:`Transaction`
+        instances associated with this connection.
+        
+        :raises ProgrammingError: When connection is a member of a :class:`ConnectionGroup`.
+        """
         self.__ensure_group_membership(False, "Cannot close a connection that"
                                        " is a member of a ConnectionGroup.")
-        if self._db_handle != None:
-            self.__ic.close()
-            for conduit in self.__conduits:
-                conduit.close()
-            for cursor in self._cursors:
-                cursor().close()
-            for transaction in self._transactions:
-                transaction.close()
-            if detach:
-                ibase.isc_detach_database(self._isc_status, self._db_handle)
-            self._db_handle = None
+        self.__close()
     def begin(self, tpb=None):
-        self.__check_attached()
-        if tpb:
-            self._main_transaction.tpb = tpb
-        self._main_transaction.begin()
-    def savepoint(self, name):
+        """Starts a transaction explicitly. 
+        Operates on :attr:`main_transaction`. 
+        See :meth:`Transaction.begin` for details.
+        
+        :param tpb: (Optional) Transaction Parameter Buffer for newly started 
+                    transaction. If not specified, :attr:`default_tpb` is used.
+        :type tpb: :class:`TPB` instance, list/tuple of `isc_tpb_*` constants
+                   or `bytestring`
         """
-          Establishes a SAVEPOINT named $name.
-          To rollback to this SAVEPOINT, use rollback(savepoint=name).
+        self.__check_attached()
+        self._main_transaction.begin(tpb)
+    def savepoint(self, name):
+        """Establishes a named SAVEPOINT for current transaction.
+        Operates on :attr:`main_transaction`. 
+        See :meth:`Transaction.savepoint` for details.
 
-          Example:
+        :param string name: Name for savepoint.
+        :raises ProgrammingError: If Connection is :attr:`closed`.
+        
+        Example:
+
+        .. code-block:: python
+        
             con.savepoint('BEGINNING_OF_SOME_SUBTASK')
             ...
             con.rollback(savepoint='BEGINNING_OF_SOME_SUBTASK')
         """
+        self.__check_attached()
         return self._main_transaction.savepoint(name)
     def commit(self, retaining=False):
+        """Commit pending transaction to the database.
+        Operates on :attr:`main_transaction`. 
+        See :meth:`Transaction.commit` for details.
+
+        :param boolean retaining:  (Optional) Indicates whether the transactional 
+                                   context of the transaction being resolved 
+                                   should be recycled.
+        :raises ProgrammingError: If Connection is :attr:`closed`.
+        """
         self.__check_attached()
         self._main_transaction.commit(retaining)
     def rollback(self, retaining=False, savepoint=None):
+        """Causes the the database to roll back to the start of pending transaction.
+        Operates on :attr:`main_transaction`. 
+        See :meth:`Transaction.rollback` for details.
+
+        :param boolean retaining: (Optional) Indicates whether the transactional 
+                                  context of the transaction being resolved 
+                                  should be recycled.
+        :param string savepoint: (Optional) Causes the transaction to roll back 
+                                 only as far as the designated savepoint, rather 
+                                 than rolling back entirely.
+        :raises ProgrammingError: If Connection is :attr:`closed`.
+        """
         self.__check_attached()
         self._main_transaction.rollback(retaining, savepoint)
     def cursor(self):
+        """Return a new :class:`Cursor` instance using the connection
+        associated with :attr:`main_transaction`.
+        See :meth:`Transaction.cursor` for details.
+
+        :raises ProgrammingError: If Connection is :attr:`closed`.
+        """
         self.__check_attached()
-        c = Cursor(self, self.main_transaction)
-        self._cursors.append(weakref.ref(c, self.__remove_cursor))
-        return c
+        return self.main_transaction.cursor()
     def event_conduit(self,event_names):
+        """Creates a conduit through which database event notifications will 
+        flow into the Python program.
+        
+        :param event_names: A sequence of string event names.
+        :returns: An :class:`EventConduit` instance.
+        """
         conduit = EventConduit(self._db_handle,event_names)
         self.__conduits.append(conduit)
         return conduit
     def __del__(self):
         if self._db_handle != None:
-            self.close()
+            self.__close()
     def _get_charset(self):
         return self._charset
     def _set_charset(self, value):
@@ -1118,15 +1333,26 @@ class Connection(object):
             return self.__group()
         else:
             return None
-
+    #: (Read Only) :class:`ConnectionGroup` this Connection belongs to, or None.
     group = property(_group_get)
+    #: (Read Only) (string) Connection Character set name.
     charset = property(_get_charset, _set_charset)
+    #: (Read Only) (tuple) :class:`Transaction` instances associated with this connection.
     transactions = property(__get_transactions)
+    #: (Read Only) Main :class:`Transaction` instance for this connection
+    #: Connection methods :meth:`begin`, :meth:`savepoint`, :meth:`commit` and
+    #: :meth:`rollback` are delegated to this transaction object.
     main_transaction = property(__get_main_transaction)
-    default_tpb = property(__default_tpb_get, __default_tpb_set)
+    #: (Read/Write) Deafult Transaction Parameter Block used for all newly started transactions.
+    default_tpb = property(__get_default_tpb, __set_default_tpb)
+    #: (Read Only) True if connection is closed.
     closed = property(__get_closed)
+    #: (Read Only) (string) Version string returned by server for this connection.
+    server_version = property(__get_server_version)
 
 class EventBlock(object):
+    """
+    """
     def __init__(self,queue,db_handle,event_names):
         self.__first = True
         def callback(result, length, updated):
@@ -1190,7 +1416,24 @@ class EventBlock(object):
 
 
 class EventConduit(object):
+    """Represents a conduit through which database event notifications will flow 
+    into the Python program.
+    
+    .. important::
+    
+       DO NOT create instances of this class directly! Use only 
+       :meth:`Connection.event_conduit` to get EventConduit instances.
+    
+    From the moment the conduit is created by the :meth:`Connection.event_conduit` 
+    method, notifications of any events that occur will accumulate asynchronously 
+    within the conduit’s internal queue until the conduit is closed either 
+    explicitly (via the :meth:`close` method) or implicitly (via garbage collection).
+    """
     def __init__(self,db_handle,event_names):
+        """
+        :param db_handle: Database handle.
+        :param event_names: List of strings that represent event names.
+        """
         def event_process(queue):
             while True:
                 operation, data = queue.get()
@@ -1219,46 +1462,100 @@ class EventConduit(object):
             self.__event_blocks.append(EventBlock(self.__queue,db_handle,block_events))
 
     def wait(self,timeout=None):
+        """Wait for events.
+        
+        Blocks the calling thread until at least one of the events occurs, or 
+        the specified timeout (if any) expires.
+        
+        :param timeout: Number of seconds (use a float to indicate fractions of 
+                        seconds). If not even one of the relevant events has 
+                        occurred after timeout seconds, this method will unblock 
+                        and return None. The default timeout is infinite.
+        :type timeout: integer or float
+        :returns: `None` if the wait timed out, otherwise a dictionary that maps 
+                  `event_name -> event_occurrence_count`.
+        
+        Example:
+        
+        .. code-block:: python
+        
+           >>>conduit = connection.event_conduit( ('event_a', 'event_b') )
+           >>>conduit.wait()
+           {
+            'event_a': 1,
+            'event_b': 0
+           }
+        
+        In the example above `event_a` occurred once and `event_b` did not occur 
+        at all.
+        """
         if not self.closed:
             self.__events_ready.wait(timeout)
             return self.__events.copy()
     def flush(self):
+        """Clear any event notifications that have accumulated in the conduit’s 
+        internal queue.
+        """
         if not self.closed:
             self.__events_ready.clear()
             self.__events = {}.fromkeys(self.__event_names,0)
     def close(self):
+        """Cancels the standing request for this conduit to be notified of events.
+        
+        After this method has been called, this EventConduit object is useless, 
+        and should be discarded.
+        """
         if not self.closed:
-            for block in self.__event_blocks:
-                block.close()
             self.__queue.put((ibase.OP_DIE,self))
             self.__process_thread.join()
+            for block in self.__event_blocks:
+                block.close()
             self.__closed = True
     def __get_closed(self):
         return self.__closed
     def __del__(self):
         self.close()
+    #: (Read Only) (boolean) True if conduit is closed.
     closed = property(__get_closed)
 
 class PreparedStatement(object):
+    """Represents a prepared statement, an "inner" database cursor, which is used
+    to manage the SQL statement execution and context of a fetch operation.
+
+    .. important::
+    
+       DO NOT create instances of this class directly! Use only :meth:`Cursor.prep` 
+       to get PreparedStatement instances.
+       
+    .. note::
+    
+       PreparedStatements are bound to :class:`Cursor` instance that created them,
+       and using them with other Cursor would report an error.
     """
-    Represents a prepared statement, an "inner" database cursor, which is used
-    to manage the context of a fetch operation.
-    """
+    #: Constant for internal use by this class.
     RESULT_SET_EXHAUSTED = 100
+    #: Constant for internal use by this class.
     NO_FETCH_ATTEMPTED_YET = -1
 
     def __init__(self, operation, cursor, internal=True):
-        self.sql = operation
+        self.__sql = operation
         self.__internal = internal
         if internal:
             self.cursor = weakref.ref(cursor)
         else:
+            #: :class:`Cursor` instance that manages this PreparedStatement.
             self.cursor = cursor
         self._stmt_handle = None  # isc_stmt_handle(0)
         self._isc_status = ISC_STATUS_ARRAY()
+        #: Internal XSQLDA structure for output values.
         self.out_sqlda = xsqlda_factory(10)
+        #: Internal XSQLDA structure for input values.
         self.in_sqlda = xsqlda_factory(10)
+        #: Internal list to save original input SQLDA structures when they has 
+        #: to temporarily augmented.
         self.in_sqlda_save = []
+        #: (integer) An integer code that can be matched against the statement 
+        #: type constants in the isc_info_sql_stmt_* series.
         self.statement_type = None
         self.__streamed_blobs = []
         self.__blob_readers = []
@@ -1269,23 +1566,25 @@ class PreparedStatement(object):
         self.__output_cache = None
         #self.out_buffer = None
         self._last_fetch_status = ibase.ISC_STATUS(self.NO_FETCH_ATTEMPTED_YET)
-        self.__charset = self.__get_connection().charset
-        self.__sql_dialect = self.__get_connection().sql_dialect
+        connection = self.__get_connection()
+        self.__charset = connection.charset
+        self.__python_charset = connection._python_charset
+        self.__sql_dialect = connection.sql_dialect
 
         # allocate statement handle
         self._stmt_handle = ibase.isc_stmt_handle(0)
         ibase.isc_dsql_allocate_statement(self._isc_status,
-                                          self.__get_connection()._db_handle,
+                                          connection._db_handle,
                                           self._stmt_handle)
         if db_api_error(self._isc_status):
             raise exception_from_status(DatabaseError, self._isc_status,
                                         "Error while allocating SQL statement:")
         # prepare statement
+        op = b(operation,self.__python_charset)
         ibase.isc_dsql_prepare(self._isc_status,
                                self.__get_transaction()._tr_handle,
                                self._stmt_handle,
-                               len(self._str_to_bytes(operation)),
-                               self._str_to_bytes(operation),
+                               len(op),op,
                                self.__sql_dialect,
                                ctypes.cast(ctypes.pointer(self.out_sqlda),
                                            XSQLDA_PTR))
@@ -1321,6 +1620,7 @@ class PreparedStatement(object):
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                     "Error while determining SQL statement parameters:")
+        #: The number of input parameters the statement requires.
         self.n_input_params = self.in_sqlda.sqld
         # record original type and size information so it can be restored for
         # subsequent executions (mind the implicit string conversions!)
@@ -1343,21 +1643,24 @@ class PreparedStatement(object):
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                     "Error while determining SQL statement output:")
+        #: The number of output fields the statement produces.
         self.n_output_params = self.out_sqlda.sqld
         self.__coerce_XSQLDA(self.out_sqlda)
         self.__prepared = True
         self._name = None
-    def _str_to_bytes(self, s):
-        return self.__get_connection()._str_to_bytes(s)
-    def _bytes_to_str(self, b):
-        return self.__get_connection()._bytes_to_str(b)
+    def __get_name(self):
+        return self._name
+    def __set_name(self,name):
+        if self._name:
+            raise ProgrammingError("Cursor's name has already been declared")
+        self._set_cursor_name(name)
     def __get_connection(self):
         if self.__internal:
             cur = self.cursor()
         else:
             cur = self.cursor
         if cur:
-            return cur._connection
+            return cur._connection if isinstance(cur._connection,Connection) else cur._connection()
         else:
             return None
     def __get_transaction(self):
@@ -1365,6 +1668,8 @@ class PreparedStatement(object):
             return self.cursor()._transaction
         else:
             return self.cursor._transaction
+    def __get_closed(self):
+        return self.__closed
     def __get_plan(self):
         buf_size = 256
         while True:
@@ -1395,9 +1700,12 @@ class PreparedStatement(object):
         ### Todo: Better handling of P version specifics
         result = ctypes.string_at(info[_SIZE_OF_SHORT + 2:], size - 1)
         if PYTHON_MAJOR_VER == 3:
-            return result.decode(charset_map.get(self.__charset,self.__charset))
+            return b2u(result,self.__python_charset)
+            #return result.decode(charset_map.get(self.__charset,self.__charset))
         else:
             return result
+    def __get_sql(self):
+        return self.__sql
     def __is_fixed_point(self, dialect, data_type, subtype, scale):
         return ((data_type in [SQL_SHORT, SQL_LONG,
                                SQL_INT64]
@@ -1470,10 +1778,10 @@ class PreparedStatement(object):
             if self.__prepared and (self.out_sqlda.sqld > 0):
                 for sqlvar in self.out_sqlda.sqlvar[:self.out_sqlda.sqld]:
                     # Field name (or alias)
-                    sqlname = self._bytes_to_str(
-                        sqlvar.sqlname[:sqlvar.sqlname_length])
-                    alias = self._bytes_to_str(
-                        sqlvar.aliasname[:sqlvar.aliasname_length])
+                    sqlname = p3fix(sqlvar.sqlname[:sqlvar.sqlname_length],
+                                    self.__python_charset)
+                    alias = p3fix(sqlvar.aliasname[:sqlvar.aliasname_length],
+                                  self.__python_charset)
                     if alias != sqlname:
                         sqlname = alias
                     # Type information
@@ -1488,8 +1796,7 @@ class PreparedStatement(object):
                                       SQL_INT64]
                           and (sqlvar.sqlsubtype or scale)):
                         vtype = decimal.Decimal
-                        precision = (self.__get_connection()
-                                     ._determine_field_precision(sqlvar))
+                        precision = (self.__get_connection()._determine_field_precision(sqlvar))
                         dispsize = 20
                     elif vartype == SQL_SHORT:
                         vtype = IntType
@@ -1703,7 +2010,7 @@ class PreparedStatement(object):
                 ### Todo: verify handling of P version differences
                 if ((self.__charset or PYTHON_MAJOR_VER == 3) 
                     and sqlvar.sqlsubtype != 1):   # non OCTETS
-                    value = value.decode(charset_map.get(self.__charset,self.__charset))
+                    value = b2u(value,self.__python_charset)
                 # CHAR with multibyte encoding requires special handling
                 if sqlvar.sqlsubtype in (4, 69):  # UTF8 and GB18030
                     reallength = sqlvar.sqllen // 4
@@ -1722,7 +2029,7 @@ class PreparedStatement(object):
                     value = str(sqlvar.sqldata[2:2 + size])
                 if ((self.__charset or PYTHON_MAJOR_VER == 3) 
                     and sqlvar.sqlsubtype != 1):   # non OCTETS
-                    value = value.decode(charset_map.get(self.__charset,self.__charset))
+                    value = b2u(value,self.__python_charset)
             elif vartype in [SQL_SHORT, SQL_LONG, SQL_INT64]:
                 value = bytes_to_int(sqlvar.sqldata[:sqlvar.sqllen])
                 # It's scalled integer?
@@ -1750,10 +2057,10 @@ class PreparedStatement(object):
                 use_stream = False
                 if self.__streamed_blobs:
                     # Get the BLOB name
-                    sqlname = self._bytes_to_str(
-                        sqlvar.sqlname[:sqlvar.sqlname_length])
-                    alias = self._bytes_to_str(
-                        sqlvar.aliasname[:sqlvar.aliasname_length])
+                    sqlname = p3fix(sqlvar.sqlname[:sqlvar.sqlname_length],
+                                    self.__python_charset)
+                    alias = p3fix(sqlvar.aliasname[:sqlvar.aliasname_length],
+                                  self.__python_charset)
                     if alias != sqlname:
                         sqlname = alias
                     if sqlname in self.__streamed_blobs:
@@ -1834,8 +2141,7 @@ class PreparedStatement(object):
                     value = blob.value
                     if ((self.__charset or PYTHON_MAJOR_VER == 3) 
                         and sqlvar.sqlsubtype == 1):
-                        value = value.decode(charset_map.get(self.__charset,
-                                                             self.__charset))
+                        value = b2u(value,self.__python_charset)
             elif vartype == SQL_ARRAY:
                 value = []
             values.append(value)
@@ -1867,16 +2173,16 @@ class PreparedStatement(object):
                     sqlvar.sqlind = ctypes.pointer(ISC_SHORT(0))
                 # Fill in value by type
                 if ((vartype != SQL_BLOB and
-                     isinstance(value, (StringType)))
+                     isinstance(value, (StringType, UnicodeType)))
                     or vartype in [SQL_TEXT, SQL_VARYING]):
                     ### Todo: verify handling of P version differences
                     if PYTHON_MAJOR_VER == 3:
-                        if not isinstance(value, str):
+                        if not isinstance(value, StringType):
                             value = str(value)
                     # Place for Implicit Conversion of Input Parameters
                     # from Strings
                     if isinstance(value, UnicodeType):
-                        value = value.encode(charset_map.get(self.__charset,self.__charset))
+                        value = value.encode(self.__python_charset)
                     ### Todo: verify handling of P version differences
                     if PYTHON_MAJOR_VER != 3:
                         if not isinstance(value, StringType):
@@ -1936,8 +2242,7 @@ class PreparedStatement(object):
                     if ((self.__charset or 
                          (PYTHON_MAJOR_VER == 3 and isinstance(value, str))) 
                         and sqlvar.sqlsubtype == 1):
-                        value = value.encode(charset_map.get(self.__charset,
-                                                             self.__charset))
+                        value = value.encode(self.__python_charset)
                     if hasattr(value,'read'):
                         # It seems we've got file-like object, use stream BLOB
                         ibase.isc_create_blob2(self._isc_status,
@@ -2106,6 +2411,9 @@ class PreparedStatement(object):
         self.__closed = False
         self._last_fetch_status = ibase.ISC_STATUS(self.NO_FETCH_ATTEMPTED_YET)
     def _fetchone(self):
+        if (self._last_fetch_status == self.RESULT_SET_EXHAUSTED 
+            and not self.__output_cache):
+            return None
         if self.__executed:
             if self.__output_cache:
                 if self._last_fetch_status == self.RESULT_SET_EXHAUSTED:
@@ -2127,10 +2435,14 @@ class PreparedStatement(object):
                     return None
                 else:
                     if db_api_error(self._isc_status):
-                        raise exception_from_status(ProgrammingError,
+                        raise exception_from_status(DatabaseError,
                             self._isc_status,
-                            "Cursor.fetchone: Unknown status returned by"
-                            " fetch operation:")
+                            "Cursor.fetchone:")
+        elif self.__closed:
+            raise ProgrammingError("Cannot fetch from closed cursor.")
+        else:
+            raise ProgrammingError("Cannot fetch from this cursor because"
+                                   " it has not executed a statement.")
     def _set_cursor_name(self, name):
         ibase.isc_dsql_set_cursor_name(self._isc_status,
                                        self._stmt_handle, b(name), 0)
@@ -2139,35 +2451,113 @@ class PreparedStatement(object):
                                         "Could not set cursor name:")
         self._name = name
     def set_stream_blob(self,blob_name):
-        self.__streamed_blobs.append(blob_name)
+        """Specify a BLOB column(s) to work in `stream` mode instead classic, 
+        materialized mode.
+        
+        :param blob_name: Single name or sequence of column names. Name must 
+                          be in format as it's stored in database (refer
+                          to :attr:`description` for real value).
+        :type blob_name: string or sequence
+        
+        .. important::
+        
+           BLOB name is **permanently** added to the list of BLOBs handled
+           as `stream` BLOBs by this instance.
+        
+        :param string blob_name: Name of BLOB column.
+        """
+        if hasattr(blob_name,'__iter__'):
+            self.__streamed_blobs.extend(blob_name)
+        else:
+            self.__streamed_blobs.append(blob_name)
     def __del__(self):
         if self._stmt_handle != None:
             self._close()
     def close(self):
-        """
-        Drops the resources associated with executed prepared statement, but
+        """Drops the resources associated with executed prepared statement, but
         keeps it prepared for another execution.
         """
         self._free_handle()
 
+    #: (Read Only) (string) SQL command this PreparedStatement executes.
+    sql = property(__get_sql)
+    #: (Read Only) Sequence of 7-item sequences.
+    #: Each of these sequences contains information describing one result column:
+    #: (name, type_code, display_size,internal_size, precision, scale, null_ok)
     description = property(__get_description)
+    #: (Read Only) (integer) Specifies the number of rows that the last execution
+    #: produced (for DQL statements like select) or affected (for DML statements 
+    #: like update or insert ). 
+    #:
+    #: The attribute is -1 in case the statement was not yet executed
+    #: or the rowcount of the operation is not determinable by the interface.
     rowcount = property(__get_rowcount)
+    #: (Read Only) (string) A string representation of the execution plan generated 
+    #: for this statement by the database engine’s optimizer.
     plan = property(__get_plan)
+    #: (Read/Write) (string) Name for the SQL cursor. This property can be 
+    #: ignored entirely if you don’t need to use it.
+    name = property(__get_name, __set_name)
+    #: (Read Only) (boolean) True if closed. Note that closed means that PS
+    #: statement handle was closed for further fetching, releasing server resources,
+    #: but wasn't dropped, and couldbe still used for another execution.
+    closed = property(__get_closed)
 
 
 class Cursor(object):
+    """Represents a database cursor, which is used to execute SQL statement and 
+    manage the context of a fetch operation.
+
+    .. important::
+    
+       DO NOT create instances of this class directly! Use only 
+       :meth:`Connection.cursor`, :meth:`Transaction.cursor` and 
+       :meth:`ConnectionGroup.cursor` to get Cursor instances that operate in
+       desired context.
+       
+    .. note::
+    
+       Cursor is actually a high-level wrapper around :class:`PreparedStatement` 
+       instance(s) that handle the actual SQL statement execution and result 
+       management. Cursor has an internal cache of PreparedStatements, so when
+       the same SQL statement is executed repeatedly, related PreparedStatement
+       is re-used, which enhances performance. This convenient enhancement has 
+       a side effect: Cursor that was used to perform many different SQL statements 
+       may hold very large cache of PerapedStatements. To clear the cache, you'll 
+       need to call :meth:`clear_cache`.
+    
+    .. tip::
+    
+       Cursor supports the iterator protocol, yielding tuples of values like
+       :meth:`fetchone`.
     """
-    Represents a database cursor, which is used to manage the context
-    of a fetch operation.
-    """
+    #: (Read/Write) As required by the Python DB API 2.0 spec, the value of this 
+    #: attribute is observed with respect to the :meth:`fetchmany` method. However, 
+    #: changing the value of this attribute does not make any difference in fetch 
+    #: efficiency because the database engine only supports fetching a single row 
+    #: at a time.
     arraysize = 1
 
     def __init__(self, connection, transaction):
+        """
+        .. important::
+        
+           The association between a Cursor and its :class:`Transaction` and 
+           :class:`Connection` is set when the Cursor is created, and cannot be 
+           changed during the lifetime of that Cursor.
+        
+        :param connection: :class:`Connection` instance this cursor should be bound to.
+        :param transaction: :class:`Transaction` instance this cursor should be bound to.
+        """
         self._prepared_statements = {}
         self._connection = connection
         self._transaction = transaction
         self._ps = None  # current prepared statement
     def next(self):
+        """Return the next item from the container. Part of *iterator protocol*.
+        
+        :raises StopIteration: If there are no further items. 
+        """
         row = self.fetchone()
         if row:
             return row
@@ -2200,47 +2590,188 @@ class Cursor(object):
             raise ProgrammingError("Cursor's name has already been declared in"
                                    " context of currently executed statement")
         self._ps._set_cursor_name(name)
+    def __get_plan(self):
+        if self._ps != None:
+            return self._ps.plan
+        else:
+            return None
+    def _set_as_internal(self):
+        self._connection = weakref.ref(self._connection)
     def callproc(self, procname, parameters=None):
+        """Call a stored database procedure with the given name.
+        
+        The result of the call is available through the standard fetchXXX() methods.
+        
+        :param string procname: Stored procedure name.
+        :param parameters: (Optional) Sequence of parameters. Must contain one 
+                           entry for each argument that the procedure expects.
+        :type parameters: List or Tuple
+        :returns: parameters, as required by Python DB API 2.0 Spec.
+        :raises TypeError: When parameters is not List or Tuple.
+        :raises ProgrammingError: When more parameters than expected are suplied.
+        :raises DatabaseError: When error is returned by server.
+        """
         if not parameters:
             params = []
         else:
             if isinstance(parameters, (ListeType, TupleType)):
                 params = parameters
             else:
-                raise ProgrammingError("callproc paremetrs must be List"
-                                       " or Tuple")
+                raise TypeError("callproc paremeters must be List or Tuple")
         sql = ('EXECUTE PROCEDURE ' + procname + ' '
                + ','.join('?' * len(params)))
         self.execute(sql, params)
         return parameters
-    def close(self):
-        if self._ps != None:
-            self._ps._close()
+    def clear_cache(self):
+        """Clear the internal cache with :class:`PreparedStatement` instances.
+        
+        All prepared statements except current one are **permanently** closed,
+        and the cache is cleared.
+        
+        .. note:: 
+        
+           Current prepared statement is still in its actual state, but  it's 
+           removed from cache, so when next statement (even the same SQL command) 
+           is executed, this current :class:`PreparedStatement` instance is disposed.
+        """
         for ps in self._prepared_statements.values():
-            ps._close()
+            if ps != self._ps:
+                ps._close()
         self._prepared_statements.clear()
-        self._name = None
-    def execute(self, operation, parameters=None):
+    def close(self):
+        """Close the cursor now (rather than whenever `__del__` is called).
+        
+        Closes any currently open :class:`PreparedStatement`. However, the cursor 
+        is still bound to :class:`Connection` and :class:`Transaction`, so it 
+        could be still used to execute SQL statements. Also the cache with 
+        prepared statements is left intact.
+        
+        .. warning::
+        
+           FDB's implementation of Cursor somewhat violates the Python DB API 2.0,
+           which requires that cursor will be unusable after call to `close`; and 
+           an Error (or subclass) exception should be raised if any operation is 
+           attempted with the cursor.
+           
+           If you’ll take advantage of this anomaly, your code would be less 
+           portable to other Python DB API 2.0 compliant drivers.
+        """
         if self._ps != None:
-            self._ps._free_handle()
-        if self._transaction.closed:
+            self._ps.close()
+            self._ps = None
+    def execute(self, operation, parameters=None):
+        """Prepare and execute a database operation (query or command).
+        
+        .. note::
+        
+           Execution is handled by :class:`PreparedStatement` that is either
+           supplied as `operation` parameter, or created internally when
+           `operation` is a string. Internally created PreparedStatements are
+           stored in cache for later reuse, when the same `operation` string is
+           used again.
+        
+        :param operation: SQL command specification.
+        :type operation: string or :class:`PreparedStatement` instance
+        :param parameters: (Optional) Sequence of parameters. Must contain one 
+                           entry for each argument that the operation expects.
+        :type parameters: List or Tuple
+        :raises ValueError: When operation PreparedStatement belongs to different 
+                            Cursor instance.
+        :raises TypeError: When parameters is not List or Tuple.
+        :raises ProgrammingError: When more parameters than expected are suplied.
+        :raises DatabaseError: When error is returned by server.
+        """
+        if self._ps != None:
+            self._ps.close()
+        if not self._transaction.active:
             self._transaction.begin()
         if isinstance(operation, PreparedStatement):
+            if operation.cursor is not self:
+                raise ValueError("PreparedStatement was created by different Cursor.")
             self._ps = operation
         else:
-            self._ps = self._prepared_statements.setdefault(operation,
-                                PreparedStatement(operation, self, True))
+            self._ps = self._prepared_statements.get(operation)
+            if not self._ps:
+                self._ps = self._prepared_statements.setdefault(operation,
+                                    PreparedStatement(operation, self, True))
         self._ps._execute(parameters)
     def prep(self, operation):
-        if self._transaction.closed:
+        """Create prepared statement for repeated execution.
+        
+        .. note::
+        
+           Returned :class:`PreparedStatement` instance is bound to its Cursor
+           instance via strong reference, and is not stored in Cursor's
+           internal cache of prepared statements.
+        
+        :param string operation: SQL command
+        :returns: :class:`PreparedStatement` instance.
+        :raises DatabaseError: When error is returned by server.
+        :raises InternalError: On unexpected processing condition.
+        """
+        if not self._transaction.active:
             self._transaction.begin()
         return PreparedStatement(operation, self, False)
     def executemany(self, operation, seq_of_parameters):
+        """Prepare a database operation (query or command) and then execute it 
+        against all parameter sequences or mappings found in the sequence 
+        `seq_of_parameters`.
+        
+        .. note::
+        
+           This function simply calls :meth:`execute` in a loop, feeding it with
+           parameters from `seq_of_parameters`. Because `execute` caches 
+           `PreparedStatements`, calling `executemany` is equally efective as
+           direct use of prepared statement and calling `execute` in a loop 
+           directly in application.
+        
+        :param operation: SQL command specification.
+        :type operation: string or :class:`PreparedStatement` instance
+        :param seq_of_parameters: Sequence of sequences of parameters. Must contain 
+                                  one sequence of parameters for each execution
+                                  that has one entry for each argument that the 
+                                  operation expects.
+        :type seq_of_parameters: List or Tuple
+        :raises ValueError: When operation PreparedStatement belongs to different 
+                            Cursor instance.
+        :raises TypeError: When seq_of_parameters is not List or Tuple.
+        :raises ProgrammingError: When there are more parameters in any sequence 
+                                  than expected.
+        :raises DatabaseError: When error is returned by server.
+        """
         for parameters in seq_of_parameters:
             self.execute(operation, parameters)
     def fetchone(self):
-        return self._ps._fetchone()
+        """Fetch the next row of a query result set.
+        
+        :returns: tuple of returned values, or None when no more data is available.
+        :raises DatabaseError: When error is returned by server.
+        :raises ProgrammingError: When underlying :class:`PreparedStatement` is
+                                  closed, statement was not yet executed, or
+                                  unknown status is returned by fetch operation.
+        """
+        if self._ps:
+            return self._ps._fetchone()
+        else:
+            raise ProgrammingError("Cannot fetch from this cursor because"
+                                   " it has not executed a statement.")
     def fetchmany(self, size=arraysize):
+        """Fetch the next set of rows of a query result, returning a sequence of 
+        sequences (e.g. a list of tuples). An empty sequence is returned when no 
+        more rows are available. The number of rows to fetch per call is specified 
+        by the parameter. If it is not given, the cursor’s arraysize determines 
+        the number of rows to be fetched. The method does try to fetch as many 
+        rows as indicated by the size parameter. If this is not possible due to 
+        the specified number of rows not being available, fewer rows may be 
+        returned.
+        
+        :param integer size: Max. number of rows to fetch.
+        :returns: List of tuples, where each tuple is one row of returned values.
+        :raises DatabaseError: When error is returned by server.
+        :raises ProgrammingError: When underlying :class:`PreparedStatement` is
+                                  closed, statement was not yet executed, or
+                                  unknown status is returned by fetch operation.
+        """
         i = 0
         result = []
         while i < size:
@@ -2252,13 +2783,44 @@ class Cursor(object):
                 return result
         return result
     def fetchall(self):
+        """Fetch all (remaining) rows of a query result.
+        
+        :returns: List of tuples, where each tuple is one row of returned values.
+        :raises DatabaseError: When error is returned by server.
+        :raises ProgrammingError: When underlying :class:`PreparedStatement` is
+                                  closed, statement was not yet executed, or
+                                  unknown status is returned by fetch operation.
+        """
         return [row for row in self]
     def fetchonemap(self):
+        """Fetch the next row of a query result set like :meth:`fetchone`, 
+        except that it returns a mapping of field name to field  value, rather 
+        than a tuple.
+        
+        :returns: :class:`fbcore._RowMapping` of returned values, or None when 
+                  no more data is available.
+        :raises DatabaseError: When error is returned by server.
+        :raises ProgrammingError: When underlying :class:`PreparedStatement` is
+                                  closed, statement was not yet executed, or
+                                  unknown status is returned by fetch operation.
+        """
         row = self.fetchone()
         if row:
             row = _RowMapping(self.description, row)
         return row
     def fetchmanymap(self, size=arraysize):
+        """Fetch the next set of rows of a query result, like :meth:`fetchmany`, 
+        except that it returns a list of mappings of field name to field 
+        value, rather than a list of tuples.
+        
+        :param integer size: Max. number of rows to fetch.
+        :returns: List of :class:`fbcore._RowMapping` instances, one such instance for
+                  each row.
+        :raises DatabaseError: When error is returned by server.
+        :raises ProgrammingError: When underlying :class:`PreparedStatement` is
+                                  closed, statement was not yet executed, or
+                                  unknown status is returned by fetch operation.
+        """
         i = 0
         result = []
         while i < size:
@@ -2270,79 +2832,249 @@ class Cursor(object):
                 return result
         return result
     def fetchallmap(self):
+        """Fetch all (remaining) rows of a query result like :meth:`fetchall`, 
+        except that it returns a list of mappings of field name to field 
+        value, rather than a list of tuples.
+
+        :returns: List of :class:`fbcore._RowMapping` instances, one such instance for
+                  each row.
+        :raises DatabaseError: When error is returned by server.
+        :raises ProgrammingError: When underlying :class:`PreparedStatement` is
+                                  closed, statement was not yet executed, or
+                                  unknown status is returned by fetch operation.
+        """
         return [row for row in self.itermap()]
     def iter(self):
+        """Equivalent to the :meth:`fetchall`, except that it returns iterator 
+        rather than materialized list.
+        
+        :returns: Iterator that yields tuple of values like :meth:`fetchone`.
+        """
         return self
     def itermap(self):
+        """Equivalent to the :meth:`fetchallmap`, except that it returns iterator 
+        rather than materialized list.
+        
+        :returns: Iterator that yields :class:`fbcore._RowMapping` instance 
+                  like :meth:`fetchonemap`.
+        """
         return Iterator(self.fetchonemap, None)
     def setinputsizes(self, sizes):
+        """Required by Python DB API 2.0, but pointless for Firebird, so it
+        does nothing."""
         pass
     def setoutputsize(self, size, column=None):
+        """Required by Python DB API 2.0, but pointless for Firebird, so it
+        does nothing."""
         pass
+    def set_stream_blob(self,blob_name):
+        """Specify a BLOB column(s) to work in `stream` mode instead classic, 
+        materialized mode for already executed statement.
+        
+        :param blob_name: Single name or sequence of column names. Name must 
+                          be in format as it's stored in database (refer
+                          to :attr:`description` for real value).
+        :type blob_name: string or sequence
+        
+        .. important::
+        
+           BLOB name is **permanently** added to the list of BLOBs handled
+           as `stream` BLOBs by current :class:`PreparedStatement` instance.
+           If instance is stored in internal cache of prepared statements,
+           the same command executed repeatedly will retain this setting.
+        
+        :param string blob_name: Name of BLOB column.
+        :raises ProgrammingError: 
+        """
+        if self._ps:
+            self._ps.set_stream_blob(blob_name)
+        else:
+            raise ProgrammingError
     def __del__(self):
+        self.clear_cache()
         self.close()
-
+    #: (Read Only) Sequence of 7-item sequences.
+    #: Each of these sequences contains information describing one result column:
+    #: (name, type_code, display_size,internal_size, precision, scale, null_ok)
+    #:
+    #: If cursor doesn't have a prepared statement, the value is None.
     description = property(__get_description)
+    #: (Read Only) (integer) Specifies the number of rows that the last executeXXX() 
+    #: produced (for DQL statements like select) or affected (for DML statements 
+    #: like update or insert ). 
+    #:
+    #: The attribute is -1 in case no executeXXX() has been performed on the cursor 
+    #: or the rowcount of the last operation is not determinable by the interface.
+    #:
+    #: .. note::
+    #:
+    #:    The database engine's own support for the determination of 
+    #:    “rows affected”/”rows selected” is quirky. The database engine only 
+    #:    supports the determination of rowcount for INSERT, UPDATE, DELETE, 
+    #:    and SELECT statements. When stored procedures become involved, row 
+    #:    count figures are usually not available to the client. Determining 
+    #:    rowcount for SELECT statements is problematic: the rowcount is reported 
+    #:    as zero until at least one row has been fetched from the result set, 
+    #:    and the rowcount is misreported if the result set is larger than 1302 
+    #:    rows. The server apparently marshals result sets internally in batches 
+    #:    of 1302, and will misreport the rowcount for result sets larger than 
+    #:    1302 rows until the 1303rd row is fetched, result sets larger than 2604 
+    #:    rows until the 2605th row is fetched, and so on, in increments of 1302. 
     rowcount = property(__get_rowcount)
+    #: (Read/Write) (string) Name for the SQL cursor. This property can be 
+    #: ignored entirely if you don’t need to use it.
     name = property(__get_name, __set_name)
+    #: (Read Only) (string) A string representation of the execution plan 
+    #: for last executed statement generated by the database engine’s optimizer.
+    #: `None` if no statement was executed.
+    plan = property(__get_plan)
 
 
 class Transaction(object):
+    """Represents a transaction context, which is used to execute SQL statement.
+    
+    .. important::
+    
+       DO NOT create instances of this class directly! :class:`Connection` and
+       :class:`ConnectionGroup` manage Transaction internally, surfacing all
+       important methods directly in their interfaces. If you want additional
+       transactions independent from :attr:`Connection.main_transaction`,
+       use :meth:`Connection.trans` method to obtain such `Transaction` instance.
+    
     """
-    """
-    def __init__(self, connections, tpb=None, default_action='commit'):
+    def __init__(self, connections, default_tpb=None, default_action='commit'):
+        """
+        :param iterable connections: Sequence of (up to 16) :class:`Connection` instances.
+        :param default_tpb: Transaction Parameter Block for this transaction. 
+                    If `None` is specified, uses `ISOLATION_LEVEL_READ_COMMITED`.
+        :type default_tpb: :class:`TPB` instance, list/tuple of `isc_tpb_*` constants
+                   or `bytestring`
+        :param default_action: Action taken when active transaction is ended
+                               automatically (during :meth:`close` or :meth:`begin`).
+        :type default_action: string 'commit' or 'rollback'
+        :raises ProgrammingError: When zero or more than 16 connections are given.
+        """
         if len(connections) > 16:
             raise ProgrammingError("Transaction can't accept more than 16 Connections")
+        elif len(connections) == 0:
+            raise ProgrammingError("Transaction requires at least one Connection")
         self._connections = [weakref.ref(c) for c in connections]
-        if tpb == None:
-            self.tpb = transaction_parameter_block[
-                ISOLATION_LEVEL_READ_COMMITED]
+        self.__python_charset = connections[0]._python_charset
+        if default_tpb == None:
+            self.default_tpb = ISOLATION_LEVEL_READ_COMMITED
         else:
-            self.tpb = tpb
+            #: (Read/Write) Transaction Parameter Block.
+            #: **Default is ISOLATION_LEVEL_READ_COMMITED**.
+            self.default_tpb = default_tpb
         self.default_action = default_action
         self._cursors = []  # Weak references to cursors
         self._isc_status = ISC_STATUS_ARRAY()
         self._tr_handle = None
-    def _str_to_bytes(self, s):
-        return self._connections[0]()._str_to_bytes(s)
-    def _bytes_to_str(self, b):
-        return self._connections[0]()._bytes_to_str(b)
+        self.__closed = False
     def __remove_cursor(self, cursor_ref):
         self._cursors.remove(cursor_ref)
     def __get_closed(self):
-        return self._tr_handle == None
+        return self.__closed
+        #return self._tr_handle == None
+    def __get_active(self):
+        return self._tr_handle != None
+    def __get_cursors(self):
+        return [x() for x in self._cursors]
     def __check_active(self):
-        if self._tr_handle == None:
+        if not self.active:
             raise ProgrammingError("Transaction object is not active")
+    def __close_cursors(self):
+        for cursor in self._cursors:
+            cursor().close()
     def __con_in_list(self,connection):
         for con in self._connections:
             if con() == connection:
                 return True
         return False
-    def _execute_immediate(self, sql):
-        self.__check_active()
-        sql_len = ctypes.c_short(len(self._str_to_bytes(sql)))
-        ibase.isc_execute_immediate(self._isc_status,
-                                    self._connections[0]()._db_handle,
-                                    self._tr_handle,
-                                    sql_len, self._str_to_bytes(sql))
-#        ibase.isc_execute_immediate(self._isc_status,
-#                          self._connections[0]()._db_handle,
-#                          self._tr_handle,
-#                          sql_len,sql,self._connections[0]().sql_dialect,None)
-        if db_api_error(self._isc_status):
-            raise exception_from_status(DatabaseError, self._isc_status,
-                                        "Error while executing SQL statement:")
-    def begin(self):
-        self.close()  # Make sure that previous transaction (if any) is ended
-        self._tr_handle = ibase.isc_tr_handle(0)
-        if isinstance(self.tpb, TPB):
-            _tpb = self.tpb.render()
-        elif isinstance(self.tpb, (ListeType, TupleType)):
-            _tpb = bs(self.tpb)
-        elif isinstance(self.tpb, mybytes):
-            _tpb = self.tpb
+    def __get_default_action(self):
+        return self.__default_action
+    def __set_default_action(self,action):
+        action = action.lower()
+        if not action in ('commit','rollback'):
+            raise ProgrammingError("Transaction's default action must be either"
+                                   "'commit' or 'rollback'.")
         else:
+            self.__default_action = action
+    def execute_immediate(self, sql):
+        """Executes a statement without caching its prepared form on 
+           **all connections** this transaction is bound to. 
+        
+        Automatically starts transaction if it's not already started.
+        
+        :param string sql: SQL statement to execute.
+        
+        .. important::
+        
+           **The statement must not be of a type that returns a result set.**
+           In most cases (especially cases in which the same statement – perhaps 
+           a parameterized statement – is executed repeatedly), it is better to 
+           create a cursor using the connection’s cursor method, then execute 
+           the statement using one of the cursor’s execute methods.
+        
+        :param string sql: SQL statement to execute.
+        
+        :raises DatabaseError: When error is returned from server.
+        """
+        if not self.active:
+            self.begin()
+        for connection in self._connections:
+            con = connection()
+            sql = b(sql, con._python_charset)
+            ibase.isc_execute_immediate(self._isc_status,
+                                        con._db_handle,
+                                        self._tr_handle,
+                                        ctypes.c_short(len(sql)), sql)
+            if db_api_error(self._isc_status):
+                raise exception_from_status(DatabaseError, self._isc_status,
+                                            "Error while executing SQL statement:")
+    def _finish(self):
+        if self._tr_handle != None:
+            try:
+                if self.default_action == 'commit':
+                    self.commit()
+                else:
+                    self.rollback()
+            except Exception as e:
+                self._tr_handle = None
+                raise e
+    def begin(self, tpb=None):
+        """Starts a transaction explicitly.
+        
+        :param tpb: (optional) Transaction Parameter Block for newly created 
+                    Transaction. If not specified, :attr:`default_tpb` is used.
+        :type tpb: :class:`TPB` instance, list/tuple of `isc_tpb_*` constants
+                   or `bytestring`
+        
+        .. note::
+        
+           Calling this method directly is never required; a transaction will be 
+           started implicitly if necessary.
+
+        .. important::
+        
+           If the physical transaction is unresolved when this method is called, 
+           a :meth:`commit` or :meth:`rollback` will be performed first, accordingly
+           to :attr:`default_action` value.
+           
+        :raises DatabaseError: When error is returned by server.
+        :raises ProgrammingError: When TPB is in usupported format, or transaction
+                                  is permanently :attr:`closed`.
+        """
+        if self.__closed:
+            raise ProgrammingError("Transaction is permanently closed.")
+        self._finish()  # Make sure that previous transaction (if any) is ended
+        self._tr_handle = ibase.isc_tr_handle(0)
+        _tpb = tpb if tpb else self.default_tpb
+        if isinstance(_tpb, TPB):
+            _tpb = _tpb.render()
+        elif isinstance(_tpb, (ListeType, TupleType)):
+            _tpb = bs(_tpb)
+        elif not isinstance(_tpb, mybytes):
             raise ProgrammingError("TPB must be either string, list/tuple of"
                                    " numeric constants or TPB instance.")
         ### Todo: verify handling of P version differences
@@ -2375,14 +3107,21 @@ class Transaction(object):
                 self._tr_handle = None
                 raise exception_from_status(DatabaseError, self._isc_status,
                                             "Error while starting transaction:")
-            #self._tr_handle = None
-            #raise NotImplementedError("Transaction.begin(multiple"
-                                        #" connections)")
-        else:
-            raise ProgrammingError("Transaction.begin requires at least one"
-                                   " database handle")
     def commit(self, retaining=False):
-        self.__check_active()
+        """Commit any pending transaction to the database.
+        
+        .. note::
+           If transaction is not active, this method does nothing, because
+           the consensus among Python DB API experts is that transactions should
+           always be started implicitly, even if that means allowing a `commit()`
+           or `rollback()` without an actual transaction.
+        
+        :param boolean retaining: Indicates whether the transactional context of 
+                                  the transaction being resolved should be recycled.
+        :raises DatabaseError: When error is returned by server as response to commit.
+        """
+        if not self.active:
+            return
         if retaining:
             ibase.isc_commit_retaining(self._isc_status, self._tr_handle)
         else:
@@ -2392,13 +3131,33 @@ class Transaction(object):
                                         "Error while commiting transaction:")
         if not retaining:
             self._tr_handle = None
+            self.__close_cursors()
     def rollback(self, retaining=False, savepoint=None):
-        self.__check_active()
+        """Rollback any pending transaction to the database.
+        
+        .. note::
+           If transaction is not active, this method does nothing, because
+           the consensus among Python DB API experts is that transactions should
+           always be started implicitly, even if that means allowing a `commit()`
+           or `rollback()` without an actual transaction.
+        
+        :param boolean retaining: Indicates whether the transactional context of 
+                                  the transaction being resolved should be recycled.
+                                  Mutually exclusive with 'savepoint`.
+        :param string savepoint: Savepoint name. Causes the transaction to roll 
+                                 back only as far as the designated savepoint, 
+                                 rather than rolling back entirely. Mutually 
+                                 exclusive with 'retaining`.
+        :raises ProgrammingError: If both `savepoint` and `retaining` are specified.
+        :raises DatabaseError: When error is returned by server as response to rollback.
+        """
+        if not self.active:
+            return
         if retaining and savepoint:
             raise ProgrammingError("Can't rollback to savepoint while"
                                    " retaining context")
         if savepoint:
-            self._execute_immediate('rollback to %s' % savepoint)
+            self.execute_immediate('rollback to %s' % savepoint)
         else:
             if retaining:
                 ibase.isc_rollback_retaining(self._isc_status, self._tr_handle)
@@ -2410,22 +3169,59 @@ class Transaction(object):
                                             "Error while rolling back transaction:")
             if not retaining:
                 self._tr_handle = None
+                self.__close_cursors()
     def close(self):
-        if self._tr_handle != None:
-            for cursor in self._cursors:
-                cursor().close()
-            self._cursors = []
-            if self.default_action == 'commit':
-                self.commit()
-            else:
-                self.rollback()
+        """Permanently closes the Transaction object and severs its associations 
+        with other objects (:class:`Cursor` and :class:`Connection` instances).
+
+        .. important::
+        
+           If the physical transaction is unresolved when this method is called, 
+           a :meth:`commit` or :meth:`rollback` will be performed first, accordingly
+           to :attr:`default_action` value.
+           
+        """
+        exc = None
+        try:
+            self._finish()
+        except Exception as e:
+            exc = e
+        del self._cursors[:]
+        del self._connections[:]
+        self.__closed = True
+        if exc:
+            raise exc
     def savepoint(self, name):
-        self.__check_active()
-        if len(self._connections) > 1:
-            raise NotImplementedError("Transaction.savepoint on multiple"
-                                      " connections")
-        self._execute_immediate('SAVEPOINT %s' % name)
+        """Establishes a savepoint with the specified name.
+        
+        .. note::
+        
+           If transaction is bound to multiple connections, savepoint is
+           created on all of them.
+           
+        .. important::
+        
+           Because savepoint is created not through Firebird API (there is no
+           such API call), but by executing `SAVEPOINT <name>` SQL statement,
+           calling this method starts the transaction if it was not yet started.
+        
+        :param string name: Savepoint name.
+        """
+        self.execute_immediate('SAVEPOINT %s' % name)
     def cursor(self,connection = None):
+        """Creates a new :class:`Cursor` that will operate in the context of this 
+        Transaction.
+        
+        :param connection: **Required only when** Transaction is bound to multiple 
+                           `Connections`, to specify to which `Connection` the 
+                           returned Cursor should be bound.
+        :type connection: :class:`Connection` instance
+        
+        :raises ProgrammingError: When transaction operates on multiple `Connections`
+                                  and: `connection` parameter is not specified, or
+                                  specified `connection` is not among `Connections`
+                                  this Transaction is bound to.
+        """
         if len(self._connections) > 1:
             if not connection:
                 raise ProgrammingError("Transaction.cursor on multiple connections"
@@ -2440,6 +3236,15 @@ class Transaction(object):
         self._cursors.append(weakref.ref(c, self.__remove_cursor))
         return c
     def trans_info(self, request):
+        """Pythonic wrapper around :meth:`transaction_info` call.
+        
+        :param request: One or more information request codes (see 
+                        :meth:`transaction_info` for details). Multiple codes 
+                        must be passed as tuple.
+        :returns: Decoded response(s) for specified request code(s). When 
+                  multiple requests are passed, returns a dictionary where key 
+                  is the request code and value is the response from server.
+        """
         # We process request as a sequence of info codes, even if only one code
         # was supplied by the caller.
         requestIsSingleton = isinstance(request, int)
@@ -2454,7 +3259,7 @@ class Transaction(object):
                 buf = self.transaction_info(infoCode, 's')
                 buf = buf[1 + struct.calcsize('h'):]
                 if len(buf) == 1:
-                    results[infoCode] = portable_int(buf)
+                    results[infoCode] = bytes_to_int(buf)
                 else:
                     # For isolation level isc_info_tra_read_committed, the
                     # first byte indicates the isolation level
@@ -2463,8 +3268,8 @@ class Transaction(object):
                     # isc_info_tra_no_rec_version).
                     isolationLevelByte, recordVersionByte = struct.unpack('cc',
                                                                           buf)
-                    isolationLevel = portable_int(isolationLevelByte)
-                    recordVersion = portable_int(recordVersionByte)
+                    isolationLevel = bytes_to_int(isolationLevelByte)
+                    recordVersion = bytes_to_int(recordVersionByte)
                     results[infoCode] = (isolationLevel, recordVersion)
             else:
                 # At the time of this writing (2006.02.09),
@@ -2477,6 +3282,19 @@ class Transaction(object):
         else:
             return results
     def transaction_info(self, info_code, result_type):
+        """Return information about active transaction. 
+        
+        This is very thin wrapper around Firebird API `isc_transaction_info` call. 
+        
+        :param integer info_code: One from the `isc_info_tra_*` constants.
+        :param result_type: Code for result type.
+        :type result_type: string 's' or 'i'
+        :raises ProgrammingError: If transaction is not active.
+        :raises OperationalError: When result is too large to fit into buffer of 
+                                  size SHRT_MAX.
+        :raises InternalError: On unexpected processing condition.
+        :raises ValueError: When illegal result type code is specified.
+        """
         self.__check_active()
         request_buffer = bs([info_code])
         buf_size = 256
@@ -2503,7 +3321,7 @@ class Transaction(object):
                 else:
                     raise OperationalError("Result is too large to fit into"
                         " buffer of size SHRT_MAX, yet underlying info"
-                        "  function onlyaccepts buffers with size <= SHRT_MAX.")
+                        " function only accepts buffers with size <= SHRT_MAX.")
             else:
                 break
         if ord2(res_buf[i]) != isc_info_end:
@@ -2514,11 +3332,18 @@ class Transaction(object):
         if result_type.upper() == 'I':
             return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
         elif result_type.upper() == 'S':
-            return self._bytes_to_str(ctypes.string_at(res_buf, i))
+            return p3fix(ctypes.string_at(res_buf, i),self.__python_charset)
         else:
-            raise InterfaceError("Unknown result type requested (must be 'i'"
+            raise ValueError("Unknown result type requested (must be 'i'"
                                  "or 's').")
     def prepare(self):
+        """Manually triggers the first phase of a two-phase commit (2PC). 
+        
+        .. note::
+        
+           Direct use of this method is optional; if preparation is not triggered 
+           manually, it will be performed implicitly by `commit()` in a 2PC.
+        """
         self.__check_active()
         ibase.isc_prepare_transaction(self._isc_status, self._tr_handle)
         if db_api_error(self._isc_status):
@@ -2528,10 +3353,26 @@ class Transaction(object):
     def __del__(self):
         if self._tr_handle != None:
             self.close()
-
+    
+    #: (Read Only) True if transaction is closed.
     closed = property(__get_closed)
+    #: (Read Only) True if transaction is active.
+    active = property(__get_active)
+    #: (Read Only) List of :class:`Cursor` objects associated with this Transaction.
+    cursors = property(__get_cursors)
+    #: (Read/Write) (string) 'commit' or 'rollback', action to be 
+    #: taken when physical transaction has to be ended automatically.
+    #: **Default is 'commit'**.
+    default_action = property(__get_default_action,__set_default_action)
 
 class ConnectionGroup(object):
+    """Manager for distributed transactions, i.e. transactions that span multiple 
+    databases.
+    
+    .. tip::
+    
+       ConnectionGroup supports `in` operator to check membership of connections.
+    """
     # XXX: ConnectionGroup objects currently are not thread-safe.  Since
     # separate Connections can be manipulated simultaneously by different
     # threads in kinterbasdb, it would make sense for a container of multiple
@@ -2544,20 +3385,54 @@ class ConnectionGroup(object):
     # Therefore, a warning must be added to the docs.
 
     def __init__(self, connections=()):
+        """
+        :param iterable connections: Sequence of :class:`Connection` instances.
+        
+        .. seealso:: See :meth:`add` for list of exceptions the constructor may throw.
+        """
         self._cons = []
         self._transaction = None
+        self._default_tpb = ISOLATION_LEVEL_READ_COMMITED
         for con in connections:
             self.add(con)
     def __del__(self):
         self.disband()
+    def __get_default_tpb(self):
+        return self._default_tpb
+    def __set_default_tpb(self, value):
+        self._default_tpb = _validateTPB(value)
     def disband(self):
-        # Notice that the ConnectionGroup rollback()s itself BEFORE releasing
-        # its Connection references.
-        if self._transaction and not self._transaction.closed:
-            self.rollback()
+        """Forcefully deletes all connections from connection group.
+        
+        .. note:: If transaction is active, it’s canceled (**rollback**).
+        
+        .. note::
+        
+           Any error during transaction finalization doesn't stop the disband
+           process, however the exception catched is eventually reported.
+        """
+        exc = None
+        if self._transaction: 
+            try:
+                self._transaction.default_action = 'rollback'
+                self._transaction.close()
+            except Exception as e:
+                exc = e
+        self._transaction = None
         self.clear()
+        if exc:
+            raise exc
     # Membership methods:
     def add(self, con):
+        """Adds active connection to the group.
+        
+        :param con: A :class:`Connection` instance to add to this group.
+        :raises TypeError: When `con` is not :class:`Connection` instance.
+        :raises ProgrammingError: When `con` is already member of this or another
+                                  group, or :attr:`~Connection.closed`.
+                                  When this group has unresolved transaction or
+                                  contains 16 connections.
+        """
         ### CONTRAINTS ON $con: ###
         # con must be an instance of kinterbasdb.Connection:
         if not isinstance(con, Connection):
@@ -2597,6 +3472,12 @@ class ConnectionGroup(object):
         con._set_group(self)
         self._cons.append(con)
     def remove(self, con):
+        """Removes specified connection from group. 
+
+        :param con: A :class:`Connection` instance to remove.
+        :raises ProgrammingError: When `con` doesn't belong to this group or 
+                                  transaction is active.
+        """
         if con not in self:
             raise ProgrammingError("con is not a member of this group.")
         assert con.group is self
@@ -2606,22 +3487,42 @@ class ConnectionGroup(object):
         con._set_group(None)
         self._cons.remove(con)
     def clear(self):
+        """Removes all connections from group.
+        
+        :raises ProgrammingError: When transaction is active.
+        """
         self.__require_transaction_state(False,
             "Cannot clear group that has an unresolved transaction.")
         self.__drop_transaction()
         for con in self.members():
             self.remove(con)
         assert self.count() == 0
-    def cursor(self,connection):
+    def cursor(self, connection):
+        """Creates a new :class:`Cursor` that will operate in the context of 
+        distributed transaction and specific :class:`Connection` that belongs
+        to this group.
+        
+        .. note:: Automatically starts transaction if it's not already started.
+        
+        :param connection: :class:`Connection` instance.
+        :raises ProgrammingError: When group is empty or specified `connection` 
+                                  doesn't belong to this group.
+        """
         if not self._transaction:
             self.__require_non_empty_group('start')
             self._transaction = Transaction(self._cons)
         return self._transaction.cursor(connection)
     def members(self):
+        "Returns list of connection objects that belong to this group."
         return self._cons[:] # return a *copy* of the internal list
     def count(self):
+        "Returns number of :class:`Connection` objects that belong to this group."
         return len(self._cons)
     def contains(self, con):
+        """Returns True if specified connection belong to this group.
+        
+        :param con: :class:`Connection` instance.
+        """
         return con in self._cons
     __contains__ = contains # alias to support the 'in' operator
     def __iter__(self):
@@ -2634,20 +3535,63 @@ class ConnectionGroup(object):
         transaction = self._transaction
         if (
             (must_be_active and transaction is None)
-            or (not must_be_active and (transaction is not None and not transaction.closed))
+            or (not must_be_active and (transaction is not None and transaction.active))
             ):
             raise ProgrammingError(err_msg)
     def __require_non_empty_group(self, operation_name):
         if self.count() == 0:
             raise ProgrammingError("Cannot %s distributed transaction with"
                 " an empty ConnectionGroup." % operation_name)
+    def __ensure_transaction(self):
+        if not self._transaction:
+            self.__require_non_empty_group('start')
+            self._transaction = Transaction(self._cons,
+                                            default_tpb=self.default_tpb)
     # Transactional methods:
-    def begin(self):
+    def execute_immediate(self, sql):
+        """Executes a statement on all member connections without caching its 
+        prepared form. 
+        
+        Automatically starts transaction if it's not already started.
+        
+        :param string sql: SQL statement to execute.
+        
+        .. important::
+        
+           **The statement must not be of a type that returns a result set.**
+           In most cases (especially cases in which the same statement – perhaps 
+           a parameterized statement – is executed repeatedly), it is better to 
+           create a cursor using the connection’s cursor method, then execute 
+           the statement using one of the cursor’s execute methods.
+        
+        :param string sql: SQL statement to execute.
+        
+        :raises DatabaseError: When error is returned from server.
+        """
+        self.__ensure_transaction()
+        self._transaction.execute_immediate(sql)
+    def begin(self, tpb=None):
+        """Starts distributed transaction over member connections.
+        
+        :param tpb: (Optional) Transaction Parameter Buffer for newly started 
+                    transaction. If not specified, :attr:`default_tpb` is used.
+        :type tpb: :class:`TPB` instance, list/tuple of `isc_tpb_*` constants
+                   or `bytestring`
+        :raises ProgrammingError: When group is empty or has active transaction.
+        """
         self.__require_transaction_state(False,
             "Must resolve current transaction before starting another.")
-        self.__require_non_empty_group('start')
-        self._transaction = Transaction(self._cons)
-        self._transaction.begin()
+        self.__ensure_transaction()
+        self._transaction.begin(tpb)
+    def savepoint(self, name):
+        """Establishes a named SAVEPOINT on all member connections. 
+        See :meth:`Transaction.savepoint` for details.
+
+        :param string name: Name for savepoint.
+        :raises ProgrammingError: When group is empty.
+        """
+        self.__require_non_empty_group('savepoint')
+        return self._transaction.savepoint(name)
     def prepare(self):
         """
           Manually triggers the first phase of a two-phase commit (2PC).  Use
@@ -2658,6 +3602,18 @@ class ConnectionGroup(object):
         self.__require_transaction_state(True,"This group has no transaction to prepare.")
         self._transaction.prepare()
     def commit(self, retaining=False):
+        """Commits distributed transaction over member connections using 2PC.
+        
+        .. note::
+           If transaction is not active, this method does nothing, because
+           the consensus among Python DB API experts is that transactions should
+           always be started implicitly, even if that means allowing a `commit()`
+           or `rollback()` without an actual transaction.
+        
+        :param boolean retaining: Indicates whether the transactional context of 
+                                  the transaction being resolved should be recycled.
+        :raises ProgrammingError: When group is empty.
+        """
         self.__require_non_empty_group('commit')
         # The consensus among Python DB API experts is that transactions should
         # always be started implicitly, even if that means allowing a commit()
@@ -2665,25 +3621,48 @@ class ConnectionGroup(object):
         if self._transaction is None:
             return
         self._transaction.commit(retaining)
-        #self._transaction = None
-    def rollback(self, retaining=False):
-        self.__require_non_empty_group('roll back')
+    def rollback(self, retaining=False, savepoint=None):
+        """Rollbacks distributed transaction over member connections.
+        
+        .. note::
+           If transaction is not active, this method does nothing, because
+           the consensus among Python DB API experts is that transactions should
+           always be started implicitly, even if that means allowing a `commit()`
+           or `rollback()` without an actual transaction.
+        
+        :param boolean retaining: Indicates whether the transactional context of 
+                                  the transaction being resolved should be recycled.
+        :raises ProgrammingError: When group is empty.
+        """
+        self.__require_non_empty_group('rollback')
         # The consensus among Python DB API experts is that transactions should
         # always be started implicitly, even if that means allowing a commit()
         # or rollback() without an actual transaction.
         if self._transaction is None:
             return
-        self._transaction.rollback(retaining)
-        #self._transaction = None
+        self._transaction.rollback(retaining, savepoint)
+
+    #: (Read/Write) Deafult Transaction Parameter Block used for transactions.
+    default_tpb = property(__get_default_tpb, __set_default_tpb)
 
 
 class BlobReader(object):
-    """
+    """BlobReader is a “file-like” class, so it acts much like a file instance 
+    opened in `rb` mode.
     
+    .. important::
+    
+       DO NOT create instances of this class directly! BlobReader instances are 
+       returned automatically in place of output BLOB values when `stream`
+       BLOB access is requested via :meth:`PreparedStatement.set_stream_blob`.
+    
+    .. tip::
+    
+       BlobReader supports iterator protocol, yielding lines like :meth:`readline`.
     """
     def __init__(self, blobid, db_handle, tr_handle, is_text, charset):
         self.__closed = False
-        self.__mode = 'r'
+        self.__mode = 'rb'
         self.__bytes_read = 0
         self.__pos = 0
         self.__index = 0
@@ -2692,10 +3671,16 @@ class BlobReader(object):
         self.__tr_handle = tr_handle
         self.__is_text = is_text
         self.__charset = charset
+        self.__python_charset = charset_map.get(charset,charset)
         self.__blobid = blobid
         self.__opened = False
         self._blob_handle = ibase.isc_blob_handle()
         self._isc_status = ISC_STATUS_ARRAY()
+    def __ensure_open(self):
+        if self.closed:
+            raise ProgrammingError("BlobReader is closed.")
+        if not self.__opened:
+            self.__open()
     def __open(self):
         ibase.isc_open_blob2(self._isc_status,
                              self.__db_handle,
@@ -2767,6 +3752,10 @@ class BlobReader(object):
         else:
             self.__buf_data = bytes_actually_read.value
     def close(self):
+        """Closes the Reader. Like :meth:`file.close`.
+        
+        :raises DatabaseError: When error is returned by server.
+        """
         if self.__opened and not self.closed:
             self.__closed = True
             ibase.isc_close_blob(self._isc_status, self._blob_handle)
@@ -2775,8 +3764,14 @@ class BlobReader(object):
                                             self._isc_status,
                                             "BlobReader.close/isc_close_blob:")
     def flush(self):
+        """Flush the internal buffer. Like :meth:`file.flush`. Does nothing as
+        it's pointless for reader."""
         pass
     def next(self):
+        """Return the next line from the BLOB. Part of *iterator protocol*.
+        
+        :raises StopIteration: If there are no further lines. 
+        """
         line = self.readline()
         if line:
             return line
@@ -2786,9 +3781,20 @@ class BlobReader(object):
     def __iter__(self):
         return self
     def read(self, size = -1):
-        assert not self.closed
-        if not self.__opened:
-            self.__open()
+        """Read at most size bytes from the file (less if the read hits EOF 
+        before obtaining size bytes). If the size argument is negative or omitted, 
+        read all data until EOF is reached. The bytes are returned as a string 
+        object. An empty string is returned when EOF is encountered immediately.
+        Like :meth:`file.read`.
+        
+        :raises ProgrammingError: When reader is closed.
+        
+        .. note::
+        
+           Performs automatic conversion to `unicode` for TEXT BLOBs, if used 
+           Python is v3 or `connection charset` is defined.
+        """
+        self.__ensure_open()
         if size >= 0:
             to_read = size
         else:
@@ -2811,12 +3817,23 @@ class BlobReader(object):
             self.__buf_pos += to_copy
             to_read -= to_copy
         result = result.value
-        if PYTHON_MAJOR_VER == 3 and self.__is_text:
-            result = result.decode(charset_map.get(self.__charset,self.__charset))
+        if (self.__charset or PYTHON_MAJOR_VER == 3) and self.__is_text:
+            result = b2u(result,self.__python_charset)
         return result
     def readline(self):
-        if not self.__opened:
-            self.__open()
+        """Read one entire line from the file. A trailing newline character is 
+        kept in the string (but may be absent when a file ends with an incomplete 
+        line). An empty string is returned when EOF is encountered immediately.
+        Like :meth:`file.readline`.
+
+        :raises ProgrammingError: When reader is closed.
+        
+        .. note::
+        
+           Performs automatic conversion to `unicode` for TEXT BLOBs, if used 
+           Python is v3 or `connection charset` is defined.
+        """
+        self.__ensure_open()
         line = []
         to_read = self._blob_length - self.__pos
         to_copy = 0
@@ -2838,14 +3855,23 @@ class BlobReader(object):
                     break
                 pos += 1
             result = ctypes.string_at(ctypes.byref(self.__buf,self.__buf_pos), pos)
-            if PYTHON_MAJOR_VER == 3 and self.__is_text:
-                result = result.decode(charset_map.get(self.__charset,self.__charset))
+            if (self.__charset or PYTHON_MAJOR_VER == 3)  and self.__is_text:
+                result = b2u(result,self.__python_charset)
             line.append(result)
             self.__buf_pos += pos
             self.__pos += pos
             to_read -= pos
         return ''.join(line)
     def readlines(self, sizehint = None):
+        """Read until EOF using :meth:`readline` and return a list containing 
+        the lines thus read. The optional sizehint argument (if present) is ignored.
+        Like :meth:`file.readlines`.
+
+        .. note::
+        
+           Performs automatic conversion to `unicode` for TEXT BLOBs, if used 
+           Python is v3 or `connection charset` is defined.
+        """
         result = []
         line = self.readline()
         while line:
@@ -2853,6 +3879,21 @@ class BlobReader(object):
             line = self.readline()
         return result
     def seek(self, offset, whence = os.SEEK_SET):
+        """Set the file’s current position, like stdio‘s `fseek()`. 
+        See :meth:`file.seek` details.
+        
+        :param integer offset: Offset from specified position.
+        :param whence: (Optional) Context for offset.
+        :type whence: os.SEEK_SET, os.SEEK_CUR or os.SEEK_END
+        
+        :raises ProgrammingError: When reader is closed.
+        
+        .. warning::
+        
+           If BLOB was NOT CREATED as `stream` BLOB, this method raises
+           :exc:`DatabaseError` exception. This constraint is set by Firebird.
+        """
+        self.__ensure_open()
         pos = ibase.ISC_LONG(0)
         ibase.isc_seek_blob (self._isc_status,
                              self._blob_handle,
@@ -2864,6 +3905,8 @@ class BlobReader(object):
         self.__pos = pos.value
         self.__reset_buffer()
     def tell(self):
+        """Return current position in BLOB, like stdio‘s `ftell()` 
+        and :meth:`file.tell`."""
         return self.__pos
     def __get_closed(self):
         return self.__closed
@@ -2871,7 +3914,9 @@ class BlobReader(object):
         return self.__mode
     def __del__(self):
         self.close()
+    #: (Read Only) (boolean) True is BlobReader is closed.
     closed = property(__get_closed)
+    #: (Read Only) (string) File mode - always "rb"
     mode = property(__get_mode)
 
 class Iterator(object):
@@ -2895,17 +3940,19 @@ class Iterator(object):
 
 
 class _RowMapping(object):
-    """
-      An internal class that wraps a row of results in order to map
-    field name to field value.
+    """An internal dictionary-like class that wraps a row of results in order to 
+    map field name to field value.
 
-      We make ABSOLUTELY NO GUARANTEES about the return value of the
-    fetch(one|many|all) methods except that it is a sequence indexed by field
-    position, and no guarantees about the return value of the
-    fetch(one|many|all)map methods except that it is a mapping of field name
-    to field value.
-      Therefore, client programmers should NOT rely on the return value being
-    an instance of a particular class or type.
+    .. warning::
+    
+       We make ABSOLUTELY NO GUARANTEES about the return value of the
+       `fetch(one|many|all)` methods except that it is a sequence indexed by field
+       position, and no guarantees about the return value of the
+       `fetch(one|many|all)map` methods except that it is a mapping of field name
+       to field value.
+    
+       Therefore, client programmers should NOT rely on the return value being
+       an instance of a particular class or type.
     """
     def __init__(self, description, row):
         self._description = description
@@ -3004,10 +4051,13 @@ class _RequestBufferBuilder(object):
     def _addString(self, code, s):
         _string2reqbuf(self._buffer, code, s)
     def _addNumeric(self, code, n, numCType='I'):
-        _numeric2reqbuf(self._buffer, code, n, numCType=numCType)
+        _numeric2reqbuf(self._buffer, code, n, num_ctype=numCType)
 
 
 class TPB(_RequestBufferBuilder):
+    """Helper class for convenient and safe construction of custom Transaction
+    Parameter Blocks.
+    """
     def __init__(self):
         _RequestBufferBuilder.__init__(self)
         self._access_mode = isc_tpb_write
@@ -3016,6 +4066,7 @@ class TPB(_RequestBufferBuilder):
         self._lock_timeout = None
         self._table_reservation = None
     def copy(self):
+        "Returns a copy of self."
         # A shallow copy of self would be entirely safe except that
         # .table_reservation is a complex object that needs to be copied
         # separately.
@@ -3025,6 +4076,11 @@ class TPB(_RequestBufferBuilder):
             other._table_reservation = copy.copy(self._table_reservation)
         return other
     def render(self):
+        """Create valid `transaction parameter block` according to current 
+        values of member attributes.
+        
+        :returns: (string) TPB block.
+        """
         # YYY: Optimization:  Could memoize the rendered TPB str.
         self.clear()
         self._addCode(isc_tpb_version3)
@@ -3050,10 +4106,13 @@ class TPB(_RequestBufferBuilder):
         return self._access_mode
     def _set_access_mode(self, access_mode):
         if access_mode not in (isc_tpb_read, isc_tpb_write):
-            raise ProgrammingError('Access mode must be one of'
+            raise ValueError('Access mode must be one of'
                                    ' (isc_tpb_read, isc_tpb_write).'
                                    )
         self._access_mode = access_mode
+    
+    #: (integer) Required access mode (`isc_tpb_read` or `isc_tpb_write`). 
+    #: **Default:** `isc_tpb_write`
     access_mode = property(_get_access_mode, _set_access_mode)
     # isolation_level property:
     def _get_isolation_level(self):
@@ -3061,7 +4120,7 @@ class TPB(_RequestBufferBuilder):
     def _set_isolation_level(self, isolation_level):
         if isinstance(isolation_level, tuple):
             if len(isolation_level) != 2:
-                raise ProgrammingError('The tuple variant of isolation level'
+                raise ValueError('The tuple variant of isolation level'
                     ' must have two elements:  isc_tpb_read_committed in the'
                     ' first element and one of (isc_tpb_rec_version,'
                     ' isc_tpb_no_rec_version) in the second.')
@@ -3072,18 +4131,29 @@ class TPB(_RequestBufferBuilder):
         if isolation_level not in (isc_tpb_concurrency,
                                    isc_tpb_consistency,
                                    isc_tpb_read_committed):
-            raise ProgrammingError('Isolation level must be one of'
+            raise ValueError('Isolation level must be one of'
                                    ' (isc_tpb_concurrency, isc_tpb_consistency,'
                                    ' isc_tpb_read_committed).')
 
         if isolation_level == isc_tpb_read_committed:
             if suboption not in (isc_tpb_rec_version,
                                  isc_tpb_no_rec_version):
-                raise ProgrammingError('With isolation level'
+                raise ValueError('With isolation level'
                     ' isc_tpb_read_committed, suboption must be one of'
                     ' (isc_tpb_rec_version, isc_tpb_no_rec_version).')
             isolation_level = isolation_level, suboption
         self._isolation_level = isolation_level
+    
+    #: (integer or tuple) Required Transaction Isolation Level. 
+    #: Single integer value equivalent to `isc_tpb_concurrency` or
+    #: `isc_tpb_consistency`, or tuple of exactly two integer values, where
+    #: the first one is `isc_tpb_read_committed` and second either 
+    #: `isc_tpb_rec_version` or `isc_tpb_no_rec_version`. 
+    #:
+    #: When value `isc_tpb_read_committed` is assigned without suboption,
+    #: the `isc_tpb_rec_version` is assigned as default suboption.
+    #:
+    #: **Default:** `isc_tpb_concurrency`
     isolation_level = property(_get_isolation_level, _set_isolation_level)
 
     # lock_resolution property:
@@ -3091,9 +4161,14 @@ class TPB(_RequestBufferBuilder):
         return self._lock_resolution
     def _set_lock_resolution(self, lock_resolution):
         if lock_resolution not in (isc_tpb_wait, isc_tpb_nowait):
-            raise ProgrammingError('Lock resolution must be one of'
+            raise ValueError('Lock resolution must be one of'
                                    ' (isc_tpb_wait, isc_tpb_nowait).')
         self._lock_resolution = lock_resolution
+    
+    #: (integer) Required lock resolution method. Either `isc_tpb_wait` or
+    #: `isc_tpb_nowait`.
+    #:
+    #: **Default:** `isc_tpb_wait`
     lock_resolution = property(_get_lock_resolution, _set_lock_resolution)
 
     # lock_timeout property:
@@ -3104,10 +4179,14 @@ class TPB(_RequestBufferBuilder):
             UINT_MAX = 2 ** (struct.calcsize('I') * 8) - 1
             if (not isinstance(lock_timeout, (int, mylong))) or (
                 lock_timeout < 0 or lock_timeout > UINT_MAX):
-                raise ProgrammingError('Lock resolution must be either None'
+                raise ValueError('Lock resolution must be either None'
                     ' or a non-negative int number of seconds between 0 and'
                     ' %d.' % UINT_MAX)
         self._lock_timeout = lock_timeout
+    
+    #: (integer) Required lock timeout or None. 
+    #:
+    #: **Default:** `None`
     lock_timeout = property(_get_lock_timeout, _set_lock_timeout)
 
     # table_reservation property (an instance of TableReservation):
@@ -3124,11 +4203,27 @@ class TPB(_RequestBufferBuilder):
             '\n  tpbBuilder.table_reservation["MY_TABLE"] ='
             ' (kinterbasdb.isc_tpb_protected, kinterbasdb.isc_tpb_lock_write)'
             )
+    
+    #: (:class:`TableReservation`) Table reservation specification. 
+    #:
+    #: **Default:** `None`.
+    #:
+    #: Instead of changing the value of the TableReservation object itself, you 
+    #: must change its elements by manipulating it as though it were a dictionary 
+    #: that mapped “TABLE_NAME”: (sharingMode, accessMode) For example:
+    #:
+    #: .. code-block:: python
+    #:
+    #:   tpb.table_reservation["MY_TABLE"] = (fdb.isc_tpb_protected, fdb.isc_tpb_lock_write)
     table_reservation = property(_get_table_reservation,
                                  _set_table_reservation_access)
 
 
 class TableReservation(object):
+    """A dictionary-like helper class that maps 
+    “TABLE_NAME”: (sharingMode, accessMode). It performs validation of values
+    assigned to keys.
+    """
     _MISSING = object()
     _SHARING_MODE_STRS = {
         isc_tpb_shared:    'isc_tpb_shared',
@@ -3147,6 +4242,11 @@ class TableReservation(object):
         import copy
         return copy.copy(self)
     def render(self):
+        """Create valid `table access parameter block` according to current 
+        key/value pairs.
+        
+        :returns: (string) Table access definition block.
+        """
         if not self:
             return b('')
         frags = []
@@ -3275,6 +4375,8 @@ def _validateTPB(tpb):
     if isinstance(tpb, TPB):
         # TPB's accessor methods perform their own validation, and its
         # render method takes care of infrastructural trivia.
+        return tpb
+    elif isinstance(tpb, (ListeType, TupleType)):
         return tpb
     elif not (isinstance(tpb, mybytes) and len(tpb) > 0):
         raise ProgrammingError('TPB must be non-unicode string of length > 0')
