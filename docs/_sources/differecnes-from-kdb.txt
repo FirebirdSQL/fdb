@@ -1,0 +1,114 @@
+============================
+Differences from KInterbasDB
+============================
+
+No need for initialization
+==========================
+
+FDB doesn't support various configurations of automatic type translations like 
+KDB, so it's no longer necessary to initialize the driver before any feature is
+used.
+
+Distributed transactions
+========================
+
+Support for :ref:`Distributed Transactions <distributed_transactions>` works in slightly 
+differently than in KDB. FDB uses :class:`~fdb.ConnectionGroup` class like KDB with the same 
+interface, but DT is not bound to main transaction of individual connections managed by group. 
+That means that :class:`~fdb.Cursor` instances obtained from :class:`~fdb.Connection` don't work in 
+DT if connection is part of ConnectionGroup, but work normally in connection context. 
+To get Cursor for specific connection that works in DT, use :meth:`fdb.ConnectionGroup.cursor()` 
+method and pass the connection as parameter. We believe that this arrangement is more
+logical and flexible than KDB's way.
+
+Transaction context for cursor objects depends on how cursor is obtained/created:
+
+a) :meth:`fdb.Connection.cursor()` - Works in context of "main" transaction for connection.
+b) :meth:`fdb.Transaction.cursor()` - Works in context of this transaction.
+c) :meth:`fdb.ConnectionGroup.cursor()` - Works in context of Distributed Transaction
+
+Stream BLOBs
+============
+
+Firebird supports two types of BLOBs, stream and segmented. The database stores 
+segmented BLOBs in chunks. Each chunk starts with a two byte length indicator 
+followed by however many bytes of data were passed as a segment. Stream BLOBs 
+are stored as a continuous array of data bytes with no length indicators included.
+Both types of BLOBs could be accessed by the same API functions, but only stream
+BLOBs support seek operation (via isc_seek_blob function).
+
+FDB implements stream BLOBs as file-like objects. On input, you can simply pass 
+any file-like object (only 'read' method required) as parameter value for BLOB 
+column. For example:
+
+.. code-block:: python
+
+   f = open('filename.ext', 'rb')
+   cur.execute('insert into T (MyBLOB) values (?)',[f])
+   f.close()
+
+On output, stream BLOBs are represented by BlobReader instances on request. To
+request streamed access to BLOB, you have to use prepared statement for your query
+and call its set_stream_blob(column_name) method. Stream access is not allowed
+for cursors because cursors cache prepared statements internally, which would
+lead to dangerous situations (BlobReader life-time management) and anomalies 
+(stream access when it's not required). Example:
+
+.. code-block:: python
+
+   p = cursor.prep('select first 1 MyBLOB from T')
+   p.set_stream_blob('MyBLOB')
+   cur.execute(p)
+   row = cur.fetchone()
+   blob_reader = row[1]
+   print blob_reader.readlines()
+   blob_reader.close()
+
+Whenever you use stream access to BLOB, FDB opens or creates the underlying BLOB 
+value as stream one. On input it means that true stream BLOB is created in database,
+but on output it depends on how BLOB value was actually created. If BLOB was
+created as stream one, you can use the seek method of BlobReader, but if it was
+created as regular BLOB, any call to seek will raise an error::
+
+  SQLCODE: -685
+  - invalid ARRAY or BLOB operation
+  - invalid BLOB type for operation
+
+You can read BLOBs created as stream ones as fully materialized, and regular ones
+in stream mode (without seek) without any problems, and that same apply for
+input - you can create values in the same column as stream or regular ones 
+interchangeably. From your point of view, stream BLOBs are just different 
+interface to BLOB values, with single exception - BlobReader.seek() will throw
+an exception if you'd call it on BLOB value that was not created as stream BLOB.
+
+To work with stream BLOBs, you don't need to use cursor.set_type_trans_in/out
+methods, i.e. calls to:
+
+.. code-block:: python
+
+   cur.set_type_trans_in ({'BLOB': {'mode': 'stream'}})
+   cur.set_type_trans_out({'BLOB': {'mode': 'stream'}})
+
+To write (create) stream BLOB value, simply pass file-like object as parameter
+to your INSERT/UPDATE statements where BLOB value is expected. To read BLOB
+value as stream, use prepared statement and register interest to get BlobReader
+instead fully materialized value via set_stream_blob() calls for each BLOB value
+(column name) you want to get this way.
+
+:class:`~fdb.BlobReader` supports iteration protocol, and read(), readline(), readlines(), 
+seek(), tell(), flush() (as noop) and close() methods. It does NOT support chunks()
+method of KInterbasDB.BlobReader.
+
+It is not strictly necessary to close BlobReader instances explicitly. 
+A BlobReader object will be automatically closed by its __del__ method when it 
+goes out of scope, or when its Connection, PreparedStatement closes, 
+whichever comes first. However, it is always a better idea to close resources 
+explicitly (via try...finally) than to rely on artifacts of the Python 
+implementation. You will also encounter errors if BLOB value was deleted from
+database before BlobReader is closed, so the odds that this may happen are higher
+if you do not close it explicitly.
+
+Services API
+============
+
+Support for Firebird Services was :ref:`completelly reworked <working_with_services>` in FDB.

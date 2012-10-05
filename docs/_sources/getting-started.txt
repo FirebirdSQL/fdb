@@ -1,14 +1,55 @@
 
-############################
-Quick-start Guide / Tutorial
-############################
+########################
+Getting Started with FDB
+########################
+
+Installation
+************
+
+FDB is written as pure-Python module on top of Firebird client library (fbclient.so/dll) using ctypes_,
+so *make sure you have Firebird client properly installed before you try to install FDB*, otherwise the 
+installation will fail. FDB supports Firebird version 2.0 and higher.
+
+FDB is distributed as `setuptools`_ package, so you'll need setuptools or 
+`compatible package <http://pypi.python.org/pypi/distribute>`_ installed to
+install FDB properly.
+
+Installation from PYPI_
+=======================
+
+Run easy_install or pip::
+
+  $ pip install fdb
+
+or::
+
+  $ easy_install fdb
+
+Installation from source
+========================
+
+Download the source tarball, uncompress it, then run the install command::
+
+  $ curl -O http://pypi.python.org/packages/source/f/fdb/fdb-0.8.5.tar.gz
+  $ tar -xzvf fdb-0.8.5.tar.gz
+  $ cd fdb-0.8.5
+  $ python setup.py install
+
+.. _setuptools: http://pypi.python.org/pypi/setuptools
+.. _PYPI: http://pypi.python.org
+.. _ctypes: http://docs.python.org/library/ctypes.html
+
+
+
+Quick-start Guide
+*****************
 
 This brief tutorial aims to get the reader started by demonstrating
-elementary usage of KInterbasDB. It is not a comprehensive Python
+elementary usage of FDB. It is not a comprehensive Python
 Database API tutorial, nor is it comprehensive in its coverage of
 anything else.
 
-The numerous advanced features of KInterbasDB are covered in another
+The numerous advanced features of FDB are covered in another
 section of this documentation, which is not in a tutorial format, though it
 is replete with examples.
 
@@ -23,13 +64,13 @@ A database connection is typically established with code such as this:
 
 .. sourcecode:: python
 
-    import kinterbasdb
+    import fdb
     
     # The server is named 'bison'; the database file is at '/temp/test.db'.
-    con = kinterbasdb.connect(dsn='bison:/temp/test.db', user='sysdba', password='pass')
+    con = fdb.connect(dsn='bison:/temp/test.db', user='sysdba', password='pass')
     
     # Or, equivalently:
-    con = kinterbasdb.connect(
+    con = fdb.connect(
         host='bison', database='/temp/test.db',
         user='sysdba', password='pass'
       )
@@ -42,9 +83,9 @@ UTF-8 as the character set of the connection:
 
 .. sourcecode:: python
 
-    import kinterbasdb
+    import fdb
     
-    con = kinterbasdb.connect(
+    con = fdb.connect(
         dsn='bison:/temp/test.db',
         user='sysdba', password='pass',
         dialect=1, # necessary for all dialect 1 databases
@@ -77,9 +118,9 @@ the `languages` table:
 
 .. sourcecode:: python
 
-    import kinterbasdb
+    import fdb
 
-    con = kinterbasdb.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
+    con = fdb.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
 
     # Create a Cursor object that operates in the context of Connection con:
     cur = con.cursor()
@@ -105,9 +146,9 @@ fetching a single row at a time from a `SELECT`-cursor:
 
 .. sourcecode:: python
 
-    import kinterbasdb
+    import fdb
 
-    con = kinterbasdb.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
+    con = fdb.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
 
     cur = con.cursor()
     SELECT = "select name, year_released from languages order by year_released"
@@ -148,19 +189,19 @@ example to `languages`):
 
 .. sourcecode:: python
 
-    import kinterbasdb as k
+    import fdb
 
     TABLE_NAME = 'languages'
     SELECT = 'select * from %s order by year_released' % TABLE_NAME
 
-    con = k.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
+    con = fdb.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
 
     cur = con.cursor()
     cur.execute(SELECT)
 
     # Print a header.
     for fieldDesc in cur.description:
-        print fieldDesc[k.DESCRIPTION_NAME].ljust(fieldDesc[k.DESCRIPTION_DISPLAY_SIZE]) ,
+        print fieldDesc[fdb.DESCRIPTION_NAME].ljust(fieldDesc[fdb.DESCRIPTION_DISPLAY_SIZE]) ,
     print # Finish the header with a newline.
     print '-' * 78
 
@@ -170,7 +211,7 @@ example to `languages`):
     for row in cur:
         for fieldIndex in fieldIndices:
             fieldValue = str(row[fieldIndex])
-            fieldMaxWidth = cur.description[fieldIndex][k.DESCRIPTION_DISPLAY_SIZE]
+            fieldMaxWidth = cur.description[fieldIndex][fdb.DESCRIPTION_DISPLAY_SIZE]
 
             print fieldValue.ljust(fieldMaxWidth) ,
 
@@ -193,9 +234,9 @@ Let's insert more languages:
 
 .. sourcecode:: python
 
-    import kinterbasdb
+    import fdb
 
-    con = kinterbasdb.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
+    con = fdb.connect(dsn='/temp/test.db', user='sysdba', password='masterkey')
 
     cur = con.cursor()
 
@@ -215,7 +256,7 @@ Let's insert more languages:
 Note the use of a *parameterized* SQL statement above. When dealing
 with repetitive statements, this is much faster and less error-prone
 than assembling each SQL statement manually. (You can read more about
-parameterized SQL statements in the section on `Prepared Statements`.)
+parameterized SQL statements in the section on :ref:`Prepared Statements <prepared-statements>`.)
 
 After running Example 4, the table printer from Example 3 would print:
 
@@ -250,7 +291,7 @@ retrieved from a stored procedure by `SELECT`ing from the procedure,
 whereas output parameters are retrieved with an `EXECUTE PROCEDURE`
 statement.
 
-To *retrieve a result set* from a stored procedure with KInterbasDB,
+To *retrieve a result set* from a stored procedure with FDB,
 use code such as this:
 
 .. sourcecode:: python

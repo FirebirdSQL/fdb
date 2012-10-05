@@ -1,0 +1,284 @@
+
+=============
+FDB Reference
+=============
+
+.. module:: fdb
+   :synopsis: Python Database API 2.0 Compliant driver for Firebird
+
+Module globals
+==============
+
+.. data:: __version__
+
+   Current driver version, string.
+
+.. data:: apilevel
+
+   String constant stating the supported DB API level (2.0).
+
+.. data:: threadsafety
+
+   Integer constant stating the level of thread safety the interface supports. 
+
+   Curretly `1` = Threads may share the module, but not connections. 
+
+.. data:: paramstyle
+
+   String constant stating the type of parameter marker
+   formatting expected by the interface.
+
+   `'qmark'`    = Question mark style, e.g. '...WHERE name=?' 
+
+.. data:: DESCRIPTION_NAME
+.. data:: DESCRIPTION_TYPE_CODE
+.. data:: DESCRIPTION_DISPLAY_SIZE
+.. data:: DESCRIPTION_INTERNAL_SIZE
+.. data:: DESCRIPTION_PRECISION
+.. data:: DESCRIPTION_SCALE
+.. data:: DESCRIPTION_NULL_OK
+
+   Helper constants for work with :attr:`Cursor.description` content.
+
+Exceptions
+==========
+
+.. autoexception:: Warning
+   :show-inheritance:
+
+.. autoexception:: Error
+   :show-inheritance:
+
+.. autoexception:: InterfaceError
+   :show-inheritance:
+
+.. autoexception:: DatabaseError
+   :show-inheritance:
+
+.. autoexception:: DataError
+   :show-inheritance:
+
+.. autoexception:: OperationalError
+   :show-inheritance:
+
+.. autoexception:: IntegrityError
+   :show-inheritance:
+
+.. autoexception:: InternalError
+   :show-inheritance:
+
+.. autoexception:: ProgrammingError
+   :show-inheritance:
+
+.. autoexception:: NotSupportedError
+   :show-inheritance:
+
+.. autoexception:: TransactionConflict
+   :show-inheritance:
+
+This is the exception inheritance layout::
+
+    StandardError
+    |__Warning
+    |__Error
+       |__InterfaceError
+       |__DatabaseError
+          |__DataError
+          |__OperationalError
+          |__IntegrityError
+          |__InternalError
+          |__ProgrammingError
+          |__NotSupportedError
+
+Functions
+=========
+
+.. autofunction:: connect
+
+.. autofunction:: create_database
+
+Connection
+==========
+
+.. autoclass:: Connection
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Cursor
+======
+
+.. autoclass:: Cursor
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Transaction
+===========
+
+.. autoclass:: Transaction
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+PreparedStatement
+=================
+
+.. autoclass:: PreparedStatement
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+ConnectionGroup
+===============
+
+.. autoclass:: ConnectionGroup
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+EventConduit
+============
+
+.. autoclass:: EventConduit
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+BlobReader
+==========
+
+.. autoclass:: BlobReader
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+TPB
+===
+
+.. autoclass:: TPB
+   :member-order: groupwise
+   :members:
+   :undoc-members:
+
+TableReservation
+----------------
+
+.. autoclass:: TableReservation
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+
+Internally used classes exposed to driver users
+===============================================
+
+.. module:: fdb.fbcore
+   :synopsis: Implementation of Firebird driver
+
+RowMapping
+----------
+
+.. autoclass:: _RowMapping
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+
+.. _services_api:
+
+Services
+========
+
+.. module:: fdb.services
+   :synopsis: Submodule for work with Firebird Services
+
+Module globals
+--------------
+
+.. data:: SHUT_NORMAL
+
+.. data:: SHUT_MULTI
+
+.. data:: SHUT_SINGLE
+
+.. data:: SHUT_FULL
+
+   These constants are to be passed as the `shutdown_mode` parameter to :meth:`Connection.shutdown`
+
+
+.. data:: SHUT_FORCE
+
+.. data:: SHUT_DENY_NEW_TRANSACTIONS
+
+.. data:: SHUT_DENY_NEW_ATTACHMENTS
+
+   These constants are to be passed as the `shutdown_method` parameter to :meth:`Connection.shutdown`
+
+.. data:: WRITE_FORCED
+
+.. data:: WRITE_BUFFERED
+
+   These constants are to be passed as the `mode` parameter to :meth:`Connection.setWriteMode`
+
+.. data:: ACCESS_READ_WRITE
+
+.. data:: ACCESS_READ_ONLY
+
+   These constants are to be passed as the `mode` parameter to :meth:`Connection.setAccessMode`
+
+.. data:: CAPABILITY_MULTI_CLIENT
+
+.. data:: CAPABILITY_REMOTE_HOP
+
+.. data:: CAPABILITY_SERVER_CONFIG
+
+.. data:: CAPABILITY_QUOTED_FILENAME
+
+.. data:: CAPABILITY_NO_SERVER_SHUTDOWN
+
+   These constants are return values of :meth:`Connection.get_server_capabilities`
+
+Functions
+---------
+
+.. autofunction:: connect
+
+Connection
+----------
+
+.. autoclass:: Connection
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+User
+----
+
+.. autoclass:: User
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+
+
+ctypes interface to Firebird client library
+===========================================
+
+:ref:`ctypes <python:module-ctypes>` interface to `fbclient.so/dll` is defined in submodule :mod:`fdb.ibase`.
+
+.. automodule:: fdb.ibase
+   :synopsis: Python ctypes interface to Firebird client library
+   :member-order: groupwise
+   :members:

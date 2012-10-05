@@ -1,29 +1,41 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Overview of Firebird Client Library Thread-Safety &mdash; KInterbasDB v3.3.0 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <title>Overview of Firebird Client Library Thread-Safety &mdash; FDB 0.8.6 documentation</title>
+    
+    <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '3.3.0',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.8.6',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="KInterbasDB v3.3.0 documentation" href="index.html" />
-    <link rel="next" title="KInterbasDB Links" href="links.html" />
-    <link rel="prev" title="Concurrency" href="concurrency.html" /> 
+    <link rel="top" title="FDB 0.8.6 documentation" href="index.html" />
+    <link rel="next" title="FDB Reference" href="reference.html" />
+    <link rel="prev" title="Concurrency" href="concurrency.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
   </head>
   <body>
+
     <div class="related">
       <h3>Navigation</h3>
       <ul>
@@ -31,23 +43,23 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="links.html" title="KInterbasDB Links"
+          <a href="reference.html" title="FDB Reference"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="concurrency.html" title="Concurrency"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">KInterbasDB v3.3.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 0.8.6 documentation</a> &raquo;</li> 
       </ul>
     </div>  
+
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
             
-  
   <div class="section" id="overview-of-firebird-client-library-thread-safety">
 <h1>Overview of Firebird Client Library Thread-Safety<a class="headerlink" href="#overview-of-firebird-client-library-thread-safety" title="Permalink to this headline">¶</a></h1>
 <p>The thread-safety properties of the standard Firebird client library
@@ -55,7 +67,7 @@ vary according to the following:</p>
 <ul class="simple">
 <li>Firebird version</li>
 <li>operating system</li>
-<li>Firebird server architecture (SuperServer, Classic, Embedded)</li>
+<li>Firebird server architecture (SuperServer, Classic, SuperClassic, Embedded)</li>
 <li>underlying connection protocol (embedded vs. local vs. IPC vs.
 remote)</li>
 </ul>
@@ -94,133 +106,106 @@ time.</p>
 <col width="22%" />
 <col width="27%" />
 </colgroup>
-<thead valign="bottom">
-<tr><th class="head">FB Version</th>
-<th class="head">OS</th>
-<th class="head">FB Architecture</th>
-<th class="head">Remote / Local</th>
-<th class="head">Thread-Safe?</th>
-</tr>
-</thead>
 <tbody valign="top">
-<tr><td rowspan="10">1.0.3</td>
-<td rowspan="6">Windows</td>
-<td rowspan="2">SuperServer</td>
-<td>Local</td>
-<td>No</td>
-</tr>
-<tr><td>Remote</td>
-<td>Yes</td>
-</tr>
-<tr><td rowspan="2">Classic</td>
-<td>Local</td>
-<td>No such config.</td>
-</tr>
-<tr><td>Remote</td>
-<td>No such config.</td>
-</tr>
-<tr><td rowspan="2">Embedded</td>
-<td>Local</td>
-<td>No such config.</td>
-</tr>
-<tr><td>Remote</td>
-<td>No such config.</td>
-</tr>
-<tr><td rowspan="4">Linux</td>
-<td rowspan="2">SuperServer</td>
-<td>Local</td>
-<td>No such config.</td>
-</tr>
-<tr><td>Remote</td>
-<td>No</td>
-</tr>
-<tr><td rowspan="2">Classic</td>
-<td>Local</td>
-<td>No</td>
-</tr>
-<tr><td>Remote</td>
-<td>No</td>
-</tr>
-<tr><td rowspan="10">1.5</td>
-<td rowspan="6">Windows</td>
-<td rowspan="2">SuperServer</td>
-<td>Local</td>
-<td>No</td>
-</tr>
-<tr><td>Remote</td>
-<td>Yes</td>
-</tr>
-<tr><td rowspan="2">Classic</td>
-<td>Local</td>
-<td>No such config.</td>
-</tr>
-<tr><td>Remote</td>
-<td>Yes</td>
-</tr>
-<tr><td rowspan="2">Embedded</td>
-<td>Local</td>
-<td>Yes</td>
-</tr>
-<tr><td>Remote</td>
-<td>No such config.</td>
-</tr>
-<tr><td rowspan="4">Linux</td>
-<td rowspan="2">SuperServer</td>
-<td>Local</td>
-<td>No such config.</td>
-</tr>
-<tr><td>Remote</td>
-<td>Yes</td>
-</tr>
-<tr><td rowspan="2">Classic</td>
-<td>Local</td>
-<td>No</td>
-</tr>
-<tr><td>Remote</td>
-<td>No</td>
-</tr>
-<tr><td rowspan="10">2.0/2.1</td>
+<tr class="row-odd"><td rowspan="10">2.0/2.1.x</td>
 <td rowspan="6">Windows</td>
 <td rowspan="2">SuperServer</td>
 <td>Local</td>
 <td>Yes</td>
 </tr>
-<tr><td>Remote</td>
+<tr class="row-even"><td>Remote</td>
 <td>Yes</td>
 </tr>
-<tr><td rowspan="2">Classic</td>
+<tr class="row-odd"><td rowspan="2">Classic</td>
 <td>Local</td>
 <td>Yes</td>
 </tr>
-<tr><td>Remote</td>
+<tr class="row-even"><td>Remote</td>
 <td>Yes</td>
 </tr>
-<tr><td rowspan="2">Embedded</td>
+<tr class="row-odd"><td rowspan="2">Embedded</td>
 <td>Local</td>
 <td>Yes</td>
 </tr>
-<tr><td>Remote</td>
+<tr class="row-even"><td>Remote</td>
 <td>No such config.</td>
 </tr>
-<tr><td rowspan="4">Linux</td>
+<tr class="row-odd"><td rowspan="4">Linux</td>
 <td rowspan="2">SuperServer</td>
 <td>Local</td>
 <td>No such config.</td>
 </tr>
-<tr><td>Remote</td>
+<tr class="row-even"><td>Remote</td>
 <td>Yes</td>
 </tr>
-<tr><td rowspan="2">Classic</td>
+<tr class="row-odd"><td rowspan="2">Classic</td>
 <td>Local</td>
 <td>No</td>
 </tr>
-<tr><td>Remote</td>
+<tr class="row-even"><td>Remote</td>
 <td>No</td>
+</tr>
+<tr class="row-odd"><td rowspan="16">2.5.x</td>
+<td rowspan="8">Windows</td>
+<td rowspan="2">SuperServer</td>
+<td>Local</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td rowspan="2">Classic</td>
+<td>Local</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td rowspan="2">SuperClassic</td>
+<td>Local</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td rowspan="2">Embedded</td>
+<td>Local</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>No such config.</td>
+</tr>
+<tr class="row-odd"><td rowspan="8">Linux</td>
+<td rowspan="2">SuperServer</td>
+<td>Local</td>
+<td>No such config.</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td rowspan="2">Classic</td>
+<td>Local</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td rowspan="2">SuperClassic</td>
+<td>Local</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td rowspan="2">Embedded</td>
+<td>Local</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>Remote</td>
+<td>No such config.</td>
 </tr>
 </tbody>
 </table>
-<p>This document was written by David Rushby, with assistance from Dmitry
-Yemanov. Errors are attributable to Rushby rather than Yemanov.</p>
 </div>
 </div>
 
@@ -230,29 +215,34 @@ Yemanov. Errors are attributable to Rushby rather than Yemanov.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Overview of Firebird Client Library Thread-Safety</a><ul>
-<li><a class="reference external" href="#definition-of-thread-safety">Definition of &#8220;Thread-Safety&#8221;</a></li>
-<li><a class="reference external" href="#thread-safety-table">Thread-Safety Table</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview of Firebird Client Library Thread-Safety</a><ul>
+<li><a class="reference internal" href="#definition-of-thread-safety">Definition of &#8220;Thread-Safety&#8221;</a></li>
+<li><a class="reference internal" href="#thread-safety-table">Thread-Safety Table</a></li>
 </ul>
 </li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="concurrency.html" title="previous chapter">Concurrency</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="links.html" title="next chapter">KInterbasDB Links</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/thread-safety-overview.txt">Show Source</a></li>
-            </ul>
-          <h3>Quick search</h3>
-            <form class="search" action="search.html" method="get">
-              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
-              <input type="hidden" name="check_keywords" value="yes" />
-              <input type="hidden" name="area" value="default" />
-            </form>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="concurrency.html"
+                        title="previous chapter">Concurrency</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference.html"
+                        title="next chapter">FDB Reference</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -262,22 +252,22 @@ Yemanov. Errors are attributable to Rushby rather than Yemanov.</p>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
+             >index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="links.html" title="KInterbasDB Links"
-             accesskey="N">next</a> |</li>
+          <a href="reference.html" title="FDB Reference"
+             >next</a> |</li>
         <li class="right" >
           <a href="concurrency.html" title="Concurrency"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">KInterbasDB v3.3.0 documentation</a> &raquo;</li> 
+             >previous</a> |</li>
+        <li><a href="index.html">FDB 0.8.6 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+        &copy; Copyright 2009, David Rushby, Pavel Cisar.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

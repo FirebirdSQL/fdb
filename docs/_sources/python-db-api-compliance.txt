@@ -2,25 +2,15 @@
 Compliance to Python Database API 2.0 
 #####################################
 
-.. currentmodule:: kinterbasdb
+.. currentmodule:: fdb
 
-
-Incompatibilities
-=================
-
-.. data:: DATETIME
-
-   KInterbasDB's deferred loading of dynamic type translators causes
-   this singleton to behave in violation of the standard until the 
-   :func:`kinterbasdb.init()` function has been called (whether explicitly or
-   implicitly). For more information, see the documnation section about
-   `Deferred Loading of Dynamic Type Translators`.
-
+Full text of Python Database API 2.0 (PEP 249) is available at
+`http://www.python.org/dev/peps/pep-0249/ <http://www.python.org/dev/peps/pep-0249/>`__
 
 Unsupported Optional Features
 =============================
 
-.. method:: Cursor.nextset()
+:meth:`fdb.Cursor.nextset`
 
    This method is not implemented because the database engine does not support
    opening multiple result sets simultaneously with a single cursor.
@@ -29,20 +19,20 @@ Unsupported Optional Features
 Nominally Supported Optional Features
 =====================================
 
-.. class:: Cursor
+:class:`fdb.Cursor`
 
-        .. attribute:: arraysize
+    :attr:`~fdb.Cursor.arraysize`
 
         As required by the spec, the value of this attribute is observed with
         respect to the `fetchmany` method. However, changing the value of this
         attribute does not make any difference in fetch efficiency because
         the database engine only supports fetching a single row at a time.
 
-        .. method:: setinputsizes()
+    :meth:`~fdb.Cursor.setinputsizes`
 
         Although this method is present, it does nothing, as allowed by the spec.
 
-        .. method:: setoutputsize() 
+    :meth:`~fdb.Cursor.setoutputsize`
 
         Although this method is present, it does nothing, as allowed by the spec.
 
@@ -50,17 +40,13 @@ Nominally Supported Optional Features
 Extensions and Caveats
 ======================
 
-KInterbasDB offers a large feature set beyond the minimal requirements
-of the Python DB API. Most of these extensions are documented in the
-section of this document entitled `Native Database Engine Features and
-Extensions Beyond the Python DB API`.
-
-This section attempts to document only those features that overlap
-with the DB API, or are too insignificant to warrant their own
-subsection elsewhere.
+FDB offers a large feature set beyond the minimal requirements
+of the Python DB API. This section attempts to document only those 
+features that overlap with the DB API, or are too insignificant 
+to warrant their own subsection elsewhere.
 
 
-.. function:: connect() 
+:func:`fdb.connect`
 
    This function supports the following optional keyword arguments in addition
    to those required by the spec:
@@ -71,62 +57,58 @@ subsection elsewhere.
 
    .. sourcecode:: python
 
-      kinterbasdb.connect(dsn='host:/path/database.db', user='limited_user',
+      fdb.connect(dsn='host:/path/database.db', user='limited_user',
          password='pass', role='MORE_POWERFUL_ROLE')
 
    :charset:  For explicitly specifying the character set of the connection.
               See Firebird Documentation for a list of available character sets, and
-              `Unicode Fields and KInterbasDB` section for information on handling
-              extended character sets with KInterbasDB.
+              `Unicode Fields and FDB` section for information on handling
+              extended character sets with FDB.
 
    *Example:*
 
    .. sourcecode:: python
 
-      kinterbasdb.connect(dsn='host:/path/database.db', user='sysdba',
+      fdb.connect(dsn='host:/path/database.db', user='sysdba',
           password='pass', charset='UTF8')
 
-   :dialect:  The SQL dialect is feature for backward compatibility with Interbase® 5.5
-              or earlier. The default dialect is `3` (the most featureful dialect, default
-              for Firebird). If you want to connect to `legacy` databases, you must
-              explicitly set this argument's value to `1`. Dialect `2` is a transitional
-              dialect that is normally used only during ports from IB < 6 to IB >= 6 
-              or Firebird. See Firebird documentation for more information about
-              SQL Dialects.
+   :sql_dialect:  The SQL dialect is feature for backward compatibility with Interbase® 5.5
+                  or earlier. The default dialect is `3` (the most featureful dialect, default
+                  for Firebird). If you want to connect to `legacy` databases, you must
+                  explicitly set this argument's value to `1`. Dialect `2` is a transitional
+                  dialect that is normally used only during ports from IB < 6 to IB >= 6 
+                  or Firebird. See Firebird documentation for more information about
+                  SQL Dialects.
 
    *Example:*
 
    .. sourcecode:: python
 
-      kinterbasdb.connect(dsn='host:/path/database.db', user='sysdba',
+      fdb.connect(dsn='host:/path/database.db', user='sysdba',
          password='pass', dialect=1)
 
-   :timeout:  (`Optional`) Dictionary with timeout and action specification. See section
-              about `Connection Timeouts <beyond-python-db-api.html#connection-timeout>`_ for details.
+:class:`fdb.Connection`
 
-.. class:: Connection
-
-   .. attribute:: charset 
+   :attr:`~fdb.Connection.charset`
 
       *(read-only)* The character set of the connection (set via the `charset`
-      parameter of :func:`kinterbasdb.connect()`). See Firebird Documentation for a list
-      of available character sets, and `Unicode Fields and KInterbasDB` section
-      for information on handling extended character sets with KInterbasDB.
+      parameter of :func:`fdb.connect()`). See Firebird Documentation for a list
+      of available character sets, and `Unicode Fields and FDB` section
+      for information on handling extended character sets with FDB.
 
-   .. attribute:: dialect 
+   :attr:`~fdb.Connection.sql_dialect`
 
       This integer attribute indicates which SQL dialect the connection is using.
       You should not change a connection's dialect; instead, discard the connection
       and establish a new one with the desired dialect. For more information, see
-      the documentation of the `dialect` argument of the `connect` function.
+      the documentation of the `sql_dialect` argument of the `connect` function.
 
-   .. attribute:: server_version
+   :attr:`~fdb.Connection.server_version`
 
       *(read-only)* The version string of the database server to which this connection
-      is connected. For example, a connection to Firebird 1.0 on Windows has the following
-      `server_version`: `WI-V6.2.794 Firebird 1.0`
+      is connected.
 
-   .. method:: execute_immediate
+   :meth:`~fdb.Connection.execute_immediate`
 
       Executes a statement without caching its prepared form. The statement must *not* be
       of a type that returns a result set. In most cases (especially cases in which the same
@@ -138,13 +120,8 @@ subsection elsewhere.
 
       :sql:  String containing the SQL statement to execute.
 
-   .. attribute:: precision_mode
-
-      Although this attribute is present in KInterbasDB 3.1+ and works in a backward-compatible
-      fashion, it is deprecated in favor of the more general dynamic type translation feature.
-
-   .. method:: commit(retaining=False)
-   .. method:: rollback(retaining=False)
+   :meth:`~fdb.Connection.commit(retaining=False)`
+   :meth:`~fdb.Connection.rollback(retaining=False, savepoint=None)`
 
       The `commit` and `rollback` methods accept an optional boolean parameter `retaining`
       (default `False`) that indicates whether the transactional context of the transaction
@@ -156,15 +133,15 @@ subsection elsewhere.
       Advanced Transaction Control: Savepoints section of this document.
 
 
-.. class:: Cursor
+:class:`fdb.Cursor`
 
-   .. attribute:: description
+   :attr:`~fdb.Cursor.description`
 
-      KInterbasDB makes absolutely no guarantees about `description` except those
+      FDB makes absolutely no guarantees about `description` except those
       required by the Python Database API Specification 2.0 (that is, `description`
       is either `None` or a sequence of 7-element sequences). Therefore, client
       programmers should *not* rely on `description` being an instance of a particular
-      class or type. KInterbasDB provides several named positional constants to be
+      class or type. FDB provides several named positional constants to be
       used as indices into a given element of `description` . The contents
       of all `description` elements are defined by the DB API spec; these
       constants are provided merely for convenience.
@@ -184,14 +161,14 @@ subsection elsewhere.
 
       .. sourcecode:: python
 
-         nameOfFirstField = cur.description[0][kinterbasdb.DESCRIPTION_NAME]
+         nameOfFirstField = cur.description[0][fdb.DESCRIPTION_NAME]
 
       For more information, see the documentation of Cursor.description in
       the `DB API Specification <Python-DB-API-2.0.html>`__.
 
-   .. attribute:: rowcount
+   :attr:`~fdb.Cursor.rowcount`
 
-      Although KInterbasDB's `Cursor`s implement this
+      Although FDB's `Cursor`s implement this
       attribute, the database engine's own support for the determination of
       "rows affected"/"rows selected" is quirky. The database engine only
       supports the determination of rowcount for `INSERT`, `UPDATE`,
@@ -209,44 +186,18 @@ subsection elsewhere.
       performed on the cursor or the rowcount of the last operation is not
       determinable by the interface".
 
-   .. method:: fetchone()
-   .. method:: fetchmany()
-   .. method:: fetchall()
+   :meth:`~fdb.Cursor.fetchone`
 
-      KInterbasDB makes absolutely no guarantees about
+   :meth:`~fdb.Cursor.fetchmany`
+
+   :meth:`~fdb.Cursor.fetchall`
+
+      FDB makes absolutely no guarantees about
       the return value of the `fetchone` / `fetchmany` / `fetchall` methods
-      except that it is a sequence indexed by field position. KInterbasDB
+      except that it is a sequence indexed by field position. FDB
       makes absolutely no guarantees about the return value of the
       `fetchonemap` / `fetchmanymap` / `fetchallmap` methods (documented
       below) except that it is a mapping of field name to field value.
       Therefore, client programmers should *not* rely on the return value
       being an instance of a particular class or type.
-
-   .. method:: fetchonemap()
-
-      This method is just like the standard
-      `fetchone` method of the DB API, except that it returns a mapping of
-      field name to field value, rather than a sequence.
-
-   .. method:: fetchmanymap()
-
-      This method is just like the standard
-      `fetchmany` method of the DB API, except that it returns a sequence of
-      mappings of field name to field value, rather than a sequence of
-      sequences.
-
-   .. method:: fetchallmap()
-
-      This method is just like the standard
-      `fetchall` method of the DB API, except that it returns a sequence of
-      mappings of field name to field value, rather than a sequence of
-      sequences.
-
-   .. method:: iter()
-   .. method:: itermap()
-
-      These methods are equivalent to the
-      `fetchall` and `fetchallmap` methods, respectively, except that they
-      return iterators rather than materialized sequences. `iter` and
-      `itermap` are exercised in this example.
 

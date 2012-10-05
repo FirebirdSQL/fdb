@@ -1,28 +1,40 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to KInterbasDB&#8217;s documentation! &mdash; KInterbasDB v3.3.0 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <title>Welcome to FDB’s documentation! &mdash; FDB 0.9 documentation</title>
+    
+    <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '3.3.0',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.9',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="KInterbasDB v3.3.0 documentation" href="" />
-    <link rel="next" title="KInterbasDB Installation Guide" href="installation.html" /> 
+    <link rel="top" title="FDB 0.9 documentation" href="#" />
+    <link rel="next" title="Getting Started with FDB" href="getting-started.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
   </head>
   <body>
+
     <div class="related">
       <h3>Navigation</h3>
       <ul>
@@ -30,159 +42,103 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="KInterbasDB Installation Guide"
+          <a href="getting-started.html" title="Getting Started with FDB"
              accesskey="N">next</a> |</li>
-        <li><a href="">KInterbasDB v3.3.0 documentation</a> &raquo;</li> 
+        <li><a href="#">FDB 0.9 documentation</a> &raquo;</li> 
       </ul>
     </div>  
+
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
             
-  
-  <div class="section" id="module-kinterbasdb">
-<h1>Welcome to KInterbasDB&#8217;s documentation!<a class="headerlink" href="#module-kinterbasdb" title="Permalink to this headline">¶</a></h1>
-<p>KInterbasDB is a <a class="reference external" href="http://python.org">Python</a> extension package that
+  <div class="section" id="welcome-to-fdb-s-documentation">
+<h1>Welcome to FDB&#8217;s documentation!<a class="headerlink" href="#welcome-to-fdb-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>FDB is a <a class="reference external" href="http://python.org">Python</a> library package that
 implements <cite>Python Database API 2.0</cite>-compliant support for the open source relational
-database <a class="reference external" href="http://www.firebirdsql.org">Firebird®</a> and some versions of its
-proprietary cousin <a class="reference external" href="http://www.interbase.com">Interbase®</a>.
+database <a class="reference external" href="http://www.firebirdsql.org">Firebird®</a>.
 In addition to the minimal feature set of the standard Python DB API,
-KInterbasDB also exposes nearly the entire native client API of the database engine.</p>
-<p>KInterbasDB is free &#8211; covered by a permissive BSD-style <a class="reference external" href="license.html">license</a> that both commercial and noncommercial users should
+FDB also exposes nearly the entire native client API of the database engine.</p>
+<p>FDB is free &#8211; covered by a permissive BSD-style <a class="reference external" href="license.html">license</a> that both commercial and noncommercial users should
 find agreeable.</p>
 <p>This documentation set is not a tutorial on Python, SQL, or Firebird;
-rather, it is a topical presentation of KInterbasDB&#8217;s feature set,
+rather, it is a topical presentation of FDB&#8217;s feature set,
 with example code to demonstrate basic usage patterns. For detailed
 information about Firebird features, see the <a class="reference external" href="http://www.firebirdsql.org/index.php?op=doc">Firebird documentation</a>, and especially the excellent
-<a class="reference external" href="http://www.ibphoenix.com/main.nfs?a=ibphoenix&amp;page=ibp_firebird_book">The Firebird Book</a>
+<a class="reference external" href="http://www.ibphoenix.com/products/books/firebird_book">The Firebird Book</a>
 written by Helen Borrie and published by APress.</p>
 <div class="section" id="documentation-contents">
 <h2>Documentation Contents:<a class="headerlink" href="#documentation-contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference external" href="installation.html">KInterbasDB Installation Guide</a><ul>
-<li class="toctree-l2"><a class="reference external" href="installation.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference external" href="installation.html#installation-from-binary-distribution">Installation from binary distribution</a></li>
-<li class="toctree-l2"><a class="reference external" href="installation.html#installation-from-source-distribution">Installation from source distribution</a></li>
-<li class="toctree-l2"><a class="reference external" href="installation.html#test-your-kinterbasdb-installation">Test your KInterbasDB installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with FDB</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#quick-start-guide">Quick-start Guide</a></li>
 </ul>
 </li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="tutorial.html">Quick-start Guide / Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference external" href="tutorial.html#connecting-to-a-database">Connecting to a Database</a></li>
-<li class="toctree-l2"><a class="reference external" href="tutorial.html#executing-sql-statements">Executing SQL Statements</a></li>
-<li class="toctree-l2"><a class="reference external" href="tutorial.html#calling-stored-procedures">Calling Stored Procedures</a></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="Python-DB-API-2.0.html">Python Database API Specification 2.0</a><ul>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#module-interface">Module Interface</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#connection-objects">Connection Objects</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#cursor-objects">Cursor Objects</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#type-objects-and-constructors">Type Objects and Constructors</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#implementation-hints">Implementation Hints</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#major-changes-from-version-1-0-to-version-2-0">Major Changes from Version 1.0 to Version 2.0</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#open-issues">Open Issues</a></li>
-<li class="toctree-l2"><a class="reference external" href="Python-DB-API-2.0.html#footnotes">Footnotes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage-guide.html">Usage Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage-guide.html#driver-structure">Driver structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-guide.html#databases">Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-guide.html#executing-sql-statements">Executing SQL Statements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-guide.html#data-handling-and-conversions">Data handling and conversions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-guide.html#trasanction-management">Trasanction management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-guide.html#database-events">Database Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-guide.html#working-with-services">Working with Services</a></li>
 </ul>
 </li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="python-db-api-compliance.html">Compliance to Python Database API 2.0</a><ul>
-<li class="toctree-l2"><a class="reference external" href="python-db-api-compliance.html#incompatibilities">Incompatibilities</a></li>
-<li class="toctree-l2"><a class="reference external" href="python-db-api-compliance.html#unsupported-optional-features">Unsupported Optional Features</a></li>
-<li class="toctree-l2"><a class="reference external" href="python-db-api-compliance.html#nominally-supported-optional-features">Nominally Supported Optional Features</a></li>
-<li class="toctree-l2"><a class="reference external" href="python-db-api-compliance.html#extensions-and-caveats">Extensions and Caveats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-db-api-compliance.html">Compliance to Python Database API 2.0</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python-db-api-compliance.html#unsupported-optional-features">Unsupported Optional Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python-db-api-compliance.html#nominally-supported-optional-features">Nominally Supported Optional Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python-db-api-compliance.html#extensions-and-caveats">Extensions and Caveats</a></li>
 </ul>
 </li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="beyond-python-db-api.html">Native Database Engine Features and Extensions Beyond the Python DB API</a><ul>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#programmatic-database-creation-and-deletion">Programmatic Database Creation and Deletion</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#advanced-transaction-control">Advanced Transaction Control</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#prepared-statements">Prepared Statements</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#named-cursors">Named Cursors</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#parameter-conversion">Parameter Conversion</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#connection-timeouts">Connection Timeouts</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#database-event-notification">Database Event Notification</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#the-database-info-api">The <cite>database_info</cite> API</a></li>
-<li class="toctree-l2"><a class="reference external" href="beyond-python-db-api.html#module-kinterbasdb.services">Using Firebird Services API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="differecnes-from-kdb.html">Differences from KInterbasDB</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="differecnes-from-kdb.html#no-need-for-initialization">No need for initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="differecnes-from-kdb.html#distributed-transactions">Distributed transactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="differecnes-from-kdb.html#stream-blobs">Stream BLOBs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="differecnes-from-kdb.html#services-api">Services API</a></li>
 </ul>
 </li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="concurrency.html">Concurrency</a><ul>
-<li class="toctree-l2"><a class="reference external" href="concurrency.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference external" href="concurrency.html#selecting-and-activating-a-kinterbasdb-concurrency-level">Selecting and Activating a KInterbasDB Concurrency Level</a></li>
-<li class="toctree-l2"><a class="reference external" href="concurrency.html#caveats">Caveats</a></li>
-<li class="toctree-l2"><a class="reference external" href="concurrency.html#tips-on-achieving-high-concurrency">Tips on Achieving High Concurrency</a></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="thread-safety-overview.html">Overview of Firebird Client Library Thread-Safety</a><ul>
-<li class="toctree-l2"><a class="reference external" href="thread-safety-overview.html#definition-of-thread-safety">Definition of &#8220;Thread-Safety&#8221;</a></li>
-<li class="toctree-l2"><a class="reference external" href="thread-safety-overview.html#thread-safety-table">Thread-Safety Table</a></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="links.html">KInterbasDB Links</a><ul>
-<li class="toctree-l2"><a class="reference external" href="links.html#kinterbasdb">KInterbasDB</a></li>
-<li class="toctree-l2"><a class="reference external" href="links.html#python-databases">Python + Databases</a></li>
-<li class="toctree-l2"><a class="reference external" href="links.html#zope-database-adapters-for-interbase-firebird">Zope Database Adapters for Interbase®/Firebird</a></li>
-<li class="toctree-l2"><a class="reference external" href="links.html#interbase-and-firebird">Interbase® and Firebird</a></li>
-<li class="toctree-l2"><a class="reference external" href="links.html#help">Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">FDB Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-globals">Module globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#exceptions">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#connection">Connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#cursor">Cursor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#transaction">Transaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#preparedstatement">PreparedStatement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#connectiongroup">ConnectionGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#eventconduit">EventConduit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#blobreader">BlobReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#tpb">TPB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-fdb.fbcore">Internally used classes exposed to driver users</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-fdb.services">Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#ctypes-interface-to-firebird-client-library">ctypes interface to Firebird client library</a></li>
 </ul>
 </li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="changelog.html">KInterbasDB Changelog</a><ul>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-3">Version 3.3</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-2-2">Version 3.2.2</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-2-1">Version 3.2.1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-2">Version 3.2</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-2rc1">Version 3.2rc1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-2b1">Version 3.2b1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-2a1">Version 3.2a1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-3">Version 3.1.3</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-2">Version 3.1.2</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-1">Version 3.1.1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1">Version 3.1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre9">Version 3.1_pre9</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre8">Version 3.1_pre8</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre7">Version 3.1_pre7</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre6">Version 3.1_pre6</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre5">Version 3.1_pre5</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre4">Version 3.1_pre4</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre3">Version 3.1_pre3</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre2">Version 3.1_pre2</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-1-pre1">Version 3.1_pre1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-0-2">Version 3.0.2</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-0-1">Version 3.0.1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-0-1-pre3">Version 3.0.1_pre3</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-0-1-pre2">Version 3.0.1_pre2</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-0-1-pre1">Version 3.0.1_pre1</a></li>
-<li class="toctree-l2"><a class="reference external" href="changelog.html#version-3-0-versus-2-0-0-3-1">Version 3.0 versus 2.0-0.3.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-9">Version 0.9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-8-5">Version 0.8.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-8">Version 0.8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-7-2">Version 0.7.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-7-1">Version 0.7.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-7">Version 0.7</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">LICENSE</a></li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference external" href="license.html">KInterbasDB LICENSE</a></li>
-</ul>
+</div>
 </div>
 <div class="section" id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
 </ul>
 </div>
 </div>
@@ -193,29 +149,33 @@ written by Helen Borrie and published by APress.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Welcome to KInterbasDB&#8217;s documentation!</a><ul>
-<li><a class="reference external" href="#documentation-contents">Documentation Contents:</a><ul>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to FDB&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#documentation-contents">Documentation Contents:</a><ul>
 </ul>
 </li>
-<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 </li>
 </ul>
 
-            <h4>Next topic</h4>
-            <p class="topless"><a href="installation.html" title="next chapter">KInterbasDB Installation Guide</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/index.txt">Show Source</a></li>
-            </ul>
-          <h3>Quick search</h3>
-            <form class="search" action="search.html" method="get">
-              <input type="text" name="q" size="18" /> <input type="submit" value="Go" />
-              <input type="hidden" name="check_keywords" value="yes" />
-              <input type="hidden" name="area" value="default" />
-            </form>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="getting-started.html"
+                        title="next chapter">Getting Started with FDB</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -225,19 +185,19 @@ written by Helen Borrie and published by APress.</p>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
+             >index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="KInterbasDB Installation Guide"
-             accesskey="N">next</a> |</li>
-        <li><a href="">KInterbasDB v3.3.0 documentation</a> &raquo;</li> 
+          <a href="getting-started.html" title="Getting Started with FDB"
+             >next</a> |</li>
+        <li><a href="#">FDB 0.9 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.5.1.
+        &copy; Copyright 2009-2012, David Rushby, Pavel Cisar.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
