@@ -3098,7 +3098,7 @@ when it has value.</p>
 <dl class="method">
 <dt id="fdb.services.Connection.nbackup">
 <tt class="descname">nbackup</tt><big>(</big><em>source_database</em>, <em>dest_filename</em>, <em>nbackup_level=0</em>, <em>no_db_triggers=0</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.nbackup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Request physical (NBACKUP) database backup.</p>
+<dd><p>Perform physical (NBACKUP) database backup.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3113,6 +3113,10 @@ when it has value.</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Method call will not return until action is finished.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -3134,7 +3138,7 @@ protocol</em>.</p>
 <dl class="method">
 <dt id="fdb.services.Connection.nrestore">
 <tt class="descname">nrestore</tt><big>(</big><em>source_filenames</em>, <em>dest_filename</em>, <em>no_db_triggers=0</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.nrestore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Request restore from physical (NBACKUP) database backup.</p>
+<dd><p>Perform restore from physical (NBACKUP) database backup.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3148,6 +3152,10 @@ protocol</em>.</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Method call will not return until action is finished.</p>
+</div>
 </dd></dl>
 
 <dl class="method">

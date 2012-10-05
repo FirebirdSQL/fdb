@@ -2452,11 +2452,15 @@ Database maintenance
 
 :meth:`~Connection.nbackup`
 
-   Request physical (NBACKUP) database backup.
+   Perform physical (NBACKUP) database backup.
+
+   .. note:: Method call will not return until sweep is finished.
 
 :meth:`~Connection.nrestore`
 
-   Request restore from physical (NBACKUP) database backup.
+   Perform restore from physical (NBACKUP) database backup.
+
+   .. note:: Method call will not return until sweep is finished.
 
 :meth:`~Connection.shutdown`
 

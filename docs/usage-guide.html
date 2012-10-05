@@ -2239,10 +2239,20 @@ fail with exception.</p>
 </div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.services.Connection.nbackup" title="fdb.services.Connection.nbackup"><tt class="xref py py-meth docutils literal"><span class="pre">nbackup()</span></tt></a></p>
 <blockquote>
-<div>Request physical (NBACKUP) database backup.</div></blockquote>
+<div><p>Perform physical (NBACKUP) database backup.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Method call will not return until sweep is finished.</p>
+</div>
+</div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.services.Connection.nrestore" title="fdb.services.Connection.nrestore"><tt class="xref py py-meth docutils literal"><span class="pre">nrestore()</span></tt></a></p>
 <blockquote>
-<div>Request restore from physical (NBACKUP) database backup.</div></blockquote>
+<div><p>Perform restore from physical (NBACKUP) database backup.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Method call will not return until sweep is finished.</p>
+</div>
+</div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.services.Connection.shutdown" title="fdb.services.Connection.shutdown"><tt class="xref py py-meth docutils literal"><span class="pre">shutdown()</span></tt></a></p>
 <blockquote>
 <div><p>Database shutdown. Following constants are defined in <a class="reference internal" href="reference.html#module-fdb.services" title="fdb.services: Submodule for work with Firebird Services"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.services</span></tt></a> for convenience:</p>
