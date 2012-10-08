@@ -2,12 +2,18 @@
 Changelog
 #########
 
+* `Version 0.9.1`_ (8. 9. 2012)
 * `Version 0.9`_ (5. 9. 2012)
 * `Version 0.8.5`_ (28. 6. 2012)
 * `Version 0.8`_ (31. 5. 2012)
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 0.9.1
+=============
+
+Just bugfixes to make FDB work on P3K again.
 
 Version 0.9
 ===========

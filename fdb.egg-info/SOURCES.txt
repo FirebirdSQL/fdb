@@ -5,6 +5,7 @@ README
 ReleaseNotes.txt
 setup.cfg
 setup.py
+docs/.buildinfo
 docs/changelog.html
 docs/differecnes-from-kdb.html
 docs/genindex.html
@@ -89,5 +90,4 @@ sphinx/fdbtheme/static/ie6.css
 sphinx/fdbtheme/static/middlebg.png
 sphinx/fdbtheme/static/transparent.gif
 test/fbtest.fdb
-test/testfdb-x.py
 test/testfdb.py
