@@ -551,10 +551,10 @@ class TestCursor(unittest.TestCase):
         cmd = 'select * from country'
         cur = self.con.cursor()
         cur.execute(cmd)
-        assert cur._prepared_statements.keys() == [cmd]
+        assert list(cur._prepared_statements.keys()) == [cmd]
         assert not cur._prepared_statements[cmd].closed
         cur.close()
-        assert cur._prepared_statements.keys() == [cmd]
+        assert list(cur._prepared_statements.keys()) == [cmd]
         assert cur._prepared_statements[cmd].closed
         cur.execute(cmd)
         row = cur.fetchone()
@@ -565,9 +565,9 @@ class TestCursor(unittest.TestCase):
                 'select country from country',
                 'select currency from country']
         cur = self.con.cursor()
-        assert cur._prepared_statements.keys() == []
+        assert list(cur._prepared_statements.keys()) == []
         cur.execute(cmds[0])
-        assert cur._prepared_statements.keys() == [cmds[0]]
+        assert list(cur._prepared_statements.keys()) == [cmds[0]]
         for cmd in cmds:
             cur.execute(cmd)
             assert cmd in cur._prepared_statements.keys()
@@ -682,7 +682,7 @@ class TestInsertData(unittest.TestCase):
         rows = cur.fetchall()
         assert repr(rows) == "[(3, datetime.date(2011, 11, 13), datetime.time(15, 0, 1, 200), datetime.datetime(2011, 11, 13, 15, 0, 1, 200))]"
 
-        cur.execute('insert into T2 (C1,C6,C7,C8) values (?,?,?,?)',[4,u'2011-11-13','15:0:1:200','2011-11-13 15:0:1:200'])
+        cur.execute('insert into T2 (C1,C6,C7,C8) values (?,?,?,?)',[4,'2011-11-13','15:0:1:200','2011-11-13 15:0:1:200'])
         self.con.commit()
         cur.execute('select C1,C6,C7,C8 from T2 where C1 = 4')
         rows = cur.fetchall()
@@ -762,7 +762,7 @@ class TestServices(unittest.TestCase):
         x = svc.get_lock_file_directory()
         #assert x == '/tmp/firebird/'
         x = svc.get_server_capabilities()
-        assert isinstance(x,types.TupleType)
+        assert isinstance(x,type(tuple()))
         x = svc.get_message_file_directory()
         #assert x == '/opt/firebird/'
         con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
@@ -831,7 +831,7 @@ class TestServices2(unittest.TestCase):
         log = self.svc.readlines()
         assert not self.svc.fetching
         assert log
-        assert isinstance(log,types.ListType)
+        assert isinstance(log,type(list()))
         # iterate over result
         self.svc.get_log()
         for line in self.svc:
@@ -844,7 +844,7 @@ class TestServices2(unittest.TestCase):
         assert len(output) > 0
     def test_getLimboTransactionIDs(self):
         ids = self.svc.get_limbo_transaction_ids('employee')
-        assert isinstance(ids,list)
+        assert isinstance(ids,type(list()))
     def test_getStatistics(self):
         def fetchline(line):
             output.append(line)
@@ -856,7 +856,7 @@ class TestServices2(unittest.TestCase):
         assert not self.svc.fetching
         assert not self.svc.isrunning()
         assert stats
-        assert isinstance(stats,types.ListType)
+        assert isinstance(stats,type(list()))
         # iterate over result
         self.svc.get_statistics('employee',
                                 show_system_tables_and_indexes=True,
@@ -881,7 +881,7 @@ class TestServices2(unittest.TestCase):
         assert not self.svc.isrunning()
         assert os.path.exists(self.fbk)
         assert report
-        assert isinstance(report,types.ListType)
+        assert isinstance(report,type(list()))
         # iterate over result
         self.svc.backup('employee', self.fbk,
                         ignore_checksums=1,
@@ -913,7 +913,7 @@ class TestServices2(unittest.TestCase):
         assert not self.svc.fetching
         assert not self.svc.isrunning()
         assert report
-        assert isinstance(report,types.ListType)
+        assert isinstance(report,type(list()))
         # iterate over result
         self.svc.restore(self.fbk, self.rfdb, replace=1)
         for line in self.svc:
@@ -952,10 +952,10 @@ class TestServices2(unittest.TestCase):
         trace2_id = svc2.trace_start(trace_config)
         # check sessions
         sessions = svcx.trace_list()
-        assert sessions.has_key(trace1_id)
-        assert repr(sessions[trace1_id].keys()) == "['date', 'flags', 'name', 'user']"
-        assert sessions.has_key(trace2_id)
-        assert repr(sessions[trace2_id].keys()) == "['date', 'flags', 'user']"
+        assert trace1_id in sessions
+        assert repr(list(sessions[trace1_id].keys())) == "['date', 'flags', 'name', 'user']"
+        assert trace2_id in sessions
+        assert repr(list(sessions[trace2_id].keys())) == "['date', 'flags', 'user']"
         assert repr(sessions[trace1_id]['flags']) == "['active', ' admin', ' trace']"
         assert repr(sessions[trace2_id]['flags']) == "['active', ' admin', ' trace']"
         # Pause session
@@ -966,7 +966,7 @@ class TestServices2(unittest.TestCase):
         assert 'active' in svcx.trace_list()[trace2_id]['flags']
         # Stop session
         svcx.trace_stop(trace2_id)
-        assert not svcx.trace_list().has_key(trace2_id)
+        assert trace2_id not in svcx.trace_list()
         # Finalize
         svcx.trace_stop(trace1_id)
         svc2.close()
@@ -1039,7 +1039,7 @@ class TestServices2(unittest.TestCase):
         assert not result
     def test_getUsers(self):
         users = self.svc.get_users()
-        assert isinstance(users,list)
+        assert isinstance(users,type(list()))
         assert isinstance(users[0],fdb.services.User)
         assert users[0].name == 'SYSDBA'
     def test_manage_user(self):
@@ -1304,14 +1304,16 @@ class TestCharsetConversion(unittest.TestCase):
         self.con.close()
     def test_octets(self):
         bytestring = fdb.fbcore.bs([1,2,3,4,5])
-        
         cur = self.con.cursor()
         cur.execute("insert into T4 (C1, C_OCTETS, V_OCTETS) values (?,?,?)",
                     (1, bytestring,bytestring))
         self.con.commit()
         cur.execute("select C1, C_OCTETS, V_OCTETS from T4 where C1 = 1")
         row = cur.fetchone()
-        assert row == (1, '\x01\x02\x03\x04\x05', '\x01\x02\x03\x04\x05')
+        if ibase.PYTHON_MAJOR_VER == 3:
+            assert row == (1, b'\x01\x02\x03\x04\x05', b'\x01\x02\x03\x04\x05')
+        else:
+            assert row == (1, '\x01\x02\x03\x04\x05', '\x01\x02\x03\x04\x05')
     def test_utf82win1250(self):
         s5 = 'ěščřž'
         s30 = 'ěščřžýáíéúůďťňóĚŠČŘŽÝÁÍÉÚŮĎŤŇÓ'

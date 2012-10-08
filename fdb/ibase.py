@@ -58,7 +58,7 @@ if PYTHON_MAJOR_VER == 3:
     def s(st):
         return st
 
-    ord2 = lambda x: x
+    ord2 = lambda x: x if type(x) == IntType else ord(x)
 
     if sys.version_info[1] <= 1:
         def int2byte(i):

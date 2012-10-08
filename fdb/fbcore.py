@@ -505,6 +505,8 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
                                b('\x01'), int2byte(value))
         params.append(newEntry)
 
+    if charset:
+        charset = charset.upper()
     if user:
         addString(isc_dpb_user_name, user)
     if password:
@@ -1381,7 +1383,7 @@ class EventBlock(object):
                                                   *[b(x) for x in event_names])
         self.__wait_for_events()
     def __lt__(self,other):
-        return self.event_id < other.event_id
+        return self.event_id.value < other.event_id.value
     def __wait_for_events(self):
         ibase.isc_que_events(self._isc_status,self._db_handle,self.event_id,
                              self.buf_length,self.event_buf,
@@ -2178,17 +2180,19 @@ class PreparedStatement(object):
                      isinstance(value, (StringType, UnicodeType)))
                     or vartype in [SQL_TEXT, SQL_VARYING]):
                     ### Todo: verify handling of P version differences
-                    if PYTHON_MAJOR_VER == 3:
-                        if not isinstance(value, StringType):
-                            value = str(value)
+                    #if PYTHON_MAJOR_VER == 3:
+                    #    if not isinstance(value, StringType):
+                    #        value = str(value)
+                    if not isinstance(value, (StringType,ibase.mybytes)):
+                        value = str(value)
                     # Place for Implicit Conversion of Input Parameters
                     # from Strings
                     if isinstance(value, UnicodeType):
                         value = value.encode(self.__python_charset)
                     ### Todo: verify handling of P version differences
-                    if PYTHON_MAJOR_VER != 3:
-                        if not isinstance(value, StringType):
-                            value = str(value)
+                    #if PYTHON_MAJOR_VER != 3:
+                    #    if not isinstance(value, StringType):
+                    #        value = str(value)
                     if vartype in [SQL_TEXT, SQL_VARYING] and len(value) > sqlvar.sqllen:
                         raise ValueError("Value of parameter (%i) is too long,"
                                          " expected %i, found %i" % (i, sqlvar.sqllen,
@@ -2468,10 +2472,10 @@ class PreparedStatement(object):
         
         :param string blob_name: Name of BLOB column.
         """
-        if hasattr(blob_name,'__iter__'):
-            self.__streamed_blobs.extend(blob_name)
-        else:
+        if isinstance(blob_name,ibase.StringType):
             self.__streamed_blobs.append(blob_name)
+        else:
+            self.__streamed_blobs.extend(blob_name)
     def __del__(self):
         if self._stmt_handle != None:
             self._close()
