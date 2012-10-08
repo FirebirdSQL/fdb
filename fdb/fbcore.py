@@ -2179,20 +2179,14 @@ class PreparedStatement(object):
                 if ((vartype != SQL_BLOB and
                      isinstance(value, (StringType, UnicodeType)))
                     or vartype in [SQL_TEXT, SQL_VARYING]):
-                    ### Todo: verify handling of P version differences
-                    #if PYTHON_MAJOR_VER == 3:
-                    #    if not isinstance(value, StringType):
-                    #        value = str(value)
-                    if not isinstance(value, (StringType,ibase.mybytes)):
+                    # Place for Implicit Conversion of Input Parameters
+                    # to Strings
+                    if not isinstance(value, (UnicodeType,StringType,ibase.mybytes)):
                         value = str(value)
                     # Place for Implicit Conversion of Input Parameters
                     # from Strings
                     if isinstance(value, UnicodeType):
                         value = value.encode(self.__python_charset)
-                    ### Todo: verify handling of P version differences
-                    #if PYTHON_MAJOR_VER != 3:
-                    #    if not isinstance(value, StringType):
-                    #        value = str(value)
                     if vartype in [SQL_TEXT, SQL_VARYING] and len(value) > sqlvar.sqllen:
                         raise ValueError("Value of parameter (%i) is too long,"
                                          " expected %i, found %i" % (i, sqlvar.sqllen,
