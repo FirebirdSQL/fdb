@@ -391,13 +391,13 @@ def inc_pointer(pointer):
 def bytes_to_bint(b):           # Read as big endian
     len_b = len(b)
     if len_b == 1:
-        fmt = 'b'
+        fmt = 'B'
     elif len_b == 2:
-        fmt = '>h'
+        fmt = '>H'
     elif len_b == 4:
-        fmt = '>l'
+        fmt = '>L'
     elif len_b == 8:
-        fmt = '>q'
+        fmt = '>Q'
     else:
         raise InternalError
     return struct.unpack(fmt, b)[0]
@@ -405,39 +405,39 @@ def bytes_to_bint(b):           # Read as big endian
 def bytes_to_int(b):            # Read as little endian.
     len_b = len(b)
     if len_b == 1:
-        fmt = 'b'
+        fmt = 'B'
     elif len_b == 2:
-        fmt = '<h'
+        fmt = '<H'
     elif len_b == 4:
-        fmt = '<l'
+        fmt = '<L'
     elif len_b == 8:
-        fmt = '<q'
+        fmt = '<Q'
     else:
         raise InternalError
     return struct.unpack(fmt, b)[0]
 
 def bint_to_bytes(val, nbytes):  # Convert int value to big endian bytes.
     if nbytes == 1:
-        fmt = 'b'
+        fmt = 'B'
     elif nbytes == 2:
-        fmt = '>h'
+        fmt = '>H'
     elif nbytes == 4:
-        fmt = '>l'
+        fmt = '>L'
     elif nbytes == 8:
-        fmt = '>q'
+        fmt = '>Q'
     else:
         raise InternalError
     return struct.pack(fmt, val)
 
 def int_to_bytes(val, nbytes):  # Convert int value to little endian bytes.
     if nbytes == 1:
-        fmt = 'b'
+        fmt = 'B'
     elif nbytes == 2:
-        fmt = '<h'
+        fmt = '<H'
     elif nbytes == 4:
-        fmt = '<l'
+        fmt = '<L'
     elif nbytes == 8:
-        fmt = '<q'
+        fmt = '<Q'
     else:
         raise InternalError
     return struct.pack(fmt, val)
