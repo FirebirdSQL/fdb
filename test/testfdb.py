@@ -1424,7 +1424,35 @@ class TestBugs(unittest.TestCase):
         self.con.commit()
         # PYFB-17: fails with fdb, passes with kinterbasdb
         cur.execute('insert into table1 (ID, sort) values(1, ?)', (None, ))
-
+    def test_pyfb_22(self):
+        create_table = """
+        CREATE TABLE FDBTEST (
+            ID INTEGER,
+            TEST80 VARCHAR(80),
+            TEST128 VARCHAR(128),
+            TEST255 VARCHAR(255),
+            TEST1024 VARCHAR(1024),
+            TESTCLOB BLOB SUB_TYPE 1 SEGMENT SIZE 255
+        );
+        """
+        cur = self.con.cursor()
+        cur.execute(create_table)
+        self.con.commit()
+        # test data
+        data = ("1234567890" * 25) + "12345"
+        for i in xrange(255):
+            cur.execute("insert into fdbtest (id, test255) values (?, ?)",
+                        (i, data[:i]))
+        self.con.commit()
+        # PYFB-22: fails with fdb, passes with kinterbasdb
+        cur.execute("select test255 from fdbtest order by id")
+        i = 0
+        for row in cur:
+            value = row[0]
+            assert len(value) == i
+            assert value == data[:i]
+            i += 1
+            
     
 if __name__ == '__main__':
     unittest.main()
