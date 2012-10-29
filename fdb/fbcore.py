@@ -405,6 +405,20 @@ def bytes_to_bint(b):           # Read as big endian
 def bytes_to_int(b):            # Read as little endian.
     len_b = len(b)
     if len_b == 1:
+        fmt = 'b'
+    elif len_b == 2:
+        fmt = '<h'
+    elif len_b == 4:
+        fmt = '<l'
+    elif len_b == 8:
+        fmt = '<q'
+    else:
+        raise InternalError
+    return struct.unpack(fmt, b)[0]
+
+def bytes_to_uint(b):            # Read as little endian.
+    len_b = len(b)
+    if len_b == 1:
         fmt = 'B'
     elif len_b == 2:
         fmt = '<H'
@@ -418,18 +432,31 @@ def bytes_to_int(b):            # Read as little endian.
 
 def bint_to_bytes(val, nbytes):  # Convert int value to big endian bytes.
     if nbytes == 1:
-        fmt = 'B'
+        fmt = 'b'
     elif nbytes == 2:
-        fmt = '>H'
+        fmt = '>h'
     elif nbytes == 4:
-        fmt = '>L'
+        fmt = '>l'
     elif nbytes == 8:
-        fmt = '>Q'
+        fmt = '>q'
     else:
         raise InternalError
     return struct.pack(fmt, val)
 
 def int_to_bytes(val, nbytes):  # Convert int value to little endian bytes.
+    if nbytes == 1:
+        fmt = 'b'
+    elif nbytes == 2:
+        fmt = '<h'
+    elif nbytes == 4:
+        fmt = '<l'
+    elif nbytes == 8:
+        fmt = '<q'
+    else:
+        raise InternalError
+    return struct.pack(fmt, val)
+
+def uint_to_bytes(val, nbytes):  # Convert int value to little endian bytes.
     if nbytes == 1:
         fmt = 'B'
     elif nbytes == 2:
@@ -1699,7 +1726,7 @@ class PreparedStatement(object):
         if ord2(info[0]) != ibase.isc_info_sql_get_plan:
             raise IndentationError("Unexpected code in result buffer while"
                                    " querying SQL plan.")
-        size = bytes_to_int(info[1:_SIZE_OF_SHORT + 1])
+        size = bytes_to_uint(info[1:_SIZE_OF_SHORT + 1])
         # Skip first byte: a new line
         ### Todo: Better handling of P version specifics
         result = ctypes.string_at(info[_SIZE_OF_SHORT + 2:], size - 1)
@@ -1868,9 +1895,9 @@ class PreparedStatement(object):
             while ord2(info[res_walk]) != isc_info_end:
                 cur_count_type = ord2(info[res_walk])
                 res_walk += 1
-                size = bytes_to_int(info[res_walk:res_walk + short_size])
+                size = bytes_to_uint(info[res_walk:res_walk + short_size])
                 res_walk += short_size
-                count = bytes_to_int(info[res_walk:res_walk + size])
+                count = bytes_to_uint(info[res_walk:res_walk + size])
                 if ((cur_count_type == ibase.isc_info_req_select_count
                      and self.statement_type == isc_info_sql_stmt_select)
                     or (cur_count_type == ibase.isc_info_req_insert_count
@@ -2024,7 +2051,7 @@ class PreparedStatement(object):
                     reallength = sqlvar.sqllen
                 value = value[:reallength]
             elif vartype == SQL_VARYING:
-                size = bytes_to_int(sqlvar.sqldata[:1])
+                size = bytes_to_uint(sqlvar.sqldata[:1])
                 #value = ctypes.string_at(sqlvar.sqldata[2],2+size)
                 ### Todo: verify handling of P version differences
                 if PYTHON_MAJOR_VER == 3:
@@ -2055,8 +2082,8 @@ class PreparedStatement(object):
                 value = struct.unpack('d', sqlvar.sqldata[:sqlvar.sqllen])[0]
             elif vartype == SQL_BLOB:
                 val = sqlvar.sqldata[:sqlvar.sqllen]
-                blobid = ibase.ISC_QUAD(bytes_to_int(val[:4]),
-                                        bytes_to_int(val[4:sqlvar.sqllen]))
+                blobid = ibase.ISC_QUAD(bytes_to_uint(val[:4]),
+                                        bytes_to_uint(val[4:sqlvar.sqllen]))
                 # Check if stream BLOB is requested instead materialized one
                 use_stream = False
                 if self.__streamed_blobs:
@@ -2099,17 +2126,17 @@ class PreparedStatement(object):
                                                     self._isc_status,
                                                     "Cursor.read_output_blob/isc_blob_info:")
                     offset = 0
-                    while bytes_to_int(result[offset]) != isc_info_end:
-                        code = bytes_to_int(result[offset])
+                    while bytes_to_uint(result[offset]) != isc_info_end:
+                        code = bytes_to_uint(result[offset])
                         offset += 1
                         if code == ibase.isc_info_blob_total_length:
-                            length = bytes_to_int(result[offset:offset + 2])
-                            blob_length = bytes_to_int(result[
+                            length = bytes_to_uint(result[offset:offset + 2])
+                            blob_length = bytes_to_uint(result[
                                 offset + 2:offset + 2 + length])
                             offset += length + 2
                         elif code == ibase.isc_info_blob_max_segment:
-                            length = bytes_to_int(result[offset:offset + 2])
-                            segment_size = bytes_to_int(result[
+                            length = bytes_to_uint(result[offset:offset + 2])
+                            segment_size = bytes_to_uint(result[
                                 offset + 2:offset + 2 + length])
                             offset += length + 2
                     # Load BLOB
@@ -2695,6 +2722,8 @@ class Cursor(object):
                 self._ps = self._prepared_statements.setdefault(operation,
                                     PreparedStatement(operation, self, True))
         self._ps._execute(parameters)
+        # return self so `execute` call could be used as iterable
+        return self
     def prep(self, operation):
         """Create prepared statement for repeated execution.
         
@@ -3259,7 +3288,7 @@ class Transaction(object):
                 buf = self.transaction_info(infoCode, 's')
                 buf = buf[1 + struct.calcsize('h'):]
                 if len(buf) == 1:
-                    results[infoCode] = bytes_to_int(buf)
+                    results[infoCode] = bytes_to_uint(buf)
                 else:
                     # For isolation level isc_info_tra_read_committed, the
                     # first byte indicates the isolation level
@@ -3268,8 +3297,8 @@ class Transaction(object):
                     # isc_info_tra_no_rec_version).
                     isolationLevelByte, recordVersionByte = struct.unpack('cc',
                                                                           buf)
-                    isolationLevel = bytes_to_int(isolationLevelByte)
-                    recordVersion = bytes_to_int(recordVersionByte)
+                    isolationLevel = bytes_to_uint(isolationLevelByte)
+                    recordVersion = bytes_to_uint(recordVersionByte)
                     results[infoCode] = (isolationLevel, recordVersion)
             else:
                 # At the time of this writing (2006.02.09),
@@ -3330,7 +3359,7 @@ class Transaction(object):
         if request_buffer[0] != res_buf[0]:
             raise InternalError("Result code does not match request code.")
         if result_type.upper() == 'I':
-            return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
+            return bytes_to_uint(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
         elif result_type.upper() == 'S':
             return p3fix(ctypes.string_at(res_buf, i),self.__python_charset)
         else:
@@ -3705,17 +3734,17 @@ class BlobReader(object):
                                         self._isc_status,
                                         "Cursor.read_output_blob/isc_blob_info:")
         offset = 0
-        while bytes_to_int(result[offset]) != isc_info_end:
-            code = bytes_to_int(result[offset])
+        while bytes_to_uint(result[offset]) != isc_info_end:
+            code = bytes_to_uint(result[offset])
             offset += 1
             if code == ibase.isc_info_blob_total_length:
-                length = bytes_to_int(result[offset:offset + 2])
-                self._blob_length = bytes_to_int(result[
+                length = bytes_to_uint(result[offset:offset + 2])
+                self._blob_length = bytes_to_uint(result[
                     offset + 2:offset + 2 + length])
                 offset += length + 2
             elif code == ibase.isc_info_blob_max_segment:
-                length = bytes_to_int(result[offset:offset + 2])
-                self._segment_size = bytes_to_int(result[
+                length = bytes_to_uint(result[offset:offset + 2])
+                self._segment_size = bytes_to_uint(result[
                     offset + 2:offset + 2 + length])
                 offset += length + 2
         # Create internal buffer

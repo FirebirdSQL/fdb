@@ -651,6 +651,12 @@ class TestInsertData(unittest.TestCase):
         cur.execute('select C1,C2,C3 from T2 where C1 = 1')
         rows = cur.fetchall()
         assert repr(rows) == "[(1, 1, 1)]"
+        cur.execute('insert into T2 (C1,C2,C3) values (?,?,?)',[2,1,sys.maxint])
+        cur.execute('insert into T2 (C1,C2,C3) values (?,?,?)',[2,1,-sys.maxint-1])
+        self.con.commit()
+        cur.execute('select C1,C2,C3 from T2 where C1 = 2')
+        rows = cur.fetchall()
+        assert repr(rows) == "[(2, 1, 9223372036854775807), (2, 1, -9223372036854775808)]"
     def test_insert_char_varchar(self):
         cur = self.con.cursor()
         cur.execute('insert into T2 (C1,C4,C5) values (?,?,?)',[2,'AA','AA'])
@@ -694,6 +700,13 @@ class TestInsertData(unittest.TestCase):
         cur.execute('select C1,C9 from T2 where C1 = 4')
         rows = cur.fetchall()
         assert repr(rows) == "[(4, 'This is a BLOB!')]"
+        # BLOB bigger than max. segment size
+        big_blob = '123456789' * 10000
+        cur.execute('insert into T2 (C1,C9) values (?,?)',[5,big_blob])
+        self.con.commit()
+        cur.execute('select C1,C9 from T2 where C1 = 5')
+        row = cur.fetchone()
+        assert row[1] == big_blob
     def test_insert_float_double(self):
         cur = self.con.cursor()
         cur.execute('insert into T2 (C1,C12,C13) values (?,?,?)',[5,1.0,1.0])
