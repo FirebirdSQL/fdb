@@ -231,11 +231,14 @@ class Connection(object):
         self.__fetching = False
         self._svc_handle = ibase.isc_svc_handle(0)
         self._isc_status = ibase.ISC_STATUS_ARRAY()
+        self._result_buffer = ctypes.create_string_buffer(ibase.USHRT_MAX)
+        self._line_buffer = []
+        self.__eof = False
         self.charset = charset
         self.host = ibase.b(host)
         self.user = ibase.b(user)
         self.password = ibase.b(password)
-
+        
         if len(self.host) + len(self.user) + len(self.password) > 118:
             raise fdb.ProgrammingError("The combined length of host, user and"
                                        " password can't exceed 118 bytes.")
@@ -259,7 +262,7 @@ class Connection(object):
         :raises StopIteration: If there are no further lines. 
         """
         line = self.readline()
-        if line:
+        if line is not None:
             return line
         else:
             self.__fetching = False
@@ -274,18 +277,36 @@ class Connection(object):
         return True if self._svc_handle else False
     def __get_fetching(self):
         return self.__fetching
+    def __read_buffer(self, init=''):
+        request = fdb.bs([ibase.isc_info_svc_to_eof])
+        spb = ibase.b('')
+        ibase.isc_service_query(self._isc_status, self._svc_handle, None,
+                                len(spb), spb,
+                                len(request), request,
+                                ibase.USHRT_MAX, self._result_buffer)
+        if fdb.db_api_error(self._isc_status):
+            raise fdb.exception_from_status(fdb.DatabaseError,
+                                  self._isc_status,
+                                  "Services/isc_service_query:")
+        (result, _) = self._extract_string(self._result_buffer, 1)
+        if ord(self._result_buffer[_]) == ibase.isc_info_end:
+            self.__eof = True
+        if init:
+            result = init + result
+        self._line_buffer = result.split('\n')
+        
     def __fetchline(self):
-        try:
-            line = self._Q(ibase.isc_info_svc_line, self.QUERY_TYPE_PLAIN_STRING)
-        except:
-            # YYY: It is routine for actions such as RESTORE to raise an
-            # exception at the end of their output.  We ignore any such
-            # exception and assume that it was expected, which is somewhat
-            # risky.  For example, suppose the network connection is broken
-            # while the client is receiving the action's output...
+        if self._line_buffer:
+            if len(self._line_buffer) == 1 and not self.__eof:
+                self.__read_buffer(self._line_buffer.pop(0))
+            return self._line_buffer.pop(0)
+        else:
+            if not self.__eof:
+                self.__read_buffer()
+            if self._line_buffer:
+                return self._line_buffer.pop(0)
             self.__fetching = False
             return None
-        return line
     def _bytes_to_str(self, sb):
         ### Todo: verify handling of P version differences, refactor
         if ibase.PYTHON_MAJOR_VER == 3:
@@ -323,10 +344,6 @@ class Connection(object):
         else:
             spb = fdb.bs(ibase.isc_info_svc_timeout, timeout)
         while True:
-            if result_size > ibase.USHRT_MAX:
-                raise fdb.InternalError("Database C API constraints maximum"
-                                        "result buffer size to %d"
-                                        % ibase.USHRT_MAX)
             result_buffer = ctypes.create_string_buffer(result_size)
             ibase.isc_service_query(self._isc_status, self._svc_handle, None,
                                     len(spb), spb,
@@ -336,9 +353,16 @@ class Connection(object):
                 raise fdb.exception_from_status(fdb.DatabaseError,
                                       self._isc_status,
                                       "Services/isc_service_query:")
-            if result_buffer[0] == ibase.isc_info_truncated:
-                result_size = result_size * 4
-                continue
+            if ord(result_buffer[0]) == ibase.isc_info_truncated:
+                if result_size == ibase.USHRT_MAX:
+                    raise fdb.InternalError("Database C API constraints maximum"
+                                            "result buffer size to %d"
+                                            % ibase.USHRT_MAX)
+                else:
+                    result_size = result_size * 4
+                    if result_size > ibase.USHRT_MAX:
+                        result_size = ibase.USHRT_MAX
+                    continue
             break
         if result_type == self.QUERY_TYPE_PLAIN_INTEGER:
             (result, _) = self._extract_int(result_buffer, 1)
@@ -645,6 +669,7 @@ class Connection(object):
         self.__check_active()
         self._act(_ServiceActionRequestBuilder(ibase.isc_action_svc_get_ib_log))
         self.__fetching = True
+        self.__eof = False
         if callback:
             for line in self:
                 callback(line)
@@ -770,6 +795,7 @@ class Connection(object):
         reqBuf.add_option_mask(optionMask)
         self._act(reqBuf)
         self.__fetching = True
+        self.__eof = False
         if callback:
             for line in self:
                 callback(line)
@@ -899,6 +925,7 @@ class Connection(object):
         # Done constructing the request buffer.
         self._act(request)
         self.__fetching = True
+        self.__eof = False
         if callback:
             for line in self:
                 callback(line)
@@ -1026,6 +1053,7 @@ class Connection(object):
         # Done constructing the request buffer.
         self._act(request)
         self.__fetching = True
+        self.__eof = False
         if callback:
             for line in self:
                 callback(line)
@@ -1145,7 +1173,8 @@ class Connection(object):
         reqBuf.add_string(ibase.isc_spb_trc_cfg, config)
         self._act(reqBuf)
         self.__fetching = True
-        response = self.readline()
+        self.__eof = False
+        response = self._Q(ibase.isc_info_svc_line, self.QUERY_TYPE_PLAIN_STRING)
         if response.startswith('Trace session ID'):
             return int(response.split()[3])
         else:

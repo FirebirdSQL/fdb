@@ -119,7 +119,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_tpb_version3, isc_tpb_wait, isc_tpb_write,
     
     b, s, ord2, int2byte, mychr, mybytes, myunicode, mylong, StringType, 
-    IntType, LongType, FloatType, ListeType, UnicodeType, TupleType, xrange,
+    IntType, LongType, FloatType, ListType, UnicodeType, TupleType, xrange,
     charset_map,
     
     isc_sqlcode, isc_sql_interprete, fb_interpret, isc_dsql_execute_immediate,
@@ -140,7 +140,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '0.9.1'
+__version__ = '0.9.9'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -708,6 +708,7 @@ class Connection(object):
                                              default_tpb=self._default_tpb)
         self._transactions = [self._main_transaction]
         self.__precision_cache = {}
+        self.__sqlsubtype_cache = {}
         self.__conduits = []
         self.__group = None
 
@@ -788,6 +789,23 @@ class Connection(object):
         m = m % 60
         s = s % 60
         return (h, m, s, (n % 10000) * 100)
+    def _get_array_sqlsubtype(self, relation, column):
+        subtype = self.__sqlsubtype_cache.get((relation,column))
+        if subtype is not None:
+            return subtype
+        self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_SUB_TYPE"
+                          " FROM RDB$FIELDS FIELD_SPEC, RDB$RELATION_FIELDS REL_FIELDS"
+                          " WHERE"
+                          " FIELD_SPEC.RDB$FIELD_NAME = REL_FIELDS.RDB$FIELD_SOURCE"
+                          " AND REL_FIELDS.RDB$RELATION_NAME = ?"
+                          " AND REL_FIELDS.RDB$FIELD_NAME = ?",
+                          (p3fix(relation,self._python_charset),
+                           p3fix(column,self._python_charset)))
+        result = self.__ic.fetchone()
+        self.__ic.close()
+        if result:
+            self.__sqlsubtype_cache[(relation,column)] = result[0]
+            return result[0]
     def _determine_field_precision(self, sqlvar):
         if sqlvar.relname_length == 0 or sqlvar.sqlname_length == 0:
             # Either or both field name and relation name are not provided,
@@ -800,6 +818,8 @@ class Connection(object):
             return 0
         precision = self.__precision_cache.get((sqlvar.relname,
                                                 sqlvar.sqlname))
+        if precision is not None:
+            return precision
         # First, try table
         self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
                           " FROM RDB$FIELDS FIELD_SPEC,"
@@ -812,8 +832,9 @@ class Connection(object):
                           (p3fix(sqlvar.relname,self._python_charset),
                            p3fix(sqlvar.sqlname,self._python_charset)))
         result = self.__ic.fetchone()
+        self.__ic.close()
         if result:
-            self.__ic.close()
+            self.__precision_cache[(sqlvar.relname,sqlvar.sqlname)] = result[0]
             return result[0]
         # Next, try stored procedure output parameter
         self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
@@ -828,8 +849,9 @@ class Connection(object):
                           (p3fix(sqlvar.relname,self._python_charset),
                            p3fix(sqlvar.sqlname,self._python_charset)))
         result = self.__ic.fetchone()
+        self.__ic.close()
         if result:
-            self.__ic.close()
+            self.__precision_cache[(sqlvar.relname,sqlvar.sqlname)] = result[0]
             return result[0]
         # We ran out of options
         return 0
@@ -1862,7 +1884,7 @@ class PreparedStatement(object):
                         vtype = datetime.time
                         dispsize = 11
                     elif vartype == SQL_ARRAY:
-                        vtype = ListeType
+                        vtype = ListType
                         dispsize = -1
                     else:
                         vtype = None
@@ -1956,7 +1978,7 @@ class PreparedStatement(object):
     def _convert_timestamp(self, v):   # Convert datetime.datetime
                                         # to BLR format timestamp
         return self._convert_date(v.date()) + self._convert_time(v.time())
-    def _check_integer_rage(self, value, dialect, data_type, subtype, scale):
+    def _check_integer_range(self, value, dialect, data_type, subtype, scale):
         if data_type == SQL_SHORT:
             vmin = SHRT_MIN
             vmax = SHRT_MAX
@@ -2175,9 +2197,248 @@ class PreparedStatement(object):
                         value = b2u(value,self.__python_charset)
             elif vartype == SQL_ARRAY:
                 value = []
+                val = sqlvar.sqldata[:sqlvar.sqllen]
+                arrayid = ibase.ISC_QUAD(bytes_to_uint(val[:4]),
+                                        bytes_to_uint(val[4:sqlvar.sqllen]))
+                arraydesc = ibase.ISC_ARRAY_DESC(0)
+                sqlsubtype = self.__get_connection()._get_array_sqlsubtype(sqlvar.relname,
+                                                                           sqlvar.sqlname)
+                ibase.isc_array_lookup_bounds(self._isc_status,
+                                              self.__get_connection()._db_handle,
+                                              self.__get_transaction()._tr_handle,
+                                              sqlvar.relname,
+                                              sqlvar.sqlname,
+                                              arraydesc)
+                if db_api_error(self._isc_status):
+                    raise exception_from_status(DatabaseError,
+                                                self._isc_status,
+                                                "Cursor.read_otput_array/isc_array_lookup_bounds:")
+                value_type = arraydesc.array_desc_dtype
+                value_scale = arraydesc.array_desc_scale
+                value_size = arraydesc.array_desc_length
+                if value_type in (ibase.blr_varying,ibase.blr_varying2):
+                    value_size += 2
+                dimensions = []
+                total_num_elements = 1
+                for dimension in xrange(arraydesc.array_desc_dimensions):
+                    bounds = arraydesc.array_desc_bounds[dimension]
+                    dimensions.append((bounds.array_bound_upper+1)-bounds.array_bound_lower)
+                    total_num_elements *= dimensions[dimension]
+                total_size = total_num_elements * value_size
+                buf = ctypes.create_string_buffer(total_size)
+                value_buffer = ctypes.cast(buf,
+                                           buf_pointer)
+                tsize = ibase.ISC_LONG(total_size)
+                ibase.isc_array_get_slice(self._isc_status,
+                                          self.__get_connection()._db_handle,
+                                          self.__get_transaction()._tr_handle,
+                                          arrayid, arraydesc,
+                                          value_buffer, tsize)
+                if db_api_error(self._isc_status):
+                    raise exception_from_status(DatabaseError,
+                                                self._isc_status,
+                                                "Cursor.read_otput_array/isc_array_get_slice:")
+
+                (value,bufpos) = self.__extract_db_array_to_list(value_size,
+                                                                 value_type,
+                                                                 sqlsubtype,
+                                                                 value_scale,
+                                                                 0, dimensions,
+                                                                 value_buffer,0)
             values.append(value)
 
         return tuple(values)
+    def __extract_db_array_to_list(self,esize,dtype,subtype,scale,dim,dimensions,
+                                   buf,bufpos):
+        """Extracts ARRRAY column data from buffer to Python list(s).
+        """
+        value = []
+        if dim == len(dimensions)-1:
+            for i in xrange(dimensions[dim]):
+                if dtype in (ibase.blr_text,ibase.blr_text2):
+                    val = ctypes.string_at(buf[bufpos:bufpos+esize],esize)
+                    ### Todo: verify handling of P version differences
+                    if ((self.__charset or PYTHON_MAJOR_VER == 3) 
+                        and subtype != 1):   # non OCTETS
+                        val = b2u(val,self.__python_charset)
+                    # CHAR with multibyte encoding requires special handling
+                    if subtype in (4, 69):  # UTF8 and GB18030
+                        reallength = esize // 4
+                    elif subtype == 3:  # UNICODE_FSS
+                        reallength = esize // 3
+                    else:
+                        reallength = esize
+                    val = val[:reallength]
+                elif dtype in (ibase.blr_varying,ibase.blr_varying2):
+                    val = ctypes.string_at(buf[bufpos:bufpos+esize])
+                    if ((self.__charset or PYTHON_MAJOR_VER == 3) 
+                        and subtype != 1):   # non OCTETS
+                        val = b2u(val,self.__python_charset)
+                elif dtype in (ibase.blr_short,ibase.blr_long,ibase.blr_int64):
+                    val = bytes_to_int(buf[bufpos:bufpos+esize])
+                    if (subtype or scale):
+                        val = decimal.Decimal(val) / _tenTo[abs(256-scale)]
+                elif dtype == ibase.blr_float:
+                    val = struct.unpack('f', buf[bufpos:bufpos+esize])[0]
+                elif dtype in (ibase.blr_d_float,ibase.blr_double):
+                    val = struct.unpack('d', buf[bufpos:bufpos+esize])[0]
+                elif dtype == ibase.blr_timestamp:
+                    yyyy, mm, dd = self._parse_date(buf[bufpos:bufpos+4])
+                    h, m, s, ms = self._parse_time(buf[bufpos+4:bufpos+esize])
+                    val = datetime.datetime(yyyy, mm, dd, h, m, s, ms)
+                elif dtype == ibase.blr_sql_date:
+                    yyyy, mm, dd = self._parse_date(buf[bufpos:bufpos+esize])
+                    val = datetime.date(yyyy, mm, dd)
+                elif dtype == ibase.blr_sql_time:
+                    h, m, s, ms = self._parse_time(buf[bufpos:bufpos+esize])
+                    val = datetime.time(h, m, s, ms)
+                else:
+                    raise OperationalError("Unsupported Firebird ARRAY subtype: %i" % dtype)
+                value.append(val)
+                bufpos += esize
+        else:
+            for i in xrange(dimensions[dim]):
+                (val,bufpos) = self.__extract_db_array_to_list(esize,dtype,subtype,scale,dim+1,dimensions,buf,bufpos)
+                value.append(val)
+        return (value,bufpos)
+    
+    def __copy_list_to_db_array(self,esize,dtype,subtype,scale,dim,dimensions,
+                                value,buf,bufpos):
+        """Copies Python list(s) to ARRRAY column data buffer.
+        """
+        valuebuf = None
+        if dtype in (ibase.blr_text,ibase.blr_text2):
+            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+        elif dtype in (ibase.blr_varying,ibase.blr_varying2):
+            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+        elif dtype in (ibase.blr_short,ibase.blr_long,ibase.blr_int64):
+            if esize == 2:
+                valuebuf = ibase.ISC_SHORT(0)
+            elif esize == 4:
+                valuebuf = ibase.ISC_LONG(0)
+            elif esize == 8:
+                valuebuf = ibase.ISC_INT64(0)
+            else:
+                raise OperationalError("Unsupported number type")
+        elif dtype == ibase.blr_float:
+            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+        elif dtype in (ibase.blr_d_float,ibase.blr_double):
+            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+        elif dtype == ibase.blr_timestamp:
+            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+        elif dtype == ibase.blr_sql_date:
+            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+        elif dtype == ibase.blr_sql_time:
+            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+        else:
+            raise OperationalError("Unsupported Firebird ARRAY subtype: %i" % dtype)
+        if valuebuf == None:
+            raise NotImplementedError("ARRAY")
+        self.__fill_db_array_buffer(esize,dtype,
+                                    subtype,scale,
+                                    dim,dimensions,
+                                    value,valuebuf,
+                                    buf,bufpos)
+    def __fill_db_array_buffer(self,esize,dtype,subtype,scale,dim,dimensions,
+                               value,valuebuf,buf,bufpos):
+        if dim == len(dimensions)-1:
+            for i in xrange(dimensions[dim]):
+                if dtype in (ibase.blr_text,ibase.blr_text2):
+                    valuebuf.value = value[i]
+                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
+                elif dtype in (ibase.blr_varying,ibase.blr_varying2):
+                    valuebuf.value = value[i]
+                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
+                elif dtype in (ibase.blr_short,ibase.blr_long,ibase.blr_int64):
+                    if (subtype or scale):
+                        val = value[i]
+                        if isinstance(val, decimal.Decimal):
+                            val = int((val * _tenTo[256-abs(scale)]).to_integral())
+                        elif isinstance(val, (int, mylong, float,)):
+                            val = int(val * _tenTo[256-abs(scale)])
+                        else:
+                            raise TypeError('Objects of type %s are not '
+                                            ' acceptable input for'
+                                            ' a fixed-point column.' % str(type(val)))
+                        valuebuf.value = val
+                    else:
+                        if esize == 2:
+                            valuebuf.value = value[i]
+                        elif esize == 4:
+                            valuebuf.value = value[i]
+                        elif esize == 8:
+                            valuebuf.value = value[i]
+                        else:
+                            raise OperationalError("Unsupported type")
+                    #print 'value:',valuebuf.value
+                    ctypes.memmove(ctypes.byref(buf,bufpos),
+                                   ctypes.byref(valuebuf),
+                                   esize)
+                elif dtype == ibase.blr_float:
+                    valuebuf.value = struct.pack('f', value[i])
+                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
+                elif dtype in (ibase.blr_d_float,ibase.blr_double):
+                    valuebuf.value = struct.pack('d', value[i])
+                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
+                elif dtype == ibase.blr_timestamp:
+                    valuebuf.value = self._convert_timestamp(value[i])
+                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
+                elif dtype == ibase.blr_sql_date:
+                    valuebuf.value = self._convert_date(value[i])
+                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
+                elif dtype == ibase.blr_sql_time:
+                    valuebuf.value = self._convert_time(value[i])
+                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
+                else:
+                    raise OperationalError("Unsupported Firebird ARRAY subtype: %i" % dtype)
+                bufpos += esize
+        else:
+            for i in xrange(dimensions[dim]):
+                bufpos = self.__fill_db_array_buffer(esize,dtype,subtype,
+                                                      scale,dim+1,
+                                                      dimensions,value[i],
+                                                      valuebuf,buf,bufpos)
+        return bufpos
+    def __validate_array_value(self,dim,dimensions,value_type,sqlsubtype,
+                               value_scale,value):
+        """Validates whether Python list(s) passed as ARRAY column value matches
+        column definition (length, structure and value types).
+        """
+        ok = isinstance(value,(ibase.ListType,ibase.TupleType))
+        ok = ok and (len(value) == dimensions[dim])
+        if not ok:
+            return False
+        for i in xrange(dimensions[dim]):
+            if dim == len(dimensions)-1:
+                # leaf: check value type
+                if value_type in (ibase.blr_text,ibase.blr_text2,
+                             ibase.blr_varying,ibase.blr_varying2):
+                    ok = isinstance(value[i],(ibase.StringType,ibase.UnicodeType))
+                elif value_type in (ibase.blr_short,ibase.blr_long,ibase.blr_int64):
+                    if (sqlsubtype or value_scale):
+                        ok = isinstance(value[i],decimal.Decimal)
+                    else:
+                        ok = isinstance(value[i],ibase.IntType)
+                elif value_type == ibase.blr_float:
+                    ok = isinstance(value[i],ibase.FloatType)
+                elif value_type in (ibase.blr_d_float,ibase.blr_double):
+                    ok = isinstance(value[i],ibase.FloatType)
+                elif value_type == ibase.blr_timestamp:
+                    ok = isinstance(value[i],datetime.datetime)
+                elif value_type == ibase.blr_sql_date:
+                    ok = isinstance(value[i],datetime.date)
+                elif value_type == ibase.blr_sql_time:
+                    ok = isinstance(value[i],datetime.time)
+                else:
+                    ok = False
+            else:
+                # non-leaf: recurse down
+                ok = ok and self.__validate_array_value(dim+1,dimensions,value_type,
+                                                        sqlsubtype,value_scale,
+                                                        value[i])
+            if not ok:
+                return False
+        return ok
     def __Tuple2XSQLDA(self, xsqlda, parameters):
         """Move data from parameters to input XSQLDA.
         """
@@ -2235,10 +2496,10 @@ class PreparedStatement(object):
                             raise TypeError('Objects of type %s are not '
                                             ' acceptable input for'
                                             ' a fixed-point column.' % str(type(value)))
-                    self._check_integer_rage(value,
-                                             self.__sql_dialect,
-                                             vartype, sqlvar.sqlsubtype,
-                                             sqlvar.sqlscale)
+                    self._check_integer_range(value,
+                                              self.__sql_dialect,
+                                              vartype, sqlvar.sqlsubtype,
+                                              sqlvar.sqlscale)
                     sqlvar.sqldata = ctypes.cast(ctypes.pointer(
                         ctypes.create_string_buffer(
                             int_to_bytes(value, sqlvar.sqllen))), buf_pointer)
@@ -2347,7 +2608,57 @@ class PreparedStatement(object):
                                                         self._isc_status,
                                                         "Cursor.write_input_blob/isc_close_blob:")
                 elif vartype == SQL_ARRAY:
-                    raise NotImplementedError('array')
+                    arrayid = ibase.ISC_QUAD(0,0)
+                    arrayid_ptr = ctypes.pointer(arrayid)
+                    arraydesc = ibase.ISC_ARRAY_DESC(0)
+                    sqlvar.sqldata = ctypes.cast(ctypes.pointer(arrayid),
+                                                 buf_pointer)
+                    sqlsubtype = self.__get_connection()._get_array_sqlsubtype(sqlvar.relname,
+                                                                               sqlvar.sqlname)
+                    ibase.isc_array_lookup_bounds(self._isc_status,
+                                                  self.__get_connection()._db_handle,
+                                                  self.__get_transaction()._tr_handle,
+                                                  sqlvar.relname,
+                                                  sqlvar.sqlname,
+                                                  arraydesc)
+                    if db_api_error(self._isc_status):
+                        raise exception_from_status(DatabaseError,
+                                                    self._isc_status,
+                                                    "Cursor.write_otput_array/isc_array_lookup_bounds:")
+                    value_type = arraydesc.array_desc_dtype
+                    value_scale = arraydesc.array_desc_scale
+                    value_size = arraydesc.array_desc_length
+                    if value_type in (ibase.blr_varying,ibase.blr_varying2):
+                        value_size += 2
+                    dimensions = []
+                    total_num_elements = 1
+                    for dimension in xrange(arraydesc.array_desc_dimensions):
+                        bounds = arraydesc.array_desc_bounds[dimension]
+                        dimensions.append((bounds.array_bound_upper+1)-bounds.array_bound_lower)
+                        total_num_elements *= dimensions[dimension]
+                    total_size = total_num_elements * value_size
+                    # Validate value to make sure it matches the array structure
+                    if not self.__validate_array_value(0,dimensions,value_type,
+                                                       sqlsubtype,
+                                                       value_scale,value):
+                        raise ValueError("Incorrect ARRAY field value.")
+                    value_buffer = ctypes.create_string_buffer(total_size)
+                    tsize = ibase.ISC_LONG(total_size)
+                    self.__copy_list_to_db_array(value_size,value_type,
+                                                 sqlsubtype,value_scale,
+                                                 0, dimensions,
+                                                 value,value_buffer,0)
+                    ibase.isc_array_put_slice(self._isc_status,
+                                              self.__get_connection()._db_handle,
+                                              self.__get_transaction()._tr_handle,
+                                              arrayid_ptr, arraydesc,
+                                              value_buffer, 
+                                              tsize)
+                    if db_api_error(self._isc_status):
+                        raise exception_from_status(DatabaseError,
+                                                    self._isc_status,
+                                                    "Cursor.read_otput_array/isc_array_put_slice:")
+                    sqlvar.sqldata = ctypes.cast(arrayid_ptr,buf_pointer)
     def _free_handle(self):
         if self._stmt_handle != None and not self.__closed:
             self.__executed = False
@@ -2388,7 +2699,7 @@ class PreparedStatement(object):
     def _execute(self, parameters=None):
         # Bind parameters
         if parameters:
-            if not isinstance(parameters, (ListeType, TupleType)):
+            if not isinstance(parameters, (ListType, TupleType)):
                 raise TypeError("parameters must be list or tuple")
             if len(parameters) > self.in_sqlda.sqln:
                 raise ProgrammingError("Statement parameter sequence contains"
@@ -2641,7 +2952,7 @@ class Cursor(object):
         if not parameters:
             params = []
         else:
-            if isinstance(parameters, (ListeType, TupleType)):
+            if isinstance(parameters, (ListType, TupleType)):
                 params = parameters
             else:
                 raise TypeError("callproc paremeters must be List or Tuple")
@@ -2697,6 +3008,7 @@ class Cursor(object):
            stored in cache for later reuse, when the same `operation` string is
            used again.
         
+        :returns: self, so call to execute could be used as iterator.
         :param operation: SQL command specification.
         :type operation: string or :class:`PreparedStatement` instance
         :param parameters: (Optional) Sequence of parameters. Must contain one 
@@ -3101,7 +3413,7 @@ class Transaction(object):
         _tpb = tpb if tpb else self.default_tpb
         if isinstance(_tpb, TPB):
             _tpb = _tpb.render()
-        elif isinstance(_tpb, (ListeType, TupleType)):
+        elif isinstance(_tpb, (ListType, TupleType)):
             _tpb = bs(_tpb)
         elif not isinstance(_tpb, mybytes):
             raise ProgrammingError("TPB must be either string, list/tuple of"
@@ -4405,7 +4717,7 @@ def _validateTPB(tpb):
         # TPB's accessor methods perform their own validation, and its
         # render method takes care of infrastructural trivia.
         return tpb
-    elif isinstance(tpb, (ListeType, TupleType)):
+    elif isinstance(tpb, (ListType, TupleType)):
         return tpb
     elif not (isinstance(tpb, mybytes) and len(tpb) > 0):
         raise ProgrammingError('TPB must be non-unicode string of length > 0')

@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 0.9.9`_ (30.11.2012)
 * `Version 0.9.1`_ (8. 9. 2012)
 * `Version 0.9`_ (5. 9. 2012)
 * `Version 0.8.5`_ (28. 6. 2012)
@@ -9,6 +10,26 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 0.9.9
+=============
+
+New Features
+------------
+
+- Firebird ARRAY support.
+
+Other changes
+-------------
+
+- Cursor.execute() returns Self, so it could be used as iterator.
+- Reading output from Services now uses more efficient method to get data
+  from server.
+
+Bugs Fixed
+----------
+
+- Fix: precision_cache in Connection works as intended.
 
 Version 0.9.1
 =============

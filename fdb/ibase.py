@@ -77,7 +77,7 @@ if PYTHON_MAJOR_VER == 3:
     IntType = int
     LongType = int
     FloatType = float
-    ListeType = list
+    ListType = list
     UnicodeType = str
     TupleType = tuple
     xrange = range
@@ -109,7 +109,7 @@ else:
     IntType = types.IntType
     LongType = types.LongType
     FloatType = types.FloatType
-    ListeType = types.ListType
+    ListType = types.ListType
     UnicodeType = types.UnicodeType
     TupleType = types.TupleType
     xrange = xrange
@@ -210,6 +210,31 @@ SQL_INT64 = 580
 
 SUBTYPE_NUMERIC = 1
 SUBTYPE_DECIMAL = 2
+
+# Internal type codes (for example used by ARRAY descriptor)
+
+blr_text = 14
+blr_text2 = 15
+blr_short = 7
+blr_long = 8
+blr_quad = 9
+blr_float = 10
+blr_double = 27
+blr_d_float = 11
+blr_timestamp = 35
+blr_varying = 37
+blr_varying2 = 38
+blr_blob = 261
+blr_cstring = 40     	
+blr_cstring2 = 41
+blr_blob_id = 45
+blr_sql_date = 12
+blr_sql_time = 13
+blr_int64 = 16
+blr_blob2 = 17
+blr_domain_name = 18
+blr_domain_name2 = 19
+blr_not_nullable = 20
 
 #isc_dpb_activate_shadow = '\x15'
 #isc_dpb_address_path = 'F'
@@ -997,7 +1022,7 @@ class ISC_ARRAY_DESC(Structure):
     pass
 ISC_ARRAY_DESC._fields_ = [
     ('array_desc_dtype', ISC_UCHAR),
-    ('array_desc_scale', ISC_SCHAR),
+    ('array_desc_scale', ISC_UCHAR), ## was ISC_SCHAR),
     ('array_desc_length', c_ushort),
     ('array_desc_field_name', ISC_SCHAR * 32),
     ('array_desc_relation_name', ISC_SCHAR * 32),
@@ -2165,7 +2190,12 @@ __all__ = ['isc_info_base_level', 'isc_start_and_send',
            'BLOB_close', 'intmax_t', 'isc_modify_user',
            'isc_info_db_impl_isc_rt_aix',
            'isc_get_client_major_version', 'isc_dsql_fetch',
-           'isc_info_update_count', 'int_least8_t'
+           'isc_info_update_count', 'int_least8_t',
+           
+           'b', 's', 'ord2', 'int2byte', 'mychr', 'mybytes', 'myunicode', 
+           'mylong', 'StringType', 'IntType', 'LongType', 'FloatType', 
+           'ListType', 'UnicodeType', 'TupleType', 'xrange', 'charset_map',
+           
            # removed
            # 'imaxdiv', 'wcstoimax', 'imaxabs', 'strtoumax', 'strtoimax',
            # 'wcstoumax', 

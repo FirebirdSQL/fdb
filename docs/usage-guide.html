@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Usage Guide &mdash; FDB 0.9 documentation</title>
+    <title>Usage Guide &mdash; FDB 0.9.9 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9',
+        VERSION:     '0.9.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 0.9 documentation" href="index.html" />
+    <link rel="top" title="FDB 0.9.9 documentation" href="index.html" />
     <link rel="next" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
     <link rel="prev" title="Getting Started with FDB" href="getting-started.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 0.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 0.9.9 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -399,8 +399,6 @@ it will be executed more efficiently (see section about <a class="reference inte
 <ul class="simple">
 <li><cite>DATE</cite>, <cite>TIME</cite> and <cite>DATETIME</cite> values must be relevant <a class="reference external" href="http://docs.python.org/library/datetime.html#datetime" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">datetime</span></tt></a> objects.</li>
 <li><cite>NUMERIC</cite> and <cite>DECIMAL</cite> values must be <a class="reference external" href="http://docs.python.org/library/decimal.html#decimal" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">decimal</span></tt></a> objects.</li>
-<li>Because FDB currently doesn&#8217;t support Firebird&#8217;s <cite>ARRAY</cite> type, you can&#8217;t pass values for ARRAY&#8217;s
-as parameters.</li>
 </ul>
 </div>
 <div class="section" id="fetching-data-from-server">
@@ -458,6 +456,9 @@ If you need just <cite>iteration</cite> over potentially big result set with map
 </li>
 <li><p class="first"><a class="reference internal" href="reference.html#fdb.Cursor.itermap" title="fdb.Cursor.itermap"><tt class="xref py py-meth docutils literal"><span class="pre">itermap()</span></tt></a> - Equivalent to the <a class="reference internal" href="reference.html#fdb.Cursor.fetchallmap" title="fdb.Cursor.fetchallmap"><tt class="xref py py-meth docutils literal"><span class="pre">fetchallmap()</span></tt></a>, except that it returns
 <a class="reference external" href="http://docs.python.org/library/stdtypes.html#typeiter" title="(in Python v2.7)"><em class="xref std std-ref">iterator</em></a> rather than materialized list.</p>
+</li>
+<li><p class="first">Call to <a class="reference internal" href="reference.html#fdb.Cursor.execute" title="fdb.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> returns self (Cursor instance) that itself supports
+the <a class="reference external" href="http://docs.python.org/library/stdtypes.html#typeiter" title="(in Python v2.7)"><em class="xref std std-ref">iterator protocol</em></a>, yielding tuples of values like <a class="reference internal" href="reference.html#fdb.Cursor.fetchone" title="fdb.Cursor.fetchone"><tt class="xref py py-meth docutils literal"><span class="pre">fetchone()</span></tt></a>.</p>
 </li>
 </ul>
 <div class="admonition important">
@@ -996,11 +997,62 @@ readerA.closed:   True</pre>
 </div>
 <div class="section" id="firebird-array-type">
 <span id="index-18"></span><h3>Firebird ARRAY type<a class="headerlink" href="#firebird-array-type" title="Permalink to this headline">¶</a></h3>
+<p>FDB supports Firebird ARRAY data type. ARRAY values are represented as Python lists. On input, the Python
+sequence (list or tuple) must be nested appropriately if the array field is multi-dimensional, and
+the incoming sequence must not fall short of its maximum possible length (it will not be “padded”
+implicitly–see below). On output, the lists will be nested if the database array has multiple dimensions.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">FDB currently doesn&#8217;t support Firebird ARRAY data type, and any attempt to read or store values
-of this type will throw <a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.NotImplementedError" title="(in Python v2.7)"><tt class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></tt></a> exception. However, support for ARRAYs is
-planed for future FDB versions.</p>
+<p>Database arrays have no place in a purely relational data model, which requires that data values be
+atomized (that is, every value stored in the database must be reduced to elementary, non-decomposable
+parts). The Firebird implementation of database arrays, like that of most relational database engines
+that support this data type, is fraught with limitations.</p>
+<p>Database arrays are of fixed size, with a predeclared number of dimensions (max. 16) and number of elements
+per dimension. Individual array elements cannot be set to NULL / None, so the mapping between Python lists
+(which have dynamic length and are therefore not normally “padded” with dummy values) and non-trivial
+database arrays is clumsy.</p>
+<p>Stored procedures cannot have array parameters.</p>
+<p>Finally, many interface libraries, GUIs, and even the isql command line utility do not support database
+arrays.</p>
+<p class="last">In general, it is preferable to avoid using database arrays unless you have a compelling reason.</p>
+</div>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;localhost:employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select LANGUAGE_REQ from job where job_code=&#39;Eng&#39; and job_grade=3 and job_country=&#39;Japan&#39;&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+<span class="go">([&#39;Japanese\n&#39;, &#39;Mandarin\n&#39;, &#39;English\n&#39;, &#39;\n&#39;, &#39;\n&#39;],)</span>
+</pre></div>
+</div>
+<p><strong>Example program:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">fdb</span>
+
+<span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;localhost:/temp/test.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">execute_immediate</span><span class="p">(</span><span class="s">&quot;recreate table array_table (a int[3,4])&quot;</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+<span class="n">arrayIn</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">]</span>
+  <span class="p">]</span>
+
+<span class="k">print</span> <span class="s">&#39;arrayIn:  </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">arrayIn</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into array_table values (?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">arrayIn</span><span class="p">,))</span>
+
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select a from array_table&quot;</span><span class="p">)</span>
+<span class="n">arrayOut</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">print</span> <span class="s">&#39;arrayOut: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">arrayOut</span>
+
+<span class="n">con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python"><pre>arrayIn:  [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+arrayOut: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]</pre>
 </div>
 </div>
 </div>
@@ -2719,7 +2771,7 @@ gbak:closing file, committing, and finishing. 74752 bytes written</pre>
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 0.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 0.9.9 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -30,9 +30,9 @@ Installation from source
 
 Download the source tarball, uncompress it, then run the install command::
 
-  $ curl -O http://pypi.python.org/packages/source/f/fdb/fdb-0.8.5.tar.gz
-  $ tar -xzvf fdb-0.8.5.tar.gz
-  $ cd fdb-0.8.5
+  $ curl -O http://pypi.python.org/packages/source/f/fdb/fdb-0.9.1.tar.gz
+  $ tar -xzvf fdb-0.9.1.tar.gz
+  $ cd fdb-0.9.1
   $ python setup.py install
 
 .. _setuptools: http://pypi.python.org/pypi/setuptools

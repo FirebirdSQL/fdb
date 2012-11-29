@@ -473,6 +473,18 @@ class TestCursor(unittest.TestCase):
             assert repr(cur.description) == "(('JOB_CODE', <class 'str'>, 5, 5, 0, 0, False), ('JOB_GRADE', <class 'int'>, 6, 2, 0, 0, False), ('JOB_COUNTRY', <class 'str'>, 15, 15, 0, 0, False), ('JOB_TITLE', <class 'str'>, 25, 25, 0, 0, False), ('MIN_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('MAX_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('JOB_REQUIREMENT', <class 'str'>, 0, 8, 0, 1, True), ('LANGUAGE_REQ', <class 'list'>, -1, 8, 0, 0, True))"
         else:
             assert repr(cur.description) == "(('JOB_CODE', <type 'str'>, 5, 5, 0, 0, False), ('JOB_GRADE', <type 'int'>, 6, 2, 0, 0, False), ('JOB_COUNTRY', <type 'str'>, 15, 15, 0, 0, False), ('JOB_TITLE', <type 'str'>, 25, 25, 0, 0, False), ('MIN_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('MAX_SALARY', <class 'decimal.Decimal'>, 20, 8, 10, -2, False), ('JOB_REQUIREMENT', <type 'str'>, 0, 8, 0, 1, True), ('LANGUAGE_REQ', <type 'list'>, -1, 8, 0, 0, True))"
+        cur.execute('select * from proj_dept_budget')
+        if ibase.PYTHON_MAJOR_VER==3:
+            assert repr(cur.description) == "(('FISCAL_YEAR', <class 'int'>, 11, 4, 0, 0, False), ('PROJ_ID', <class 'str'>, 5, 5, 0, 0, False), ('DEPT_NO', <class 'str'>, 3, 3, 0, 0, False), ('QUART_HEAD_CNT', <class 'list'>, -1, 8, 0, 0, True), ('PROJECTED_BUDGET', <class 'decimal.Decimal'>, 20, 8, 12, -2, True))"
+        else:
+            assert repr(cur.description) == "(('FISCAL_YEAR', <type 'int'>, 11, 4, 0, 0, False), ('PROJ_ID', <type 'str'>, 5, 5, 0, 0, False), ('DEPT_NO', <type 'str'>, 3, 3, 0, 0, False), ('QUART_HEAD_CNT', <type 'list'>, -1, 8, 0, 0, True), ('PROJECTED_BUDGET', <class 'decimal.Decimal'>, 20, 8, 12, -2, True))"
+        # Check for precision cache
+        cur2 = self.con.cursor()
+        cur2.execute('select * from proj_dept_budget')
+        if ibase.PYTHON_MAJOR_VER==3:
+            assert repr(cur2.description) == "(('FISCAL_YEAR', <class 'int'>, 11, 4, 0, 0, False), ('PROJ_ID', <class 'str'>, 5, 5, 0, 0, False), ('DEPT_NO', <class 'str'>, 3, 3, 0, 0, False), ('QUART_HEAD_CNT', <class 'list'>, -1, 8, 0, 0, True), ('PROJECTED_BUDGET', <class 'decimal.Decimal'>, 20, 8, 12, -2, True))"
+        else:
+            assert repr(cur2.description) == "(('FISCAL_YEAR', <type 'int'>, 11, 4, 0, 0, False), ('PROJ_ID', <type 'str'>, 5, 5, 0, 0, False), ('DEPT_NO', <type 'str'>, 3, 3, 0, 0, False), ('QUART_HEAD_CNT', <type 'list'>, -1, 8, 0, 0, True), ('PROJECTED_BUDGET', <class 'decimal.Decimal'>, 20, 8, 12, -2, True))"
     def test_exec_after_close(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
@@ -628,6 +640,223 @@ class TestPreparedStatement(unittest.TestCase):
         else:
             raise ProgrammingError('Exception expected')
         
+
+class TestArrays(unittest.TestCase):
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.dbpath = os.path.join(self.cwd,'test')
+        self.dbfile = os.path.join(self.dbpath,'fbtest.fdb')
+        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        tbl = """recreate table AR (c1 integer, 
+                                    c2 integer[1:4,0:3,1:2], 
+                                    c3 varchar(15)[0:5,1:2],
+                                    c4 char(5)[5],
+                                    c5 timestamp[2],
+                                    c6 time[2],
+                                    c7 decimal(10,2)[2],
+                                    c8 numeric(10,2)[2],
+                                    c9 smallint[2],
+                                    c10 bigint[2],
+                                    c11 float[2],
+                                    c12 double precision[2],
+                                    c13 decimal(10,1)[2],
+                                    c14 decimal(10,5)[2],
+                                    c15 decimal(18,5)[2]
+                                    )
+"""
+        #
+        self.c2 = [[[1, 1], [2, 2], [3, 3], [4, 4]], [[5, 5], [6, 6], [7, 7], [8, 8]], [[9, 9], [10, 10], [11, 11], [12, 12]], [[13, 13], [14, 14], [15, 15], [16, 16]]]
+        self.c3 = [['a', 'a'], ['bb', 'bb'], ['ccc', 'ccc'], ['dddd', 'dddd'], ['eeeee', 'eeeee'], ['fffffff78901234', 'fffffff78901234']]
+        self.c4 = ['a    ', 'bb   ', 'ccc  ', 'dddd ', 'eeeee']
+        self.c5 = [datetime.datetime(2012, 11, 22, 12, 8, 24, 474800), datetime.datetime(2012, 11, 22, 12, 8, 24, 474800)]
+        self.c6 = [datetime.time(12, 8, 24, 474800), datetime.time(12, 8, 24, 474800)]
+        self.c7 = [decimal.Decimal('10.22'), decimal.Decimal('100000.33')]
+        self.c8 = [decimal.Decimal('10.22'), decimal.Decimal('100000.33')]
+        self.c9 = [1, 0]
+        self.c10 = [5555555, 7777777]
+        self.c11 = [3.140000104904175, 3.140000104904175]
+        self.c12 = [3.14, 3.14]
+        self.c13 = [decimal.Decimal('10.2'), decimal.Decimal('100000.3')]
+        self.c14 = [decimal.Decimal('10.22222'), decimal.Decimal('100000.333')]
+        self.c15 = [decimal.Decimal('1000000000000.22222'), decimal.Decimal('1000000000000.333')]
+        #self.con.execute_immediate(tbl)
+        #self.con.commit()
+    def tearDown(self):
+        self.con.execute_immediate("delete from AR where c1>=100")
+        self.con.commit()
+        self.con.close()
+    def test_basic(self):
+        cur = self.con.cursor()
+        cur.execute("select LANGUAGE_REQ from job where job_code='Eng' and job_grade=3 and job_country='Japan'")
+        row = cur.fetchone()
+        assert repr(row) == "(['Japanese\\n', 'Mandarin\\n', 'English\\n', '\\n', '\\n'],)"
+        cur.execute('select QUART_HEAD_CNT from proj_dept_budget')
+        row = cur.fetchall()
+        assert repr(row) == "[([1, 1, 1, 0],), ([3, 2, 1, 0],), ([0, 0, 0, 1],), ([2, 1, 0, 0],), ([1, 1, 0, 0],), ([1, 1, 0, 0],), ([1, 1, 1, 1],), ([2, 3, 2, 1],), ([1, 1, 2, 2],), ([1, 1, 1, 2],), ([1, 1, 1, 2],), ([4, 5, 6, 6],), ([2, 2, 0, 3],), ([1, 1, 2, 2],), ([7, 7, 4, 4],), ([2, 3, 3, 3],), ([4, 5, 6, 6],), ([1, 1, 1, 1],), ([4, 5, 5, 3],), ([4, 3, 2, 2],), ([2, 2, 2, 1],), ([1, 1, 2, 3],), ([3, 3, 1, 1],), ([1, 1, 0, 0],)]"
+    def test_read_full(self):
+        cur = self.con.cursor()
+        cur.execute("select c1,c2 from ar where c1=2")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c2)
+        cur.execute("select c1,c3 from ar where c1=3")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c3)
+        cur.execute("select c1,c4 from ar where c1=4")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c4)
+        cur.execute("select c1,c5 from ar where c1=5")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c5)
+        cur.execute("select c1,c6 from ar where c1=6")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c6)
+        cur.execute("select c1,c7 from ar where c1=7")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c7)
+        cur.execute("select c1,c8 from ar where c1=8")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c8)
+        cur.execute("select c1,c9 from ar where c1=9")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c9)
+        cur.execute("select c1,c10 from ar where c1=10")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c10)
+        cur.execute("select c1,c11 from ar where c1=11")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c11)
+        cur.execute("select c1,c12 from ar where c1=12")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c12)
+        cur.execute("select c1,c13 from ar where c1=13")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c13)
+        cur.execute("select c1,c14 from ar where c1=14")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c14)
+        cur.execute("select c1,c15 from ar where c1=15")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c15)
+    def test_write_full(self):
+        cur = self.con.cursor()
+        # INTEGER
+        cur.execute("insert into ar (c1,c2) values (102,?)",[self.c2])
+        self.con.commit()
+        cur.execute("select c1,c2 from ar where c1=102")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c2)
+
+        # VARCHAR
+        cur.execute("insert into ar (c1,c3) values (103,?)",[self.c3])
+        self.con.commit()
+        cur.execute("select c1,c3 from ar where c1=103")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c3)
+
+        cur.execute("insert into ar (c1,c3) values (103,?)",[tuple(self.c3)])
+        self.con.commit()
+        cur.execute("select c1,c3 from ar where c1=103")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c3)
+
+        # CHAR
+        cur.execute("insert into ar (c1,c4) values (104,?)",[self.c4])
+        self.con.commit()
+        cur.execute("select c1,c4 from ar where c1=104")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c4)
+
+        # TIMESTAMP
+        cur.execute("insert into ar (c1,c5) values (105,?)",[self.c5])
+        self.con.commit()
+        cur.execute("select c1,c5 from ar where c1=105")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c5)
+
+        # TIME OK
+        cur.execute("insert into ar (c1,c6) values (106,?)",[self.c6])
+        self.con.commit()
+        cur.execute("select c1,c6 from ar where c1=106")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c6)
+
+        # DECIMAL(10,2)
+        cur.execute("insert into ar (c1,c7) values (107,?)",[self.c7])
+        self.con.commit()
+        cur.execute("select c1,c7 from ar where c1=107")
+        row = cur.fetchone()
+        #assert repr(row[1]) == repr(self.c7)
+
+        # NUMERIC(10,2)
+        cur.execute("insert into ar (c1,c8) values (108,?)",[self.c8])
+        self.con.commit()
+        cur.execute("select c1,c8 from ar where c1=108")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c8)
+
+        # SMALLINT
+        cur.execute("insert into ar (c1,c9) values (109,?)",[self.c9])
+        self.con.commit()
+        cur.execute("select c1,c9 from ar where c1=109")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c9)
+
+        # BIGINT
+        cur.execute("insert into ar (c1,c10) values (110,?)",[self.c10])
+        self.con.commit()
+        cur.execute("select c1,c10 from ar where c1=110")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c10)
+
+        # FLOAT
+        cur.execute("insert into ar (c1,c11) values (111,?)",[self.c11])
+        self.con.commit()
+        cur.execute("select c1,c11 from ar where c1=111")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c11)
+
+        # DOUBLE PRECISION
+        cur.execute("insert into ar (c1,c12) values (112,?)",[self.c12])
+        self.con.commit()
+        cur.execute("select c1,c12 from ar where c1=112")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c12)
+
+        # DECIMAL(10,1) OK
+        cur.execute("insert into ar (c1,c13) values (113,?)",[self.c13])
+        self.con.commit()
+        cur.execute("select c1,c13 from ar where c1=113")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c13)
+
+        # DECIMAL(10,5)
+        cur.execute("insert into ar (c1,c14) values (114,?)",[self.c14])
+        self.con.commit()
+        cur.execute("select c1,c14 from ar where c1=114")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c14)
+        
+        # DECIMAL(18,5)
+        cur.execute("insert into ar (c1,c15) values (115,?)",[self.c15])
+        self.con.commit()
+        cur.execute("select c1,c15 from ar where c1=115")
+        row = cur.fetchone()
+        assert repr(row[1]) == repr(self.c15)
+    def test_write_wrong(self):
+        cur = self.con.cursor()
+        
+        try:
+            cur.execute("insert into ar (c1,c2) values (102,?)",[self.c3])
+        except Exception as e:
+            assert e.args == ('Incorrect ARRAY field value.',)
+        else:
+            raise ProgrammingError('Exception expected')
+        try:
+            cur.execute("insert into ar (c1,c2) values (102,?)",[self.c2[:-1]])
+        except Exception as e:
+            assert e.args == ('Incorrect ARRAY field value.',)
+        else:
+            raise ProgrammingError('Exception expected')
 
 class TestInsertData(unittest.TestCase):
     def setUp(self):
@@ -848,7 +1077,7 @@ class TestServices2(unittest.TestCase):
         # iterate over result
         self.svc.get_log()
         for line in self.svc:
-            assert line
+            assert line is not None
             assert isinstance(line,fdb.StringType)
         assert not self.svc.fetching
         # callback
@@ -875,7 +1104,7 @@ class TestServices2(unittest.TestCase):
                                 show_system_tables_and_indexes=True,
                                 show_record_versions=True)
         for line in self.svc:
-            assert line
+            assert line is not None
             assert isinstance(line,fdb.StringType)
         assert not self.svc.fetching
         # callback
@@ -906,7 +1135,7 @@ class TestServices2(unittest.TestCase):
                         compressed=0,  
                         no_db_triggers=1)
         for line in self.svc:
-            assert line
+            assert line is not None
             assert isinstance(line,fdb.StringType)
         assert not self.svc.fetching
         # callback
@@ -930,7 +1159,7 @@ class TestServices2(unittest.TestCase):
         # iterate over result
         self.svc.restore(self.fbk, self.rfdb, replace=1)
         for line in self.svc:
-            assert line
+            assert line is not None
             assert isinstance(line,fdb.StringType)
         assert not self.svc.fetching
         # callback

@@ -406,8 +406,6 @@ Parametrized statemets also have some limitations. Currently:
 
 * `DATE`, `TIME` and `DATETIME` values must be relevant :mod:`datetime` objects.
 * `NUMERIC` and `DECIMAL` values must be :mod:`decimal` objects.
-* Because FDB currently doesn't support Firebird's `ARRAY` type, you can't pass values for ARRAY's
-  as parameters.
 
 
 .. index::
@@ -472,6 +470,8 @@ methods for fetching these `rows`, that should satisfy all your specific needs:
 * :meth:`~Cursor.itermap` - Equivalent to the :meth:`~Cursor.fetchallmap`, except that it returns 
   :ref:`iterator <python:typeiter>` rather than materialized list.
 
+* Call to :meth:`~Cursor.execute` returns self (Cursor instance) that itself supports 
+  the :ref:`iterator protocol <python:typeiter>`, yielding tuples of values like :meth:`~Cursor.fetchone`.
 
 .. important::
 
@@ -1088,11 +1088,73 @@ Output::
 Firebird ARRAY type
 -------------------
 
+FDB supports Firebird ARRAY data type. ARRAY values are represented as Python lists. On input, the Python 
+sequence (list or tuple) must be nested appropriately if the array field is multi-dimensional, and 
+the incoming sequence must not fall short of its maximum possible length (it will not be “padded” 
+implicitly–see below). On output, the lists will be nested if the database array has multiple dimensions.
+
 .. note::
 
-   FDB currently doesn't support Firebird ARRAY data type, and any attempt to read or store values
-   of this type will throw :exc:`~exceptions.NotImplementedError` exception. However, support for ARRAYs is
-   planed for future FDB versions.
+   Database arrays have no place in a purely relational data model, which requires that data values be 
+   atomized (that is, every value stored in the database must be reduced to elementary, non-decomposable 
+   parts). The Firebird implementation of database arrays, like that of most relational database engines 
+   that support this data type, is fraught with limitations.
+
+   Database arrays are of fixed size, with a predeclared number of dimensions (max. 16) and number of elements 
+   per dimension. Individual array elements cannot be set to NULL / None, so the mapping between Python lists 
+   (which have dynamic length and are therefore not normally “padded” with dummy values) and non-trivial 
+   database arrays is clumsy.
+
+   Stored procedures cannot have array parameters.
+
+   Finally, many interface libraries, GUIs, and even the isql command line utility do not support database 
+   arrays.
+
+   In general, it is preferable to avoid using database arrays unless you have a compelling reason.
+
+**Example:**
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='localhost:employee',user='sysdba', password='masterkey')
+   >>> cur = con.cursor()
+   >>> cur.execute("select LANGUAGE_REQ from job where job_code='Eng' and job_grade=3 and job_country='Japan'")
+   >>> cur.fetchone()
+   (['Japanese\n', 'Mandarin\n', 'English\n', '\n', '\n'],)
+
+**Example program:**
+
+.. code-block:: python
+
+   import fdb
+
+   con = fdb.connect(dsn='localhost:/temp/test.db', user='sysdba', password='pass')
+   con.execute_immediate("recreate table array_table (a int[3,4])")
+   con.commit()
+
+   cur = con.cursor()
+
+   arrayIn = [
+       [1, 2, 3, 4],
+       [5, 6, 7, 8],
+       [9,10,11,12]
+     ]
+
+   print 'arrayIn:  %s' % arrayIn
+   cur.execute("insert into array_table values (?)", (arrayIn,))
+
+   cur.execute("select a from array_table")
+   arrayOut = cur.fetchone()[0]
+   print 'arrayOut: %s' % arrayOut
+
+   con.commit()
+
+Output::
+
+   arrayIn:  [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+   arrayOut: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+
 
 
 .. index::

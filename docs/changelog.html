@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changelog &mdash; FDB 0.9 documentation</title>
+    <title>Changelog &mdash; FDB 0.9.9 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9',
+        VERSION:     '0.9.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 0.9 documentation" href="index.html" />
+    <link rel="top" title="FDB 0.9.9 documentation" href="index.html" />
     <link rel="next" title="LICENSE" href="license.html" />
     <link rel="prev" title="FDB Reference" href="reference.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 0.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 0.9.9 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -63,6 +63,7 @@
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
+<li><a class="reference internal" href="#version-0-9-9">Version 0.9.9</a> (30.11.2012)</li>
 <li><a class="reference internal" href="#version-0-9-1">Version 0.9.1</a> (8. 9. 2012)</li>
 <li><a class="reference internal" href="#version-0-9">Version 0.9</a> (5. 9. 2012)</li>
 <li><a class="reference internal" href="#version-0-8-5">Version 0.8.5</a> (28. 6. 2012)</li>
@@ -71,21 +72,44 @@
 <li><a class="reference internal" href="#version-0-7-1">Version 0.7.1</a> (31. 1. 2012)</li>
 <li><a class="reference internal" href="#version-0-7">Version 0.7</a> (21. 12. 2011)</li>
 </ul>
+<div class="section" id="version-0-9-9">
+<h2>Version 0.9.9<a class="headerlink" href="#version-0-9-9" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="new-features">
+<h3>New Features<a class="headerlink" href="#new-features" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Firebird ARRAY support.</li>
+</ul>
+</div>
+<div class="section" id="other-changes">
+<h3>Other changes<a class="headerlink" href="#other-changes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Cursor.execute() returns Self, so it could be used as iterator.</li>
+<li>Reading output from Services now uses more efficient method to get data
+from server.</li>
+</ul>
+</div>
+<div class="section" id="bugs-fixed">
+<h3>Bugs Fixed<a class="headerlink" href="#bugs-fixed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Fix: precision_cache in Connection works as intended.</li>
+</ul>
+</div>
+</div>
 <div class="section" id="version-0-9-1">
 <h2>Version 0.9.1<a class="headerlink" href="#version-0-9-1" title="Permalink to this headline">¶</a></h2>
 <p>Just bugfixes to make FDB work on P3K again.</p>
 </div>
 <div class="section" id="version-0-9">
 <h2>Version 0.9<a class="headerlink" href="#version-0-9" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="new-features">
-<h3>New Features<a class="headerlink" href="#new-features" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h3>New Features<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Documentation; both in-source (in Sphinx autodoc format) and Sphinx (html)</li>
 <li>Services API completely reworked</li>
 </ul>
 </div>
-<div class="section" id="other-changes">
-<h3>Other changes<a class="headerlink" href="#other-changes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Other changes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Unregistered bugs fixed.</li>
 <li>Various optimizations and cleanup</li>
@@ -96,15 +120,15 @@
 </div>
 <div class="section" id="version-0-8-5">
 <h2>Version 0.8.5<a class="headerlink" href="#version-0-8-5" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>New Features<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>New Features<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Support for Firebird stream BLOBs (see ReleaseNotes for details)</li>
 <li>Documentation (stub, from KInterbasDB 3.3.0)</li>
 </ul>
 </div>
-<div class="section" id="bugs-fixed">
-<h3>Bugs Fixed<a class="headerlink" href="#bugs-fixed" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Bugs Fixed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix for PYFB-17 and PYFB-18 (see our JIRA tracker for details)</li>
 <li>Fixes for automatic unicode conversions + refactoring</li>
@@ -114,8 +138,8 @@
 </div>
 <div class="section" id="version-0-8">
 <h2>Version 0.8<a class="headerlink" href="#version-0-8" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>New Features<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>New Features<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Support for Firebird Event Notifications - <cite>JIRA entry &lt;http://tracker.firebirdsql.org/browse/PYFB-8&gt;</cite></li>
 </ul>
@@ -130,8 +154,8 @@
 </div>
 <div class="section" id="version-0-7-2">
 <h2>Version 0.7.2<a class="headerlink" href="#version-0-7-2" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id3">
-<h3>New Features<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>New Features<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Python 3 Support (thanks to Philippe Makowski)</li>
 <li>Support for Distributed Transactions</li>
@@ -172,24 +196,30 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
-<li><a class="reference internal" href="#version-0-9-1">Version 0.9.1</a></li>
-<li><a class="reference internal" href="#version-0-9">Version 0.9</a><ul>
+<li><a class="reference internal" href="#version-0-9-9">Version 0.9.9</a><ul>
 <li><a class="reference internal" href="#new-features">New Features</a></li>
 <li><a class="reference internal" href="#other-changes">Other changes</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#version-0-8-5">Version 0.8.5</a><ul>
-<li><a class="reference internal" href="#id1">New Features</a></li>
 <li><a class="reference internal" href="#bugs-fixed">Bugs Fixed</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#version-0-9-1">Version 0.9.1</a></li>
+<li><a class="reference internal" href="#version-0-9">Version 0.9</a><ul>
+<li><a class="reference internal" href="#id1">New Features</a></li>
+<li><a class="reference internal" href="#id2">Other changes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-8-5">Version 0.8.5</a><ul>
+<li><a class="reference internal" href="#id3">New Features</a></li>
+<li><a class="reference internal" href="#id4">Bugs Fixed</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#version-0-8">Version 0.8</a><ul>
-<li><a class="reference internal" href="#id2">New Features</a></li>
+<li><a class="reference internal" href="#id5">New Features</a></li>
 <li><a class="reference internal" href="#bugs-fixes">Bugs Fixes</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-7-2">Version 0.7.2</a><ul>
-<li><a class="reference internal" href="#id3">New Features</a></li>
+<li><a class="reference internal" href="#id6">New Features</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-7-1">Version 0.7.1</a></li>
@@ -239,7 +269,7 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 0.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 0.9.9 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
