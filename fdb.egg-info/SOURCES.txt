@@ -5,7 +5,6 @@ README
 ReleaseNotes.txt
 setup.cfg
 setup.py
-docs/.buildinfo
 docs/changelog.html
 docs/differecnes-from-kdb.html
 docs/genindex.html

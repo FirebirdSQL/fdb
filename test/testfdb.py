@@ -880,8 +880,8 @@ class TestInsertData(unittest.TestCase):
         cur.execute('select C1,C2,C3 from T2 where C1 = 1')
         rows = cur.fetchall()
         assert repr(rows) == "[(1, 1, 1)]"
-        cur.execute('insert into T2 (C1,C2,C3) values (?,?,?)',[2,1,sys.maxint])
-        cur.execute('insert into T2 (C1,C2,C3) values (?,?,?)',[2,1,-sys.maxint-1])
+        cur.execute('insert into T2 (C1,C2,C3) values (?,?,?)',[2,1,9223372036854775807])
+        cur.execute('insert into T2 (C1,C2,C3) values (?,?,?)',[2,1,-9223372036854775807-1])
         self.con.commit()
         cur.execute('select C1,C2,C3 from T2 where C1 = 2')
         rows = cur.fetchall()
@@ -1682,7 +1682,7 @@ class TestBugs(unittest.TestCase):
         self.con.commit()
         # test data
         data = ("1234567890" * 25) + "12345"
-        for i in xrange(255):
+        for i in ibase.xrange(255):
             cur.execute("insert into fdbtest (id, test255) values (?, ?)",
                         (i, data[:i]))
         self.con.commit()

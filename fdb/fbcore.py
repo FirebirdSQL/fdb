@@ -2308,9 +2308,9 @@ class PreparedStatement(object):
         """
         valuebuf = None
         if dtype in (ibase.blr_text,ibase.blr_text2):
-            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+            valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         elif dtype in (ibase.blr_varying,ibase.blr_varying2):
-            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+            valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         elif dtype in (ibase.blr_short,ibase.blr_long,ibase.blr_int64):
             if esize == 2:
                 valuebuf = ibase.ISC_SHORT(0)
@@ -2321,15 +2321,15 @@ class PreparedStatement(object):
             else:
                 raise OperationalError("Unsupported number type")
         elif dtype == ibase.blr_float:
-            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+            valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         elif dtype in (ibase.blr_d_float,ibase.blr_double):
-            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+            valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         elif dtype == ibase.blr_timestamp:
-            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+            valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         elif dtype == ibase.blr_sql_date:
-            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+            valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         elif dtype == ibase.blr_sql_time:
-            valuebuf = ctypes.create_string_buffer(chr(0),esize)
+            valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         else:
             raise OperationalError("Unsupported Firebird ARRAY subtype: %i" % dtype)
         if valuebuf == None:
@@ -2343,11 +2343,16 @@ class PreparedStatement(object):
                                value,valuebuf,buf,bufpos):
         if dim == len(dimensions)-1:
             for i in xrange(dimensions[dim]):
-                if dtype in (ibase.blr_text,ibase.blr_text2):
-                    valuebuf.value = value[i]
-                    ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
-                elif dtype in (ibase.blr_varying,ibase.blr_varying2):
-                    valuebuf.value = value[i]
+                if dtype in (ibase.blr_text,ibase.blr_text2,
+                             ibase.blr_varying,ibase.blr_varying2):
+                    val = value[i]
+                    if isinstance(val, UnicodeType):
+                        val = val.encode(self.__python_charset)
+                    if len(val) > esize:
+                        raise ValueError("ARRAY value of parameter is too long,"
+                                         " expected %i, found %i" % (esize,
+                                                                     len(val)))
+                    valuebuf.value = val
                     ctypes.memmove(ctypes.byref(buf,bufpos),valuebuf,esize)
                 elif dtype in (ibase.blr_short,ibase.blr_long,ibase.blr_int64):
                     if (subtype or scale):
