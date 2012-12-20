@@ -918,17 +918,14 @@ used again.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">self, so call to execute could be used as iterator.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>operation</strong> (string or <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance) &#8211; SQL command specification.</li>
 <li><strong>parameters</strong> (<em>List or Tuple</em>) &#8211; (Optional) Sequence of parameters. Must contain one 
 entry for each argument that the operation expects.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ValueError</strong> &#8211; When operation PreparedStatement belongs to different 
 Cursor instance.</li>
 <li><strong>TypeError</strong> &#8211; When parameters is not List or Tuple.</li>
@@ -2644,7 +2641,7 @@ an instance of a particular class or type.</p>
 <h3>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="fdb.services.connect">
-<tt class="descclassname">fdb.services.</tt><tt class="descname">connect</tt><big>(</big><em>host='service_mgr'</em>, <em>user='sysdba'</em>, <em>password=None</em><big>)</big><a class="headerlink" href="#fdb.services.connect" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">fdb.services.</tt><tt class="descname">connect</tt><big>(</big><em>host='service_mgr'</em>, <em>user='sysdba'</em>, <em>password='masterke'</em><big>)</big><a class="headerlink" href="#fdb.services.connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Establishes a connection to the Services Manager.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3708,96 +3705,7 @@ specified to add a user.</p>
 <div class="section" id="ctypes-interface-to-firebird-client-library">
 <h2>ctypes interface to Firebird client library<a class="headerlink" href="#ctypes-interface-to-firebird-client-library" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="http://docs.python.org/whatsnew/2.5.html#module-ctypes" title="(in Python v2.7)"><em class="xref std std-ref">ctypes</em></a> interface to <cite>fbclient.so/dll</cite> is defined in submodule <a class="reference internal" href="#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.ibase</span></tt></a>.</p>
-<span class="target" id="module-fdb.ibase"></span><dl class="attribute">
-<dt id="fdb.ibase.s">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">s</tt><a class="headerlink" href="#fdb.ibase.s" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.mybytes">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">mybytes</tt><a class="headerlink" href="#fdb.ibase.mybytes" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.myunicode">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">myunicode</tt><a class="headerlink" href="#fdb.ibase.myunicode" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.mylong">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">mylong</tt><a class="headerlink" href="#fdb.ibase.mylong" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">long</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.StringType">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">StringType</tt><a class="headerlink" href="#fdb.ibase.StringType" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.IntType">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">IntType</tt><a class="headerlink" href="#fdb.ibase.IntType" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">int</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.LongType">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">LongType</tt><a class="headerlink" href="#fdb.ibase.LongType" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">long</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.FloatType">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">FloatType</tt><a class="headerlink" href="#fdb.ibase.FloatType" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">float</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.ListType">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">ListType</tt><a class="headerlink" href="#fdb.ibase.ListType" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">list</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.UnicodeType">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">UnicodeType</tt><a class="headerlink" href="#fdb.ibase.UnicodeType" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="fdb.ibase.TupleType">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">TupleType</tt><a class="headerlink" href="#fdb.ibase.TupleType" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">tuple</span></tt></p>
-</dd></dl>
-
-<dl class="class">
-<dt id="fdb.ibase.xrange">
-<em class="property">class </em><tt class="descclassname">fdb.ibase.</tt><tt class="descname">xrange</tt><a class="headerlink" href="#fdb.ibase.xrange" title="Permalink to this definition">¶</a></dt>
-<dd><p>xrange([start,] stop[, step]) -&gt; xrange object</p>
-<p>Like range(), but instead of returning a list, returns an object that
-generates the numbers in the range on demand.  For looping, this is 
-slightly faster than range() and more memory efficient.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="fdb.ibase.ord2">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">ord2</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.ibase.ord2" title="Permalink to this definition">¶</a></dt>
-<dd><p>ord(c) -&gt; integer</p>
-<p>Return the integer ordinal of a one-character string.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="fdb.ibase.int2byte">
-<tt class="descclassname">fdb.ibase.</tt><tt class="descname">int2byte</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.ibase.int2byte" title="Permalink to this definition">¶</a></dt>
-<dd><p>chr(i) -&gt; character</p>
-<p>Return a string of one character with ordinal i; 0 &lt;= i &lt; 256.</p>
-</dd></dl>
-
-</div>
+<span class="target" id="module-fdb.ibase"></span></div>
 </div>
 
 

@@ -33,7 +33,7 @@ Documentation Contents:
    getting-started
    usage-guide
    python-db-api-compliance
-   differecnes-from-kdb
+   differences-from-kdb
    reference
 
    changelog
