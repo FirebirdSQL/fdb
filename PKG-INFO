@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: fdb
-Version: 0.9.1
+Version: 1.0
 Summary: Firebird RDBMS bindings for Python.
 Home-page: http://www.firebirdsql.org/en/python-devel-status/
 Author: Pavel Cisar
@@ -16,6 +16,4 @@ Classifier: Development Status :: 5 - Production/Stable
 Classifier: License :: OSI Approved :: BSD License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python
-Classifier: Programming Language :: Python::2
-Classifier: Programming Language :: Python::3
 Classifier: Topic :: Database

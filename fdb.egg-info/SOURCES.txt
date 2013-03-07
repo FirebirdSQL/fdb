@@ -5,8 +5,9 @@ README
 ReleaseNotes.txt
 setup.cfg
 setup.py
+docs/.buildinfo
 docs/changelog.html
-docs/differecnes-from-kdb.html
+docs/differences-from-kdb.html
 docs/genindex.html
 docs/getting-started.html
 docs/index.html
@@ -68,12 +69,13 @@ fdb.egg-info/top_level.txt
 sphinx/Makefile
 sphinx/changelog.txt
 sphinx/conf.py
-sphinx/differecnes-from-kdb.txt
+sphinx/differences-from-kdb.txt
 sphinx/getting-started.txt
 sphinx/index.txt
 sphinx/license.txt
 sphinx/python-db-api-compliance.txt
 sphinx/reference.txt
+sphinx/requirements.txt
 sphinx/usage-guide.txt
 sphinx/fdbtheme/layout.html
 sphinx/fdbtheme/theme.conf

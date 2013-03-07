@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.0`_ (7.3.2013)
 * `Version 0.9.9`_ (30.11.2012)
 * `Version 0.9.1`_ (8. 9. 2012)
 * `Version 0.9`_ (5. 9. 2012)
@@ -10,6 +11,19 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.0
+===========
+
+Improvements
+------------
+
+- Removed dependency on fbclient library to be present at import time (PYFB-24)
+
+Bugs Fixed
+----------
+
+- PYFB-25 - Truncate long text from VARCHAR(5000)
 
 Version 0.9.9
 =============

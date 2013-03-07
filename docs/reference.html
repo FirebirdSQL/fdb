@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 0.9.9 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.9',
+        VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 0.9.9 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.0 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
-    <link rel="prev" title="Differences from KInterbasDB" href="differecnes-from-kdb.html" />
+    <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <!--[if lte IE 6]>
@@ -49,9 +49,9 @@
           <a href="changelog.html" title="Changelog"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="differecnes-from-kdb.html" title="Differences from KInterbasDB"
+          <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 0.9.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -918,14 +918,17 @@ used again.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">self, so call to execute could be used as iterator.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>operation</strong> (string or <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance) &#8211; SQL command specification.</li>
 <li><strong>parameters</strong> (<em>List or Tuple</em>) &#8211; (Optional) Sequence of parameters. Must contain one 
 entry for each argument that the operation expects.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ValueError</strong> &#8211; When operation PreparedStatement belongs to different 
 Cursor instance.</li>
 <li><strong>TypeError</strong> &#8211; When parameters is not List or Tuple.</li>
@@ -2641,7 +2644,7 @@ an instance of a particular class or type.</p>
 <h3>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="fdb.services.connect">
-<tt class="descclassname">fdb.services.</tt><tt class="descname">connect</tt><big>(</big><em>host='service_mgr'</em>, <em>user='sysdba'</em>, <em>password='masterke'</em><big>)</big><a class="headerlink" href="#fdb.services.connect" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">fdb.services.</tt><tt class="descname">connect</tt><big>(</big><em>host='service_mgr'</em>, <em>user='sysdba'</em>, <em>password=None</em><big>)</big><a class="headerlink" href="#fdb.services.connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Establishes a connection to the Services Manager.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3748,7 +3751,7 @@ specified to add a user.</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="differecnes-from-kdb.html"
+  <p class="topless"><a href="differences-from-kdb.html"
                         title="previous chapter">Differences from KInterbasDB</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="changelog.html"
@@ -3783,9 +3786,9 @@ specified to add a user.</p>
           <a href="changelog.html" title="Changelog"
              >next</a> |</li>
         <li class="right" >
-          <a href="differecnes-from-kdb.html" title="Differences from KInterbasDB"
+          <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 0.9.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -176,7 +176,7 @@ on Connection object.
 This method does not attempt to interpret its results except with regard to whether they are a string 
 or an integer. For example, requesting `isc_info_user_names` with the call::
 
-   con.database_info(kinterbasdb.isc_info_user_names, 's')
+   con.database_info(fdb.isc_info_user_names, 's')
 
 will return a binary string containing a raw succession of length-name pairs. 
 
@@ -230,7 +230,7 @@ which is high-level convenience wrapper around the `database_info()` method that
 database_info into Python-friendly objects instead of returning raw binary buffers in the case of complex 
 result types. For example, requesting `isc_info_user_names` with the call::
 
-   con.db_info(kinterbasdb.isc_info_user_names)
+   con.db_info(fdb.isc_info_user_names)
 
 returns a dictionary that maps (username -> number of open connections). If SYSDBA has one open connection 
 to the database to which `con` is connected, and TEST_USER_1 has three open connections to that same database, 
