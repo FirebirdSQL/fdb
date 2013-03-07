@@ -30,6 +30,8 @@ import struct
 import warnings
 import datetime
 
+api = None
+
 # The following SHUT_* constants are to be passed as the `shutdown_mode`
 # parameter to Connection.shutdown:
 SHUT_NORMAL = ibase.isc_spb_prp_sm_normal
@@ -126,7 +128,7 @@ def _vax_inverse(i, myformat):
     # Apply the inverse of _ksrv.isc_vax_integer to a Python integer; return
     # the raw bytes of the resulting value.
     iRaw = struct.pack(myformat, i)
-    iConv = ibase.isc_vax_integer(iRaw, len(iRaw))
+    iConv = api.isc_vax_integer(iRaw, len(iRaw))
     iConvRaw = struct.pack(myformat, iConv)
     return iConvRaw
 
@@ -172,7 +174,7 @@ def connect(host='service_mgr',
        host.  Therefore, the database specified as a parameter to methods such as
        `getStatistics` MUST NOT include the host name of the database server.
     """
-
+    setattr(sys.modules[__name__],'api',fdb.load_api())
     if password is None:
         raise fdb.ProgrammingError('A password is required to use'
                                    ' the Services Manager.')
@@ -247,7 +249,7 @@ class Connection(object):
                       ibase.isc_spb_user_name, len(self.user)]) + self.user + \
                       fdb.bs([ibase.isc_spb_password,
                             len(self.password)]) + self.password
-        ibase.isc_service_attach(self._isc_status, len(self.host), self.host,
+        api.isc_service_attach(self._isc_status, len(self.host), self.host,
                                  self._svc_handle, len(spb), spb)
         if fdb.db_api_error(self._isc_status):
             raise fdb.exception_from_status(fdb.DatabaseError,
@@ -280,7 +282,7 @@ class Connection(object):
     def __read_buffer(self, init=''):
         request = fdb.bs([ibase.isc_info_svc_to_eof])
         spb = ibase.b('')
-        ibase.isc_service_query(self._isc_status, self._svc_handle, None,
+        api.isc_service_query(self._isc_status, self._svc_handle, None,
                                 len(spb), spb,
                                 len(request), request,
                                 ibase.USHRT_MAX, self._result_buffer)
@@ -345,7 +347,7 @@ class Connection(object):
             spb = fdb.bs(ibase.isc_info_svc_timeout, timeout)
         while True:
             result_buffer = ctypes.create_string_buffer(result_size)
-            ibase.isc_service_query(self._isc_status, self._svc_handle, None,
+            api.isc_service_query(self._isc_status, self._svc_handle, None,
                                     len(spb), spb,
                                     len(request), request,
                                     result_size, result_buffer)
@@ -379,7 +381,7 @@ class Connection(object):
         databases = []
 
         raw = self._QR(ibase.isc_info_svc_svr_db_info)
-#        assert raw[-1] == ibase.int2byte(ibase.isc_info_flag_end)
+#        assert raw[-1] == api.int2byte(ibase.isc_info_flag_end)
 
         pos = 1  # Ignore raw[0].
         upper_limit = len(raw) - 1
@@ -410,7 +412,7 @@ class Connection(object):
             raise fdb.ProgrammingError("The size of the request buffer"
                                        " must not exceed %d."
                                        % ibase.USHRT_MAX)
-        ibase.isc_service_start(self._isc_status, self._svc_handle, None,
+        api.isc_service_start(self._isc_status, self._svc_handle, None,
                                 len(request_buffer), request_buffer)
         if fdb.db_api_error(self._isc_status):
             raise fdb.exception_from_status(fdb.OperationalError,
@@ -520,7 +522,7 @@ class Connection(object):
         with the connection.
         """
         if self._svc_handle:
-            ibase.isc_service_detach(self._isc_status, self._svc_handle)
+            api.isc_service_detach(self._isc_status, self._svc_handle)
             if fdb.db_api_error(self._isc_status):
                 raise fdb.exception_from_status(fdb.DatabaseError,
                               self._isc_status, "Services/isc_service_detach:")

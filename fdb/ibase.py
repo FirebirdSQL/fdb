@@ -1161,405 +1161,6 @@ XSQLDA._fields_ = [
 
 XSQLDA_PTR = POINTER(XSQLDA)
 
-isc_attach_database = fb_library.isc_attach_database
-isc_attach_database.restype = ISC_STATUS
-isc_attach_database.argtypes = [POINTER(ISC_STATUS), c_short, STRING,
-                                POINTER(isc_db_handle), c_short, STRING]
-
-isc_array_gen_sdl = fb_library.isc_array_gen_sdl
-isc_array_gen_sdl.restype = ISC_STATUS
-isc_array_gen_sdl.argtypes = [POINTER(ISC_STATUS), POINTER(ISC_ARRAY_DESC),
-                              POINTER(ISC_SHORT), POINTER(ISC_UCHAR),
-                              POINTER(ISC_SHORT)]
-
-isc_array_get_slice = fb_library.isc_array_get_slice
-isc_array_get_slice.restype = ISC_STATUS
-isc_array_get_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                POINTER(isc_tr_handle), POINTER(ISC_QUAD),
-                                POINTER(ISC_ARRAY_DESC), c_void_p,
-                                POINTER(ISC_LONG)]
-
-isc_array_lookup_bounds = fb_library.isc_array_lookup_bounds
-isc_array_lookup_bounds.restype = ISC_STATUS
-isc_array_lookup_bounds.argtypes = [POINTER(ISC_STATUS),
-                                    POINTER(isc_db_handle),
-                                    POINTER(isc_tr_handle), STRING, STRING,
-                                    POINTER(ISC_ARRAY_DESC)]
-
-isc_array_lookup_desc = fb_library.isc_array_lookup_desc
-isc_array_lookup_desc.restype = ISC_STATUS
-isc_array_lookup_desc.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                  POINTER(isc_tr_handle), STRING, STRING,
-                                  POINTER(ISC_ARRAY_DESC)]
-
-isc_array_set_desc = fb_library.isc_array_set_desc
-isc_array_set_desc.restype = ISC_STATUS
-isc_array_set_desc.argtypes = [POINTER(ISC_STATUS), STRING, STRING,
-                               POINTER(c_short), POINTER(c_short),
-                               POINTER(c_short), POINTER(ISC_ARRAY_DESC)]
-
-isc_array_put_slice = fb_library.isc_array_put_slice
-isc_array_put_slice.restype = ISC_STATUS
-isc_array_put_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                POINTER(isc_tr_handle), POINTER(ISC_QUAD),
-                                POINTER(ISC_ARRAY_DESC), c_void_p,
-                                POINTER(ISC_LONG)]
-
-isc_blob_default_desc = fb_library.isc_blob_default_desc
-isc_blob_default_desc.restype = None
-isc_blob_default_desc.argtypes = [POINTER(ISC_BLOB_DESC), POINTER(ISC_UCHAR),
-                                  POINTER(ISC_UCHAR)]
-
-isc_blob_gen_bpb = fb_library.isc_blob_gen_bpb
-isc_blob_gen_bpb.restype = ISC_STATUS
-isc_blob_gen_bpb.argtypes = [POINTER(ISC_STATUS), POINTER(ISC_BLOB_DESC),
-                             POINTER(ISC_BLOB_DESC), c_ushort,
-                             POINTER(ISC_UCHAR), POINTER(c_ushort)]
-
-isc_blob_info = fb_library.isc_blob_info
-isc_blob_info.restype = ISC_STATUS
-isc_blob_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
-                          c_short, STRING, c_short, POINTER(c_char)]
-
-isc_blob_lookup_desc = fb_library.isc_blob_lookup_desc
-isc_blob_lookup_desc.restype = ISC_STATUS
-isc_blob_lookup_desc.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                 POINTER(isc_tr_handle), POINTER(ISC_UCHAR),
-                                 POINTER(ISC_UCHAR), POINTER(ISC_BLOB_DESC),
-                                 POINTER(ISC_UCHAR)]
-
-isc_blob_set_desc = fb_library.isc_blob_set_desc
-isc_blob_set_desc.restype = ISC_STATUS
-isc_blob_set_desc.argtypes = [POINTER(ISC_STATUS), POINTER(ISC_UCHAR),
-                              POINTER(ISC_UCHAR), c_short, c_short, c_short,
-                              POINTER(ISC_BLOB_DESC)]
-
-isc_cancel_blob = fb_library.isc_cancel_blob
-isc_cancel_blob.restype = ISC_STATUS
-isc_cancel_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle)]
-
-isc_cancel_events = fb_library.isc_cancel_events
-isc_cancel_events.restype = ISC_STATUS
-isc_cancel_events.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                              POINTER(ISC_LONG)]
-
-isc_close_blob = fb_library.isc_close_blob
-isc_close_blob.restype = ISC_STATUS
-isc_close_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle)]
-
-isc_commit_retaining = fb_library.isc_commit_retaining
-isc_commit_retaining.restype = ISC_STATUS
-isc_commit_retaining.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle)]
-
-isc_commit_transaction = fb_library.isc_commit_transaction
-isc_commit_transaction.restype = ISC_STATUS
-isc_commit_transaction.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle)]
-
-isc_create_blob = fb_library.isc_create_blob
-isc_create_blob.restype = ISC_STATUS
-isc_create_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                            POINTER(isc_tr_handle), POINTER(isc_blob_handle),
-                            POINTER(ISC_QUAD)]
-
-isc_create_blob2 = fb_library.isc_create_blob2
-isc_create_blob2.restype = ISC_STATUS
-isc_create_blob2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                             POINTER(isc_tr_handle), POINTER(isc_blob_handle),
-                             POINTER(ISC_QUAD), c_short, STRING]
-
-isc_create_database = fb_library.isc_create_database
-isc_create_database.restype = ISC_STATUS
-isc_create_database.argtypes = [POINTER(ISC_STATUS), c_short, STRING,
-                                POINTER(isc_db_handle), c_short, STRING,
-                                c_short]
-
-isc_database_info = fb_library.isc_database_info
-isc_database_info.restype = ISC_STATUS
-isc_database_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                              c_short, STRING, c_short, STRING]
-
-isc_decode_date = fb_library.isc_decode_date
-isc_decode_date.restype = None
-isc_decode_date.argtypes = [POINTER(ISC_QUAD), c_void_p]
-
-isc_decode_sql_date = fb_library.isc_decode_sql_date
-isc_decode_sql_date.restype = None
-isc_decode_sql_date.argtypes = [POINTER(ISC_DATE), c_void_p]
-
-isc_decode_sql_time = fb_library.isc_decode_sql_time
-isc_decode_sql_time.restype = None
-isc_decode_sql_time.argtypes = [POINTER(ISC_TIME), c_void_p]
-
-isc_decode_timestamp = fb_library.isc_decode_timestamp
-isc_decode_timestamp.restype = None
-isc_decode_timestamp.argtypes = [POINTER(ISC_TIMESTAMP), c_void_p]
-
-isc_detach_database = fb_library.isc_detach_database
-isc_detach_database.restype = ISC_STATUS
-isc_detach_database.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle)]
-
-isc_drop_database = fb_library.isc_drop_database
-isc_drop_database.restype = ISC_STATUS
-isc_drop_database.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle)]
-
-isc_dsql_allocate_statement = fb_library.isc_dsql_allocate_statement
-isc_dsql_allocate_statement.restype = ISC_STATUS
-isc_dsql_allocate_statement.argtypes = [POINTER(ISC_STATUS),
-                                        POINTER(isc_db_handle),
-                                        POINTER(isc_stmt_handle)]
-
-isc_dsql_alloc_statement2 = fb_library.isc_dsql_alloc_statement2
-isc_dsql_alloc_statement2.restype = ISC_STATUS
-isc_dsql_alloc_statement2.argtypes = [POINTER(ISC_STATUS),
-                                      POINTER(isc_db_handle),
-                                      POINTER(isc_stmt_handle)]
-
-isc_dsql_describe = fb_library.isc_dsql_describe
-isc_dsql_describe.restype = ISC_STATUS
-isc_dsql_describe.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
-                              c_ushort, POINTER(XSQLDA)]
-
-isc_dsql_describe_bind = fb_library.isc_dsql_describe_bind
-isc_dsql_describe_bind.restype = ISC_STATUS
-isc_dsql_describe_bind.argtypes = [POINTER(ISC_STATUS),
-                                   POINTER(isc_stmt_handle),
-                                   c_ushort, POINTER(XSQLDA)]
-
-isc_dsql_exec_immed2 = fb_library.isc_dsql_exec_immed2
-isc_dsql_exec_immed2.restype = ISC_STATUS
-isc_dsql_exec_immed2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                 POINTER(isc_tr_handle), c_ushort, STRING,
-                                 c_ushort, POINTER(XSQLDA), POINTER(XSQLDA)]
-
-isc_dsql_execute = fb_library.isc_dsql_execute
-isc_dsql_execute.restype = ISC_STATUS
-isc_dsql_execute.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                             POINTER(isc_stmt_handle), c_ushort,
-                             POINTER(XSQLDA)]
-
-isc_dsql_execute2 = fb_library.isc_dsql_execute2
-isc_dsql_execute2.restype = ISC_STATUS
-isc_dsql_execute2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                              POINTER(isc_stmt_handle), c_ushort,
-                              POINTER(XSQLDA), POINTER(XSQLDA)]
-
-isc_dsql_execute_immediate = fb_library.isc_dsql_execute_immediate
-isc_dsql_execute_immediate.restype = ISC_STATUS
-isc_dsql_execute_immediate.argtypes = [POINTER(ISC_STATUS),
-                                       POINTER(isc_db_handle),
-                                       POINTER(isc_tr_handle),
-                                       c_ushort, STRING, c_ushort,
-                                       POINTER(XSQLDA)]
-
-isc_dsql_fetch = fb_library.isc_dsql_fetch
-isc_dsql_fetch.restype = ISC_STATUS
-isc_dsql_fetch.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
-                           c_ushort, POINTER(XSQLDA)]
-
-isc_dsql_finish = fb_library.isc_dsql_finish
-isc_dsql_finish.restype = ISC_STATUS
-isc_dsql_finish.argtypes = [POINTER(isc_db_handle)]
-
-isc_dsql_free_statement = fb_library.isc_dsql_free_statement
-isc_dsql_free_statement.restype = ISC_STATUS
-isc_dsql_free_statement.argtypes = [POINTER(ISC_STATUS),
-                                    POINTER(isc_stmt_handle), c_ushort]
-
-isc_dsql_insert = fb_library.isc_dsql_insert
-isc_dsql_insert.restype = ISC_STATUS
-isc_dsql_insert.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
-                            c_ushort, POINTER(XSQLDA)]
-
-isc_dsql_prepare = fb_library.isc_dsql_prepare
-isc_dsql_prepare.restype = ISC_STATUS
-isc_dsql_prepare.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                             POINTER(isc_stmt_handle), c_ushort, STRING,
-                             c_ushort, POINTER(XSQLDA)]
-
-isc_dsql_set_cursor_name = fb_library.isc_dsql_set_cursor_name
-isc_dsql_set_cursor_name.restype = ISC_STATUS
-isc_dsql_set_cursor_name.argtypes = [POINTER(ISC_STATUS),
-                                     POINTER(isc_stmt_handle), STRING,
-                                     c_ushort]
-
-isc_dsql_sql_info = fb_library.isc_dsql_sql_info
-isc_dsql_sql_info.restype = ISC_STATUS
-isc_dsql_sql_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
-                              c_short, STRING, c_short, STRING]
-
-isc_encode_date = fb_library.isc_encode_date
-isc_encode_date.restype = None
-isc_encode_date.argtypes = [c_void_p, POINTER(ISC_QUAD)]
-
-isc_encode_sql_date = fb_library.isc_encode_sql_date
-isc_encode_sql_date.restype = None
-isc_encode_sql_date.argtypes = [c_void_p, POINTER(ISC_DATE)]
-
-isc_encode_sql_time = fb_library.isc_encode_sql_time
-isc_encode_sql_time.restype = None
-isc_encode_sql_time.argtypes = [c_void_p, POINTER(ISC_TIME)]
-
-isc_encode_timestamp = fb_library.isc_encode_timestamp
-isc_encode_timestamp.restype = None
-isc_encode_timestamp.argtypes = [c_void_p, POINTER(ISC_TIMESTAMP)]
-
-P_isc_event_block = CFUNCTYPE(ISC_LONG,POINTER(POINTER(ISC_UCHAR)),
-                            POINTER(POINTER(ISC_UCHAR)), ISC_USHORT)
-C_isc_event_block = P_isc_event_block(('isc_event_block',fb_library))
-P_isc_event_block_args = C_isc_event_block.argtypes
-
-def isc_event_block(event_buffer,result_buffer,*args):
-    if len(args) > 15:
-        raise Exception("isc_event_block takes no more than 15 event names")
-    newargs = list(P_isc_event_block_args)
-    for x in args:
-        newargs.append(STRING)
-    C_isc_event_block.argtypes = newargs
-    result = C_isc_event_block(event_buffer,result_buffer,len(args),*args)
-    return result
-
-RESULT_VECTOR = ISC_ULONG * 15
-isc_event_counts = fb_library.isc_event_counts
-isc_event_counts.restype = None
-isc_event_counts.argtypes = [POINTER(RESULT_VECTOR), c_short, POINTER(ISC_UCHAR),
-                             POINTER(ISC_UCHAR)]
-
-isc_expand_dpb = fb_library.isc_expand_dpb
-isc_expand_dpb.restype = None
-isc_expand_dpb.argtypes = [POINTER(STRING), POINTER(c_short)]
-
-isc_modify_dpb = fb_library.isc_modify_dpb
-isc_modify_dpb.restype = c_int
-isc_modify_dpb.argtypes = [POINTER(STRING), POINTER(c_short), c_ushort,
-                           STRING, c_short]
-
-isc_free = fb_library.isc_free
-isc_free.restype = ISC_LONG
-isc_free.argtypes = [STRING]
-
-isc_get_segment = fb_library.isc_get_segment
-isc_get_segment.restype = ISC_STATUS
-isc_get_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
-                            POINTER(c_ushort), c_ushort, c_void_p]
-#isc_get_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
-#                            POINTER(c_ushort), c_ushort, POINTER(c_char)]
-
-isc_get_slice = fb_library.isc_get_slice
-isc_get_slice.restype = ISC_STATUS
-isc_get_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                          POINTER(isc_tr_handle), POINTER(ISC_QUAD), c_short,
-                          STRING, c_short, POINTER(ISC_LONG), ISC_LONG,
-                          c_void_p, POINTER(ISC_LONG)]
-
-isc_interprete = fb_library.isc_interprete
-isc_interprete.restype = ISC_LONG
-isc_interprete.argtypes = [STRING, POINTER(POINTER(ISC_STATUS))]
-
-fb_interpret = fb_library.fb_interpret
-fb_interpret.restype = ISC_LONG
-fb_interpret.argtypes = [STRING, c_uint, POINTER(POINTER(ISC_STATUS))]
-
-isc_open_blob = fb_library.isc_open_blob
-isc_open_blob.restype = ISC_STATUS
-isc_open_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                          POINTER(isc_tr_handle), POINTER(isc_blob_handle),
-                          POINTER(ISC_QUAD)]
-
-isc_open_blob2 = fb_library.isc_open_blob2
-isc_open_blob2.restype = ISC_STATUS
-isc_open_blob2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                           POINTER(isc_tr_handle), POINTER(isc_blob_handle),
-                           POINTER(ISC_QUAD), ISC_USHORT, STRING] # POINTER(ISC_UCHAR)
-
-isc_prepare_transaction2 = fb_library.isc_prepare_transaction2
-isc_prepare_transaction2.restype = ISC_STATUS
-isc_prepare_transaction2.argtypes = [POINTER(ISC_STATUS),
-                                     POINTER(isc_tr_handle), ISC_USHORT,
-                                     POINTER(ISC_UCHAR)]
-
-isc_print_sqlerror = fb_library.isc_print_sqlerror
-isc_print_sqlerror.restype = None
-isc_print_sqlerror.argtypes = [ISC_SHORT, POINTER(ISC_STATUS)]
-
-isc_print_status = fb_library.isc_print_status
-isc_print_status.restype = ISC_STATUS
-isc_print_status.argtypes = [POINTER(ISC_STATUS)]
-
-isc_put_segment = fb_library.isc_put_segment
-isc_put_segment.restype = ISC_STATUS
-isc_put_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
-                            c_ushort, c_void_p]
-#isc_put_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
-#                            c_ushort, STRING]
-
-isc_put_slice = fb_library.isc_put_slice
-isc_put_slice.restype = ISC_STATUS
-isc_put_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                          POINTER(isc_tr_handle), POINTER(ISC_QUAD), c_short,
-                          STRING, c_short, POINTER(ISC_LONG), ISC_LONG,
-                          c_void_p]
-
-isc_que_events = fb_library.isc_que_events
-isc_que_events.restype = ISC_STATUS
-isc_que_events.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                           POINTER(ISC_LONG), c_short, POINTER(ISC_UCHAR),
-                           ISC_EVENT_CALLBACK, POINTER(ISC_UCHAR)]
-
-isc_rollback_retaining = fb_library.isc_rollback_retaining
-isc_rollback_retaining.restype = ISC_STATUS
-isc_rollback_retaining.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle)]
-
-isc_rollback_transaction = fb_library.isc_rollback_transaction
-isc_rollback_transaction.restype = ISC_STATUS
-isc_rollback_transaction.argtypes = [POINTER(ISC_STATUS),
-                                     POINTER(isc_tr_handle)]
-
-isc_start_multiple = fb_library.isc_start_multiple
-isc_start_multiple.restype = ISC_STATUS
-isc_start_multiple.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                               c_short, c_void_p]
-
-if sys.platform in ['win32', 'cygwin', 'os2', 'os2emx']:
-    P_isc_start_transaction = CFUNCTYPE(ISC_STATUS, POINTER(ISC_STATUS),
-                                        POINTER(isc_tr_handle), c_short,
-                                        POINTER(isc_db_handle), c_short,
-                                        STRING)
-    isc_start_transaction = P_isc_start_transaction(('isc_start_transaction',
-                                                     fb_library))
-else:
-    isc_start_transaction = fb_library.isc_start_transaction
-    isc_start_transaction.restype = ISC_STATUS
-    isc_start_transaction.argtypes = [POINTER(ISC_STATUS),
-                                      POINTER(isc_tr_handle), c_short,
-                                      POINTER(isc_db_handle), c_short, STRING]
-
-isc_sqlcode = fb_library.isc_sqlcode
-isc_sqlcode.restype = ISC_LONG
-isc_sqlcode.argtypes = [POINTER(ISC_STATUS)]
-
-isc_sql_interprete = fb_library.isc_sql_interprete
-isc_sql_interprete.restype = None
-isc_sql_interprete.argtypes = [c_short, STRING, c_short]
-
-isc_transaction_info = fb_library.isc_transaction_info
-isc_transaction_info.restype = ISC_STATUS
-isc_transaction_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                                 c_short, STRING, c_short, STRING]
-
-isc_transact_request = fb_library.isc_transact_request
-isc_transact_request.restype = ISC_STATUS
-isc_transact_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                 POINTER(isc_tr_handle), c_ushort, STRING,
-                                 c_ushort, STRING, c_ushort, STRING]
-
-isc_vax_integer = fb_library.isc_vax_integer
-isc_vax_integer.restype = ISC_LONG
-isc_vax_integer.argtypes = [STRING, c_short]
-
-isc_portable_integer = fb_library.isc_portable_integer
-isc_portable_integer.restype = ISC_INT64
-isc_portable_integer.argtypes = [POINTER(ISC_UCHAR), c_short]
-
 def portable_int (buf):
     pass
 
@@ -1581,364 +1182,7 @@ USER_SEC_DATA._fields_ = [
     ('dba_password', STRING),
 ]
 
-isc_add_user = fb_library.isc_add_user
-isc_add_user.restype = ISC_STATUS
-isc_add_user.argtypes = [POINTER(ISC_STATUS), POINTER(USER_SEC_DATA)]
-
-isc_delete_user = fb_library.isc_delete_user
-isc_delete_user.restype = ISC_STATUS
-isc_delete_user.argtypes = [POINTER(ISC_STATUS), POINTER(USER_SEC_DATA)]
-
-isc_modify_user = fb_library.isc_modify_user
-isc_modify_user.restype = ISC_STATUS
-isc_modify_user.argtypes = [POINTER(ISC_STATUS), POINTER(USER_SEC_DATA)]
-
-isc_compile_request = fb_library.isc_compile_request
-isc_compile_request.restype = ISC_STATUS
-isc_compile_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                POINTER(isc_req_handle), c_short, STRING]
-
-isc_compile_request2 = fb_library.isc_compile_request2
-isc_compile_request2.restype = ISC_STATUS
-isc_compile_request2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                 POINTER(isc_req_handle), c_short, STRING]
-
-isc_ddl = fb_library.isc_ddl
-isc_ddl.restype = ISC_STATUS
-isc_ddl.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                    POINTER(isc_tr_handle), c_short, STRING]
-
-isc_prepare_transaction = fb_library.isc_prepare_transaction
-isc_prepare_transaction.restype = ISC_STATUS
-isc_prepare_transaction.argtypes = [POINTER(ISC_STATUS),
-                                    POINTER(isc_tr_handle)]
-
-isc_receive = fb_library.isc_receive
-isc_receive.restype = ISC_STATUS
-isc_receive.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
-                        c_short, c_short, c_void_p, c_short]
-
-isc_reconnect_transaction = fb_library.isc_reconnect_transaction
-isc_reconnect_transaction.restype = ISC_STATUS
-isc_reconnect_transaction.argtypes = [POINTER(ISC_STATUS),
-                                      POINTER(isc_db_handle),
-                                      POINTER(isc_tr_handle), c_short, STRING]
-
-isc_release_request = fb_library.isc_release_request
-isc_release_request.restype = ISC_STATUS
-isc_release_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle)]
-
-isc_request_info = fb_library.isc_request_info
-isc_request_info.restype = ISC_STATUS
-isc_request_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
-                             c_short, c_short, STRING, c_short, STRING]
-
-isc_seek_blob = fb_library.isc_seek_blob
-isc_seek_blob.restype = ISC_STATUS
-isc_seek_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
-                          c_short, ISC_LONG, POINTER(ISC_LONG)]
-
-isc_send = fb_library.isc_send
-isc_send.restype = ISC_STATUS
-isc_send.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle), c_short,
-                     c_short, c_void_p, c_short]
-
-isc_start_and_send = fb_library.isc_start_and_send
-isc_start_and_send.restype = ISC_STATUS
-isc_start_and_send.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
-                               POINTER(isc_tr_handle), c_short, c_short,
-                               c_void_p, c_short]
-
-isc_start_request = fb_library.isc_start_request
-isc_start_request.restype = ISC_STATUS
-isc_start_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
-                              POINTER(isc_tr_handle), c_short]
-
-isc_unwind_request = fb_library.isc_unwind_request
-isc_unwind_request.restype = ISC_STATUS
-isc_unwind_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                               c_short]
-
-isc_wait_for_event = fb_library.isc_wait_for_event
-isc_wait_for_event.restype = ISC_STATUS
-isc_wait_for_event.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                               c_short, POINTER(ISC_UCHAR), POINTER(ISC_UCHAR)]
-
-isc_close = fb_library.isc_close
-isc_close.restype = ISC_STATUS
-isc_close.argtypes = [POINTER(ISC_STATUS), STRING]
-
-isc_declare = fb_library.isc_declare
-isc_declare.restype = ISC_STATUS
-isc_declare.argtypes = [POINTER(ISC_STATUS), STRING, STRING]
-
-isc_describe = fb_library.isc_describe
-isc_describe.restype = ISC_STATUS
-isc_describe.argtypes = [POINTER(ISC_STATUS), STRING, POINTER(XSQLDA)]
-
-isc_describe_bind = fb_library.isc_describe_bind
-isc_describe_bind.restype = ISC_STATUS
-isc_describe_bind.argtypes = [POINTER(ISC_STATUS), STRING, POINTER(XSQLDA)]
-
-isc_execute = fb_library.isc_execute
-isc_execute.restype = ISC_STATUS
-isc_execute.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                        STRING, POINTER(XSQLDA)]
-
-isc_execute_immediate = fb_library.isc_execute_immediate
-isc_execute_immediate.restype = ISC_STATUS
-isc_execute_immediate.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                  POINTER(isc_tr_handle), POINTER(c_short),
-                                  STRING]
-
-isc_fetch = fb_library.isc_fetch
-isc_fetch.restype = ISC_STATUS
-isc_fetch.argtypes = [POINTER(ISC_STATUS), STRING, POINTER(XSQLDA)]
-
-isc_open = fb_library.isc_open
-isc_open.restype = ISC_STATUS
-isc_open.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                     STRING, POINTER(XSQLDA)]
-
-isc_prepare = fb_library.isc_prepare
-isc_prepare.restype = ISC_STATUS
-isc_prepare.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                        POINTER(isc_tr_handle), STRING, POINTER(c_short),
-                        STRING, POINTER(XSQLDA)]
-
-isc_dsql_execute_m = fb_library.isc_dsql_execute_m
-isc_dsql_execute_m.restype = ISC_STATUS
-isc_dsql_execute_m.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                               POINTER(isc_stmt_handle), c_ushort, STRING,
-                               c_ushort, c_ushort, STRING]
-
-isc_dsql_execute2_m = fb_library.isc_dsql_execute2_m
-isc_dsql_execute2_m.restype = ISC_STATUS
-isc_dsql_execute2_m.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                                POINTER(isc_stmt_handle), c_ushort, STRING,
-                                c_ushort, c_ushort, STRING, c_ushort, STRING,
-                                c_ushort, c_ushort, STRING]
-
-isc_dsql_execute_immediate_m = fb_library.isc_dsql_execute_immediate_m
-isc_dsql_execute_immediate_m.restype = ISC_STATUS
-isc_dsql_execute_immediate_m.argtypes = [POINTER(ISC_STATUS),
-                                         POINTER(isc_db_handle),
-                                         POINTER(isc_tr_handle), c_ushort,
-                                         STRING, c_ushort, c_ushort,
-                                         STRING, c_ushort, c_ushort, STRING]
-
-isc_dsql_exec_immed3_m = fb_library.isc_dsql_exec_immed3_m
-isc_dsql_exec_immed3_m.restype = ISC_STATUS
-isc_dsql_exec_immed3_m.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                   POINTER(isc_tr_handle), c_ushort, STRING,
-                                   c_ushort, c_ushort, STRING, c_ushort,
-                                   c_ushort, STRING, c_ushort, STRING,
-                                   c_ushort, c_ushort, STRING]
-
-isc_dsql_fetch_m = fb_library.isc_dsql_fetch_m
-isc_dsql_fetch_m.restype = ISC_STATUS
-isc_dsql_fetch_m.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
-                             c_ushort, STRING, c_ushort, c_ushort, STRING]
-
-isc_dsql_insert_m = fb_library.isc_dsql_insert_m
-isc_dsql_insert_m.restype = ISC_STATUS
-isc_dsql_insert_m.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
-                              c_ushort, STRING, c_ushort, c_ushort, STRING]
-
-isc_dsql_prepare_m = fb_library.isc_dsql_prepare_m
-isc_dsql_prepare_m.restype = ISC_STATUS
-isc_dsql_prepare_m.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                               POINTER(isc_stmt_handle), c_ushort, STRING,
-                               c_ushort, c_ushort, STRING, c_ushort, STRING]
-
-isc_dsql_release = fb_library.isc_dsql_release
-isc_dsql_release.restype = ISC_STATUS
-isc_dsql_release.argtypes = [POINTER(ISC_STATUS), STRING]
-
-isc_embed_dsql_close = fb_library.isc_embed_dsql_close
-isc_embed_dsql_close.restype = ISC_STATUS
-isc_embed_dsql_close.argtypes = [POINTER(ISC_STATUS), STRING]
-
-isc_embed_dsql_declare = fb_library.isc_embed_dsql_declare
-isc_embed_dsql_declare.restype = ISC_STATUS
-isc_embed_dsql_declare.argtypes = [POINTER(ISC_STATUS), STRING, STRING]
-
-isc_embed_dsql_describe = fb_library.isc_embed_dsql_describe
-isc_embed_dsql_describe.restype = ISC_STATUS
-isc_embed_dsql_describe.argtypes = [POINTER(ISC_STATUS), STRING, c_ushort,
-                                    POINTER(XSQLDA)]
-
-isc_embed_dsql_describe_bind = fb_library.isc_embed_dsql_describe_bind
-isc_embed_dsql_describe_bind.restype = ISC_STATUS
-isc_embed_dsql_describe_bind.argtypes = [POINTER(ISC_STATUS), STRING, c_ushort,
-                                         POINTER(XSQLDA)]
-
-isc_embed_dsql_execute = fb_library.isc_embed_dsql_execute
-isc_embed_dsql_execute.restype = ISC_STATUS
-isc_embed_dsql_execute.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                                   STRING, c_ushort, POINTER(XSQLDA)]
-
-isc_embed_dsql_execute2 = fb_library.isc_embed_dsql_execute2
-isc_embed_dsql_execute2.restype = ISC_STATUS
-isc_embed_dsql_execute2.argtypes = [POINTER(ISC_STATUS),
-                                    POINTER(isc_tr_handle),
-                                    STRING, c_ushort, POINTER(XSQLDA),
-                                    POINTER(XSQLDA)]
-
-isc_embed_dsql_execute_immed = fb_library.isc_embed_dsql_execute_immed
-isc_embed_dsql_execute_immed.restype = ISC_STATUS
-isc_embed_dsql_execute_immed.argtypes = [POINTER(ISC_STATUS),
-                                         POINTER(isc_db_handle),
-                                         POINTER(isc_tr_handle), c_ushort,
-                                         STRING, c_ushort, POINTER(XSQLDA)]
-
-isc_embed_dsql_fetch = fb_library.isc_embed_dsql_fetch
-isc_embed_dsql_fetch.restype = ISC_STATUS
-isc_embed_dsql_fetch.argtypes = [POINTER(ISC_STATUS), STRING, c_ushort,
-                                 POINTER(XSQLDA)]
-
-isc_embed_dsql_fetch_a = fb_library.isc_embed_dsql_fetch_a
-isc_embed_dsql_fetch_a.restype = ISC_STATUS
-isc_embed_dsql_fetch_a.argtypes = [POINTER(ISC_STATUS), POINTER(c_int),
-                                   STRING, ISC_USHORT, POINTER(XSQLDA)]
-
-isc_embed_dsql_open = fb_library.isc_embed_dsql_open
-isc_embed_dsql_open.restype = ISC_STATUS
-isc_embed_dsql_open.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                                STRING, c_ushort, POINTER(XSQLDA)]
-
-isc_embed_dsql_open2 = fb_library.isc_embed_dsql_open2
-isc_embed_dsql_open2.restype = ISC_STATUS
-isc_embed_dsql_open2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
-                                 STRING, c_ushort, POINTER(XSQLDA),
-                                 POINTER(XSQLDA)]
-
-isc_embed_dsql_insert = fb_library.isc_embed_dsql_insert
-isc_embed_dsql_insert.restype = ISC_STATUS
-isc_embed_dsql_insert.argtypes = [POINTER(ISC_STATUS), STRING, c_ushort,
-                                  POINTER(XSQLDA)]
-
-isc_embed_dsql_prepare = fb_library.isc_embed_dsql_prepare
-isc_embed_dsql_prepare.restype = ISC_STATUS
-isc_embed_dsql_prepare.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
-                                   POINTER(isc_tr_handle), STRING, c_ushort,
-                                   STRING, c_ushort, POINTER(XSQLDA)]
-
-isc_embed_dsql_release = fb_library.isc_embed_dsql_release
-isc_embed_dsql_release.restype = ISC_STATUS
-isc_embed_dsql_release.argtypes = [POINTER(ISC_STATUS), STRING]
-
-BLOB_open = fb_library.BLOB_open
-BLOB_open.restype = POINTER(BSTREAM)
-BLOB_open.argtypes = [isc_blob_handle, STRING, c_int]
-
-BLOB_put = fb_library.BLOB_put
-BLOB_put.restype = c_int
-BLOB_put.argtypes = [ISC_SCHAR, POINTER(BSTREAM)]
-
-BLOB_close = fb_library.BLOB_close
-BLOB_close.restype = c_int
-BLOB_close.argtypes = [POINTER(BSTREAM)]
-
-BLOB_get = fb_library.BLOB_get
-BLOB_get.restype = c_int
-BLOB_get.argtypes = [POINTER(BSTREAM)]
-
-BLOB_display = fb_library.BLOB_display
-BLOB_display.restype = c_int
-BLOB_display.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle,
-                         STRING]
-
-BLOB_dump = fb_library.BLOB_dump
-BLOB_dump.restype = c_int
-BLOB_dump.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle, STRING]
-
-BLOB_edit = fb_library.BLOB_edit
-BLOB_edit.restype = c_int
-BLOB_edit.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle, STRING]
-
-BLOB_load = fb_library.BLOB_load
-BLOB_load.restype = c_int
-BLOB_load.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle, STRING]
-
-BLOB_text_dump = fb_library.BLOB_text_dump
-BLOB_text_dump.restype = c_int
-BLOB_text_dump.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle,
-                           STRING]
-
-BLOB_text_load = fb_library.BLOB_text_load
-BLOB_text_load.restype = c_int
-BLOB_text_load.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle,
-                           STRING]
-
-Bopen = fb_library.Bopen
-Bopen.restype = POINTER(BSTREAM)
-Bopen.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle, STRING]
-
-isc_ftof = fb_library.isc_ftof
-isc_ftof.restype = ISC_LONG
-isc_ftof.argtypes = [STRING, c_ushort, STRING, c_ushort]
-
-isc_print_blr = fb_library.isc_print_blr
-isc_print_blr.restype = ISC_STATUS
-isc_print_blr.argtypes = [STRING, ISC_PRINT_CALLBACK, c_void_p, c_short]
-
-isc_set_debug = fb_library.isc_set_debug
-isc_set_debug.restype = None
-isc_set_debug.argtypes = [c_int]
-
-isc_qtoq = fb_library.isc_qtoq
-isc_qtoq.restype = None
-isc_qtoq.argtypes = [POINTER(ISC_QUAD), POINTER(ISC_QUAD)]
-
-isc_vtof = fb_library.isc_vtof
-isc_vtof.restype = None
-isc_vtof.argtypes = [STRING, STRING, c_ushort]
-
-isc_vtov = fb_library.isc_vtov
-isc_vtov.restype = None
-isc_vtov.argtypes = [STRING, STRING, c_short]
-
-isc_version = fb_library.isc_version
-isc_version.restype = c_int
-isc_version.argtypes = [POINTER(isc_db_handle), ISC_VERSION_CALLBACK, c_void_p]
-
-# deprecated
-#isc_reset_fpe = fb_library.isc_reset_fpe
-#isc_reset_fpe.restype = ISC_LONG
-#isc_reset_fpe.argtypes = [ISC_USHORT]
-
-isc_service_attach = fb_library.isc_service_attach
-isc_service_attach.restype = ISC_STATUS
-isc_service_attach.argtypes = [POINTER(ISC_STATUS), c_ushort, STRING,
-                               POINTER(isc_svc_handle), c_ushort, STRING]
-
-isc_service_detach = fb_library.isc_service_detach
-isc_service_detach.restype = ISC_STATUS
-isc_service_detach.argtypes = [POINTER(ISC_STATUS), POINTER(isc_svc_handle)]
-
-isc_service_query = fb_library.isc_service_query
-isc_service_query.restype = ISC_STATUS
-isc_service_query.argtypes = [POINTER(ISC_STATUS), POINTER(isc_svc_handle),
-                              POINTER(isc_resv_handle), c_ushort, STRING,
-                              c_ushort, STRING, c_ushort, STRING]
-
-isc_service_start = fb_library.isc_service_start
-isc_service_start.restype = ISC_STATUS
-isc_service_start.argtypes = [POINTER(ISC_STATUS), POINTER(isc_svc_handle),
-                              POINTER(isc_resv_handle), c_ushort, STRING]
-
-isc_get_client_version = fb_library.isc_get_client_version
-isc_get_client_version.restype = None
-isc_get_client_version.argtypes = [STRING]
-
-isc_get_client_major_version = fb_library.isc_get_client_major_version
-isc_get_client_major_version.restype = c_int
-isc_get_client_major_version.argtypes = []
-
-isc_get_client_minor_version = fb_library.isc_get_client_minor_version
-isc_get_client_minor_version.restype = c_int
-isc_get_client_minor_version.argtypes = []
+RESULT_VECTOR = ISC_ULONG * 15
 
 # values for enumeration 'db_info_types'
 db_info_types = c_int  # enum
@@ -1960,32 +1204,6 @@ imaxdiv_t._fields_ = [
     ('rem', c_long),
 ]
 intmax_t = c_long
-
-#imaxabs = fb_library.imaxabs
-#imaxabs.restype = intmax_t
-#imaxabs.argtypes = [intmax_t]
-
-#imaxdiv = fb_library.imaxdiv
-#imaxdiv.restype = imaxdiv_t
-#imaxdiv.argtypes = [intmax_t, intmax_t]
-
-#strtoimax = fb_library.strtoimax
-#strtoimax.restype = intmax_t
-#strtoimax.argtypes = [STRING, POINTER(STRING), c_int]
-
-uintmax_t = c_ulong
-
-#strtoumax = fb_library.strtoumax
-#strtoumax.restype = uintmax_t
-#strtoumax.argtypes = [STRING, POINTER(STRING), c_int]
-
-#wcstoimax = fb_library.wcstoimax
-#wcstoimax.restype = intmax_t
-#wcstoimax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
-
-#wcstoumax = fb_library.wcstoumax
-#wcstoumax.restype = uintmax_t
-#wcstoumax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
 
 int8_t = c_int8
 int16_t = c_int16
@@ -2013,191 +1231,1013 @@ uint_fast32_t = c_ulong
 uint_fast64_t = c_ulong
 ptrdiff_t = c_long
 size_t = c_ulong
+uintmax_t = c_ulong
 
-__all__ = ['isc_info_base_level', 'isc_start_and_send',
-           'int_fast32_t', 'BLOBCALLBACK', 'BLOB_dump',
-           'isc_info_db_impl_sco_ev', 'isc_info_purge_count',
-           'isc_create_database', 'isc_info_max_memory', 'uint8_t',
-           'isc_service_start', 'ISC_BLOB_CTL', 'isc_cancel_events',
-           'isc_info_db_class', 'isc_info_db_impl_sun_amd64',
-           'isc_info_db_impl_alpha_vms', 'isc_decode_timestamp',
-           'isc_info_db_impl_linux_sparc',
-           'isc_info_db_impl_alpha_osf', 'isc_info_creation_date',
-           'isc_prepare_transaction2', 'isc_info_db_impl_isc_imp',
-           'isc_info_db_impl_netware_386',
-           'isc_info_db_impl_linux_arm', 'uint_fast16_t',
-           'ISC_ARRAY_DESC', 'isc_decode_sql_time',
-           'isc_array_get_slice', 'isc_info_current_memory',
-           'isc_encode_sql_date', 'db_info_types',
-           'isc_info_num_buffers', 'isc_dsql_allocate_statement',
-           'isc_info_oldest_active', 'Bopen',
-           'isc_info_firebird_version', 'blb_got_full_segment',
-           'info_db_class', 'isc_info_wal_ckpt_length',
-           'isc_info_db_impl_isc_mac_aux', 'isc_info_wal_avg_io_size',
-           'isc_portable_integer', 'isc_open_blob',
-           'isc_print_sqlerror', 'isc_dsql_exec_immed3_m',
-           'uint_least32_t', 'ISC_BLOB_DESC',
-           'isc_info_db_impl_rdb_vms_y', 'ISC_UCHAR',
-           'blb_seek_relative', 'uint_fast8_t', 'PARAMDSC',
-           'ISC_USHORT', 'isc_embed_dsql_execute',
-           'isc_info_db_impl_isc_os2', 'isc_unwind_request',
-           'isc_attach_database', 'isc_info_db_impl_winnt_amd64',
-           'isc_info_db_code_rdb_vms', 'isc_info_db_read_only',
-           'isc_info_db_impl_freebsd_amd64', 'isc_qtoq',
-           'isc_info_db_impl_linux_ppc', 'isc_info_limbo',
-           'isc_decode_date', 'isc_info_db_impl_isc_sun_386i',
-           'isc_info_db_impl_last_value', 'isc_dsql_finish',
-           'isc_info_db_impl_netbsd', 'isc_transact_request',
-           'int_least64_t', 'isc_info_db_impl_isc_hp_ux',
-           'isc_info_db_class_access', 'isc_info_page_errors',
-           'BLOB_display', 'isc_info_db_impl_isc_cray',
-           'isc_info_bpage_errors', 'isc_print_blr',
-           'isc_dsql_release', 'isc_info_forced_writes',
-           'isc_embed_dsql_describe', 'isc_service_detach',
-           'isc_array_lookup_desc', 'isc_compile_request2',
-           'isc_info_db_impl_isc_vms', 'isc_info_db_impl_i386',
-           'isc_info_db_impl_m88K', 'blobcallback',
-           'isc_info_wal_prv_ckpt_fname', 'isc_ddl',
-           'isc_dsql_free_statement', 'isc_info_isc_version',
-           'isc_blob_gen_bpb', 'isc_free', 'blb_seek_from_tail',
-           'blb_got_eof', 'GDS_QUAD_t', 'isc_info_allocation',
-           'isc_info_db_impl_rdb_eln_y', 'BSTREAM',
-           'isc_info_db_impl_darwin_ppc', 'isc_dsql_prepare',
-           'isc_embed_dsql_open', 'BLOB_edit', 'ISC_TIMESTAMP',
-           'isc_blob_ctl', 'isc_event_block',
-           'isc_info_wal_recv_ckpt_poffset', 'isc_set_debug',
-           'BLOB_get', 'isc_dsql_execute', 'isc_request_info',
-           'isc_info_db_impl_darwin_x64', 'isc_dsql_describe_bind',
-           'isc_tr_handle', 'isc_info_db_class_rem_srvr',
-           'isc_cancel_blob', 'size_t', 'BLOB_load', 'isc_vtof',
-           'XSQLDA', 'isc_info_db_class_rem_int', 'uint_least16_t',
-           'isc_vtov', 'isc_get_client_version', 'ISC_EVENT_CALLBACK',
-           'ISC_INT64', 'isc_embed_dsql_release',
-           'isc_commit_transaction', 'isc_info_tpage_errors',
-           'isc_info_db_impl_linux_mipsel',
-           'isc_info_wal_grpc_wait_usecs', 'isc_print_status',
-           'GDS_QUAD', 'isc_array_set_desc', 'isc_array_put_slice',
-           'isc_info_sweep_interval', 'isc_array_lookup_bounds',
-           'info_db_implementations', 'isc_info_db_impl_jsv',
-           'isc_info_wal_avg_grpc_size', 'isc_blob_set_desc',
-           'isc_info_db_impl_win_only', 'isc_embed_dsql_open2',
-           'int_fast64_t', 'uint_fast32_t', 'FB_API_HANDLE',
-           'isc_blob_handle', 'uint_least8_t',
-           'isc_info_db_impl_isc_apl_68K', 'isc_detach_database',
-           'isc_info_cur_log_part_offset', 'isc_sqlcode',
-           'isc_dsql_alloc_statement2', 'isc_embed_dsql_prepare',
-           'isc_db_handle', 'isc_info_wal_buffer_size',
-           'isc_info_db_impl_isc_dos', 'isc_info_oldest_transaction',
-           'isc_att_handle', 'isc_info_db_class_cache', 'isc_declare',
-           'isc_info_db_class_pipe_srvr', 'isc_info_dpage_errors',
-           'fb_interpret', 'isc_info_db_impl_isc_vax_ultr',
-           'isc_dsql_execute2_m', 'ISC_DATE', 'isc_get_segment',
-           'isc_info_window_turns', 'isc_info_db_class_pipe_int',
-           'uint64_t', 'ISC_SHORT', 'ISC_STATUS_ARRAY',
-           'isc_info_db_impl_isc_delta', 'isc_create_blob',
-           'isc_describe', 'isc_close', 'isc_info_db_impl_ncr_3000',
-           'isc_info_user_names', 'isc_info_no_reserve',
-           'isc_info_db_id', 'ISC_TIME', 'isc_info_insert_count',
-           'isc_info_db_class_y_valve', 'isc_info_active_tran_count',
-           'ISC_UINT64', 'isc_info_reads', 'isc_release_request',
-           'isc_describe_bind', 'isc_info_db_class_last_value',
-           'isc_info_wal_recv_ckpt_fname', 'blob_get_result',
-           'isc_info_db_impl_isc_epson', 'isc_info_db_class_gateway',
-           'isc_info_db_impl_sinixz', 'isc_info_db_impl_darwin_x86',
-           'isc_delete_user', 'isc_dsql_execute2',
-           'isc_info_db_impl_jri', 'isc_info_ods_minor_version',
-           'isc_resv_handle', 'isc_wait_for_event',
-           'isc_info_db_impl_isc_hp_ux68K', 'intptr_t',
-           'isc_info_writes', 'int_fast8_t', 'isc_modify_dpb',
-           'isc_info_ppage_errors', 'isc_info_db_last_value',
-           'isc_get_client_minor_version', 'isc_embed_dsql_close',
-           'ISC_CALLBACK', 'bstream', 'isc_array_gen_sdl',
-           'isc_info_db_code_firebird',
-           'isc_req_handle', 'isc_info_db_class_sam_srvr',
-           'frb_info_att_charset', 'isc_info_attachment_id',
-           'paramvary', 'USER_SEC_DATA',
-           'isc_info_db_impl_linux_amd64', 'isc_commit_retaining',
-           'int16_t', 'ISC_LONG', 'isc_info_db_size_in_pages',
-           'isc_embed_dsql_execute_immed', 'isc_dsql_exec_immed2',
-           'isc_dsql_prepare_m', 'isc_seek_blob',
-           'isc_info_ods_version', 'isc_svc_handle',
-           'isc_info_db_impl_rdb_eln', 'isc_open',
-           'isc_sql_interprete', 'ISC_PRINT_CALLBACK',
-           'isc_info_wal_num_io', 'isc_info_db_impl_freebsd',
-           'isc_info_db_code_last_value', 'isc_info_set_page_buffers',
-           'isc_database_info', 'isc_encode_date', 'uint16_t',
-           'isc_encode_timestamp', 'blb_got_fragment',
-           'isc_start_request', 'int32_t',
-           'isc_info_db_impl_linux_ia64', 'isc_dsql_sql_info',
-           'isc_start_multiple', 
-           'isc_info_wal_num_commits', 'ISC_QUAD',
-           'isc_prepare_transaction', 'isc_info_wal_prv_ckpt_poffset',
-           'isc_info_fetches', 'isc_fetch', 'isc_que_events',
-           'isc_compile_request', 'isc_embed_dsql_fetch',
-           'isc_dsql_insert_m', 'isc_execute',
-           'isc_info_db_class_sam_int', 'isc_info_oldest_snapshot',
-           'isc_info_db_impl_isc_sgi', 'uintmax_t', 'XSQLVAR',
-           'isc_info_db_impl_unixware', 'isc_reconnect_transaction',
-           'int_fast16_t', 'isc_info_db_impl_rdb_eln_dev',
-           'isc_decode_sql_date', 'isc_embed_dsql_describe_bind',
-           'isc_stmt_handle', 'isc_embed_dsql_fetch_a',
-           'isc_info_db_impl_winnt_ppc', 'isc_info_marks',
-           'isc_info_license', 'isc_prepare', 'uint_fast64_t',
-           'isc_info_db_impl_dg_x86', 'uint32_t',
-           'isc_rollback_transaction', 'paramdsc', 'ISC_ULONG',
-           'isc_dsql_insert', 'isc_encode_sql_time',
-           'isc_dsql_fetch_m', 'isc_info_db_code_rdb_eln',
-           'isc_info_db_impl_isc_sun_68k', 'isc_blob_info',
-           'isc_service_query', 'isc_open_blob2', 'isc_expand_dpb',
-           'isc_info_db_provider', 'int_least32_t',
-           'isc_dsql_set_cursor_name',
-           'isc_info_db_impl_isc_winnt_x86',
-           'isc_dsql_execute_immediate', 'isc_vax_integer',
-           'ISC_SCHAR', 'isc_info_implementation',
-           'isc_info_db_class_server_access', 'isc_interprete',
-           'isc_info_wal_cur_ckpt_interval', 'isc_create_blob2',
-           'isc_transaction_info', 'isc_close_blob',
-           'isc_info_db_class_classic_access',
-           'isc_embed_dsql_declare', 'isc_info_db_code_interbase',
-           'isc_dsql_describe', 'isc_info_next_transaction',
-           'isc_info_read_idx_count', 'PARAMVARY',
-           'isc_info_backout_count', 'isc_start_transaction',
-           'isc_blob_lookup_desc', 'int_least16_t',
-           'isc_service_attach', 'isc_info_db_impl_isc_sco_unix',
-           'ISC_VERSION_CALLBACK', 'isc_put_slice', 'isc_get_slice',
-           'BLOB_put', 'isc_receive', 'ptrdiff_t', 'uint_least64_t',
-           'isc_rollback_retaining', 'isc_info_expunge_count',
-           'isc_info_record_errors', 'isc_info_db_impl_isc_hp_mpexl',
-           'isc_info_db_impl_isc_sun4', 'isc_embed_dsql_execute2',
-           'isc_info_db_impl_isc_dg', 'isc_dsql_execute_m',
-           'isc_execute_immediate', 'isc_info_read_seq_count',
-           'isc_info_ipage_errors', 'isc_dsql_execute_immediate_m',
-           'isc_event_counts', 'isc_info_db_impl_linux_mips',
-           'uintptr_t', 'isc_info_num_wal_buffers', 'int8_t',
-           'blob_lseek_mode', 'isc_embed_dsql_insert',
-           'BLOB_text_load', 'info_db_provider', 
-           'isc_version', 'isc_info_cur_logfile_name',
-           'isc_info_delete_count', 'isc_info_db_sql_dialect',
-           'isc_info_logfile', 'isc_add_user',
-           'isc_blob_default_desc', 'isc_info_active_transactions',
-           'isc_info_db_impl_isc_next', 'isc_drop_database',
-           'isc_ftof', 'int64_t', 'BLOB_text_dump',
-           'isc_info_page_size', 'isc_send', 'isc_put_segment',
-           'BLOB_open', 'imaxdiv_t', 'isc_info_db_impl_isc_vms_orcl',
-           'isc_info_db_file_size', 'isc_info_db_impl_isc_xenix',
-           'ISC_ARRAY_BOUND', 'isc_info_db_impl_rdb_vms',
-           'ISC_STATUS', 'isc_info_db_impl_isc_mips_ult',
-           'BLOB_close', 'intmax_t', 'isc_modify_user',
-           'isc_info_db_impl_isc_rt_aix',
-           'isc_get_client_major_version', 'isc_dsql_fetch',
-           'isc_info_update_count', 'int_least8_t',
+
+
+
+
+class fbclient_API(object):
+    def __init__(self):
+    
+        self.isc_attach_database = fb_library.isc_attach_database
+        self.isc_attach_database.restype = ISC_STATUS
+        self.isc_attach_database.argtypes = [POINTER(ISC_STATUS), c_short, STRING,
+                                             POINTER(isc_db_handle), c_short, STRING]
+        
+        self.isc_array_gen_sdl = fb_library.isc_array_gen_sdl
+        self.isc_array_gen_sdl.restype = ISC_STATUS
+        self.isc_array_gen_sdl.argtypes = [POINTER(ISC_STATUS), POINTER(ISC_ARRAY_DESC),
+                                           POINTER(ISC_SHORT), POINTER(ISC_UCHAR),
+                                           POINTER(ISC_SHORT)]
+        
+        self.isc_array_get_slice = fb_library.isc_array_get_slice
+        self.isc_array_get_slice.restype = ISC_STATUS
+        self.isc_array_get_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                             POINTER(isc_tr_handle), POINTER(ISC_QUAD),
+                                             POINTER(ISC_ARRAY_DESC), c_void_p,
+                                             POINTER(ISC_LONG)]
+
+        self.isc_array_lookup_bounds = fb_library.isc_array_lookup_bounds
+        self.isc_array_lookup_bounds.restype = ISC_STATUS
+        self.isc_array_lookup_bounds.argtypes = [POINTER(ISC_STATUS),
+                                                 POINTER(isc_db_handle),
+                                                 POINTER(isc_tr_handle), STRING, STRING,
+                                                 POINTER(ISC_ARRAY_DESC)]
+        
+        self.isc_array_lookup_desc = fb_library.isc_array_lookup_desc
+        self.isc_array_lookup_desc.restype = ISC_STATUS
+        self.isc_array_lookup_desc.argtypes = [POINTER(ISC_STATUS), 
+                                               POINTER(isc_db_handle),
+                                               POINTER(isc_tr_handle), STRING, STRING,
+                                               POINTER(ISC_ARRAY_DESC)]
+        
+        self.isc_array_set_desc = fb_library.isc_array_set_desc
+        self.isc_array_set_desc.restype = ISC_STATUS
+        self.isc_array_set_desc.argtypes = [POINTER(ISC_STATUS), STRING, STRING,
+                                            POINTER(c_short), POINTER(c_short),
+                                            POINTER(c_short), POINTER(ISC_ARRAY_DESC)]
+
+        self.isc_array_put_slice = fb_library.isc_array_put_slice
+        self.isc_array_put_slice.restype = ISC_STATUS
+        self.isc_array_put_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                             POINTER(isc_tr_handle), POINTER(ISC_QUAD),
+                                             POINTER(ISC_ARRAY_DESC), c_void_p,
+                                             POINTER(ISC_LONG)]
+        
+        self.isc_blob_default_desc = fb_library.isc_blob_default_desc
+        self.isc_blob_default_desc.restype = None
+        self.isc_blob_default_desc.argtypes = [POINTER(ISC_BLOB_DESC), POINTER(ISC_UCHAR),
+                                               POINTER(ISC_UCHAR)]
+        
+        self.isc_blob_gen_bpb = fb_library.isc_blob_gen_bpb
+        self.isc_blob_gen_bpb.restype = ISC_STATUS
+        self.isc_blob_gen_bpb.argtypes = [POINTER(ISC_STATUS), POINTER(ISC_BLOB_DESC),
+                                          POINTER(ISC_BLOB_DESC), c_ushort,
+                                          POINTER(ISC_UCHAR), POINTER(c_ushort)]
+
+        self.isc_blob_info = fb_library.isc_blob_info
+        self.isc_blob_info.restype = ISC_STATUS
+        self.isc_blob_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
+                                       c_short, STRING, c_short, POINTER(c_char)]
+        
+        self.isc_blob_lookup_desc = fb_library.isc_blob_lookup_desc
+        self.isc_blob_lookup_desc.restype = ISC_STATUS
+        self.isc_blob_lookup_desc.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                              POINTER(isc_tr_handle), POINTER(ISC_UCHAR),
+                                              POINTER(ISC_UCHAR), POINTER(ISC_BLOB_DESC),
+                                              POINTER(ISC_UCHAR)]
+        
+        self.isc_blob_set_desc = fb_library.isc_blob_set_desc
+        self.isc_blob_set_desc.restype = ISC_STATUS
+        self.isc_blob_set_desc.argtypes = [POINTER(ISC_STATUS), POINTER(ISC_UCHAR),
+                                           POINTER(ISC_UCHAR), c_short, c_short, c_short,
+                                           POINTER(ISC_BLOB_DESC)]
+
+        self.isc_cancel_blob = fb_library.isc_cancel_blob
+        self.isc_cancel_blob.restype = ISC_STATUS
+        self.isc_cancel_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle)]
+        
+        self.isc_cancel_events = fb_library.isc_cancel_events
+        self.isc_cancel_events.restype = ISC_STATUS
+        self.isc_cancel_events.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                           POINTER(ISC_LONG)]
+        
+        self.isc_close_blob = fb_library.isc_close_blob
+        self.isc_close_blob.restype = ISC_STATUS
+        self.isc_close_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle)]
+        
+        self.isc_commit_retaining = fb_library.isc_commit_retaining
+        self.isc_commit_retaining.restype = ISC_STATUS
+        self.isc_commit_retaining.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle)]
+        
+        self.isc_commit_transaction = fb_library.isc_commit_transaction
+        self.isc_commit_transaction.restype = ISC_STATUS
+        self.isc_commit_transaction.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle)]
+        
+        self.isc_create_blob = fb_library.isc_create_blob
+        self.isc_create_blob.restype = ISC_STATUS
+        self.isc_create_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                         POINTER(isc_tr_handle), POINTER(isc_blob_handle),
+                                         POINTER(ISC_QUAD)]
+
+        self.isc_create_blob2 = fb_library.isc_create_blob2
+        self.isc_create_blob2.restype = ISC_STATUS
+        self.isc_create_blob2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                          POINTER(isc_tr_handle), POINTER(isc_blob_handle),
+                                          POINTER(ISC_QUAD), c_short, STRING]
+        
+        self.isc_create_database = fb_library.isc_create_database
+        self.isc_create_database.restype = ISC_STATUS
+        self.isc_create_database.argtypes = [POINTER(ISC_STATUS), c_short, STRING,
+                                             POINTER(isc_db_handle), c_short, STRING,
+                                             c_short]
+        
+        self.isc_database_info = fb_library.isc_database_info
+        self.isc_database_info.restype = ISC_STATUS
+        self.isc_database_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                           c_short, STRING, c_short, STRING]
+        
+        self.isc_decode_date = fb_library.isc_decode_date
+        self.isc_decode_date.restype = None
+        self.isc_decode_date.argtypes = [POINTER(ISC_QUAD), c_void_p]
+
+        self.isc_decode_sql_date = fb_library.isc_decode_sql_date
+        self.isc_decode_sql_date.restype = None
+        self.isc_decode_sql_date.argtypes = [POINTER(ISC_DATE), c_void_p]
+        
+        self.isc_decode_sql_time = fb_library.isc_decode_sql_time
+        self.isc_decode_sql_time.restype = None
+        self.isc_decode_sql_time.argtypes = [POINTER(ISC_TIME), c_void_p]
+        
+        self.isc_decode_timestamp = fb_library.isc_decode_timestamp
+        self.isc_decode_timestamp.restype = None
+        self.isc_decode_timestamp.argtypes = [POINTER(ISC_TIMESTAMP), c_void_p]
+        
+        self.isc_detach_database = fb_library.isc_detach_database
+        self.isc_detach_database.restype = ISC_STATUS
+        self.isc_detach_database.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle)]
+        
+        self.isc_drop_database = fb_library.isc_drop_database
+        self.isc_drop_database.restype = ISC_STATUS
+        self.isc_drop_database.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle)]
+        
+        self.isc_dsql_allocate_statement = fb_library.isc_dsql_allocate_statement
+        self.isc_dsql_allocate_statement.restype = ISC_STATUS
+        self.isc_dsql_allocate_statement.argtypes = [POINTER(ISC_STATUS),
+                                                     POINTER(isc_db_handle),
+                                                     POINTER(isc_stmt_handle)]
+
+        self.isc_dsql_alloc_statement2 = fb_library.isc_dsql_alloc_statement2
+        self.isc_dsql_alloc_statement2.restype = ISC_STATUS
+        self.isc_dsql_alloc_statement2.argtypes = [POINTER(ISC_STATUS),
+                                                   POINTER(isc_db_handle),
+                                                   POINTER(isc_stmt_handle)]
+        
+        self.isc_dsql_describe = fb_library.isc_dsql_describe
+        self.isc_dsql_describe.restype = ISC_STATUS
+        self.isc_dsql_describe.argtypes = [POINTER(ISC_STATUS), 
+                                           POINTER(isc_stmt_handle),
+                                           c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_dsql_describe_bind = fb_library.isc_dsql_describe_bind
+        self.isc_dsql_describe_bind.restype = ISC_STATUS
+        self.isc_dsql_describe_bind.argtypes = [POINTER(ISC_STATUS),
+                                                POINTER(isc_stmt_handle),
+                                                c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_dsql_exec_immed2 = fb_library.isc_dsql_exec_immed2
+        self.isc_dsql_exec_immed2.restype = ISC_STATUS
+        self.isc_dsql_exec_immed2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                              POINTER(isc_tr_handle), c_ushort, STRING,
+                                              c_ushort, POINTER(XSQLDA), POINTER(XSQLDA)]
+        
+        self.isc_dsql_execute = fb_library.isc_dsql_execute
+        self.isc_dsql_execute.restype = ISC_STATUS
+        self.isc_dsql_execute.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                          POINTER(isc_stmt_handle), c_ushort,
+                                          POINTER(XSQLDA)]
+
+        self.isc_dsql_execute2 = fb_library.isc_dsql_execute2
+        self.isc_dsql_execute2.restype = ISC_STATUS
+        self.isc_dsql_execute2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                           POINTER(isc_stmt_handle), c_ushort,
+                                           POINTER(XSQLDA), POINTER(XSQLDA)]
+        
+        self.isc_dsql_execute_immediate = fb_library.isc_dsql_execute_immediate
+        self.isc_dsql_execute_immediate.restype = ISC_STATUS
+        self.isc_dsql_execute_immediate.argtypes = [POINTER(ISC_STATUS),
+                                                    POINTER(isc_db_handle),
+                                                    POINTER(isc_tr_handle),
+                                                    c_ushort, STRING, c_ushort,
+                                                    POINTER(XSQLDA)]
+        
+        self.isc_dsql_fetch = fb_library.isc_dsql_fetch
+        self.isc_dsql_fetch.restype = ISC_STATUS
+        self.isc_dsql_fetch.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
+                                        c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_dsql_finish = fb_library.isc_dsql_finish
+        self.isc_dsql_finish.restype = ISC_STATUS
+        self.isc_dsql_finish.argtypes = [POINTER(isc_db_handle)]
+        
+        self.isc_dsql_free_statement = fb_library.isc_dsql_free_statement
+        self.isc_dsql_free_statement.restype = ISC_STATUS
+        self.isc_dsql_free_statement.argtypes = [POINTER(ISC_STATUS),
+                                                 POINTER(isc_stmt_handle), c_ushort]
+
+        self.isc_dsql_insert = fb_library.isc_dsql_insert
+        self.isc_dsql_insert.restype = ISC_STATUS
+        self.isc_dsql_insert.argtypes = [POINTER(ISC_STATUS), POINTER(isc_stmt_handle),
+                                         c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_dsql_prepare = fb_library.isc_dsql_prepare
+        self.isc_dsql_prepare.restype = ISC_STATUS
+        self.isc_dsql_prepare.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                          POINTER(isc_stmt_handle), c_ushort, STRING,
+                                          c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_dsql_set_cursor_name = fb_library.isc_dsql_set_cursor_name
+        self.isc_dsql_set_cursor_name.restype = ISC_STATUS
+        self.isc_dsql_set_cursor_name.argtypes = [POINTER(ISC_STATUS),
+                                                  POINTER(isc_stmt_handle), STRING,
+                                                  c_ushort]
+        
+        self.isc_dsql_sql_info = fb_library.isc_dsql_sql_info
+        self.isc_dsql_sql_info.restype = ISC_STATUS
+        self.isc_dsql_sql_info.argtypes = [POINTER(ISC_STATUS), 
+                                           POINTER(isc_stmt_handle),
+                                           c_short, STRING, c_short, STRING]
+        
+        self.isc_encode_date = fb_library.isc_encode_date
+        self.isc_encode_date.restype = None
+        self.isc_encode_date.argtypes = [c_void_p, POINTER(ISC_QUAD)]
+
+        self.isc_encode_sql_date = fb_library.isc_encode_sql_date
+        self.isc_encode_sql_date.restype = None
+        self.isc_encode_sql_date.argtypes = [c_void_p, POINTER(ISC_DATE)]
+        
+        self.isc_encode_sql_time = fb_library.isc_encode_sql_time
+        self.isc_encode_sql_time.restype = None
+        self.isc_encode_sql_time.argtypes = [c_void_p, POINTER(ISC_TIME)]
+        
+        self.isc_encode_timestamp = fb_library.isc_encode_timestamp
+        self.isc_encode_timestamp.restype = None
+        self.isc_encode_timestamp.argtypes = [c_void_p, POINTER(ISC_TIMESTAMP)]
+        
+        self.isc_event_counts = fb_library.isc_event_counts
+        self.isc_event_counts.restype = None
+        self.isc_event_counts.argtypes = [POINTER(RESULT_VECTOR), c_short, POINTER(ISC_UCHAR),
+                                     POINTER(ISC_UCHAR)]
+        
+        self.isc_expand_dpb = fb_library.isc_expand_dpb
+        self.isc_expand_dpb.restype = None
+        self.isc_expand_dpb.argtypes = [POINTER(STRING), POINTER(c_short)]
+
+        self.isc_modify_dpb = fb_library.isc_modify_dpb
+        self.isc_modify_dpb.restype = c_int
+        self.isc_modify_dpb.argtypes = [POINTER(STRING), POINTER(c_short), c_ushort,
+                                        STRING, c_short]
+        
+        self.isc_free = fb_library.isc_free
+        self.isc_free.restype = ISC_LONG
+        self.isc_free.argtypes = [STRING]
+        
+        self.isc_get_segment = fb_library.isc_get_segment
+        self.isc_get_segment.restype = ISC_STATUS
+        self.isc_get_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
+                                         POINTER(c_ushort), c_ushort, c_void_p]
+        #self.isc_get_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
+        #                            POINTER(c_ushort), c_ushort, POINTER(c_char)]
+        
+        self.isc_get_slice = fb_library.isc_get_slice
+        self.isc_get_slice.restype = ISC_STATUS
+        self.isc_get_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                       POINTER(isc_tr_handle), POINTER(ISC_QUAD), 
+                                       c_short,
+                                       STRING, c_short, POINTER(ISC_LONG), ISC_LONG,
+                                       c_void_p, POINTER(ISC_LONG)]
+        
+        self.isc_interprete = fb_library.isc_interprete
+        self.isc_interprete.restype = ISC_LONG
+        self.isc_interprete.argtypes = [STRING, POINTER(POINTER(ISC_STATUS))]
+
+        self.fb_interpret = fb_library.fb_interpret
+        self.fb_interpret.restype = ISC_LONG
+        self.fb_interpret.argtypes = [STRING, c_uint, POINTER(POINTER(ISC_STATUS))]
+        
+        self.isc_open_blob = fb_library.isc_open_blob
+        self.isc_open_blob.restype = ISC_STATUS
+        self.isc_open_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                       POINTER(isc_tr_handle), POINTER(isc_blob_handle),
+                                       POINTER(ISC_QUAD)]
+        
+        self.isc_open_blob2 = fb_library.isc_open_blob2
+        self.isc_open_blob2.restype = ISC_STATUS
+        self.isc_open_blob2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                        POINTER(isc_tr_handle), POINTER(isc_blob_handle),
+                                        POINTER(ISC_QUAD), ISC_USHORT, STRING] # POINTER(ISC_UCHAR)
+        
+        self.isc_prepare_transaction2 = fb_library.isc_prepare_transaction2
+        self.isc_prepare_transaction2.restype = ISC_STATUS
+        self.isc_prepare_transaction2.argtypes = [POINTER(ISC_STATUS),
+                                                  POINTER(isc_tr_handle), ISC_USHORT,
+                                                  POINTER(ISC_UCHAR)]
+        
+        self.isc_print_sqlerror = fb_library.isc_print_sqlerror
+        self.isc_print_sqlerror.restype = None
+        self.isc_print_sqlerror.argtypes = [ISC_SHORT, POINTER(ISC_STATUS)]
+
+        self.isc_print_status = fb_library.isc_print_status
+        self.isc_print_status.restype = ISC_STATUS
+        self.isc_print_status.argtypes = [POINTER(ISC_STATUS)]
+        
+        self.isc_put_segment = fb_library.isc_put_segment
+        self.isc_put_segment.restype = ISC_STATUS
+        self.isc_put_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
+                                         c_ushort, c_void_p]
+        #self.isc_put_segment.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
+        #                            c_ushort, STRING]
+        
+        self.isc_put_slice = fb_library.isc_put_slice
+        self.isc_put_slice.restype = ISC_STATUS
+        self.isc_put_slice.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                       POINTER(isc_tr_handle), POINTER(ISC_QUAD), 
+                                       c_short,
+                                       STRING, c_short, POINTER(ISC_LONG), ISC_LONG,
+                                       c_void_p]
+        
+        self.isc_que_events = fb_library.isc_que_events
+        self.isc_que_events.restype = ISC_STATUS
+        self.isc_que_events.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                        POINTER(ISC_LONG), c_short, POINTER(ISC_UCHAR),
+                                        ISC_EVENT_CALLBACK, POINTER(ISC_UCHAR)]
+
+        self.isc_rollback_retaining = fb_library.isc_rollback_retaining
+        self.isc_rollback_retaining.restype = ISC_STATUS
+        self.isc_rollback_retaining.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle)]
+        
+        self.isc_rollback_transaction = fb_library.isc_rollback_transaction
+        self.isc_rollback_transaction.restype = ISC_STATUS
+        self.isc_rollback_transaction.argtypes = [POINTER(ISC_STATUS),
+                                                  POINTER(isc_tr_handle)]
+        
+        self.isc_start_multiple = fb_library.isc_start_multiple
+        self.isc_start_multiple.restype = ISC_STATUS
+        self.isc_start_multiple.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                            c_short, c_void_p]
+
+        if sys.platform in ['win32', 'cygwin', 'os2', 'os2emx']:
+            P_isc_start_transaction = CFUNCTYPE(ISC_STATUS, POINTER(ISC_STATUS),
+                                                POINTER(isc_tr_handle), c_short,
+                                                POINTER(isc_db_handle), c_short,
+                                                STRING)
+            self.isc_start_transaction = P_isc_start_transaction(('isc_start_transaction',
+                                                             fb_library))
+        else:
+            self.isc_start_transaction = fb_library.isc_start_transaction
+            self.isc_start_transaction.restype = ISC_STATUS
+            self.isc_start_transaction.argtypes = [POINTER(ISC_STATUS),
+                                                   POINTER(isc_tr_handle), c_short,
+                                                   POINTER(isc_db_handle), c_short, STRING]
+
+        self.isc_sqlcode = fb_library.isc_sqlcode
+        self.isc_sqlcode.restype = ISC_LONG
+        self.isc_sqlcode.argtypes = [POINTER(ISC_STATUS)]
+        
+        self.isc_sql_interprete = fb_library.isc_sql_interprete
+        self.isc_sql_interprete.restype = None
+        self.isc_sql_interprete.argtypes = [c_short, STRING, c_short]
+        
+        self.isc_transaction_info = fb_library.isc_transaction_info
+        self.isc_transaction_info.restype = ISC_STATUS
+        self.isc_transaction_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                              c_short, STRING, c_short, STRING]
+        
+        self.isc_transact_request = fb_library.isc_transact_request
+        self.isc_transact_request.restype = ISC_STATUS
+        self.isc_transact_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                              POINTER(isc_tr_handle), c_ushort, STRING,
+                                              c_ushort, STRING, c_ushort, STRING]
+        
+        self.isc_vax_integer = fb_library.isc_vax_integer
+        self.isc_vax_integer.restype = ISC_LONG
+        self.isc_vax_integer.argtypes = [STRING, c_short]
+        
+        self.isc_portable_integer = fb_library.isc_portable_integer
+        self.isc_portable_integer.restype = ISC_INT64
+        self.isc_portable_integer.argtypes = [POINTER(ISC_UCHAR), c_short]
+
+        self.isc_add_user = fb_library.isc_add_user
+        self.isc_add_user.restype = ISC_STATUS
+        self.isc_add_user.argtypes = [POINTER(ISC_STATUS), POINTER(USER_SEC_DATA)]
+        
+        self.isc_delete_user = fb_library.isc_delete_user
+        self.isc_delete_user.restype = ISC_STATUS
+        self.isc_delete_user.argtypes = [POINTER(ISC_STATUS), POINTER(USER_SEC_DATA)]
+        
+        self.isc_modify_user = fb_library.isc_modify_user
+        self.isc_modify_user.restype = ISC_STATUS
+        self.isc_modify_user.argtypes = [POINTER(ISC_STATUS), POINTER(USER_SEC_DATA)]
+        
+        self.isc_compile_request = fb_library.isc_compile_request
+        self.isc_compile_request.restype = ISC_STATUS
+        self.isc_compile_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                             POINTER(isc_req_handle), c_short, STRING]
+        
+        self.isc_compile_request2 = fb_library.isc_compile_request2
+        self.isc_compile_request2.restype = ISC_STATUS
+        self.isc_compile_request2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                              POINTER(isc_req_handle), c_short, STRING]
+        
+        self.isc_ddl = fb_library.isc_ddl
+        self.isc_ddl.restype = ISC_STATUS
+        self.isc_ddl.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                 POINTER(isc_tr_handle), c_short, STRING]
+
+        self.isc_prepare_transaction = fb_library.isc_prepare_transaction
+        self.isc_prepare_transaction.restype = ISC_STATUS
+        self.isc_prepare_transaction.argtypes = [POINTER(ISC_STATUS),
+                                                 POINTER(isc_tr_handle)]
+        
+        self.isc_receive = fb_library.isc_receive
+        self.isc_receive.restype = ISC_STATUS
+        self.isc_receive.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
+                                     c_short, c_short, c_void_p, c_short]
+        
+        self.isc_reconnect_transaction = fb_library.isc_reconnect_transaction
+        self.isc_reconnect_transaction.restype = ISC_STATUS
+        self.isc_reconnect_transaction.argtypes = [POINTER(ISC_STATUS),
+                                                   POINTER(isc_db_handle),
+                                                   POINTER(isc_tr_handle), c_short, STRING]
+        
+        self.isc_release_request = fb_library.isc_release_request
+        self.isc_release_request.restype = ISC_STATUS
+        self.isc_release_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle)]
+        
+        self.isc_request_info = fb_library.isc_request_info
+        self.isc_request_info.restype = ISC_STATUS
+        self.isc_request_info.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
+                                          c_short, c_short, STRING, c_short, STRING]
+        
+        self.isc_seek_blob = fb_library.isc_seek_blob
+        self.isc_seek_blob.restype = ISC_STATUS
+        self.isc_seek_blob.argtypes = [POINTER(ISC_STATUS), POINTER(isc_blob_handle),
+                                       c_short, ISC_LONG, POINTER(ISC_LONG)]
+
+        self.isc_send = fb_library.isc_send
+        self.isc_send.restype = ISC_STATUS
+        self.isc_send.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle), 
+                                  c_short, c_short, c_void_p, c_short]
+        
+        self.isc_start_and_send = fb_library.isc_start_and_send
+        self.isc_start_and_send.restype = ISC_STATUS
+        self.isc_start_and_send.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
+                                            POINTER(isc_tr_handle), c_short, c_short,
+                                            c_void_p, c_short]
+        
+        self.isc_start_request = fb_library.isc_start_request
+        self.isc_start_request.restype = ISC_STATUS
+        self.isc_start_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_req_handle),
+                                           POINTER(isc_tr_handle), c_short]
+        
+        self.isc_unwind_request = fb_library.isc_unwind_request
+        self.isc_unwind_request.restype = ISC_STATUS
+        self.isc_unwind_request.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                            c_short]
+        
+        self.isc_wait_for_event = fb_library.isc_wait_for_event
+        self.isc_wait_for_event.restype = ISC_STATUS
+        self.isc_wait_for_event.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                            c_short, POINTER(ISC_UCHAR), POINTER(ISC_UCHAR)]
+        
+        self.isc_close = fb_library.isc_close
+        self.isc_close.restype = ISC_STATUS
+        self.isc_close.argtypes = [POINTER(ISC_STATUS), STRING]
+        
+        self.isc_declare = fb_library.isc_declare
+        self.isc_declare.restype = ISC_STATUS
+        self.isc_declare.argtypes = [POINTER(ISC_STATUS), STRING, STRING]
+
+        self.isc_describe = fb_library.isc_describe
+        self.isc_describe.restype = ISC_STATUS
+        self.isc_describe.argtypes = [POINTER(ISC_STATUS), STRING, POINTER(XSQLDA)]
+        
+        self.isc_describe_bind = fb_library.isc_describe_bind
+        self.isc_describe_bind.restype = ISC_STATUS
+        self.isc_describe_bind.argtypes = [POINTER(ISC_STATUS), STRING, POINTER(XSQLDA)]
+        
+        self.isc_execute = fb_library.isc_execute
+        self.isc_execute.restype = ISC_STATUS
+        self.isc_execute.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                     STRING, POINTER(XSQLDA)]
+        
+        self.isc_execute_immediate = fb_library.isc_execute_immediate
+        self.isc_execute_immediate.restype = ISC_STATUS
+        self.isc_execute_immediate.argtypes = [POINTER(ISC_STATUS), 
+                                               POINTER(isc_db_handle),
+                                               POINTER(isc_tr_handle), 
+                                               POINTER(c_short), STRING]
+        
+        self.isc_fetch = fb_library.isc_fetch
+        self.isc_fetch.restype = ISC_STATUS
+        self.isc_fetch.argtypes = [POINTER(ISC_STATUS), STRING, POINTER(XSQLDA)]
+        
+        self.isc_open = fb_library.isc_open
+        self.isc_open.restype = ISC_STATUS
+        self.isc_open.argtypes = [POINTER(ISC_STATUS), POINTER(isc_tr_handle),
+                                  STRING, POINTER(XSQLDA)]
+
+        self.isc_prepare = fb_library.isc_prepare
+        self.isc_prepare.restype = ISC_STATUS
+        self.isc_prepare.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
+                                     POINTER(isc_tr_handle), STRING, POINTER(c_short),
+                                     STRING, POINTER(XSQLDA)]
+        
+        self.isc_dsql_execute_m = fb_library.isc_dsql_execute_m
+        self.isc_dsql_execute_m.restype = ISC_STATUS
+        self.isc_dsql_execute_m.argtypes = [POINTER(ISC_STATUS), 
+                                            POINTER(isc_tr_handle),
+                                            POINTER(isc_stmt_handle), c_ushort, 
+                                            STRING, c_ushort, c_ushort, STRING]
+        
+        self.isc_dsql_execute2_m = fb_library.isc_dsql_execute2_m
+        self.isc_dsql_execute2_m.restype = ISC_STATUS
+        self.isc_dsql_execute2_m.argtypes = [POINTER(ISC_STATUS), 
+                                             POINTER(isc_tr_handle),
+                                             POINTER(isc_stmt_handle), c_ushort, 
+                                             STRING, c_ushort, c_ushort, STRING, 
+                                             c_ushort, STRING, c_ushort, c_ushort, 
+                                             STRING]
+        
+        self.isc_dsql_execute_immediate_m = fb_library.isc_dsql_execute_immediate_m
+        self.isc_dsql_execute_immediate_m.restype = ISC_STATUS
+        self.isc_dsql_execute_immediate_m.argtypes = [POINTER(ISC_STATUS),
+                                                      POINTER(isc_db_handle),
+                                                      POINTER(isc_tr_handle), 
+                                                      c_ushort, STRING, c_ushort, 
+                                                      c_ushort, STRING, c_ushort, 
+                                                      c_ushort, STRING]
+
+        self.isc_dsql_exec_immed3_m = fb_library.isc_dsql_exec_immed3_m
+        self.isc_dsql_exec_immed3_m.restype = ISC_STATUS
+        self.isc_dsql_exec_immed3_m.argtypes = [POINTER(ISC_STATUS), 
+                                                POINTER(isc_db_handle),
+                                                POINTER(isc_tr_handle), c_ushort, 
+                                                STRING, c_ushort, c_ushort, 
+                                                STRING, c_ushort, c_ushort, 
+                                                STRING, c_ushort, STRING,
+                                                c_ushort, c_ushort, STRING]
+        
+        self.isc_dsql_fetch_m = fb_library.isc_dsql_fetch_m
+        self.isc_dsql_fetch_m.restype = ISC_STATUS
+        self.isc_dsql_fetch_m.argtypes = [POINTER(ISC_STATUS), 
+                                          POINTER(isc_stmt_handle), c_ushort, 
+                                          STRING, c_ushort, c_ushort, STRING]
+        
+        self.isc_dsql_insert_m = fb_library.isc_dsql_insert_m
+        self.isc_dsql_insert_m.restype = ISC_STATUS
+        self.isc_dsql_insert_m.argtypes = [POINTER(ISC_STATUS), 
+                                           POINTER(isc_stmt_handle), c_ushort, 
+                                           STRING, c_ushort, c_ushort, STRING]
+        
+        self.isc_dsql_prepare_m = fb_library.isc_dsql_prepare_m
+        self.isc_dsql_prepare_m.restype = ISC_STATUS
+        self.isc_dsql_prepare_m.argtypes = [POINTER(ISC_STATUS), 
+                                            POINTER(isc_tr_handle),
+                                            POINTER(isc_stmt_handle), c_ushort, 
+                                            STRING, c_ushort, c_ushort, STRING, 
+                                            c_ushort, STRING]
+        
+        self.isc_dsql_release = fb_library.isc_dsql_release
+        self.isc_dsql_release.restype = ISC_STATUS
+        self.isc_dsql_release.argtypes = [POINTER(ISC_STATUS), STRING]
+
+        self.isc_embed_dsql_close = fb_library.isc_embed_dsql_close
+        self.isc_embed_dsql_close.restype = ISC_STATUS
+        self.isc_embed_dsql_close.argtypes = [POINTER(ISC_STATUS), STRING]
+        
+        self.isc_embed_dsql_declare = fb_library.isc_embed_dsql_declare
+        self.isc_embed_dsql_declare.restype = ISC_STATUS
+        self.isc_embed_dsql_declare.argtypes = [POINTER(ISC_STATUS), STRING, STRING]
+        
+        self.isc_embed_dsql_describe = fb_library.isc_embed_dsql_describe
+        self.isc_embed_dsql_describe.restype = ISC_STATUS
+        self.isc_embed_dsql_describe.argtypes = [POINTER(ISC_STATUS), STRING, 
+                                                 c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_describe_bind = fb_library.isc_embed_dsql_describe_bind
+        self.isc_embed_dsql_describe_bind.restype = ISC_STATUS
+        self.isc_embed_dsql_describe_bind.argtypes = [POINTER(ISC_STATUS), STRING, 
+                                                      c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_execute = fb_library.isc_embed_dsql_execute
+        self.isc_embed_dsql_execute.restype = ISC_STATUS
+        self.isc_embed_dsql_execute.argtypes = [POINTER(ISC_STATUS), 
+                                                POINTER(isc_tr_handle),
+                                                STRING, c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_execute2 = fb_library.isc_embed_dsql_execute2
+        self.isc_embed_dsql_execute2.restype = ISC_STATUS
+        self.isc_embed_dsql_execute2.argtypes = [POINTER(ISC_STATUS),
+                                                 POINTER(isc_tr_handle),
+                                                 STRING, c_ushort, POINTER(XSQLDA),
+                                                 POINTER(XSQLDA)]
+
+        self.isc_embed_dsql_execute_immed = fb_library.isc_embed_dsql_execute_immed
+        self.isc_embed_dsql_execute_immed.restype = ISC_STATUS
+        self.isc_embed_dsql_execute_immed.argtypes = [POINTER(ISC_STATUS),
+                                                      POINTER(isc_db_handle),
+                                                      POINTER(isc_tr_handle), 
+                                                      c_ushort, STRING, c_ushort, 
+                                                      POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_fetch = fb_library.isc_embed_dsql_fetch
+        self.isc_embed_dsql_fetch.restype = ISC_STATUS
+        self.isc_embed_dsql_fetch.argtypes = [POINTER(ISC_STATUS), STRING, 
+                                              c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_fetch_a = fb_library.isc_embed_dsql_fetch_a
+        self.isc_embed_dsql_fetch_a.restype = ISC_STATUS
+        self.isc_embed_dsql_fetch_a.argtypes = [POINTER(ISC_STATUS), POINTER(c_int),
+                                                STRING, ISC_USHORT, POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_open = fb_library.isc_embed_dsql_open
+        self.isc_embed_dsql_open.restype = ISC_STATUS
+        self.isc_embed_dsql_open.argtypes = [POINTER(ISC_STATUS), 
+                                             POINTER(isc_tr_handle),
+                                             STRING, c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_open2 = fb_library.isc_embed_dsql_open2
+        self.isc_embed_dsql_open2.restype = ISC_STATUS
+        self.isc_embed_dsql_open2.argtypes = [POINTER(ISC_STATUS), 
+                                              POINTER(isc_tr_handle),
+                                              STRING, c_ushort, POINTER(XSQLDA),
+                                              POINTER(XSQLDA)]
+
+        self.isc_embed_dsql_insert = fb_library.isc_embed_dsql_insert
+        self.isc_embed_dsql_insert.restype = ISC_STATUS
+        self.isc_embed_dsql_insert.argtypes = [POINTER(ISC_STATUS), STRING, 
+                                               c_ushort, POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_prepare = fb_library.isc_embed_dsql_prepare
+        self.isc_embed_dsql_prepare.restype = ISC_STATUS
+        self.isc_embed_dsql_prepare.argtypes = [POINTER(ISC_STATUS), 
+                                                POINTER(isc_db_handle),
+                                                POINTER(isc_tr_handle), STRING, 
+                                                c_ushort, STRING, c_ushort, 
+                                                POINTER(XSQLDA)]
+        
+        self.isc_embed_dsql_release = fb_library.isc_embed_dsql_release
+        self.isc_embed_dsql_release.restype = ISC_STATUS
+        self.isc_embed_dsql_release.argtypes = [POINTER(ISC_STATUS), STRING]
+
+        self.BLOB_open = fb_library.BLOB_open
+        self.BLOB_open.restype = POINTER(BSTREAM)
+        self.BLOB_open.argtypes = [isc_blob_handle, STRING, c_int]
+        
+        self.BLOB_put = fb_library.BLOB_put
+        self.BLOB_put.restype = c_int
+        self.BLOB_put.argtypes = [ISC_SCHAR, POINTER(BSTREAM)]
+        
+        self.BLOB_close = fb_library.BLOB_close
+        self.BLOB_close.restype = c_int
+        self.BLOB_close.argtypes = [POINTER(BSTREAM)]
+        
+        self.BLOB_get = fb_library.BLOB_get
+        self.BLOB_get.restype = c_int
+        self.BLOB_get.argtypes = [POINTER(BSTREAM)]
+        
+        self.BLOB_display = fb_library.BLOB_display
+        self.BLOB_display.restype = c_int
+        self.BLOB_display.argtypes = [POINTER(ISC_QUAD), isc_db_handle, 
+                                      isc_tr_handle, STRING]
+        
+        self.BLOB_dump = fb_library.BLOB_dump
+        self.BLOB_dump.restype = c_int
+        self.BLOB_dump.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle, 
+                                   STRING]
+        
+        self.BLOB_edit = fb_library.BLOB_edit
+        self.BLOB_edit.restype = c_int
+        self.BLOB_edit.argtypes = [POINTER(ISC_QUAD), isc_db_handle, 
+                                   isc_tr_handle, STRING]
+
+        self.BLOB_load = fb_library.BLOB_load
+        self.BLOB_load.restype = c_int
+        self.BLOB_load.argtypes = [POINTER(ISC_QUAD), isc_db_handle, 
+                                   isc_tr_handle, STRING]
+        
+        self.BLOB_text_dump = fb_library.BLOB_text_dump
+        self.BLOB_text_dump.restype = c_int
+        self.BLOB_text_dump.argtypes = [POINTER(ISC_QUAD), isc_db_handle, 
+                                        isc_tr_handle, STRING]
+        
+        self.BLOB_text_load = fb_library.BLOB_text_load
+        self.BLOB_text_load.restype = c_int
+        self.BLOB_text_load.argtypes = [POINTER(ISC_QUAD), isc_db_handle, 
+                                        isc_tr_handle, STRING]
+        
+        self.Bopen = fb_library.Bopen
+        self.Bopen.restype = POINTER(BSTREAM)
+        self.Bopen.argtypes = [POINTER(ISC_QUAD), isc_db_handle, isc_tr_handle, 
+                               STRING]
+
+        self.isc_ftof = fb_library.isc_ftof
+        self.isc_ftof.restype = ISC_LONG
+        self.isc_ftof.argtypes = [STRING, c_ushort, STRING, c_ushort]
+        
+        self.isc_print_blr = fb_library.isc_print_blr
+        self.isc_print_blr.restype = ISC_STATUS
+        self.isc_print_blr.argtypes = [STRING, ISC_PRINT_CALLBACK, c_void_p, c_short]
+        
+        self.isc_set_debug = fb_library.isc_set_debug
+        self.isc_set_debug.restype = None
+        self.isc_set_debug.argtypes = [c_int]
+        
+        self.isc_qtoq = fb_library.isc_qtoq
+        self.isc_qtoq.restype = None
+        self.isc_qtoq.argtypes = [POINTER(ISC_QUAD), POINTER(ISC_QUAD)]
+        
+        self.isc_vtof = fb_library.isc_vtof
+        self.isc_vtof.restype = None
+        self.isc_vtof.argtypes = [STRING, STRING, c_ushort]
+        
+        self.isc_vtov = fb_library.isc_vtov
+        self.isc_vtov.restype = None
+        self.isc_vtov.argtypes = [STRING, STRING, c_short]
+        
+        self.isc_version = fb_library.isc_version
+        self.isc_version.restype = c_int
+        self.isc_version.argtypes = [POINTER(isc_db_handle), 
+                                     ISC_VERSION_CALLBACK, c_void_p]
+
+        # deprecated
+        #self.isc_reset_fpe = fb_library.isc_reset_fpe
+        #self.isc_reset_fpe.restype = ISC_LONG
+        #self.isc_reset_fpe.argtypes = [ISC_USHORT]
+        
+        self.isc_service_attach = fb_library.isc_service_attach
+        self.isc_service_attach.restype = ISC_STATUS
+        self.isc_service_attach.argtypes = [POINTER(ISC_STATUS), c_ushort, STRING,
+                                            POINTER(isc_svc_handle), c_ushort, STRING]
+        
+        self.isc_service_detach = fb_library.isc_service_detach
+        self.isc_service_detach.restype = ISC_STATUS
+        self.isc_service_detach.argtypes = [POINTER(ISC_STATUS), 
+                                            POINTER(isc_svc_handle)]
+        
+        self.isc_service_query = fb_library.isc_service_query
+        self.isc_service_query.restype = ISC_STATUS
+        self.isc_service_query.argtypes = [POINTER(ISC_STATUS), 
+                                           POINTER(isc_svc_handle),
+                                           POINTER(isc_resv_handle), c_ushort, 
+                                           STRING, c_ushort, STRING, c_ushort, 
+                                           STRING]
+        
+        self.isc_service_start = fb_library.isc_service_start
+        self.isc_service_start.restype = ISC_STATUS
+        self.isc_service_start.argtypes = [POINTER(ISC_STATUS), 
+                                           POINTER(isc_svc_handle),
+                                           POINTER(isc_resv_handle), 
+                                           c_ushort, STRING]
+
+        self.isc_get_client_version = fb_library.isc_get_client_version
+        self.isc_get_client_version.restype = None
+        self.isc_get_client_version.argtypes = [STRING]
+        
+        self.isc_get_client_major_version = fb_library.isc_get_client_major_version
+        self.isc_get_client_major_version.restype = c_int
+        self.isc_get_client_major_version.argtypes = []
+        
+        self.isc_get_client_minor_version = fb_library.isc_get_client_minor_version
+        self.isc_get_client_minor_version.restype = c_int
+        self.isc_get_client_minor_version.argtypes = []
+
+        #self.imaxabs = fb_library.imaxabs
+        #self.imaxabs.restype = intmax_t
+        #self.imaxabs.argtypes = [intmax_t]
+        
+        #self.imaxdiv = fb_library.imaxdiv
+        #self.imaxdiv.restype = imaxdiv_t
+        #self.imaxdiv.argtypes = [intmax_t, intmax_t]
+        
+        #self.strtoimax = fb_library.strtoimax
+        #self.strtoimax.restype = intmax_t
+        #self.strtoimax.argtypes = [STRING, POINTER(STRING), c_int]
+
+        #self.strtoumax = fb_library.strtoumax
+        #self.strtoumax.restype = uintmax_t
+        #self.strtoumax.argtypes = [STRING, POINTER(STRING), c_int]
+        
+        #self.wcstoimax = fb_library.wcstoimax
+        #self.wcstoimax.restype = intmax_t
+        #self.wcstoimax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
+        
+        #self.wcstoumax = fb_library.wcstoumax
+        #self.wcstoumax.restype = uintmax_t
+        #self.wcstoumax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
+
+        self.P_isc_event_block = CFUNCTYPE(ISC_LONG,POINTER(POINTER(ISC_UCHAR)),
+                                    POINTER(POINTER(ISC_UCHAR)), ISC_USHORT)
+        self.C_isc_event_block = self.P_isc_event_block(('isc_event_block',fb_library))
+        self.P_isc_event_block_args = self.C_isc_event_block.argtypes
+        
+    def isc_event_block(self,event_buffer,result_buffer,*args):
+        if len(args) > 15:
+            raise Exception("isc_event_block takes no more than 15 event names")
+        newargs = list(self.P_isc_event_block_args)
+        for x in args:
+            newargs.append(STRING)
+        self.C_isc_event_block.argtypes = newargs
+        result = self.C_isc_event_block(event_buffer,result_buffer,len(args),*args)
+        return result
+
+
+#__all__ = ['isc_info_base_level', 'isc_start_and_send',
+           #'int_fast32_t', 'BLOBCALLBACK', 'BLOB_dump',
+           #'isc_info_db_impl_sco_ev', 'isc_info_purge_count',
+           #'isc_create_database', 'isc_info_max_memory', 'uint8_t',
+           #'isc_service_start', 'ISC_BLOB_CTL', 'isc_cancel_events',
+           #'isc_info_db_class', 'isc_info_db_impl_sun_amd64',
+           #'isc_info_db_impl_alpha_vms', 'isc_decode_timestamp',
+           #'isc_info_db_impl_linux_sparc',
+           #'isc_info_db_impl_alpha_osf', 'isc_info_creation_date',
+           #'isc_prepare_transaction2', 'isc_info_db_impl_isc_imp',
+           #'isc_info_db_impl_netware_386',
+           #'isc_info_db_impl_linux_arm', 'uint_fast16_t',
+           #'ISC_ARRAY_DESC', 'isc_decode_sql_time',
+           #'isc_array_get_slice', 'isc_info_current_memory',
+           #'isc_encode_sql_date', 'db_info_types',
+           #'isc_info_num_buffers', 'isc_dsql_allocate_statement',
+           #'isc_info_oldest_active', 'Bopen',
+           #'isc_info_firebird_version', 'blb_got_full_segment',
+           #'info_db_class', 'isc_info_wal_ckpt_length',
+           #'isc_info_db_impl_isc_mac_aux', 'isc_info_wal_avg_io_size',
+           #'isc_portable_integer', 'isc_open_blob',
+           #'isc_print_sqlerror', 'isc_dsql_exec_immed3_m',
+           #'uint_least32_t', 'ISC_BLOB_DESC',
+           #'isc_info_db_impl_rdb_vms_y', 'ISC_UCHAR',
+           #'blb_seek_relative', 'uint_fast8_t', 'PARAMDSC',
+           #'ISC_USHORT', 'isc_embed_dsql_execute',
+           #'isc_info_db_impl_isc_os2', 'isc_unwind_request',
+           #'isc_attach_database', 'isc_info_db_impl_winnt_amd64',
+           #'isc_info_db_code_rdb_vms', 'isc_info_db_read_only',
+           #'isc_info_db_impl_freebsd_amd64', 'isc_qtoq',
+           #'isc_info_db_impl_linux_ppc', 'isc_info_limbo',
+           #'isc_decode_date', 'isc_info_db_impl_isc_sun_386i',
+           #'isc_info_db_impl_last_value', 'isc_dsql_finish',
+           #'isc_info_db_impl_netbsd', 'isc_transact_request',
+           #'int_least64_t', 'isc_info_db_impl_isc_hp_ux',
+           #'isc_info_db_class_access', 'isc_info_page_errors',
+           #'BLOB_display', 'isc_info_db_impl_isc_cray',
+           #'isc_info_bpage_errors', 'isc_print_blr',
+           #'isc_dsql_release', 'isc_info_forced_writes',
+           #'isc_embed_dsql_describe', 'isc_service_detach',
+           #'isc_array_lookup_desc', 'isc_compile_request2',
+           #'isc_info_db_impl_isc_vms', 'isc_info_db_impl_i386',
+           #'isc_info_db_impl_m88K', 'blobcallback',
+           #'isc_info_wal_prv_ckpt_fname', 'isc_ddl',
+           #'isc_dsql_free_statement', 'isc_info_isc_version',
+           #'isc_blob_gen_bpb', 'isc_free', 'blb_seek_from_tail',
+           #'blb_got_eof', 'GDS_QUAD_t', 'isc_info_allocation',
+           #'isc_info_db_impl_rdb_eln_y', 'BSTREAM',
+           #'isc_info_db_impl_darwin_ppc', 'isc_dsql_prepare',
+           #'isc_embed_dsql_open', 'BLOB_edit', 'ISC_TIMESTAMP',
+           #'isc_blob_ctl', 'isc_event_block',
+           #'isc_info_wal_recv_ckpt_poffset', 'isc_set_debug',
+           #'BLOB_get', 'isc_dsql_execute', 'isc_request_info',
+           #'isc_info_db_impl_darwin_x64', 'isc_dsql_describe_bind',
+           #'isc_tr_handle', 'isc_info_db_class_rem_srvr',
+           #'isc_cancel_blob', 'size_t', 'BLOB_load', 'isc_vtof',
+           #'XSQLDA', 'isc_info_db_class_rem_int', 'uint_least16_t',
+           #'isc_vtov', 'isc_get_client_version', 'ISC_EVENT_CALLBACK',
+           #'ISC_INT64', 'isc_embed_dsql_release',
+           #'isc_commit_transaction', 'isc_info_tpage_errors',
+           #'isc_info_db_impl_linux_mipsel',
+           #'isc_info_wal_grpc_wait_usecs', 'isc_print_status',
+           #'GDS_QUAD', 'isc_array_set_desc', 'isc_array_put_slice',
+           #'isc_info_sweep_interval', 'isc_array_lookup_bounds',
+           #'info_db_implementations', 'isc_info_db_impl_jsv',
+           #'isc_info_wal_avg_grpc_size', 'isc_blob_set_desc',
+           #'isc_info_db_impl_win_only', 'isc_embed_dsql_open2',
+           #'int_fast64_t', 'uint_fast32_t', 'FB_API_HANDLE',
+           #'isc_blob_handle', 'uint_least8_t',
+           #'isc_info_db_impl_isc_apl_68K', 'isc_detach_database',
+           #'isc_info_cur_log_part_offset', 'isc_sqlcode',
+           #'isc_dsql_alloc_statement2', 'isc_embed_dsql_prepare',
+           #'isc_db_handle', 'isc_info_wal_buffer_size',
+           #'isc_info_db_impl_isc_dos', 'isc_info_oldest_transaction',
+           #'isc_att_handle', 'isc_info_db_class_cache', 'isc_declare',
+           #'isc_info_db_class_pipe_srvr', 'isc_info_dpage_errors',
+           #'fb_interpret', 'isc_info_db_impl_isc_vax_ultr',
+           #'isc_dsql_execute2_m', 'ISC_DATE', 'isc_get_segment',
+           #'isc_info_window_turns', 'isc_info_db_class_pipe_int',
+           #'uint64_t', 'ISC_SHORT', 'ISC_STATUS_ARRAY',
+           #'isc_info_db_impl_isc_delta', 'isc_create_blob',
+           #'isc_describe', 'isc_close', 'isc_info_db_impl_ncr_3000',
+           #'isc_info_user_names', 'isc_info_no_reserve',
+           #'isc_info_db_id', 'ISC_TIME', 'isc_info_insert_count',
+           #'isc_info_db_class_y_valve', 'isc_info_active_tran_count',
+           #'ISC_UINT64', 'isc_info_reads', 'isc_release_request',
+           #'isc_describe_bind', 'isc_info_db_class_last_value',
+           #'isc_info_wal_recv_ckpt_fname', 'blob_get_result',
+           #'isc_info_db_impl_isc_epson', 'isc_info_db_class_gateway',
+           #'isc_info_db_impl_sinixz', 'isc_info_db_impl_darwin_x86',
+           #'isc_delete_user', 'isc_dsql_execute2',
+           #'isc_info_db_impl_jri', 'isc_info_ods_minor_version',
+           #'isc_resv_handle', 'isc_wait_for_event',
+           #'isc_info_db_impl_isc_hp_ux68K', 'intptr_t',
+           #'isc_info_writes', 'int_fast8_t', 'isc_modify_dpb',
+           #'isc_info_ppage_errors', 'isc_info_db_last_value',
+           #'isc_get_client_minor_version', 'isc_embed_dsql_close',
+           #'ISC_CALLBACK', 'bstream', 'isc_array_gen_sdl',
+           #'isc_info_db_code_firebird',
+           #'isc_req_handle', 'isc_info_db_class_sam_srvr',
+           #'frb_info_att_charset', 'isc_info_attachment_id',
+           #'paramvary', 'USER_SEC_DATA',
+           #'isc_info_db_impl_linux_amd64', 'isc_commit_retaining',
+           #'int16_t', 'ISC_LONG', 'isc_info_db_size_in_pages',
+           #'isc_embed_dsql_execute_immed', 'isc_dsql_exec_immed2',
+           #'isc_dsql_prepare_m', 'isc_seek_blob',
+           #'isc_info_ods_version', 'isc_svc_handle',
+           #'isc_info_db_impl_rdb_eln', 'isc_open',
+           #'isc_sql_interprete', 'ISC_PRINT_CALLBACK',
+           #'isc_info_wal_num_io', 'isc_info_db_impl_freebsd',
+           #'isc_info_db_code_last_value', 'isc_info_set_page_buffers',
+           #'isc_database_info', 'isc_encode_date', 'uint16_t',
+           #'isc_encode_timestamp', 'blb_got_fragment',
+           #'isc_start_request', 'int32_t',
+           #'isc_info_db_impl_linux_ia64', 'isc_dsql_sql_info',
+           #'isc_start_multiple', 
+           #'isc_info_wal_num_commits', 'ISC_QUAD',
+           #'isc_prepare_transaction', 'isc_info_wal_prv_ckpt_poffset',
+           #'isc_info_fetches', 'isc_fetch', 'isc_que_events',
+           #'isc_compile_request', 'isc_embed_dsql_fetch',
+           #'isc_dsql_insert_m', 'isc_execute',
+           #'isc_info_db_class_sam_int', 'isc_info_oldest_snapshot',
+           #'isc_info_db_impl_isc_sgi', 'uintmax_t', 'XSQLVAR',
+           #'isc_info_db_impl_unixware', 'isc_reconnect_transaction',
+           #'int_fast16_t', 'isc_info_db_impl_rdb_eln_dev',
+           #'isc_decode_sql_date', 'isc_embed_dsql_describe_bind',
+           #'isc_stmt_handle', 'isc_embed_dsql_fetch_a',
+           #'isc_info_db_impl_winnt_ppc', 'isc_info_marks',
+           #'isc_info_license', 'isc_prepare', 'uint_fast64_t',
+           #'isc_info_db_impl_dg_x86', 'uint32_t',
+           #'isc_rollback_transaction', 'paramdsc', 'ISC_ULONG',
+           #'isc_dsql_insert', 'isc_encode_sql_time',
+           #'isc_dsql_fetch_m', 'isc_info_db_code_rdb_eln',
+           #'isc_info_db_impl_isc_sun_68k', 'isc_blob_info',
+           #'isc_service_query', 'isc_open_blob2', 'isc_expand_dpb',
+           #'isc_info_db_provider', 'int_least32_t',
+           #'isc_dsql_set_cursor_name',
+           #'isc_info_db_impl_isc_winnt_x86',
+           #'isc_dsql_execute_immediate', 'isc_vax_integer',
+           #'ISC_SCHAR', 'isc_info_implementation',
+           #'isc_info_db_class_server_access', 'isc_interprete',
+           #'isc_info_wal_cur_ckpt_interval', 'isc_create_blob2',
+           #'isc_transaction_info', 'isc_close_blob',
+           #'isc_info_db_class_classic_access',
+           #'isc_embed_dsql_declare', 'isc_info_db_code_interbase',
+           #'isc_dsql_describe', 'isc_info_next_transaction',
+           #'isc_info_read_idx_count', 'PARAMVARY',
+           #'isc_info_backout_count', 'isc_start_transaction',
+           #'isc_blob_lookup_desc', 'int_least16_t',
+           #'isc_service_attach', 'isc_info_db_impl_isc_sco_unix',
+           #'ISC_VERSION_CALLBACK', 'isc_put_slice', 'isc_get_slice',
+           #'BLOB_put', 'isc_receive', 'ptrdiff_t', 'uint_least64_t',
+           #'isc_rollback_retaining', 'isc_info_expunge_count',
+           #'isc_info_record_errors', 'isc_info_db_impl_isc_hp_mpexl',
+           #'isc_info_db_impl_isc_sun4', 'isc_embed_dsql_execute2',
+           #'isc_info_db_impl_isc_dg', 'isc_dsql_execute_m',
+           #'isc_execute_immediate', 'isc_info_read_seq_count',
+           #'isc_info_ipage_errors', 'isc_dsql_execute_immediate_m',
+           #'isc_event_counts', 'isc_info_db_impl_linux_mips',
+           #'uintptr_t', 'isc_info_num_wal_buffers', 'int8_t',
+           #'blob_lseek_mode', 'isc_embed_dsql_insert',
+           #'BLOB_text_load', 'info_db_provider', 
+           #'isc_version', 'isc_info_cur_logfile_name',
+           #'isc_info_delete_count', 'isc_info_db_sql_dialect',
+           #'isc_info_logfile', 'isc_add_user',
+           #'isc_blob_default_desc', 'isc_info_active_transactions',
+           #'isc_info_db_impl_isc_next', 'isc_drop_database',
+           #'isc_ftof', 'int64_t', 'BLOB_text_dump',
+           #'isc_info_page_size', 'isc_send', 'isc_put_segment',
+           #'BLOB_open', 'imaxdiv_t', 'isc_info_db_impl_isc_vms_orcl',
+           #'isc_info_db_file_size', 'isc_info_db_impl_isc_xenix',
+           #'ISC_ARRAY_BOUND', 'isc_info_db_impl_rdb_vms',
+           #'ISC_STATUS', 'isc_info_db_impl_isc_mips_ult',
+           #'BLOB_close', 'intmax_t', 'isc_modify_user',
+           #'isc_info_db_impl_isc_rt_aix',
+           #'isc_get_client_major_version', 'isc_dsql_fetch',
+           #'isc_info_update_count', 'int_least8_t',
            
-           'b', 's', 'ord2', 'int2byte', 'mychr', 'mybytes', 'myunicode', 
-           'mylong', 'StringType', 'IntType', 'LongType', 'FloatType', 
-           'ListType', 'UnicodeType', 'TupleType', 'xrange', 'charset_map',
+           #'b', 's', 'ord2', 'int2byte', 'mychr', 'mybytes', 'myunicode', 
+           #'mylong', 'StringType', 'IntType', 'LongType', 'FloatType', 
+           #'ListType', 'UnicodeType', 'TupleType', 'xrange', 'charset_map',
            
-           # removed
-           # 'imaxdiv', 'wcstoimax', 'imaxabs', 'strtoumax', 'strtoimax',
-           # 'wcstoumax', 
-           ]
+           ## removed
+           ## 'imaxdiv', 'wcstoimax', 'imaxabs', 'strtoumax', 'strtoimax',
+           ## 'wcstoumax', 
+           #]
 

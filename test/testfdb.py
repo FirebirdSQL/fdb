@@ -1694,7 +1694,25 @@ class TestBugs(unittest.TestCase):
             assert len(value) == i
             assert value == data[:i]
             i += 1
-            
+    def test_pyfb_25(self):
+        create_table = """
+        CREATE TABLE FDBTEST2 (
+            ID INTEGER,
+            TEST5000 VARCHAR(5000)
+        );
+        """
+        cur = self.con.cursor()
+        cur.execute(create_table)
+        self.con.commit()
+        # test data
+        data = "1234567890" * 500
+        cur.execute("insert into fdbtest2 (id, test5000) values (?, ?)",
+                    (1, data))
+        self.con.commit()
+        # PYFB-25: fails with fdb, passes with kinterbasdb
+        cur.execute("select test5000 from fdbtest2")
+        row = cur.fetchone()
+        assert row[0] == data
     
 if __name__ == '__main__':
     unittest.main()
