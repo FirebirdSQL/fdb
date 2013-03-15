@@ -33,6 +33,10 @@ PYTHON_MAJOR_VER = sys.version_info[0]
 
 if sys.platform == 'darwin':
     fb_library_name = find_library('Firebird')
+# Next elif is necessary hotfix for ctypes issue
+# http://bugs.python.org/issue16283
+elif sys.platform == 'win32':
+    fb_library_name = find_library('fbclient.dll')
 else:
     fb_library_name = find_library('fbclient')
 if sys.platform in ['win32', 'cygwin', 'os2', 'os2emx']:
