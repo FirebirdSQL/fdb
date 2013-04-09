@@ -2217,7 +2217,7 @@ class PreparedStatement(object):
                         raise exception_from_status(DatabaseError,
                                                     self._isc_status,
                                                     "Cursor.read_otput_blob/isc_close_blob:")
-                    value = blob.value
+                    value = blob.raw
                     if ((self.__charset or PYTHON_MAJOR_VER == 3) 
                         and sqlvar.sqlsubtype == 1):
                         value = b2u(value,self.__python_charset)
@@ -2578,10 +2578,11 @@ class PreparedStatement(object):
                         sqlvar.sqldata = ctypes.cast(ctypes.pointer(blobid),
                                                      buf_pointer)
                         blob = ctypes.create_string_buffer(MAX_BLOB_SEGMENT_SIZE)
-                        blob.raw = ibase.b(value.read(MAX_BLOB_SEGMENT_SIZE))
-                        while len(blob.value) > 0:
+                        value_chunk = value.read(MAX_BLOB_SEGMENT_SIZE)
+                        blob.raw = ibase.b(value_chunk)
+                        while len(value_chunk) > 0:
                             api.isc_put_segment(self._isc_status, blob_handle,
-                                                  len(blob.value),
+                                                  len(value_chunk),
                                                   ctypes.byref(blob)
                                                   )
                             if db_api_error(self._isc_status):
@@ -2589,7 +2590,8 @@ class PreparedStatement(object):
                                                             self._isc_status,
                                                             "Cursor.write_input_blob/isc_put_segment:")
                             ctypes.memset(blob,0,MAX_BLOB_SEGMENT_SIZE)
-                            blob.raw = ibase.b(value.read(MAX_BLOB_SEGMENT_SIZE))
+                            value_chunk = value.read(MAX_BLOB_SEGMENT_SIZE)
+                            blob.raw = ibase.b(value_chunk)
                         api.isc_close_blob(self._isc_status, blob_handle)
                         if db_api_error(self._isc_status):
                             raise exception_from_status(DatabaseError,
@@ -4168,10 +4170,11 @@ class BlobReader(object):
         """
         self.__ensure_open()
         if size >= 0:
-            to_read = size
+            to_read = min(size,self._blob_length - self.__pos)
         else:
             to_read = self._blob_length - self.__pos
-        result = ctypes.create_string_buffer(to_read)
+        return_size = to_read
+        result = ctypes.create_string_buffer(return_size)
         pos = 0
         while to_read > 0:
             to_copy = min(to_read, self.__buf_data - self.__buf_pos)
@@ -4188,7 +4191,7 @@ class BlobReader(object):
             self.__pos += to_copy
             self.__buf_pos += to_copy
             to_read -= to_copy
-        result = result.value
+        result = result.raw[:return_size]
         if (self.__charset or PYTHON_MAJOR_VER == 3) and self.__is_text:
             result = b2u(result,self.__python_charset)
         return result

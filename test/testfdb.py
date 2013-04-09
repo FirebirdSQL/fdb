@@ -1713,6 +1713,37 @@ class TestBugs(unittest.TestCase):
         cur.execute("select test5000 from fdbtest2")
         row = cur.fetchone()
         assert row[0] == data
+    def test_pyfb_30(self):
+        create_table = """
+        CREATE TABLE FDBTEST3 (
+            ID INTEGER,
+            T_BLOB BLOB sub_type BINARY
+        );
+        """
+        cur = self.con.cursor()
+        cur.execute(create_table)
+        self.con.commit()
+        # test data
+        data_bytes = (1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9)
+        blob_data = "".join((chr(i) for i in data_bytes))
+        cur.execute("insert into fdbtest3 (id, t_blob) values (?, ?)",
+                    (1, blob_data))
+        cur.execute("insert into fdbtest3 (id, t_blob) values (?, ?)",
+                    (2, StringIO(blob_data)))
+        self.con.commit()
+        # PYFB-XX: binary blob trucated at zero-byte
+        cur.execute("select t_blob from fdbtest3 where id = 1")
+        row = cur.fetchone()
+        assert row[0] == blob_data
+        cur.execute("select t_blob from fdbtest3 where id = 2")
+        row = cur.fetchone()
+        assert row[0] == blob_data
+        p = cur.prep("select t_blob from fdbtest3 where id = 2")
+        p.set_stream_blob('T_BLOB')
+        cur.execute(p)
+        blob_reader = cur.fetchone()[0]
+        value = blob_reader.read()
+        assert value == blob_data
     
 if __name__ == '__main__':
     unittest.main()
