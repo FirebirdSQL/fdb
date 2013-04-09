@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.1`_ (9.4.2013)
 * `Version 1.0`_ (7.3.2013)
 * `Version 0.9.9`_ (30.11.2012)
 * `Version 0.9.1`_ (8. 9. 2012)
@@ -11,6 +12,20 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.1
+===========
+
+New Features
+------------
+
+- :ref:`Context Manager <transaction-context-manager>` for transactions.
+
+Bugs Fixed
+----------
+
+- PYFB-30 - BLOBs are truncated at first zero byte
+
 
 Version 1.0
 ===========

@@ -158,7 +158,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.0'
+__version__ = '1.1'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -704,6 +704,26 @@ def create_database(sql, sql_dialect=3):
                                     "Error while creating database:")
 
     return Connection(db_handle)
+
+class TransactionContext(object):
+    """Context Manager that manages transaction for object passed to constructor.
+    
+    """
+    def __init__(self,transaction):
+        """
+        :param transaction: Any object that supports `begin()`, `commit()` and
+            `rollback()`.
+        """
+        self.transaction = transaction
+    def __enter__(self):
+        self.transaction.begin()
+        return self.transaction
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type == None:
+            self.transaction.commit()
+        else:
+            self.transaction.rollback()
+
 
 class Connection(object):
     """

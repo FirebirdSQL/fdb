@@ -159,6 +159,32 @@ class TestTransaction(unittest.TestCase):
         tr.commit()
         assert len(tr.cursors) == 1
         assert tr.cursors[0] is cur
+    def test_context_manager(self):
+        with fdb.TransactionContext(self.con) as tr:
+            cur = tr.cursor()
+            cur.execute("insert into t (c1) values (1)")
+
+        cur.execute("select * from t")
+        rows = cur.fetchall()
+        assert repr(rows) == "[(1,)]"
+
+        try:
+            with fdb.TransactionContext(self.con) as tr:
+                cur.execute("delete from t")
+                raise Exception()
+        except Exception as e:
+            pass
+        
+        cur.execute("select * from t")
+        rows = cur.fetchall()
+        assert repr(rows) == "[(1,)]"
+        
+        with fdb.TransactionContext(self.con) as tr:
+            cur.execute("delete from t")
+        
+        cur.execute("select * from t")
+        rows = cur.fetchall()
+        assert repr(rows) == "[]"
     def test_savepoint(self):
         self.con.begin()
         tr = self.con.main_transaction
@@ -244,6 +270,50 @@ class TestDistributedTransaction(unittest.TestCase):
             self.con2 = fdb.connect(dsn=self.db2,user='SYSDBA',password='masterkey')
         self.con2.drop_database()
         self.con2.close()
+    def test_context_manager(self):
+        cg = fdb.ConnectionGroup((self.con1,self.con2))
+        
+        q = 'select * from T order by pk'
+        c1 = cg.cursor(self.con1)
+        cc1 = self.con1.cursor()
+        p1 = cc1.prep(q)
+        
+        c2 = cg.cursor(self.con2)
+        cc2 = self.con2.cursor()
+        p2 = cc2.prep(q)
+        
+        # Distributed transaction: COMMIT
+        with fdb.TransactionContext(cg):
+            c1.execute('insert into t (pk) values (1)')
+            c2.execute('insert into t (pk) values (1)')
+        
+        self.con1.commit()
+        cc1.execute(p1)
+        result = cc1.fetchall()
+        assert repr(result) == '[(1, None)]'
+        self.con2.commit()
+        cc2.execute(p2)
+        result = cc2.fetchall()
+        assert repr(result) == '[(1, None)]'
+        
+        # Distributed transaction: ROLLBACK
+        try:
+            with fdb.TransactionContext(cg):
+                c1.execute('insert into t (pk) values (2)')
+                c2.execute('insert into t (pk) values (2)')
+                raise Exception()
+        except Exception as e:
+            pass
+        
+        c1.execute(q)
+        result = c1.fetchall()
+        assert repr(result) == '[(1, None)]'
+        c2.execute(q)
+        result = c2.fetchall()
+        assert repr(result) == '[(1, None)]'
+
+        cg.disband()
+        
     def test_simple_dt(self):
         cg = fdb.ConnectionGroup((self.con1,self.con2))
         assert self.con1.group == cg
@@ -266,12 +336,10 @@ class TestDistributedTransaction(unittest.TestCase):
         self.con1.commit()
         cc1.execute(p1)
         result = cc1.fetchall()
-        #print 'db1:',result
         assert repr(result) == '[(1, None)]'
         self.con2.commit()
         cc2.execute(p2)
         result = cc2.fetchall()
-        #print 'db2:',result
         assert repr(result) == '[(1, None)]'
         
         # Distributed transaction: PREPARE+COMMIT
@@ -283,12 +351,10 @@ class TestDistributedTransaction(unittest.TestCase):
         self.con1.commit()
         cc1.execute(p1)
         result = cc1.fetchall()
-        #print 'db1:',result
         assert repr(result) == '[(1, None), (2, None)]'
         self.con2.commit()
         cc2.execute(p2)
         result = cc2.fetchall()
-        #print 'db2:',result
         assert repr(result) == '[(1, None), (2, None)]'
         
         # Distributed transaction: SAVEPOINT+ROLLBACK to it
@@ -299,11 +365,9 @@ class TestDistributedTransaction(unittest.TestCase):
 
         c1.execute(q)
         result = c1.fetchall()
-        #print 'db1:',result
         assert repr(result) == '[(1, None), (2, None), (3, None)]'
         c2.execute(q)
         result = c2.fetchall()
-        #print 'db2:',result
         assert repr(result) == '[(1, None), (2, None)]'
         
         # Distributed transaction: ROLLBACK
@@ -312,12 +376,10 @@ class TestDistributedTransaction(unittest.TestCase):
         self.con1.commit()
         cc1.execute(p1)
         result = cc1.fetchall()
-        #print 'db1:',result
         assert repr(result) == '[(1, None), (2, None)]'
         self.con2.commit()
         cc2.execute(p2)
         result = cc2.fetchall()
-        #print 'db2:',result
         assert repr(result) == '[(1, None), (2, None)]'
         
         # Distributed transaction: EXECUTE_IMMEDIATE
@@ -327,12 +389,10 @@ class TestDistributedTransaction(unittest.TestCase):
         self.con1.commit()
         cc1.execute(p1)
         result = cc1.fetchall()
-        #print 'db1:',result
         assert repr(result) == '[(1, None), (2, None), (3, None)]'
         self.con2.commit()
         cc2.execute(p2)
         result = cc2.fetchall()
-        #print 'db2:',result
         assert repr(result) == '[(1, None), (2, None), (3, None)]'
         
         cg.disband()

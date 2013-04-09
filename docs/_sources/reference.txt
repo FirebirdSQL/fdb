@@ -142,6 +142,15 @@ ConnectionGroup
    :inherited-members:
    :undoc-members:
 
+TransactionContext
+==================
+
+.. autoclass:: TransactionContext
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
 EventConduit
 ============
 

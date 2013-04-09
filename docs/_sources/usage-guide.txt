@@ -1822,6 +1822,43 @@ Output::
    db2: [(1, None), (2, None), (3, None)]
 
 
+.. _transaction-context-manager:
+
+Transaction Context Manager
+---------------------------
+FDB provides context manager :class:`TransactionContext` that allows automatic transaction
+management using :ref:`WITH`. It can work with any object that supports `begin()`, `commit()` and 
+`rollback()` methods, i.e. :class:`Connection`, :class:`ConnectionGroup` or :class:`Transaction`.
+
+It starts transaction when WITH block is entered and commits it if no exception occurst within it, or
+calls `rollback()` otherwise. Exceptions raised in WITH block are never suppressed.
+
+Examples:
+
+.. sourcecode:: python
+
+   con = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
+
+   # Uses default main transaction
+   with TransactionContext(con):
+      cur = con.cursor()
+      cur.execute("insert into T (PK,C1) values (1,'TXT')")
+
+   # Uses separate transaction
+   with TransactionContext(con.trans()) as tr:
+      cur = tr.cursor()
+      cur.execute("insert into T (PK,C1) values (2,'AAA')")
+
+   # Uses connection group (distributed transaction)
+   con2 = fdb.connect(dsn='remote:employee',user='sysdba',password='masterkey')
+   cg = fdb.ConnectionGroup((con,con2))
+   with TransactionContext(cg):
+      cur1 = cg.cursor(con)
+      cur2 = cg.cursor(con2)
+      cur1.execute("insert into T (PK,C1) values (3,'Local')")
+      cur2.execute("insert into T (PK,C1) values (3,'Remote')")
+
+
 .. index::
    pair: Database; events
 

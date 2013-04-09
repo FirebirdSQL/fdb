@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.0 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.1 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0',
+        VERSION:     '1.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.0 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.1 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -2098,6 +2098,24 @@ See <a class="reference internal" href="#fdb.Transaction.savepoint" title="fdb.T
 </dd></dl>
 
 </div>
+<div class="section" id="transactioncontext">
+<h2>TransactionContext<a class="headerlink" href="#transactioncontext" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fdb.TransactionContext">
+<em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">TransactionContext</tt><big>(</big><em>transaction</em><big>)</big><a class="headerlink" href="#fdb.TransactionContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context Manager that manages transaction for object passed to constructor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transaction</strong> &#8211; Any object that supports <cite>begin()</cite>, <cite>commit()</cite> and
+<cite>rollback()</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="eventconduit">
 <h2>EventConduit<a class="headerlink" href="#eventconduit" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -3728,6 +3746,7 @@ specified to add a user.</p>
 <li><a class="reference internal" href="#transaction">Transaction</a></li>
 <li><a class="reference internal" href="#preparedstatement">PreparedStatement</a></li>
 <li><a class="reference internal" href="#connectiongroup">ConnectionGroup</a></li>
+<li><a class="reference internal" href="#transactioncontext">TransactionContext</a></li>
 <li><a class="reference internal" href="#eventconduit">EventConduit</a></li>
 <li><a class="reference internal" href="#blobreader">BlobReader</a></li>
 <li><a class="reference internal" href="#tpb">TPB</a><ul>
@@ -3788,7 +3807,7 @@ specified to add a user.</p>
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
