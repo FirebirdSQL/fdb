@@ -768,8 +768,6 @@ class Connection(object):
         self.__ic = Cursor(self, self.main_transaction)
         self.__ic._set_as_internal()
     
-    def __remove_cursor(self, cursor_ref):
-        self._cursors.remove(cursor_ref)
     def __remove_group(self, group_ref):
         self.__group = None
     def __ensure_group_membership(self, must_be_member, err_msg):
@@ -2743,7 +2741,7 @@ class PreparedStatement(object):
             self._name = None
             #self.out_buffer = None
             connection = self.__get_connection()
-            if connection and not connection.closed:
+            if (not connection) or (connection and not connection.closed):
                 api.isc_dsql_free_statement(self._isc_status, stmt_handle,
                                               ibase.DSQL_drop)
                 if db_api_error(self._isc_status):
@@ -3026,8 +3024,9 @@ class Cursor(object):
            is executed, this current :class:`PreparedStatement` instance is disposed.
         """
         for ps in self._prepared_statements.values():
-            if ps != self._ps:
-                ps._close()
+            ps._close()
+            if ps == self._ps:
+                self._ps = None
         self._prepared_statements.clear()
     def close(self):
         """Close the cursor now (rather than whenever `__del__` is called).
