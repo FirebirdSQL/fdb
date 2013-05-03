@@ -1804,6 +1804,20 @@ class TestBugs(unittest.TestCase):
         blob_reader = cur.fetchone()[0]
         value = blob_reader.read()
         assert value == blob_data
+    def test_pyfb_34(self):
+        cur = self.con.cursor()
+        cur.execute( "select * from RDB$Relations")
+        cur.fetchall()
+        del cur
+        i = 1
+        #for i in range(10000):
+            #cur = con.cursor()
+            #cur.execute( "select * from RDB$Relations")
+            #for row in cur.fetchall():
+                #print i, row[0]
+            #con.commit()
+        
+
     
 if __name__ == '__main__':
     unittest.main()

@@ -783,6 +783,7 @@ class Connection(object):
     def __close(self, detach=True):
         if self._db_handle != None:
             self.__ic.close()
+            del self.__ic
             for conduit in self.__conduits:
                 conduit.close()
             for transaction in self._transactions:
@@ -3579,6 +3580,8 @@ class Transaction(object):
             self._finish()
         except Exception as e:
             exc = e
+        for cur in self._cursors:
+            cur().clear_cache()
         del self._cursors[:]
         del self._connections[:]
         self.__closed = True
