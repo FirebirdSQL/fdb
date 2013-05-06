@@ -784,14 +784,16 @@ class Connection(object):
         if self._db_handle != None:
             self.__ic.close()
             del self.__ic
-            for conduit in self.__conduits:
-                conduit.close()
-            for transaction in self._transactions:
-                transaction.default_action = 'rollback' # Required by Python DB API 2.0
-                transaction.close()
-            if detach:
-                api.isc_detach_database(self._isc_status, self._db_handle)
-            self._db_handle = None
+            try:
+                for conduit in self.__conduits:
+                    conduit.close()
+                for transaction in self._transactions:
+                    transaction.default_action = 'rollback' # Required by Python DB API 2.0
+                    transaction.close()
+                if detach:
+                    api.isc_detach_database(self._isc_status, self._db_handle)
+            finally:
+                self._db_handle = None
     def __get_main_transaction(self):
         return self._main_transaction
     def __get_transactions(self):
@@ -2745,7 +2747,7 @@ class PreparedStatement(object):
             if (not connection) or (connection and not connection.closed):
                 api.isc_dsql_free_statement(self._isc_status, stmt_handle,
                                               ibase.DSQL_drop)
-                if db_api_error(self._isc_status):
+                if db_api_error(self._isc_status) and (status[1] != 335544528):
                     raise exception_from_status(DatabaseError, self._isc_status,
                                                 "Error while closing SQL statement:")
     def _execute(self, parameters=None):
