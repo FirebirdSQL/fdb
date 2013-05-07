@@ -1809,14 +1809,22 @@ class TestBugs(unittest.TestCase):
         cur.execute( "select * from RDB$Relations")
         cur.fetchall()
         del cur
-        i = 1
-        #for i in range(10000):
-            #cur = con.cursor()
-            #cur.execute( "select * from RDB$Relations")
-            #for row in cur.fetchall():
-                #print i, row[0]
-            #con.commit()
-        
+    def test_pyfb_35(self):
+        cur = self.con.cursor()
+        try:
+            cur.fetchall()
+            raise Exception("Exception expected")
+        except Exception as e:
+            assert e.message == "Cannot fetch from this cursor because it has not executed a statement."
+
+        cur.execute("select * from RDB$DATABASE")
+        cur.fetchall()
+        cur.execute("CREATE SEQUENCE TEST_SEQ_1")
+        try:
+            cur.fetchall()
+            raise Exception("Exception expected")
+        except Exception as e:
+            assert e.message == "Attempt to fetch row of results after statement that does not produce result set."
 
     
 if __name__ == '__main__':

@@ -2728,8 +2728,6 @@ class PreparedStatement(object):
                 if db_api_error(self._isc_status):
                     raise exception_from_status(DatabaseError, self._isc_status,
                                   "Error while releasing SQL statement handle:")
-    def _callproc(self, procname, parameters=None):
-        raise NotImplementedError('PreparedStatement.callproc')
     def _close(self):
         if self._stmt_handle != None:
             while len(self.__blob_readers) > 0:
@@ -2815,6 +2813,8 @@ class PreparedStatement(object):
                     self._last_fetch_status = self.RESULT_SET_EXHAUSTED
                     return self.__output_cache
             else:
+                if self.n_output_params == 0:
+                    raise DatabaseError("Attempt to fetch row of results after statement that does not produce result set.")                
                 self._last_fetch_status = api.isc_dsql_fetch(
                     self._isc_status,
                     self._stmt_handle,
