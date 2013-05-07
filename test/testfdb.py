@@ -1810,6 +1810,18 @@ class TestBugs(unittest.TestCase):
         cur.fetchall()
         del cur
     def test_pyfb_35(self):
+        create_table = """
+        Create Table table1  (
+            ID Integer,
+            C1 Integer NOT Null
+        );
+        """
+        
+        c = self.con.cursor()
+        c.execute(create_table)
+        self.con.commit()
+        del c
+
         cur = self.con.cursor()
         try:
             cur.fetchall()
@@ -1825,6 +1837,10 @@ class TestBugs(unittest.TestCase):
             raise Exception("Exception expected")
         except Exception as e:
             assert e.message == "Attempt to fetch row of results after statement that does not produce result set."
+
+        cur.execute("insert into table1 (ID,C1) values (1,1) returning ID")
+        row = cur.fetchall()
+        assert row == [(1,)]
 
     
 if __name__ == '__main__':
