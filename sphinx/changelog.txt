@@ -13,6 +13,15 @@ Changelog
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
 
+Version 1.1.1
+=============
+
+Bugs Fixed
+----------
+
+- PYFB-35 - Call to fetch after a sql statement without a result should raise exception
+- PYFB-34 - Server resources not released on PreparedStatement destruction
+
 Version 1.1
 ===========
 
@@ -25,7 +34,6 @@ Bugs Fixed
 ----------
 
 - PYFB-30 - BLOBs are truncated at first zero byte
-
 
 Version 1.0
 ===========
