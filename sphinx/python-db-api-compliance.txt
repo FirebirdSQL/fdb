@@ -15,6 +15,17 @@ Unsupported Optional Features
    This method is not implemented because the database engine does not support
    opening multiple result sets simultaneously with a single cursor.
 
+Supported Optional Features
+===========================
+
+  - `Connection.Error`, `Connection.ProgrammingError`, etc.
+
+    All exception classes defined by the DB API standard are exposed on the Connection objects 
+    as attributes (in addition to being available at module scope).
+  - `Cursor.connection`
+
+    This read-only attribute return a reference to the Connection object on which the cursor was created.
+
 
 Nominally Supported Optional Features
 =====================================

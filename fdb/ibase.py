@@ -193,6 +193,7 @@ SSIZE_T_MAX = INT_MAX
 
 DSQL_close = 1
 DSQL_drop = 2
+DSQL_unprepare = 4
 SQLDA_version1 = 1
 
 # Type codes

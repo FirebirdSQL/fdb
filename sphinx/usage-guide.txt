@@ -13,6 +13,8 @@ Source code is currently divided into next submodules:
 * :mod:`~fdb.ibase` - Python :ref:`ctypes <python:module-ctypes>` interface to Firebird client library.
 * :mod:`~fdb.fbcore` - Main driver source code.
 * :mod:`~fdb.services` - Driver code to work with Firebird Services.
+* :mod:`~fdb.schema` - Driver code to work with Firebird database schema (metadata).
+* :mod:`~fdb.utils` - Various classes and functions used by driver that are generally useful.
 
 All important data, functions, classes and constants are available directly in fdb namespace, 
 so there is not need to import or use :mod:`~fdb.fbcore` and :mod:`~fdb.ibase` submodules directly.
@@ -94,6 +96,21 @@ and conversions`_ for details).
    # Remote database
    con = fdb.connect(host='myhost', database='/path/database.db', user='sysdba', password='pass')
 
+Since version 1.2 FDB supports additional `Connection` class(es) that extend :class:`Connection` functionality
+in optional (opt-in) way. For example :class:`ConnectionWithSchema` extends Connection interface with methods
+and attributes provided by :class:`~fdb.schema.Schema`. New `connection_class` parameter was introduced to
+`connect` and `create_database` to connect to/create database using different class than descends from 
+`Connection`.
+
+**Example:**
+
+.. code-block:: python
+   
+   # Connecting through ConnectionWithSchema
+   #
+   con = fdb.connect(dsn='/path/database.fdb', user='sysdba', password='pass',
+                     connection_class=fdb.ConnectionWithSchema)
+
 
 .. index::
    pair: Database; create
@@ -111,6 +128,16 @@ created database.
 
    con = fdb.create_database("create database 'host:/temp/db.db' user 'sysdba' password 'pass'")
 
+.. note::
+
+   Since version 1.2 FDB supports additional method for database creation. Instead `CREATE DATABASE`
+   SQL statement you can use number of optional keyword parameters introduced to :func:`create_database`.
+
+**Example:**
+
+.. code-block:: python
+   
+   con = fdb.create_database(dsn='/temp/db.fdb',user='sysdba',password='pass',page_size=8192)
 
 .. index::
    pair: Database; delete
@@ -157,10 +184,67 @@ with it:
   :attr:`~Connection.main_transaction`, :attr:`~Connection.transactions`, :attr:`~Connection.default_tpb`
   and :attr:`~Connection.group`.
 * Work with `Database Events`_: method :meth:`~Connection.event_conduit`.
-* Getting information about database: methods :meth:`~Connection.db_info` and 
+* `Getting information about Firebird version`_: attributes :attr:`~Connection.server_version`,
+  :attr:`~Connection.firebird_version`, :attr:`~Connection.version` and :attr:`~Connection.engine_version`.
+* `Getting information about database`_: methods :meth:`~Connection.db_info` and 
   :meth:`~Connection.database_info`.
-* Getting information about Firebird version: attribute :attr:`~Connection.server_version`.
+* :ref:`Getting information about database metadata <working-with-schema>`: attribute :attr:`~Connection.schema` and :attr:`~Connection.ods`.
 
+
+.. index::
+   pair: Firebird; information about
+
+Getting information about Firebird version
+------------------------------------------
+
+Because functionality and some features depends on actual Firebird version, it could be important for FDB
+users to check it. This (otherwise) simple task could be confusing for new Firebird users, because Firebird 
+uses two different version lineages. This abomination was introduced to Firebird thanks to its InterBase legacy
+(Firebird 1.0 is a fork of InterBase 6.0), as applications designed to work with InterBase can often work
+with Firebird without problems (and vice versa). However, legacy applications designed to work with InterBase
+may stop working properly if they would detect unexpectedly low server version, so default version number
+returned by Firebird (and FDB) is based on InterBase version number. For example this version for Firebird 
+2.5.2 is 6.3.2, so condition for legacy applications that require at least IB 6.0 is met.
+
+FDB provides these version strings as two `Connection` properties:
+
+- :attr:`~Connection.server_version` - Legacy InterBase-friendly version string.
+- :attr:`~Connection.firebird_version` - Firebird's own version string.
+
+However, this version string contains more information than version number. For example for Linux Firebird 
+2.5.2 it's 'LI-V2.5.2.26540 Firebird 2.5'. So FDB provides two more properties for your convenience:
+
+- :attr:`~Connection.version` - Only Firebird version number. It's a string with format: 
+  major.minor.subrelease.build
+- :attr:`~Connection.engine_version` - Engine (major.minor) version as (float) number.
+
+FDB also provides convenient constants for supported engine versions: `ODS_FB_20`,`ODS_FB_21` and `ODS_FB_25`.
+
+Database On-Disk Structure
+--------------------------
+
+Particular Firebird features may also depend on specific support in database (for example monitoring 
+tables introduced in Firebird 2.1). These required structures are present automatically when database
+is created by particular engine verison that needs them, but Firebird engine may typically work with 
+databases created by older versions and thus with older structure, so it could be necessary to consult
+also On-Disk Structure (ODS for short) version. FDB provides this number as :attr:`Connection.ods` (float) 
+property.
+
+**Example**:
+
+.. code-block:: python
+
+   con = fdb.connect(dsn='/path/database.fdb', user='sysdba', password='pass')
+   print 'Firebird version:',con.version
+   print 'ODS version:',con.ods
+
+::
+
+   Firebird version: 2.5.2.26540
+   ODS version: 11.1
+
+In abover example although connected Firebird engine is version 2.5, connected database has ODS 11.1 which
+came with Firebird 2.1, and some Firebird 2.5 features will not be available on this database.
 
 .. index::
    pair: Database; information about
@@ -497,6 +581,9 @@ methods for fetching these `rows`, that should satisfy all your specific needs:
    cur.execute(SELECT)
    for (name, year_released) in cur:
        print '%s has been publicly available since %d.' % (name, year_released)
+   # or alternatively you can take an advantage of cur.execute returning self.
+   for (name, year_released) in cur.execute(SELECT):
+       print '%s has been publicly available since %d.' % (name, year_released)
 
    # 2. Equivalently using fetchall():
    # This is potentially dangerous if result set is huge, as the whole result set is first materialized
@@ -510,7 +597,10 @@ methods for fetching these `rows`, that should satisfy all your specific needs:
    for row in cur.itermap():
        print '%(name)s has been publicly available since %(year_released)d.' % row
 
+.. tip::
 
+   :meth:`Cursor.execute` and :meth:`Cursor.executemany` return self, so you can use calls to them
+   as iterators (see example above).
 
 .. index:: 
    pair: SQL Statement; prepared
@@ -533,8 +623,8 @@ The preparation phase consumes some amount of server resources (memory and CPU).
 and release of resources typically takes only small amount of CPU time, it builds up as number 
 of executed statements grows. Firebird (like most database engines) allows to spare this time for 
 subsequent execution if particular statement should be executed repeatedly - by reusing once prepared 
-statement for repeated execution. This may save significant amount of server processing time, and better
-overall performance.
+statement for repeated execution. This may save significant amount of server processing time, and result
+in better overall performance.
 
 FDB builds on this by encapsulating all statement-related code into separate :class:`PreparedStatement` 
 class, and implementing :class:`Cursor` class as a wrapper around it. Once executed statement has to
@@ -1353,6 +1443,9 @@ FDB provides several predefined TPB's for convenience:
         Firebird threats these transactions as `pre-committed`, so they are best option **for long 
         running transactions that only read data**.
 
+        Internaly FDB uses such transaction to read metadata from connected database. This internal
+        transaction is also available to developers for convenience as :attr:`Connection.query_transaction`.
+
 * **ISOLATION_LEVEL_REPEATABLE_READ** or **ISOLATION_LEVEL_SNAPSHOT**
      Read/Write SNAPSHOT (concurrency) with WAIT option.
 
@@ -1443,7 +1536,7 @@ parameter blocks), you can use class :class:`TableReservation` instead `TPB`.
 Getting information about transaction
 -------------------------------------
 
-:class:`Transaction` object exposes two methods that return infromation about currently managed 
+:class:`Transaction` object exposes two methods that return information about currently managed 
 active transaction (the same methods are exposed also by :class:`Connection` object for 
 :attr:`~Connection.main_transaction`):
 
@@ -2930,9 +3023,224 @@ Output::
    gbak:closing file, committing, and finishing. 74752 bytes written 
 
 
+.. index::
+   pair: Database; schema
+   pair: Database schema; working with
+
+.. _working-with-schema:
+
+Working with database schema
+============================
+
+Description of database objects like tables, views, stored procedures, triggers or UDF functions that 
+represent database schema is stored in set of system tables present in every database. Firebird users 
+can query these tables to get information about these objects and their relations. But querying system
+tables is inconvenient, as it requires good knowledge how this information is structured and requires 
+significant amount of Python code. Changes in system tables between Firebird versions further add to this
+complexity. Hence FDB provides set of classes (isolated in separate module :mod:`fdb.schema`) that 
+transform information stored in system tables into set of Python objects that surface the vital information
+in meaningful way, and additionaly provide set of methods for most commonly used operations or checks.
+
+Database schema could be accessed in three different ways, each suitable for different use case:
+
+- By direct creation of :class:`fdb.schema.Schema` instances that are then binded to particular 
+  :class:`Connection` instance. This method is best if you want to work with schema only occasionally, or
+  you want to keep connections as lightweight as possible.
+- Accessing :attr:`Connection.schema` property. This method is more convenient than previous one, and 
+  represents a compromise between convenience and resource consumption. Metadata objects are loaded only 
+  at the first access and then kept in schema cache, and :class:`~fdb.schem.Schema` instance is created
+  and managed by connection itself.
+- Using :class:`ConnectionWithSchema` instead :class:`Connection` by specifying 
+  `connection_class=ConnectionWithSchema` parameter to :func:`~fdb.connect` or :func:`~fdb.create_database`.
+  This `Connection` descendant loads database metadata immediately and provides directly all attributes 
+  and methods provided by :class:`~fdb.schem.Schema` class. This method is most suitable in case you want
+  to work with database metadata extensively.
+
+**Examples:**
+
+1. Using Schema instance
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='employee',user='sysdba', password='masterkey')
+   >>> schema = fdb.schema.Schema()
+   >>> schema.bind(con)
+   >>> [t.name for t in schema.tables]
+   ['COUNTRY', 'JOB', 'DEPARTMENT', 'EMPLOYEE', 'SALES', 'PROJECT', 'EMPLOYEE_PROJECT', 'PROJ_DEPT_BUDGET', 
+    'SALARY_HISTORY', 'CUSTOMER']
+
+2. Using Connection.schema
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='employee',user='sysdba', password='masterkey')
+   >>> [t.name for t in con.schema.tables]
+   ['COUNTRY', 'JOB', 'DEPARTMENT', 'EMPLOYEE', 'SALES', 'PROJECT', 'EMPLOYEE_PROJECT', 'PROJ_DEPT_BUDGET', 
+    'SALARY_HISTORY', 'CUSTOMER']
+
+3. Using ConnectionWithSchema
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='employee',user='sysdba', password='masterkey',
+       connection_class=fdb.ConnectionWithSchema)
+   >>> [t.name for t in con.tables]
+   ['COUNTRY', 'JOB', 'DEPARTMENT', 'EMPLOYEE', 'SALES', 'PROJECT', 'EMPLOYEE_PROJECT', 'PROJ_DEPT_BUDGET', 
+    'SALARY_HISTORY', 'CUSTOMER']
+
+
+Available information
+---------------------
+
+The :class:`~fdb.schema.Schema` provides information about:
+
+- **Database:** :attr:`Owner name <fdb.schema.Schema.owner_name>`, 
+  :attr:`default character set <fdb.schema.Schema.default_character_set>`, 
+  :attr:`description <fdb.schema.Schema.description>`, 
+  :attr:`security class <fdb.schema.Schema.security_class>` and whether database consist 
+  from :meth:`single or multiple files <fdb.schema.Schema.ismultifile>`.
+- **Facilities:** Available :attr:`character sets <fdb.schema.Schema.character_sets>`, 
+  :attr:`collations <fdb.schema.Schema.collations>`, database :attr:`files <fdb.schema.Schema.files>` and 
+  :attr:`shadows <fdb.schema.Schema.shadows>`.
+- **User database objects:** :attr:`exceptions <fdb.schema.Schema.exceptions>`, 
+  :attr:`generators <fdb.schema.Schema.generators>`, :attr:`domains <fdb.schema.Schema.domains>`, 
+  :attr:`tables <fdb.schema.Schema.tables>` and their :attr:`constraints <fdb.schema.Schema.constraints>`, 
+  :attr:`indices <fdb.schema.Schema.indices>`, :attr:`views <fdb.schema.Schema.views>`, 
+  :attr:`triggers <fdb.schema.Schema.triggers>`, :attr:`procedures <fdb.schema.Schema.procedures>`, 
+  user :attr:`roles <fdb.schema.Schema.roles>` and :attr:`user defined functions <fdb.schema.Schema.functions>`.
+- **System database objects:** :attr:`generators <fdb.schema.Schema.sysgenerators>`, 
+  :attr:`domains <fdb.schema.Schema.sysdomains>`, :attr:`tables <fdb.schema.Schema.systables>` and their 
+  constraints,  :attr:`indices <fdb.schema.Schema.sysindices>`, :attr:`views <fdb.schema.Schema.sysviews>`, 
+  :attr:`triggers <fdb.schema.Schema.systriggers>`, :attr:`procedures <fdb.schema.Schema.sysprocedures>` 
+  and :attr:`functions <fdb.schema.Schema.sysfunctions>`.
+- **Relations between objects:** Through direct links between metadata objects and 
+  :attr:`dependencies <fdb.schema.Schema.dependencies>`.
+
+Metadata objects
+----------------
+
+Schema information is presented as Python objects of various classes with common parent class 
+:class:`~fdb.schema.BaseSchemaItem` (except :class:`~fdb.schema.Schema` itself), that defines several
+common attributes and methods:
+
+Attributes:
+
+- :attr:`~fdb.schema.BaseSchemaItem.name`: Name of database object or None if object doesn't have a name.
+- :attr:`~fdb.schema.BaseSchemaItem.description`: Description (documentation text) for object or None if 
+  object doesn't have a description.
+- :attr:`~fdb.schema.BaseSchemaItem.actions`: List of supported SQL operations on metadata object instance.
+
+Methods:
+
+- :attr:`~fdb.schema.BaseSchemaItem.accept_visitor`: :ref:`Visitor Pattern support <visitor-pattern-support>`.
+- :attr:`~fdb.schema.BaseSchemaItem.issystemobject`: Returns True if this database object is system object.
+- :attr:`~fdb.schema.BaseSchemaItem.get_quoted_name`: Returns quoted (if necessary) name of database object.
+- :attr:`~fdb.schema.BaseSchemaItem.get_dependents`: Returns list of all database objects that 
+  :ref:`depend <object-dependencies>` on this one.
+- :attr:`~fdb.schema.BaseSchemaItem.get_dependencies`: Returns list of database objects that this objects 
+  :ref:`depend <object-dependencies>` on.
+- :attr:`~fdb.schema.BaseSchemaItem.get_sql_for`: Returns :ref:`SQL command string <sql-oprations>` for 
+  specified action on database object.
+
+.. _visitor-pattern-support:
+
+Visitor Pattern support
+-----------------------
+
+`Visitor Pattern`_ is particularly useful when you need to process various objects that need special handling
+in common algorithm (for example display information about them or generate SQL commands to create them in new 
+database). Each metadata object (including :class:`~fdb.schema.Schema`) supports 
+:attr:`~fdb.schema.BaseSchemaItem.accept_visitor` method that calls `class-specific` method on object passed 
+to it as parameter. This method name always starts with 'visit'. For example :class:`~fdb.schema.Table` object 
+calls `visitTable`. This 'visit*' method has one parameter - object instance that calls it.
+
+FDB provides skeleton implementation for :class:`schema Visitor object <fdb.schema.SchemaVisitor>` that
+implements all `visit*` methods called by schema classes as call to method `default_action` that does 
+nothing.
+
+Next code uses visitor pattern to print all DROP SQL statements necessary to drop database object, 
+taking its dependencies into account, i.e. it could be necessary to first drop other - dependant objects 
+before it could be dropped.
+
+.. code-block:: python
+
+   import fdb
+   # Object dropper
+   class ObjectDropper(fdb.schema.SchemaVisitor):
+       def __init__(self):
+           self.seen = []
+       def drop(self,obj):
+           self.seen = []
+           obj.accept_visitor(self)
+       def default_action(self,obj):
+           if not obj.issystemobject() and 'drop' in obj.actions:
+              for dependency in obj.get_dependents():
+                   d = dependency.dependent
+                   if d and d not in self.seen:
+                       d.accept_visitor(self)
+              if obj not in self.seen:
+                   print obj.get_sql_for('drop')
+                   self.seen.append(obj)
+       def visitSchema(self,schema):
+           pass
+       def visitMetadataItem(self,item):
+           pass
+       def visitTableColumn(self,column):
+           column.table.accept_visitor(self)
+       def visitViewColumn(self,column):
+           column.view.accept_visitor(self)
+       def visitDependency(self,dependency):
+           pass
+       def visitConstraint(self,constraint):
+           pass
+       def visitProcedureParameter(self,param):
+           param.procedure.accept_visitor(self)
+       def visitFunctionArgument(self,arg):
+           arg.function.accept_visitor(self)
+       def visitDatabaseFile(self,dbfile):
+           pass
+       def visitShadow(self,shadow):
+           pass
+ 
+   # Sample use:
+
+   con = fdb.connect(dsn='employee',user='sysdba', password='masterkey')
+   table = con.schema.get_table('JOB')
+   dropper = ObjectDropper()
+   dropper.drop(table)
+
+Will produce next result::
+
+   DROP PROCEDURE ALL_LANGS
+   DROP PROCEDURE SHOW_LANGS
+   DROP TABLE JOB
+
+.. _object-dependencies:
+
+Object dependencies
+-------------------
+
+
+
+.. _sql-oprations:
+
+SQL opeations
+-------------
+
+Whenever possible 
+
+
+
+
+
+
 .. _Firebird Documentation: http://www.firebirdsql.org/en/reference-manuals/
 .. _DDL: http://en.wikipedia.org/wiki/Data_Definition_Language
 .. _DML: http://en.wikipedia.org/wiki/Data_Manipulation_Language
 .. _Firebird SAVEPOINTs: http://www.firebirdsql.org/refdocs/langrefupd15-savepoint.html
 .. _Firebird API documentation: http://www.ibphoenix.com/files/60ApiGuide.zip
 .. _busy-wait: http://www.catb.org/jargon/html/B/busy-wait.html
+.. _Visitor Pattern: http://en.wikipedia.org/wiki/Visitor_pattern

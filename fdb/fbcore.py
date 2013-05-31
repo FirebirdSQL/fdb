@@ -23,7 +23,6 @@
 
 import sys
 import os
-from . import ibase
 import ctypes
 import struct
 import time
@@ -31,6 +30,11 @@ import datetime
 import decimal
 import weakref
 import threading
+
+import ibase
+import schema
+import utils
+
 try:
     # Python 2
     from itertools import izip_longest
@@ -158,7 +162,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.1.1'
+__version__ = '1.2'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -172,7 +176,6 @@ def load_api():
     return api
 
 # Exceptions required by Python Database API
-
 
 class Warning(Exception):
     """Exception raised for important warnings like data
@@ -326,6 +329,14 @@ ISOLATION_LEVEL_READ_COMMITED_RO = bs([isc_tpb_version3,
                                        isc_tpb_wait,
                                        isc_tpb_read_committed, 
                                        isc_tpb_rec_version])
+
+# ODS constants
+
+ODS_FB_20 = 11.0
+ODS_FB_21 = 11.1
+ODS_FB_25 = 11.2
+
+# Private constants
 
 _SIZE_OF_SHORT = ctypes.sizeof(ctypes.c_short)
 
@@ -547,7 +558,7 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
                                int2byte(sLen), s)
         params.append(newEntry)
 
-    def addInt(codeAsByte, value):
+    def addByte(codeAsByte, value):
         if (not isinstance(value, (int, mylong))
             or value < 0 or value > 255):
             raise ProgrammingError("The value for an integer DPB code must be"
@@ -556,9 +567,15 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
         newEntry = struct.pack('ccc', int2byte(codeAsByte),
                                b('\x01'), int2byte(value))
         params.append(newEntry)
+    def addInt(codeAsByte, value):
+        if not isinstance(value, (int, mylong)):
+            raise ProgrammingError("The value for an integer DPB code must be"
+                                   " an int or long."
+                                   )
+        newEntry = struct.pack('=ccI', int2byte(codeAsByte),
+                               b('\x04'), value)
+        params.append(newEntry)
 
-    if charset:
-        charset = charset.upper()
     if user:
         addString(isc_dpb_user_name, user)
     if password:
@@ -566,23 +583,24 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
     if role:
         addString(isc_dpb_sql_role_name, role)
     if sql_dialect:
-        addInt(isc_dpb_sql_dialect, sql_dialect)
+        addByte(isc_dpb_sql_dialect, sql_dialect)
     if charset:
-        addString(isc_dpb_lc_ctype, charset)
+        addString(isc_dpb_lc_ctype, charset.upper())
     if buffers:
         addInt(isc_dpb_num_buffers, buffers)
     if force_write:
-        addInt(isc_dpb_force_write, force_write)
+        addByte(isc_dpb_force_write, force_write)
     if no_reserve:
-        addInt(isc_dpb_no_reserve, no_reserve)
+        addByte(isc_dpb_no_reserve, no_reserve)
     if db_key_scope:
-        addInt(isc_dpb_dbkey_scope, db_key_scope)
+        addByte(isc_dpb_dbkey_scope, db_key_scope)
     return b('').join(params)
 
 def connect(dsn='', user=None, password=None, host=None, port=3050, database=None,
             sql_dialect=3, role=None, charset=None, buffers=None,
             force_write=None, no_reserve=None, db_key_scope=None,
-            isolation_level=ISOLATION_LEVEL_READ_COMMITED):
+            isolation_level=ISOLATION_LEVEL_READ_COMMITED,
+            connection_class=None):
     """
     Establish a connection to database. 
     
@@ -602,6 +620,9 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
     :param integer db_key_scope: DBKEY scope override for connection.
     :param isolation_level: Default transaction isolation level for connection **(not used)**.
     :type isolation_level: 0, 1, 2 or 3
+    :param connection_class: Custom connection class
+    :type connection_class: subclass of :class:`Connection`
+    
     :returns: Connection to database.
     :rtype: :class:`Connection` instance.
     
@@ -621,6 +642,10 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
        con = fdb.connect(host='myhost', database='/path/database.fdb', user='sysdba', password='pass', charset='UTF8')
     """
     load_api()
+    if connection_class == None:
+        connection_class = Connection
+    if not issubclass(connection_class,Connection):
+        raise ProgrammingError("'connection_class' must be subclass of Connection")
     if not user:
         user = os.environ.get('ISC_USER', None)
     if not password:
@@ -665,29 +690,98 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
         raise exception_from_status(DatabaseError, _isc_status,
                                     "Error while connecting to database:")
 
-    return Connection(_db_handle, dpb, sql_dialect, charset)
+    return connection_class(_db_handle, dpb, sql_dialect, charset)
 
-def create_database(sql, sql_dialect=3):
+def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None, 
+                    host=None, port=3050, database=None, 
+                    page_size=None, length=None, charset=None, files=None,
+                    connection_class=None):
     """
-    Creates a new database with the supplied "CREATE DATABASE" statement.
+    Creates a new database. Parameters could be specified either by supplied 
+    "CREATE DATABASE" statement, or set of database parameters.
     
     :param sql: "CREATE DATABASE" statement.
     :param sql_dialect: SQL Dialect for newly created database.
     :type sql_dialect: 1 or 3
+    :param dsn: Connection string in format [host[/port]]:database
+    :param string user: User name. If not specified, fdb attempts to use ISC_USER envar.
+    :param string password: User password. If not specified, fdb attempts to use ISC_PASSWORD envar.
+    :param string host: Server host machine specification.
+    :param integer port: Port used by Firebird server **(not used)**.
+    :param string database: Database specification (file spec. or alias)
+    :param integer page_size: Database page size.
+    :param integer length: Database size in pages.
+    :param string charset: Character set for connection.
+    :param string files: Specification of secondary database files.
+    :param connection_class: Custom connection class
+    :type connection_class: subclass of :class:`Connection`
+
     :returns: Connection to the newly created database.
     :rtype: :class:`Connection` instance.
     
-    :raises ProgrammingError: When database creation fails.
+    :raises ProgrammingError: For bad parameter values.
+    :raises DatabaseError: When database creation fails.
 
     Example:
     
     .. code-block:: python
     
-       con = fdb.create_database("create database '/temp/db.db' user 'sysdba' password 'pass'")
+       con = fdb.create_database("create database '/temp/db.fdb' user 'sysdba' password 'pass'")
+       con = fdb.create_database(dsn='/temp/db.fdb',user='sysdba',password='pass',page_size=8192)
     """
     load_api()
-    if isinstance(sql, myunicode):
-        sql = sql.encode(_FS_ENCODING)
+    if connection_class == None:
+        connection_class = Connection
+    if not issubclass(connection_class,Connection):
+        raise ProgrammingError("'connection_class' must be subclass of Connection")
+    
+    # Database to create must be specified by either `sql` or other parameters.
+    if sql:
+        if isinstance(sql, myunicode):
+            sql = sql.encode(_FS_ENCODING)
+    else:
+        if not user:
+            user = os.environ.get('ISC_USER', None)
+        if not password:
+            password = os.environ.get('ISC_PASSWORD', None)
+        if sql_dialect not in [1, 2, 3]:
+            raise ProgrammingError("SQl Dialect must be either 1, 2 or 3")
+    
+        if ((not dsn and not host and not database)
+            or (dsn and (host or database))
+            or (host and not database)
+            ):
+            raise ProgrammingError(
+                "Must supply one of:\n"
+                " 1. keyword argument dsn='host:/path/to/database'\n"
+                " 2. both keyword arguments host='host' and"
+                " database='/path/to/database'\n"
+                " 3. only keyword argument database='/path/to/database'"
+            )
+        if not dsn:
+            if host and host.endswith(':'):
+                raise ProgrammingError("Host must not end with a colon."
+                    " You should specify host='%s' rather than host='%s'."
+                    % (host[:-1], host)
+                    )
+            elif host:
+                dsn = '%s:%s' % (host, database)
+            else:
+                dsn = database
+    
+        dsn = b(dsn,_FS_ENCODING)
+        
+        # Parameter checks
+        
+        sql = "create database '%s' user '%s' password '%s'" % (dsn,user,password)
+        if page_size:
+            sql = '%s page_size %i' % (sql,args['page_size'])
+        if length:
+            sql = '%s length %i' % (sql,args['length'])
+        if charset:
+            sql = '%s default character set %s' % (sql,args['character_set'])
+        if files:
+            sql = '%s %s' % (sql,files)
         
     isc_status = ISC_STATUS_ARRAY(0)
     trans_handle = isc_tr_handle(0)
@@ -700,15 +794,26 @@ def create_database(sql, sql_dialect=3):
             ctypes.c_ushort(len(sql)), sql, sql_dialect,
             ctypes.cast(ctypes.pointer(xsqlda),XSQLDA_PTR))
     if db_api_error(isc_status):
-        raise exception_from_status(ProgrammingError, isc_status,
+        raise exception_from_status(DatabaseError, isc_status,
                                     "Error while creating database:")
 
-    return Connection(db_handle)
+    return connection_class(db_handle)
 
 class TransactionContext(object):
     """Context Manager that manages transaction for object passed to constructor.
     
+    Performs `rollback` if exception is thrown inside code block, otherwise
+    performs `commit` at the end of block.
+    
+    Example::
+    
+       with TransactionContext(my_transaction):
+           cursor.execute('insert into tableA (x,y) values (?,?)',(x,y))
+           cursor.execute('insert into tableB (x,y) values (?,?)',(x,y))
+    
     """
+    #: Transaction-like object this instance manages.
+    transaction = None
     def __init__(self,transaction):
         """
         :param transaction: Any object that supports `begin()`, `commit()` and
@@ -736,8 +841,22 @@ class Connection(object):
        :func:`connect` or :func:`create_database` to get Connection instances.
     """
 
-    def __init__(self, db_handle, dpb=None, sql_dialect=3,
-                 charset=None):
+    # PEP 249 (Python DB API 2.0) extensions
+    Warning = Warning
+    Error = Error
+    InterfaceError = InterfaceError
+    DatabaseError = DatabaseError
+    DataError = DataError
+    OperationalError = OperationalError
+    IntegrityError = IntegrityError
+    InternalError = InternalError
+    ProgrammingError = ProgrammingError
+    NotSupportedError = NotSupportedError
+
+    #: (integer) sql_dialect for this connection, do not change.
+    sql_dialect = 3
+    
+    def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None):
         """
         :param db_handle: Database handle provided by factory function.
         :param dpb: Database Parameter Block associated with database handle.
@@ -745,28 +864,41 @@ class Connection(object):
         :param string charset: Character set associated with database handle.
         """
         if charset:
-            self._charset = charset.upper()
+            self.__charset = charset.upper()
         else:
-            self._charset = None
+            self.__charset = None
         self._python_charset = charset_map.get(self.charset, self.charset)
 
         self._default_tpb = ISOLATION_LEVEL_READ_COMMITED
+        # Main transaction
         self._main_transaction = Transaction([self], 
                                              default_tpb=self._default_tpb)
-        self._transactions = [self._main_transaction]
+        # ReadOnly ReadCommitted transaction
+        self._query_transaction = Transaction([self], 
+                                              default_tpb=ISOLATION_LEVEL_READ_COMMITED_RO)
+        self._transactions = [self._main_transaction,self._query_transaction]
         self.__precision_cache = {}
         self.__sqlsubtype_cache = {}
         self.__conduits = []
         self.__group = None
+        self.__schema = None
+        self.__ods = None
 
-        #: (integer) sql_dialect for this connection, do not change.
+        # (integer) sql_dialect for this connection, do not change.
         self.sql_dialect = sql_dialect
         self._dpb = dpb
         self._isc_status = ISC_STATUS_ARRAY()
         self._db_handle = db_handle
         # Cursor for internal use
-        self.__ic = Cursor(self, self.main_transaction)
+        #self.__ic = Cursor(self, self._query_transaction)
+        self.__ic = self.query_transaction.cursor()
         self.__ic._set_as_internal()
+        # Get Firebird engine version
+        verstr = self.db_info([isc_info_firebird_version])[isc_info_firebird_version]
+        x = verstr.split()
+        (x,self.__version) = x[0].split('V')
+        x = self.__version.split('.')
+        self.__engine_version = float('%s.%s' % (x[0],x[1]))
     
     def __remove_group(self, group_ref):
         self.__group = None
@@ -796,17 +928,44 @@ class Connection(object):
                 self._db_handle = None
     def __get_main_transaction(self):
         return self._main_transaction
+    def __get_query_transaction(self):
+        return self._query_transaction
     def __get_transactions(self):
         return tuple(self._transactions)
     def __get_closed(self):
         return self._db_handle == None
     def __get_server_version(self):
         return self.db_info([isc_info_version])[isc_info_version]
-        #return self.db_info([isc_info_firebird_version])[isc_info_firebird_version]
+    def __get_firebird_version(self):
+        return self.db_info([isc_info_firebird_version])[isc_info_firebird_version]
+    def __get_version(self):
+        return self.__version
+    def __get_engine_version(self):
+        return self.__engine_version
     def __get_default_tpb(self):
         return self._default_tpb
     def __set_default_tpb(self, value):
         self._default_tpb = _validateTPB(value)
+    def __get_charset(self):
+        return self.__charset
+    def __set_charset(self, value):
+        # More informative error message:
+        raise AttributeError("A connection's 'charset' property can be"
+            " specified upon Connection creation as a keyword argument to"
+            " fdb.connect, but it cannot be modified thereafter."
+            )
+    def __get_group(self):
+        if self.__group:
+            return self.__group()
+        else:
+            return None
+    def __get_ods(self):
+        if not self.__ods:
+            raw = self.db_info([ibase.isc_info_ods_version,
+                                ibase.isc_info_ods_minor_version])
+            self.__ods = float('%d.%d' % (raw[ibase.isc_info_ods_version],
+                                          raw[ibase.isc_info_ods_minor_version]))
+        return self.__ods
     def __parse_date(self, raw_value):
         "Convert raw data to datetime.date"
         nday = bytes_to_int(raw_value) + 678882
@@ -837,18 +996,24 @@ class Connection(object):
         m = m % 60
         s = s % 60
         return (h, m, s, (n % 10000) * 100)
+    def _get_schema(self):
+        if not self.__schema:
+            self.__schema = schema.Schema()
+            self.__schema.bind(weakref.proxy(self))
+            self.__schema._set_as_internal()
+        return self.__schema
     def _get_array_sqlsubtype(self, relation, column):
         subtype = self.__sqlsubtype_cache.get((relation,column))
         if subtype is not None:
             return subtype
         self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_SUB_TYPE"
-                          " FROM RDB$FIELDS FIELD_SPEC, RDB$RELATION_FIELDS REL_FIELDS"
-                          " WHERE"
-                          " FIELD_SPEC.RDB$FIELD_NAME = REL_FIELDS.RDB$FIELD_SOURCE"
-                          " AND REL_FIELDS.RDB$RELATION_NAME = ?"
-                          " AND REL_FIELDS.RDB$FIELD_NAME = ?",
-                          (p3fix(relation,self._python_charset),
-                           p3fix(column,self._python_charset)))
+                         " FROM RDB$FIELDS FIELD_SPEC, RDB$RELATION_FIELDS REL_FIELDS"
+                         " WHERE"
+                         " FIELD_SPEC.RDB$FIELD_NAME = REL_FIELDS.RDB$FIELD_SOURCE"
+                         " AND REL_FIELDS.RDB$RELATION_NAME = ?"
+                         " AND REL_FIELDS.RDB$FIELD_NAME = ?",
+                         (p3fix(relation,self._python_charset),
+                          p3fix(column,self._python_charset)))
         result = self.__ic.fetchone()
         self.__ic.close()
         if result:
@@ -870,15 +1035,15 @@ class Connection(object):
             return precision
         # First, try table
         self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
-                          " FROM RDB$FIELDS FIELD_SPEC,"
-                          " RDB$RELATION_FIELDS REL_FIELDS"
-                          " WHERE"
-                          " FIELD_SPEC.RDB$FIELD_NAME ="
-                          " REL_FIELDS.RDB$FIELD_SOURCE"
-                          " AND REL_FIELDS.RDB$RELATION_NAME = ?"
-                          " AND REL_FIELDS.RDB$FIELD_NAME = ?",
-                          (p3fix(sqlvar.relname,self._python_charset),
-                           p3fix(sqlvar.sqlname,self._python_charset)))
+                         " FROM RDB$FIELDS FIELD_SPEC,"
+                         " RDB$RELATION_FIELDS REL_FIELDS"
+                         " WHERE"
+                         " FIELD_SPEC.RDB$FIELD_NAME ="
+                         " REL_FIELDS.RDB$FIELD_SOURCE"
+                         " AND REL_FIELDS.RDB$RELATION_NAME = ?"
+                         " AND REL_FIELDS.RDB$FIELD_NAME = ?",
+                         (p3fix(sqlvar.relname,self._python_charset),
+                          p3fix(sqlvar.sqlname,self._python_charset)))
         result = self.__ic.fetchone()
         self.__ic.close()
         if result:
@@ -886,16 +1051,16 @@ class Connection(object):
             return result[0]
         # Next, try stored procedure output parameter
         self.__ic.execute("SELECT FIELD_SPEC.RDB$FIELD_PRECISION"
-                          " FROM RDB$FIELDS FIELD_SPEC,"
-                          " RDB$PROCEDURE_PARAMETERS REL_FIELDS"
-                          " WHERE"
-                          " FIELD_SPEC.RDB$FIELD_NAME ="
-                          " REL_FIELDS.RDB$FIELD_SOURCE"
-                          " AND RDB$PROCEDURE_NAME = ?"
-                          " AND RDB$PARAMETER_NAME = ?"
-                          " AND RDB$PARAMETER_TYPE = 1",
-                          (p3fix(sqlvar.relname,self._python_charset),
-                           p3fix(sqlvar.sqlname,self._python_charset)))
+                         " FROM RDB$FIELDS FIELD_SPEC,"
+                         " RDB$PROCEDURE_PARAMETERS REL_FIELDS"
+                         " WHERE"
+                         " FIELD_SPEC.RDB$FIELD_NAME ="
+                         " REL_FIELDS.RDB$FIELD_SOURCE"
+                         " AND RDB$PROCEDURE_NAME = ?"
+                         " AND RDB$PARAMETER_NAME = ?"
+                         " AND RDB$PARAMETER_TYPE = 1",
+                         (p3fix(sqlvar.relname,self._python_charset),
+                          p3fix(sqlvar.sqlname,self._python_charset)))
         result = self.__ic.fetchone()
         self.__ic.close()
         if result:
@@ -1413,14 +1578,6 @@ class Connection(object):
     def __del__(self):
         if self._db_handle != None:
             self.__close()
-    def _get_charset(self):
-        return self._charset
-    def _set_charset(self, value):
-        # More informative error message:
-        raise AttributeError("A connection's 'charset' property can be"
-            " specified upon Connection creation as a keyword argument to"
-            " kinterbasdb.connect, but it cannot be modified thereafter."
-            )
     def _set_group(self, group):
         # This package-private method allows ConnectionGroup's membership
         # management functionality to bypass the conceptually read-only nature
@@ -1429,31 +1586,90 @@ class Connection(object):
             self.__group = weakref.ref(group,self.__remove_group)
         else:
             self.__group = None
-    def _group_get(self):
-        if self.__group:
-            return self.__group()
-        else:
-            return None
     #: (Read Only) :class:`ConnectionGroup` this Connection belongs to, or None.
-    group = property(_group_get)
+    group = property(__get_group)
     #: (Read Only) (string) Connection Character set name.
-    charset = property(_get_charset, _set_charset)
+    charset = property(__get_charset, __set_charset)
     #: (Read Only) (tuple) :class:`Transaction` instances associated with this connection.
     transactions = property(__get_transactions)
     #: (Read Only) Main :class:`Transaction` instance for this connection
     #: Connection methods :meth:`begin`, :meth:`savepoint`, :meth:`commit` and
     #: :meth:`rollback` are delegated to this transaction object.
     main_transaction = property(__get_main_transaction)
+    #: (Read Only) Special "query" :class:`Transaction` instance for this connection.
+    #: This is ReadOnly ReadCommitted transaction that could be active indefinitely
+    #: without blocking garbage collection. It's used internally to query metadata,
+    #: but it's generally useful.
+    query_transaction = property(__get_query_transaction)
     #: (Read/Write) Deafult Transaction Parameter Block used for all newly started transactions.
     default_tpb = property(__get_default_tpb, __set_default_tpb)
     #: (Read Only) True if connection is closed.
     closed = property(__get_closed)
     #: (Read Only) (string) Version string returned by server for this connection.
+    #: This version string contains InterBase-friendly engine version number, i.e.
+    #: version that takes into account inherited IB version number.
+    #: For example it's 'LI-V6.3.2.26540 Firebird 2.5' for Firebird 2.5.2
     server_version = property(__get_server_version)
+    #: (Read Only) (string) Version string returned by server for this connection.
+    #: This version string contains Firebird engine version number, i.e.
+    #: version that DOES NOT takes into account inherited IB version number.
+    #: For example it's 'LI-V2.5.2.26540 Firebird 2.5' for Firebird 2.5.2
+    firebird_version = property(__get_firebird_version)
+    #: (Read Only) (string) Firebird version number string of connected server.
+    #: Uses Firebird version numbers in form: major.minor.subrelease.build
+    version = property(__get_version)
+    #: (Read Only) (float) Firebird version number of connected server. Only major.minor version.
+    engine_version = property(__get_engine_version)
+    #: (Read Only) (:class:`~fdb.schema.Schema`) Database metadata object.
+    schema = utils.LateBindingProperty(_get_schema)
+    #: (Read Only) (float) On-Disk Structure (ODS) version.
+    ods = property(__get_ods)
+
+
+@utils.embed_attributes(schema.Schema,'schema')
+class ConnectionWithSchema(Connection):
+    """:class:`Connection` descendant that exposes all attributes of encapsulated
+    :class:`~fdb.schema.Schema` instance directly as connection attributes, except 
+    :meth:`~fdb.schema.Schema.close` and :meth:`~fdb.schema.Schema.bind`, and 
+    those attributes that are already defined by Connection class.
+    
+    .. note:: 
+    
+       Use `connection_class` parametr of :func:`connect` or :func:`create_database`
+       to create connections with direct schema interface.
+    """
+    def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None):
+        super(ConnectionWithSchema,self).__init__(db_handle,dpb,sql_dialect,charset)
+        self.__schema = schema.Schema()
+        self.__schema.bind(weakref.proxy(self))
+        self.__schema._set_as_internal()
+        # Injecting callables bound to embedded Schema instance
+        for attr in dir(self.__schema):
+            if not (attr.find('__') >= 0 or attr.startswith('_') 
+                    or attr in ['close','bind'] or hasattr(self,attr)):
+                val = getattr(self.__schema,attr)
+                if callable(val):
+                    setattr(self,attr,val)
+                    #print 'injecting callable',attr
+    def _get_schema(self):
+        return self.__schema
+
 
 class EventBlock(object):
+    """Represents Firebird API structure for block of events.
+    
+    .. warning: Internaly used class not intended for direct use.
     """
-    """
+    #: List of registered event names
+    event_names = []
+    #: length of internal event buffer
+    buf_length = 0
+    #: Event ID
+    event_id = 0
+    #: Event buffer
+    event_buf = None
+    #: Result buffer
+    result_buf = None
     def __init__(self,queue,db_handle,event_names):
         self.__first = True
         def callback(result, length, updated):
@@ -1489,6 +1705,7 @@ class EventBlock(object):
             raise exception_from_status(DatabaseError, self._isc_status,
                                         "Error while waiting for events:")
     def count_and_reregister(self):
+        "Count event occurences and reregister interest in fut=rther notifications."
         result = {}
         api.isc_event_counts(self.__results, self.buf_length,
                                self.event_buf, self.result_buf)
@@ -1503,6 +1720,7 @@ class EventBlock(object):
         self.__wait_for_events()
         return result
     def close(self):
+        "Close this block canceling managed events."
         if not self.closed:
             api.isc_cancel_events(self._isc_status,self._db_handle,self.event_id)
             self.__closed = True
@@ -1513,6 +1731,7 @@ class EventBlock(object):
         return self.__closed
     def __del__(self):
         self.close()
+    #: (ReadOnly) True if block is closed for business
     closed = property(__get_closed)
 
 
@@ -1633,30 +1852,38 @@ class PreparedStatement(object):
        PreparedStatements are bound to :class:`Cursor` instance that created them,
        and using them with other Cursor would report an error.
     """
-    #: Constant for internal use by this class.
+    #: Constant for internal use by this class. Do not change!
     RESULT_SET_EXHAUSTED = 100
-    #: Constant for internal use by this class.
+    #: Constant for internal use by this class. Do not change!
     NO_FETCH_ATTEMPTED_YET = -1
+    #: :class:`Cursor` instance that manages this PreparedStatement. Do not change!
+    cursor = None
+    #: (integer) An integer code that can be matched against the statement 
+    #: type constants in the isc_info_sql_stmt_* series. Do not change!
+    statement_type = 0
+    #: The number of input parameters the statement requires. Do not change!
+    n_input_params = 0
+    #: The number of output fields the statement produces. Do not change!
+    n_output_params = 0
 
     def __init__(self, operation, cursor, internal=True):
         self.__sql = operation
         self.__internal = internal
         if internal:
-            self.cursor = weakref.ref(cursor)
+            self.cursor = weakref.proxy(cursor,self.__cursor_deleted)
         else:
-            #: :class:`Cursor` instance that manages this PreparedStatement.
             self.cursor = cursor
-        self._stmt_handle = None  # isc_stmt_handle(0)
+        self._stmt_handle = None
         self._isc_status = ISC_STATUS_ARRAY()
-        #: Internal XSQLDA structure for output values.
-        self.out_sqlda = xsqlda_factory(10)
-        #: Internal XSQLDA structure for input values.
-        self.in_sqlda = xsqlda_factory(10)
-        #: Internal list to save original input SQLDA structures when they has 
-        #: to temporarily augmented.
-        self.in_sqlda_save = []
-        #: (integer) An integer code that can be matched against the statement 
-        #: type constants in the isc_info_sql_stmt_* series.
+        # Internal XSQLDA structure for output values.
+        self._out_sqlda = xsqlda_factory(10)
+        # Internal XSQLDA structure for input values.
+        self._in_sqlda = xsqlda_factory(10)
+        # Internal list to save original input SQLDA structures when they has 
+        # to temporarily augmented.
+        self._in_sqlda_save = []
+        # (integer) An integer code that can be matched against the statement 
+        # type constants in the isc_info_sql_stmt_* series.
         self.statement_type = None
         self.__streamed_blobs = []
         self.__blob_readers = []
@@ -1665,9 +1892,8 @@ class PreparedStatement(object):
         self.__closed = False
         self.__description = None
         self.__output_cache = None
-        #self.out_buffer = None
         self._last_fetch_status = ISC_STATUS(self.NO_FETCH_ATTEMPTED_YET)
-        connection = self.__get_connection()
+        connection = self.cursor._connection
         self.__charset = connection.charset
         self.__python_charset = connection._python_charset
         self.__sql_dialect = connection.sql_dialect
@@ -1683,11 +1909,11 @@ class PreparedStatement(object):
         # prepare statement
         op = b(operation,self.__python_charset)
         api.isc_dsql_prepare(self._isc_status,
-                               self.__get_transaction()._tr_handle,
+                               self.cursor._transaction._tr_handle,
                                self._stmt_handle,
                                len(op),op,
                                self.__sql_dialect,
-                               ctypes.cast(ctypes.pointer(self.out_sqlda),
+                               ctypes.cast(ctypes.pointer(self._out_sqlda),
                                            XSQLDA_PTR))
         if db_api_error(self._isc_status):
             raise exception_from_status(DatabaseError, self._isc_status,
@@ -1707,68 +1933,56 @@ class PreparedStatement(object):
         # Init XSQLDA for input parameters
         api.isc_dsql_describe_bind(self._isc_status, self._stmt_handle,
                                      self.__sql_dialect,
-                                     ctypes.cast(ctypes.pointer(self.in_sqlda),
+                                     ctypes.cast(ctypes.pointer(self._in_sqlda),
                                                  XSQLDA_PTR))
         if db_api_error(self._isc_status):
             raise exception_from_status(DatabaseError, self._isc_status,
                 "Error while determining SQL statement parameters:")
-        if self.in_sqlda.sqld > self.in_sqlda.sqln:
-            self.in_sqlda = xsqlda_factory(self.in_sqlda.sqld)
+        if self._in_sqlda.sqld > self._in_sqlda.sqln:
+            self._in_sqlda = xsqlda_factory(self._in_sqlda.sqld)
             api.isc_dsql_describe_bind(self._isc_status, self._stmt_handle,
                                          self.__sql_dialect,
-                                         ctypes.cast(ctypes.pointer(self.in_sqlda),
+                                         ctypes.cast(ctypes.pointer(self._in_sqlda),
                                                      XSQLDA_PTR))
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                     "Error while determining SQL statement parameters:")
-        #: The number of input parameters the statement requires.
-        self.n_input_params = self.in_sqlda.sqld
+        # The number of input parameters the statement requires.
+        self.n_input_params = self._in_sqlda.sqld
         # record original type and size information so it can be restored for
         # subsequent executions (mind the implicit string conversions!)
-        for sqlvar in self.in_sqlda.sqlvar[:self.n_input_params]:
-            self.in_sqlda_save.append((sqlvar.sqltype, sqlvar.sqllen))
+        for sqlvar in self._in_sqlda.sqlvar[:self.n_input_params]:
+            self._in_sqlda_save.append((sqlvar.sqltype, sqlvar.sqllen))
         # Init output XSQLDA
         api.isc_dsql_describe(self._isc_status, self._stmt_handle,
                                 self.__sql_dialect,
-                                ctypes.cast(ctypes.pointer(self.out_sqlda),
+                                ctypes.cast(ctypes.pointer(self._out_sqlda),
                                             XSQLDA_PTR))
         if db_api_error(self._isc_status):
             raise exception_from_status(DatabaseError, self._isc_status,
                 "Error while determining SQL statement output:")
-        if self.out_sqlda.sqld > self.out_sqlda.sqln:
-            self.out_sqlda = xsqlda_factory(self.out_sqlda.sqld)
+        if self._out_sqlda.sqld > self._out_sqlda.sqln:
+            self._out_sqlda = xsqlda_factory(self._out_sqlda.sqld)
             api.isc_dsql_describe(self._isc_status, self._stmt_handle,
                                     self.__sql_dialect,
-                                    ctypes.cast(ctypes.pointer(self.out_sqlda),
+                                    ctypes.cast(ctypes.pointer(self._out_sqlda),
                                                 XSQLDA_PTR))
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                     "Error while determining SQL statement output:")
-        #: The number of output fields the statement produces.
-        self.n_output_params = self.out_sqlda.sqld
-        self.__coerce_XSQLDA(self.out_sqlda)
+        # The number of output fields the statement produces.
+        self.n_output_params = self._out_sqlda.sqld
+        self.__coerce_XSQLDA(self._out_sqlda)
         self.__prepared = True
         self._name = None
+    def __cursor_deleted(self,obj):
+        self.cursor = None
     def __get_name(self):
         return self._name
     def __set_name(self,name):
         if self._name:
             raise ProgrammingError("Cursor's name has already been declared")
         self._set_cursor_name(name)
-    def __get_connection(self):
-        if self.__internal:
-            cur = self.cursor()
-        else:
-            cur = self.cursor
-        if cur:
-            return cur._connection if isinstance(cur._connection,Connection) else cur._connection()
-        else:
-            return None
-    def __get_transaction(self):
-        if self.__internal:
-            return self.cursor()._transaction
-        else:
-            return self.cursor._transaction
     def __get_closed(self):
         return self.__closed
     def __get_plan(self):
@@ -1875,8 +2089,8 @@ class PreparedStatement(object):
     def __get_description(self):
         if not self.__description:
             desc = []
-            if self.__prepared and (self.out_sqlda.sqld > 0):
-                for sqlvar in self.out_sqlda.sqlvar[:self.out_sqlda.sqld]:
+            if self.__prepared and (self._out_sqlda.sqld > 0):
+                for sqlvar in self._out_sqlda.sqlvar[:self._out_sqlda.sqld]:
                     # Field name (or alias)
                     sqlname = p3fix(sqlvar.sqlname[:sqlvar.sqlname_length],
                                     self.__python_charset)
@@ -1896,7 +2110,7 @@ class PreparedStatement(object):
                                       SQL_INT64]
                           and (sqlvar.sqlsubtype or scale)):
                         vtype = decimal.Decimal
-                        precision = (self.__get_connection()._determine_field_precision(sqlvar))
+                        precision = (self.cursor._connection._determine_field_precision(sqlvar))
                         dispsize = 20
                     elif vartype == SQL_SHORT:
                         vtype = IntType
@@ -1913,7 +2127,7 @@ class PreparedStatement(object):
                         # could be Fixed point
                         if (self.__sql_dialect < 3) and scale:
                             vtype = decimal.Decimal
-                            precision = (self.__get_connection()._determine_field_precision(sqlvar))
+                            precision = (self.cursor._connection._determine_field_precision(sqlvar))
                         else:
                             vtype = FloatType
                         dispsize = 17
@@ -2051,7 +2265,7 @@ class PreparedStatement(object):
     def __coerce_XSQLDA(self, xsqlda):
         """Allocate space for SQLVAR data.
         """
-        for sqlvar in xsqlda.sqlvar[:self.out_sqlda.sqld]:
+        for sqlvar in xsqlda.sqlvar[:self._out_sqlda.sqld]:
             if sqlvar.sqltype & 1:
                 sqlvar.sqlind = ctypes.pointer(ISC_SHORT(0))
             vartype = sqlvar.sqltype & ~1
@@ -2167,8 +2381,8 @@ class PreparedStatement(object):
                         use_stream = True
                 if use_stream:
                     # Stream BLOB
-                    value = BlobReader(blobid,self.__get_connection()._db_handle,
-                                       self.__get_transaction()._tr_handle,
+                    value = BlobReader(blobid,self.cursor._connection._db_handle,
+                                       self.cursor._transaction._tr_handle,
                                        sqlvar.sqlsubtype == 1,
                                        self.__charset)
                     self.__blob_readers.append(value)
@@ -2176,8 +2390,8 @@ class PreparedStatement(object):
                     # Materialized BLOB
                     blob_handle = isc_blob_handle()
                     api.isc_open_blob2(self._isc_status,
-                                         self.__get_connection()._db_handle,
-                                         self.__get_transaction()._tr_handle,
+                                         self.cursor._connection._db_handle,
+                                         self.cursor._transaction._tr_handle,
                                          blob_handle, blobid, 0, None)
                     if db_api_error(self._isc_status):
                         raise exception_from_status(DatabaseError,
@@ -2248,11 +2462,11 @@ class PreparedStatement(object):
                 arrayid = ISC_QUAD(bytes_to_uint(val[:4]),
                                         bytes_to_uint(val[4:sqlvar.sqllen]))
                 arraydesc = ISC_ARRAY_DESC(0)
-                sqlsubtype = self.__get_connection()._get_array_sqlsubtype(sqlvar.relname,
+                sqlsubtype = self.cursor._connection._get_array_sqlsubtype(sqlvar.relname,
                                                                            sqlvar.sqlname)
                 api.isc_array_lookup_bounds(self._isc_status,
-                                              self.__get_connection()._db_handle,
-                                              self.__get_transaction()._tr_handle,
+                                              self.cursor._connection._db_handle,
+                                              self.cursor._transaction._tr_handle,
                                               sqlvar.relname,
                                               sqlvar.sqlname,
                                               arraydesc)
@@ -2277,8 +2491,8 @@ class PreparedStatement(object):
                                            buf_pointer)
                 tsize = ISC_LONG(total_size)
                 api.isc_array_get_slice(self._isc_status,
-                                          self.__get_connection()._db_handle,
-                                          self.__get_transaction()._tr_handle,
+                                          self.cursor._connection._db_handle,
+                                          self.cursor._transaction._tr_handle,
                                           arrayid, arraydesc,
                                           value_buffer, tsize)
                 if db_api_error(self._isc_status):
@@ -2586,8 +2800,8 @@ class PreparedStatement(object):
                     if hasattr(value,'read'):
                         # It seems we've got file-like object, use stream BLOB
                         api.isc_create_blob2(self._isc_status,
-                                               self.__get_connection()._db_handle,
-                                               self.__get_transaction()._tr_handle,
+                                               self.cursor._connection._db_handle,
+                                               self.cursor._transaction._tr_handle,
                                                blob_handle, blobid, 4, 
                                                bs([ibase.isc_bpb_version1,
                                                    ibase.isc_bpb_type,1,
@@ -2626,8 +2840,8 @@ class PreparedStatement(object):
                                             ' a non-textual BLOB column.')
                         blob = ctypes.create_string_buffer(value)
                         api.isc_create_blob2(self._isc_status,
-                                               self.__get_connection()._db_handle,
-                                               self.__get_transaction()._tr_handle,
+                                               self.cursor._connection._db_handle,
+                                               self.cursor._transaction._tr_handle,
                                                blob_handle, blobid, 0, None)
                         if db_api_error(self._isc_status):
                             raise exception_from_status(DatabaseError,
@@ -2667,11 +2881,11 @@ class PreparedStatement(object):
                     arraydesc = ISC_ARRAY_DESC(0)
                     sqlvar.sqldata = ctypes.cast(ctypes.pointer(arrayid),
                                                  buf_pointer)
-                    sqlsubtype = self.__get_connection()._get_array_sqlsubtype(sqlvar.relname,
+                    sqlsubtype = self.cursor._connection._get_array_sqlsubtype(sqlvar.relname,
                                                                                sqlvar.sqlname)
                     api.isc_array_lookup_bounds(self._isc_status,
-                                                  self.__get_connection()._db_handle,
-                                                  self.__get_transaction()._tr_handle,
+                                                  self.cursor._connection._db_handle,
+                                                  self.cursor._transaction._tr_handle,
                                                   sqlvar.relname,
                                                   sqlvar.sqlname,
                                                   arraydesc)
@@ -2703,8 +2917,8 @@ class PreparedStatement(object):
                                                  0, dimensions,
                                                  value,value_buffer,0)
                     api.isc_array_put_slice(self._isc_status,
-                                              self.__get_connection()._db_handle,
-                                              self.__get_transaction()._tr_handle,
+                                              self.cursor._connection._db_handle,
+                                              self.cursor._transaction._tr_handle,
                                               arrayid_ptr, arraydesc,
                                               value_buffer, 
                                               tsize)
@@ -2740,12 +2954,12 @@ class PreparedStatement(object):
             self.__description = None
             self.__output_cache = None
             self._name = None
-            #self.out_buffer = None
-            connection = self.__get_connection()
+            connection = self.cursor._connection if self.cursor else None
             if (not connection) or (connection and not connection.closed):
                 api.isc_dsql_free_statement(self._isc_status, stmt_handle,
                                               ibase.DSQL_drop)
-                if db_api_error(self._isc_status) and (status[1] != 335544528):
+                if (db_api_error(self._isc_status) 
+                    and (self._isc_status[1] not in [335544528,335544485])):
                     raise exception_from_status(DatabaseError, self._isc_status,
                                                 "Error while closing SQL statement:")
     def _execute(self, parameters=None):
@@ -2753,27 +2967,27 @@ class PreparedStatement(object):
         if parameters:
             if not isinstance(parameters, (ListType, TupleType)):
                 raise TypeError("parameters must be list or tuple")
-            if len(parameters) > self.in_sqlda.sqln:
+            if len(parameters) > self._in_sqlda.sqln:
                 raise ProgrammingError("Statement parameter sequence contains"
                                        " %d parameters, but only %d are allowed" %
-                                       (len(parameters), self.in_sqlda.sqln))
+                                       (len(parameters), self._in_sqlda.sqln))
             # Restore original type and size information for input parameters
             i = 0
-            for sqlvar in self.in_sqlda.sqlvar[:self.n_input_params]:
-                sqlvar.sqltype, sqlvar.sqllen = self.in_sqlda_save[i]
+            for sqlvar in self._in_sqlda.sqlvar[:self.n_input_params]:
+                sqlvar.sqltype, sqlvar.sqllen = self._in_sqlda_save[i]
                 i += 1
-            self.__Tuple2XSQLDA(self.in_sqlda, parameters)
-            xsqlda_in = ctypes.cast(ctypes.pointer(self.in_sqlda), XSQLDA_PTR)
+            self.__Tuple2XSQLDA(self._in_sqlda, parameters)
+            xsqlda_in = ctypes.cast(ctypes.pointer(self._in_sqlda), XSQLDA_PTR)
         else:
             xsqlda_in = None
         # Execute the statement
         if ((self.statement_type == isc_info_sql_stmt_exec_procedure)
-            and (self.out_sqlda.sqld > 0)):
+            and (self._out_sqlda.sqld > 0)):
             # NOTE: We have to pass xsqlda_out only for statements that return
             # single row
-            xsqlda_out = ctypes.cast(ctypes.pointer(self.out_sqlda), XSQLDA_PTR)
+            xsqlda_out = ctypes.cast(ctypes.pointer(self._out_sqlda), XSQLDA_PTR)
             api.isc_dsql_execute2(self._isc_status,
-                                    self.__get_transaction()._tr_handle,
+                                    self.cursor._transaction._tr_handle,
                                     self._stmt_handle,
                                     self.__sql_dialect,
                                     xsqlda_in,
@@ -2785,10 +2999,10 @@ class PreparedStatement(object):
             # via fetch*() calls as Python DB API requires. However, it's not
             # possible to call fetch on open such statement, so we'll cache
             # the result and return it in fetchone instead calling fetch.
-            self.__output_cache = self.__XSQLDA2Tuple(self.out_sqlda)
+            self.__output_cache = self.__XSQLDA2Tuple(self._out_sqlda)
         else:
             api.isc_dsql_execute2(self._isc_status,
-                                    self.__get_transaction()._tr_handle,
+                                    self.cursor._transaction._tr_handle,
                                     self._stmt_handle,
                                     self.__sql_dialect,
                                     xsqlda_in,
@@ -2819,9 +3033,9 @@ class PreparedStatement(object):
                     self._isc_status,
                     self._stmt_handle,
                     self.__sql_dialect,
-                    ctypes.cast(ctypes.pointer(self.out_sqlda), XSQLDA_PTR))
+                    ctypes.cast(ctypes.pointer(self._out_sqlda), XSQLDA_PTR))
                 if self._last_fetch_status == 0:
-                    return self.__XSQLDA2Tuple(self.out_sqlda)
+                    return self.__XSQLDA2Tuple(self._out_sqlda)
                 elif self._last_fetch_status == self.RESULT_SET_EXHAUSTED:
                     self._free_handle()
                     return None
@@ -2987,8 +3201,14 @@ class Cursor(object):
             return self._ps.plan
         else:
             return None
+    def __get_connection(self):
+        return self._connection
+    def __get_transaction(self):
+        return self._transaction
+    def __connection_deleted(self,obj):
+        self._connection = None
     def _set_as_internal(self):
-        self._connection = weakref.ref(self._connection)
+        self._connection = weakref.proxy(self._connection,self.__connection_deleted)
     def callproc(self, procname, parameters=None):
         """Call a stored database procedure with the given name.
         
@@ -3121,6 +3341,7 @@ class Cursor(object):
            direct use of prepared statement and calling `execute` in a loop 
            directly in application.
         
+        :returns: self, so call to executemany could be used as iterator.
         :param operation: SQL command specification.
         :type operation: string or :class:`PreparedStatement` instance
         :param seq_of_parameters: Sequence of sequences of parameters. Must contain 
@@ -3137,6 +3358,7 @@ class Cursor(object):
         """
         for parameters in seq_of_parameters:
             self.execute(operation, parameters)
+        return self
     def fetchone(self):
         """Fetch the next row of a query result set.
         
@@ -3254,7 +3476,7 @@ class Cursor(object):
         :returns: Iterator that yields :class:`fbcore._RowMapping` instance 
                   like :meth:`fetchonemap`.
         """
-        return Iterator(self.fetchonemap, None)
+        return utils.Iterator(self.fetchonemap, None)
     def setinputsizes(self, sizes):
         """Required by Python DB API 2.0, but pointless for Firebird, so it
         does nothing."""
@@ -3324,6 +3546,12 @@ class Cursor(object):
     #: for last executed statement generated by the database engine’s optimizer.
     #: `None` if no statement was executed.
     plan = property(__get_plan)
+    #: (Read Only) (:class:`Connection`) PEP 249 Extension.
+    #: Reference to the :class:`Connection` object on which the cursor was created.
+    connection = property(__get_connection)
+    #: (Read Only) (:class:`Transaction`)
+    #: Reference to the :class:`Transaction` object on which the cursor was created.
+    transaction = property(__get_transaction)
 
 
 class Transaction(object):
@@ -3338,6 +3566,12 @@ class Transaction(object):
        use :meth:`Connection.trans` method to obtain such `Transaction` instance.
     
     """
+    #: (Read/Write) Transaction Parameter Block.
+    default_tpb = ISOLATION_LEVEL_READ_COMMITED
+    #: (Read/Write) Default action on active transaction when it's closed.
+    #: Accepted values: commit, rollback
+    default_action = 'commit'
+
     def __init__(self, connections, default_tpb=None, default_action='commit'):
         """
         :param iterable connections: Sequence of (up to 16) :class:`Connection` instances.
@@ -3359,8 +3593,6 @@ class Transaction(object):
         if default_tpb == None:
             self.default_tpb = ISOLATION_LEVEL_READ_COMMITED
         else:
-            #: (Read/Write) Transaction Parameter Block.
-            #: **Default is ISOLATION_LEVEL_READ_COMMITED**.
             self.default_tpb = default_tpb
         self.default_action = default_action
         self._cursors = []  # Weak references to cursors
@@ -4317,25 +4549,6 @@ class BlobReader(object):
     closed = property(__get_closed)
     #: (Read Only) (string) File mode - always "rb"
     mode = property(__get_mode)
-
-class Iterator(object):
-    def __init__(self, method, sentinel):
-        self.getnext = method
-        self.sentinel = sentinel
-        self.exhausted = False
-    def __iter__(self):
-        return self
-    def next(self):
-        if self.exhausted:
-            raise StopIteration
-        else:
-            result = self.getnext()
-            self.exhausted = (result == self.sentinel)
-            if self.exhausted:
-                raise StopIteration
-            else:
-                return result
-    __next__ = next
 
 
 class _RowMapping(object):

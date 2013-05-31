@@ -34,6 +34,7 @@ api = None
 
 # The following SHUT_* constants are to be passed as the `shutdown_mode`
 # parameter to Connection.shutdown:
+SHUT_LEGACY = -1
 SHUT_NORMAL = ibase.isc_spb_prp_sm_normal
 SHUT_MULTI = ibase.isc_spb_prp_sm_multi
 SHUT_SINGLE = ibase.isc_spb_prp_sm_single
@@ -612,11 +613,11 @@ class Connection(object):
         
         Next fdb.services constants define possible info codes returned::
         
-            :data:`CAPABILITY_MULTI_CLIENT`
-            :data:`CAPABILITY_REMOTE_HOP`
-            :data:`CAPABILITY_SERVER_CONFIG`
-            :data:`CAPABILITY_QUOTED_FILENAME`
-            :data:`CAPABILITY_NO_SERVER_SHUTDOWN`
+            CAPABILITY_MULTI_CLIENT
+            CAPABILITY_REMOTE_HOP
+            CAPABILITY_SERVER_CONFIG
+            CAPABILITY_QUOTED_FILENAME
+            CAPABILITY_NO_SERVER_SHUTDOWN
 
         Example::
         
@@ -1385,8 +1386,8 @@ class Connection(object):
         
         :param string database: Database filename or alias.
         :param integer shutdown_mode: One from following constants:
-           :data:`~fdb.services.SHUT_SINGLE`, :data:`~fdb.services.SHUT_MULTI` 
-           or :data:`~fdb.services.SHUT_FULL`.
+           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`, 
+           :data:`~fdb.services.SHUT_MULTI` or :data:`~fdb.services.SHUT_FULL`.
         :param integer shutdown_method: One from following constants:
            :data:`~fdb.services.SHUT_FORCE`, 
            :data:`~fdb.services.SHUT_DENY_NEW_TRANSACTIONS`
@@ -1398,9 +1399,9 @@ class Connection(object):
         self.__check_active()
         _checkString(database)
         database = ibase.b(database)
-        if shutdown_mode not in (SHUT_SINGLE, SHUT_MULTI, SHUT_FULL):
+        if shutdown_mode not in (SHUT_LEGACY, SHUT_SINGLE, SHUT_MULTI, SHUT_FULL):
             raise ValueError('shutdown_mode must be one of the following'
-                ' constants:  fdb.services.SHUT_SINGLE,'
+                ' constants:  fdb.services.SHUT_LEGACY, fdb.services.SHUT_SINGLE,'
                 ' fdbfdb.services.SHUT_MULTI,'
                 ' fdb.services.SHUT_FULL.')
         if shutdown_method not in (SHUT_FORCE, SHUT_DENY_NEW_TRANSACTIONS, 
@@ -1410,8 +1411,9 @@ class Connection(object):
                 ' fdb.services.SHUT_DENY_NEW_TRANSACTIONS,'
                 ' fdb.services.SHUT_DENY_NEW_ATTACHMENTS.')
         reqBuf = _ServiceActionRequestBuilder()
-        reqBuf.add_numeric(ibase.isc_spb_prp_shutdown_mode, 
-                           shutdown_mode, numCType='B')
+        if shutdown_mode != SHUT_LEGACY:
+            reqBuf.add_numeric(ibase.isc_spb_prp_shutdown_mode, 
+                               shutdown_mode, numCType='B')
         reqBuf.add_numeric(shutdown_method, timeout, numCType='I')
         self._property_action(database, reqBuf)
     def bring_online(self, database, online_mode=SHUT_NORMAL):
@@ -1419,22 +1421,25 @@ class Connection(object):
         
         :param string database: Database filename or alias.
         :param integer online_mode: (Optional) One from following constants:
-           :data:`~fdb.services.SHUT_SINGLE`, :data:`~fdb.services.SHUT_MULTI` 
-           or :data:`~fdb.services.SHUT_NORMAL` (**Default**).
+           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`, 
+           :data:`~fdb.services.SHUT_MULTI` or :data:`~fdb.services.SHUT_NORMAL` (**Default**).
            
         .. seealso:: See also :meth:`~Connection.shutdown` method.
         """
         self.__check_active()
         _checkString(database)
         database = ibase.b(database)
-        if online_mode not in (SHUT_NORMAL,SHUT_SINGLE, SHUT_MULTI):
+        if online_mode not in (SHUT_LEGACY, SHUT_NORMAL,SHUT_SINGLE, SHUT_MULTI):
             raise ValueError('online_mode must be one of the following'
-                ' constants:  fdb.services.SHUT_NORMAL,'
+                ' constants:  fdb.services.SHUT_LEGACY, fdb.services.SHUT_NORMAL,'
                 ' fdbfdb.services.SHUT_SINGLE,'
                 ' fdb.services.SHUT_MULTI.')
         reqBuf = _ServiceActionRequestBuilder()
-        reqBuf.add_numeric(ibase.isc_spb_prp_online_mode, 
-                           online_mode, numCType='B')
+        if online_mode == SHUT_LEGACY:
+            reqBuf.add_option_mask(ibase.isc_spb_prp_db_online)
+        else:
+            reqBuf.add_numeric(ibase.isc_spb_prp_online_mode, 
+                               online_mode, numCType='B')
         self._property_action(database, reqBuf)
     def sweep(self, database):
         """Perform Database Sweep.

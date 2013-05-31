@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Usage Guide &mdash; FDB 1.1.1 documentation</title>
+    <title>Usage Guide &mdash; FDB 1.2 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.1.1',
+        VERSION:     '1.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.1.1 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.2 documentation" href="index.html" />
     <link rel="next" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
     <link rel="prev" title="Getting Started with FDB" href="getting-started.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.1.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -69,6 +69,8 @@
 <li><a class="reference internal" href="reference.html#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">ibase</span></tt></a> - Python <a class="reference external" href="http://docs.python.org/whatsnew/2.5.html#module-ctypes" title="(in Python v2.7)"><em class="xref std std-ref">ctypes</em></a> interface to Firebird client library.</li>
 <li><a class="reference internal" href="reference.html#module-fdb.fbcore" title="fdb.fbcore: Implementation of Firebird driver"><tt class="xref py py-mod docutils literal"><span class="pre">fbcore</span></tt></a> - Main driver source code.</li>
 <li><a class="reference internal" href="reference.html#module-fdb.services" title="fdb.services: Submodule for work with Firebird Services"><tt class="xref py py-mod docutils literal"><span class="pre">services</span></tt></a> - Driver code to work with Firebird Services.</li>
+<li><a class="reference internal" href="reference.html#module-fdb.schema" title="fdb.schema: Submodule for work with database metadata (schema)"><tt class="xref py py-mod docutils literal"><span class="pre">schema</span></tt></a> - Driver code to work with Firebird database schema (metadata).</li>
+<li><a class="reference internal" href="reference.html#module-fdb.utils" title="fdb.utils: Submodule with various classes and functions"><tt class="xref py py-mod docutils literal"><span class="pre">utils</span></tt></a> - Various classes and functions used by driver that are generally useful.</li>
 </ul>
 <p>All important data, functions, classes and constants are available directly in fdb namespace,
 so there is not need to import or use <a class="reference internal" href="reference.html#module-fdb.fbcore" title="fdb.fbcore: Implementation of Firebird driver"><tt class="xref py py-mod docutils literal"><span class="pre">fbcore</span></tt></a> and <a class="reference internal" href="reference.html#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">ibase</span></tt></a> submodules directly.
@@ -136,6 +138,18 @@ and conversions</a> for details).</p>
 <span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">&#39;myhost&#39;</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="s">&#39;/path/database.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Since version 1.2 FDB supports additional <cite>Connection</cite> class(es) that extend <a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> functionality
+in optional (opt-in) way. For example <a class="reference internal" href="reference.html#fdb.ConnectionWithSchema" title="fdb.ConnectionWithSchema"><tt class="xref py py-class docutils literal"><span class="pre">ConnectionWithSchema</span></tt></a> extends Connection interface with methods
+and attributes provided by <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a>. New <cite>connection_class</cite> parameter was introduced to
+<cite>connect</cite> and <cite>create_database</cite> to connect to/create database using different class than descends from
+<cite>Connection</cite>.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Connecting through ConnectionWithSchema</span>
+<span class="c">#</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;/path/database.fdb&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">,</span>
+                  <span class="n">connection_class</span><span class="o">=</span><span class="n">fdb</span><span class="o">.</span><span class="n">ConnectionWithSchema</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="using-create-database">
 <span id="index-2"></span><h3>Using <cite>create_database</cite><a class="headerlink" href="#using-create-database" title="Permalink to this headline">¶</a></h3>
@@ -144,6 +158,15 @@ FDB wraps it into <a class="reference internal" href="reference.html#fdb.create_
 created database.</p>
 <p><strong>Example:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="s">&quot;create database &#39;host:/temp/db.db&#39; user &#39;sysdba&#39; password &#39;pass&#39;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Since version 1.2 FDB supports additional method for database creation. Instead <cite>CREATE DATABASE</cite>
+SQL statement you can use number of optional keyword parameters introduced to <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">create_database()</span></tt></a>.</p>
+</div>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;/temp/db.fdb&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span><span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">,</span><span class="n">page_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -181,13 +204,59 @@ with it:</p>
 <a class="reference internal" href="reference.html#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.transactions" title="fdb.Connection.transactions"><tt class="xref py py-attr docutils literal"><span class="pre">transactions</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.default_tpb" title="fdb.Connection.default_tpb"><tt class="xref py py-attr docutils literal"><span class="pre">default_tpb</span></tt></a>
 and <a class="reference internal" href="reference.html#fdb.Connection.group" title="fdb.Connection.group"><tt class="xref py py-attr docutils literal"><span class="pre">group</span></tt></a>.</li>
 <li>Work with <a class="reference internal" href="#database-events">Database Events</a>: method <a class="reference internal" href="reference.html#fdb.Connection.event_conduit" title="fdb.Connection.event_conduit"><tt class="xref py py-meth docutils literal"><span class="pre">event_conduit()</span></tt></a>.</li>
-<li>Getting information about database: methods <a class="reference internal" href="reference.html#fdb.Connection.db_info" title="fdb.Connection.db_info"><tt class="xref py py-meth docutils literal"><span class="pre">db_info()</span></tt></a> and
+<li><a class="reference internal" href="#getting-information-about-firebird-version">Getting information about Firebird version</a>: attributes <a class="reference internal" href="reference.html#fdb.Connection.server_version" title="fdb.Connection.server_version"><tt class="xref py py-attr docutils literal"><span class="pre">server_version</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.Connection.firebird_version" title="fdb.Connection.firebird_version"><tt class="xref py py-attr docutils literal"><span class="pre">firebird_version</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.version" title="fdb.Connection.version"><tt class="xref py py-attr docutils literal"><span class="pre">version</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Connection.engine_version" title="fdb.Connection.engine_version"><tt class="xref py py-attr docutils literal"><span class="pre">engine_version</span></tt></a>.</li>
+<li><a class="reference internal" href="#getting-information-about-database">Getting information about database</a>: methods <a class="reference internal" href="reference.html#fdb.Connection.db_info" title="fdb.Connection.db_info"><tt class="xref py py-meth docutils literal"><span class="pre">db_info()</span></tt></a> and
 <a class="reference internal" href="reference.html#fdb.Connection.database_info" title="fdb.Connection.database_info"><tt class="xref py py-meth docutils literal"><span class="pre">database_info()</span></tt></a>.</li>
-<li>Getting information about Firebird version: attribute <a class="reference internal" href="reference.html#fdb.Connection.server_version" title="fdb.Connection.server_version"><tt class="xref py py-attr docutils literal"><span class="pre">server_version</span></tt></a>.</li>
+<li><a class="reference internal" href="#working-with-schema"><em>Getting information about database metadata</em></a>: attribute <a class="reference internal" href="reference.html#fdb.Connection.schema" title="fdb.Connection.schema"><tt class="xref py py-attr docutils literal"><span class="pre">schema</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Connection.ods" title="fdb.Connection.ods"><tt class="xref py py-attr docutils literal"><span class="pre">ods</span></tt></a>.</li>
 </ul>
 </div>
+<div class="section" id="getting-information-about-firebird-version">
+<span id="index-5"></span><h3>Getting information about Firebird version<a class="headerlink" href="#getting-information-about-firebird-version" title="Permalink to this headline">¶</a></h3>
+<p>Because functionality and some features depends on actual Firebird version, it could be important for FDB
+users to check it. This (otherwise) simple task could be confusing for new Firebird users, because Firebird
+uses two different version lineages. This abomination was introduced to Firebird thanks to its InterBase legacy
+(Firebird 1.0 is a fork of InterBase 6.0), as applications designed to work with InterBase can often work
+with Firebird without problems (and vice versa). However, legacy applications designed to work with InterBase
+may stop working properly if they would detect unexpectedly low server version, so default version number
+returned by Firebird (and FDB) is based on InterBase version number. For example this version for Firebird
+2.5.2 is 6.3.2, so condition for legacy applications that require at least IB 6.0 is met.</p>
+<p>FDB provides these version strings as two <cite>Connection</cite> properties:</p>
+<ul class="simple">
+<li><a class="reference internal" href="reference.html#fdb.Connection.server_version" title="fdb.Connection.server_version"><tt class="xref py py-attr docutils literal"><span class="pre">server_version</span></tt></a> - Legacy InterBase-friendly version string.</li>
+<li><a class="reference internal" href="reference.html#fdb.Connection.firebird_version" title="fdb.Connection.firebird_version"><tt class="xref py py-attr docutils literal"><span class="pre">firebird_version</span></tt></a> - Firebird&#8217;s own version string.</li>
+</ul>
+<p>However, this version string contains more information than version number. For example for Linux Firebird
+2.5.2 it&#8217;s &#8216;LI-V2.5.2.26540 Firebird 2.5&#8217;. So FDB provides two more properties for your convenience:</p>
+<ul class="simple">
+<li><a class="reference internal" href="reference.html#fdb.Connection.version" title="fdb.Connection.version"><tt class="xref py py-attr docutils literal"><span class="pre">version</span></tt></a> - Only Firebird version number. It&#8217;s a string with format:
+major.minor.subrelease.build</li>
+<li><a class="reference internal" href="reference.html#fdb.Connection.engine_version" title="fdb.Connection.engine_version"><tt class="xref py py-attr docutils literal"><span class="pre">engine_version</span></tt></a> - Engine (major.minor) version as (float) number.</li>
+</ul>
+<p>FDB also provides convenient constants for supported engine versions: <cite>ODS_FB_20</cite>,`ODS_FB_21` and <cite>ODS_FB_25</cite>.</p>
+</div>
+<div class="section" id="database-on-disk-structure">
+<h3>Database On-Disk Structure<a class="headerlink" href="#database-on-disk-structure" title="Permalink to this headline">¶</a></h3>
+<p>Particular Firebird features may also depend on specific support in database (for example monitoring
+tables introduced in Firebird 2.1). These required structures are present automatically when database
+is created by particular engine verison that needs them, but Firebird engine may typically work with
+databases created by older versions and thus with older structure, so it could be necessary to consult
+also On-Disk Structure (ODS for short) version. FDB provides this number as <a class="reference internal" href="reference.html#fdb.Connection.ods" title="fdb.Connection.ods"><tt class="xref py py-attr docutils literal"><span class="pre">Connection.ods</span></tt></a> (float)
+property.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;/path/database.fdb&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&#39;Firebird version:&#39;</span><span class="p">,</span><span class="n">con</span><span class="o">.</span><span class="n">version</span>
+<span class="k">print</span> <span class="s">&#39;ODS version:&#39;</span><span class="p">,</span><span class="n">con</span><span class="o">.</span><span class="n">ods</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>Firebird version: 2.5.2.26540
+ODS version: 11.1</pre>
+</div>
+<p>In abover example although connected Firebird engine is version 2.5, connected database has ODS 11.1 which
+came with Firebird 2.1, and some Firebird 2.5 features will not be available on this database.</p>
+</div>
 <div class="section" id="getting-information-about-database">
-<span id="index-5"></span><h3>Getting information about database<a class="headerlink" href="#getting-information-about-database" title="Permalink to this headline">¶</a></h3>
+<span id="index-6"></span><h3>Getting information about database<a class="headerlink" href="#getting-information-about-database" title="Permalink to this headline">¶</a></h3>
 <p>Firebird provides various informations about server and connected database via <cite>database_info</cite> API call.
 FDB surfaces this API through methods <a class="reference internal" href="reference.html#fdb.Connection.db_info" title="fdb.Connection.db_info"><tt class="xref py py-meth docutils literal"><span class="pre">db_info()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Connection.database_info" title="fdb.Connection.database_info"><tt class="xref py py-meth docutils literal"><span class="pre">database_info()</span></tt></a>
 on Connection object.</p>
@@ -301,7 +370,7 @@ os.path.getsize indicates size is  20684800 bytes</pre>
 </div>
 </div>
 <div class="section" id="executing-sql-statements">
-<span id="index-6"></span><h2>Executing SQL Statements<a class="headerlink" href="#executing-sql-statements" title="Permalink to this headline">¶</a></h2>
+<span id="index-7"></span><h2>Executing SQL Statements<a class="headerlink" href="#executing-sql-statements" title="Permalink to this headline">¶</a></h2>
 <p>FDB implements two ways for execution of SQL commands against connected database:</p>
 <ul class="simple">
 <li><a class="reference internal" href="reference.html#fdb.Connection.execute_immediate" title="fdb.Connection.execute_immediate"><tt class="xref py py-meth docutils literal"><span class="pre">execute_immediate()</span></tt></a> - for execution of SQL commands that don&#8217;t
@@ -310,7 +379,7 @@ return any result.</li>
 fetching their results.</li>
 </ul>
 <div class="section" id="cursor-object">
-<span id="index-7"></span><h3>Cursor object<a class="headerlink" href="#cursor-object" title="Permalink to this headline">¶</a></h3>
+<span id="index-8"></span><h3>Cursor object<a class="headerlink" href="#cursor-object" title="Permalink to this headline">¶</a></h3>
 <p>Because <cite>Cursor</cite> objects always operate in context of single <a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> (and <a class="reference internal" href="reference.html#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a>),
 <cite>Cursor</cite> instances are not created directly, but by constructor method. Python DB API 2.0 assume that
 if database engine supports transactions, it supports only one transaction per connection, hence it
@@ -332,7 +401,7 @@ method <a class="reference internal" href="reference.html#fdb.Cursor.prep" title
 </ul>
 </div>
 <div class="section" id="sql-execution-basics">
-<span id="index-8"></span><h3>SQL Execution Basics<a class="headerlink" href="#sql-execution-basics" title="Permalink to this headline">¶</a></h3>
+<span id="index-9"></span><h3>SQL Execution Basics<a class="headerlink" href="#sql-execution-basics" title="Permalink to this headline">¶</a></h3>
 <p>There are three methods how to execute SQL commands:</p>
 <ul>
 <li><p class="first"><a class="reference internal" href="reference.html#fdb.Connection.execute_immediate" title="fdb.Connection.execute_immediate"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.execute_immediate()</span></tt></a> or <a class="reference internal" href="reference.html#fdb.Transaction.execute_immediate" title="fdb.Transaction.execute_immediate"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.execute_immediate()</span></tt></a> for SQL commands that
@@ -361,7 +430,7 @@ frequently, either <cite>as is</cite> or in <cite>parametrized</cite> form.</p>
 </ul>
 </div>
 <div class="section" id="parametrized-statements">
-<span id="index-9"></span><span id="id1"></span><h3>Parametrized statements<a class="headerlink" href="#parametrized-statements" title="Permalink to this headline">¶</a></h3>
+<span id="index-10"></span><span id="id1"></span><h3>Parametrized statements<a class="headerlink" href="#parametrized-statements" title="Permalink to this headline">¶</a></h3>
 <p>When SQL command you want to execute contains data <cite>values</cite>, you can either:</p>
 <ul>
 <li><p class="first">Embed them <cite>directly</cite> or via <cite>string formatting</cite> into command <cite>string</cite>, e.g.:</p>
@@ -402,7 +471,7 @@ it will be executed more efficiently (see section about <a class="reference inte
 </ul>
 </div>
 <div class="section" id="fetching-data-from-server">
-<span id="index-10"></span><h3>Fetching data from server<a class="headerlink" href="#fetching-data-from-server" title="Permalink to this headline">¶</a></h3>
+<span id="index-11"></span><h3>Fetching data from server<a class="headerlink" href="#fetching-data-from-server" title="Permalink to this headline">¶</a></h3>
 <p>Result of SQL statement execution consists from sequence of zero to unknown number of <cite>rows</cite>, where each
 <cite>row</cite> is a set of exactly the same number of values. <a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> object offer number of different
 methods for fetching these <cite>rows</cite>, that should satisfy all your specific needs:</p>
@@ -482,6 +551,9 @@ an instance of a particular class or type.</p>
 <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">SELECT</span><span class="p">)</span>
 <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">year_released</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cur</span><span class="p">:</span>
     <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> has been publicly available since </span><span class="si">%d</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">year_released</span><span class="p">)</span>
+<span class="c"># or alternatively you can take an advantage of cur.execute returning self.</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">year_released</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">SELECT</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> has been publicly available since </span><span class="si">%d</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">year_released</span><span class="p">)</span>
 
 <span class="c"># 2. Equivalently using fetchall():</span>
 <span class="c"># This is potentially dangerous if result set is huge, as the whole result set is first materialized</span>
@@ -496,9 +568,14 @@ an instance of a particular class or type.</p>
     <span class="k">print</span> <span class="s">&#39;</span><span class="si">%(name)s</span><span class="s"> has been publicly available since </span><span class="si">%(year_released)d</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">row</span>
 </pre></div>
 </div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last"><a class="reference internal" href="reference.html#fdb.Cursor.execute" title="fdb.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Cursor.executemany" title="fdb.Cursor.executemany"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.executemany()</span></tt></a> return self, so you can use calls to them
+as iterators (see example above).</p>
+</div>
 </div>
 <div class="section" id="prepared-statements">
-<span id="index-11"></span><span id="id2"></span><h3>Prepared Statements<a class="headerlink" href="#prepared-statements" title="Permalink to this headline">¶</a></h3>
+<span id="index-12"></span><span id="id2"></span><h3>Prepared Statements<a class="headerlink" href="#prepared-statements" title="Permalink to this headline">¶</a></h3>
 <p>Execution of any SQL statement has three phases:</p>
 <ul class="simple">
 <li><em>Preparation</em>: command is analyzed, validated, execution plan is determined by optimizer and all
@@ -512,8 +589,8 @@ allocated resources are then released.</li>
 and release of resources typically takes only small amount of CPU time, it builds up as number
 of executed statements grows. Firebird (like most database engines) allows to spare this time for
 subsequent execution if particular statement should be executed repeatedly - by reusing once prepared
-statement for repeated execution. This may save significant amount of server processing time, and better
-overall performance.</p>
+statement for repeated execution. This may save significant amount of server processing time, and result
+in better overall performance.</p>
 <p>FDB builds on this by encapsulating all statement-related code into separate <a class="reference internal" href="reference.html#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a>
 class, and implementing <a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> class as a wrapper around it. Once executed statement has to
 be disposed in favour of new one, the <cite>PreparedStatement</cite> instance is stored into <cite>Cursor&#8217;s</cite> internal cache.
@@ -715,7 +792,7 @@ not <a class="reference internal" href="reference.html#fdb.PreparedStatement" ti
 in this case is about one percent.</p>
 </div>
 <div class="section" id="named-cursors">
-<span id="index-12"></span><h3>Named Cursors<a class="headerlink" href="#named-cursors" title="Permalink to this headline">¶</a></h3>
+<span id="index-13"></span><h3>Named Cursors<a class="headerlink" href="#named-cursors" title="Permalink to this headline">¶</a></h3>
 <p>To allow the Python programmer to perform scrolling <cite>UPDATE</cite> or <cite>DELETE</cite> via the <cite>“SELECT ... FOR UPDATE”</cite>
 syntax, FDB provides the read/write property <a class="reference internal" href="reference.html#fdb.Cursor.name" title="fdb.Cursor.name"><tt class="xref py py-attr docutils literal"><span class="pre">Cursor.name</span></tt></a>.</p>
 <p><strong>Example Program:</strong></p>
@@ -738,7 +815,7 @@ syntax, FDB provides the read/write property <a class="reference internal" href=
 </div>
 </div>
 <div class="section" id="working-with-stored-procedures">
-<span id="index-13"></span><h3>Working with stored procedures<a class="headerlink" href="#working-with-stored-procedures" title="Permalink to this headline">¶</a></h3>
+<span id="index-14"></span><h3>Working with stored procedures<a class="headerlink" href="#working-with-stored-procedures" title="Permalink to this headline">¶</a></h3>
 <p>Firebird stored procedures can have <cite>input</cite> parameters and/or <cite>output</cite> parameters. Some databases support
 <cite>input/output</cite> parameters, where the same parameter is used for both input and output; Firebird does not
 support this.</p>
@@ -774,9 +851,9 @@ however.</p>
 </div>
 </div>
 <div class="section" id="data-handling-and-conversions">
-<span id="index-14"></span><h2>Data handling and conversions<a class="headerlink" href="#data-handling-and-conversions" title="Permalink to this headline">¶</a></h2>
+<span id="index-15"></span><h2>Data handling and conversions<a class="headerlink" href="#data-handling-and-conversions" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="implicit-conversion-of-input-parameters-from-strings">
-<span id="index-15"></span><h3>Implicit Conversion of Input Parameters from Strings<a class="headerlink" href="#implicit-conversion-of-input-parameters-from-strings" title="Permalink to this headline">¶</a></h3>
+<span id="index-16"></span><h3>Implicit Conversion of Input Parameters from Strings<a class="headerlink" href="#implicit-conversion-of-input-parameters-from-strings" title="Permalink to this headline">¶</a></h3>
 <p>The database engine treats most SQL data types in a weakly typed fashion: the engine may attempt to convert
 the raw value to a different type, as appropriate for the current context. For instance, the SQL expressions
 <cite>123</cite> (integer) and <cite>‘123’</cite> (string) are treated equivalently when the value is to be inserted into
@@ -822,7 +899,7 @@ deserve consideration. External tables can be used to suck semi-structured data 
 into the relational database without the intervention of an ad hoc conversion program.</p>
 </div>
 <div class="section" id="automatic-conversion-from-to-unicode">
-<span id="index-16"></span><h3>Automatic conversion from/to unicode<a class="headerlink" href="#automatic-conversion-from-to-unicode" title="Permalink to this headline">¶</a></h3>
+<span id="index-17"></span><h3>Automatic conversion from/to unicode<a class="headerlink" href="#automatic-conversion-from-to-unicode" title="Permalink to this headline">¶</a></h3>
 <p>In Firebird, every <cite>CHAR</cite>, <cite>VARCHAR</cite> or textual <cite>BLOB</cite> field can (or, better: must) have a <cite>character set</cite>
 assigned. While it&#8217;s possible to define single character set for whole database, it&#8217;s also possible to
 define different character set for each textual field. This information is used to correctly store the bytes
@@ -882,7 +959,7 @@ set for your databases and specify <cite>connection charset</cite>. It will make
 </div>
 </div>
 <div class="section" id="working-with-blobs">
-<span id="index-17"></span><span id="id3"></span><h3>Working with BLOBs<a class="headerlink" href="#working-with-blobs" title="Permalink to this headline">¶</a></h3>
+<span id="index-18"></span><span id="id3"></span><h3>Working with BLOBs<a class="headerlink" href="#working-with-blobs" title="Permalink to this headline">¶</a></h3>
 <p>FDB uses two types of BLOB values:</p>
 <ul class="simple">
 <li><strong>Materialized</strong> BLOB values are Python strings. This is the <strong>default</strong> type.</li>
@@ -996,7 +1073,7 @@ readerA.closed:   True</pre>
 </div>
 </div>
 <div class="section" id="firebird-array-type">
-<span id="index-18"></span><h3>Firebird ARRAY type<a class="headerlink" href="#firebird-array-type" title="Permalink to this headline">¶</a></h3>
+<span id="index-19"></span><h3>Firebird ARRAY type<a class="headerlink" href="#firebird-array-type" title="Permalink to this headline">¶</a></h3>
 <p>FDB supports Firebird ARRAY data type. ARRAY values are represented as Python lists. On input, the Python
 sequence (list or tuple) must be nested appropriately if the array field is multi-dimensional, and
 the incoming sequence must not fall short of its maximum possible length (it will not be “padded”
@@ -1057,7 +1134,7 @@ arrayOut: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]</pre>
 </div>
 </div>
 <div class="section" id="trasanction-management">
-<span id="index-19"></span><h2>Trasanction management<a class="headerlink" href="#trasanction-management" title="Permalink to this headline">¶</a></h2>
+<span id="index-20"></span><h2>Trasanction management<a class="headerlink" href="#trasanction-management" title="Permalink to this headline">¶</a></h2>
 <p>For the sake of simplicity, FDB lets the Python programmer ignore transaction management to the greatest
 extent allowed by the Python Database API Specification 2.0. The specification says, “if the database
 supports an auto-commit feature, this must be initially off”. At a minimum, therefore, it is necessary to
@@ -1129,7 +1206,7 @@ calls to it.</p>
 </div>
 </div>
 <div class="section" id="auto-commit">
-<span id="index-20"></span><h3>Auto-commit<a class="headerlink" href="#auto-commit" title="Permalink to this headline">¶</a></h3>
+<span id="index-21"></span><h3>Auto-commit<a class="headerlink" href="#auto-commit" title="Permalink to this headline">¶</a></h3>
 <p>FDB doesn&#8217;t support <cite>auto-commit</cite> feature directly, but developers may achieve the similar result
 using <cite>explicit</cite> transaction start, taking advantage of <a class="reference internal" href="reference.html#fdb.Transaction.default_action" title="fdb.Transaction.default_action"><tt class="xref py py-attr docutils literal"><span class="pre">default_action</span></tt></a> and its
 default value (<cite>commit</cite>).</p>
@@ -1156,7 +1233,7 @@ default value (<cite>commit</cite>).</p>
 </div>
 </div>
 <div class="section" id="transaction-parameters">
-<span id="index-21"></span><h3>Transaction parameters<a class="headerlink" href="#transaction-parameters" title="Permalink to this headline">¶</a></h3>
+<span id="index-22"></span><h3>Transaction parameters<a class="headerlink" href="#transaction-parameters" title="Permalink to this headline">¶</a></h3>
 <p>The database engine offers the client programmer an optional facility called <cite>transaction parameter
 buffers</cite> (TPBs) for tweaking the operating characteristics of the transactions he initiates. These
 include characteristics such as whether the transaction has read and write access to tables, or
@@ -1222,8 +1299,10 @@ RDBMS to Firebird.</p>
 <dd><p class="first">Like <cite>ISOLATION_LEVEL_READ_COMMITED</cite>, but <strong>Read Only</strong>.</p>
 <div class="last admonition tip">
 <p class="first admonition-title">Tip</p>
-<p class="last">Firebird threats these transactions as <cite>pre-committed</cite>, so they are best option <strong>for long
+<p>Firebird threats these transactions as <cite>pre-committed</cite>, so they are best option <strong>for long
 running transactions that only read data</strong>.</p>
+<p class="last">Internaly FDB uses such transaction to read metadata from connected database. This internal
+transaction is also available to developers for convenience as <a class="reference internal" href="reference.html#fdb.Connection.query_transaction" title="fdb.Connection.query_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">Connection.query_transaction</span></tt></a>.</p>
 </div>
 </dd>
 </dl>
@@ -1314,8 +1393,8 @@ tpb block or <cite>TPB</cite> instance itself to set <cite>default_tpb</cite> or
 parameter blocks), you can use class <a class="reference internal" href="reference.html#fdb.TableReservation" title="fdb.TableReservation"><tt class="xref py py-class docutils literal"><span class="pre">TableReservation</span></tt></a> instead <cite>TPB</cite>.</p>
 </div>
 <div class="section" id="getting-information-about-transaction">
-<span id="index-22"></span><h3>Getting information about transaction<a class="headerlink" href="#getting-information-about-transaction" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference internal" href="reference.html#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> object exposes two methods that return infromation about currently managed
+<span id="index-23"></span><h3>Getting information about transaction<a class="headerlink" href="#getting-information-about-transaction" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="reference.html#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> object exposes two methods that return information about currently managed
 active transaction (the same methods are exposed also by <a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> object for
 <a class="reference internal" href="reference.html#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>):</p>
 <p><a class="reference internal" href="reference.html#fdb.Transaction.transaction_info" title="fdb.Transaction.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a> is a very thin wrapper around function <cite>isc_transaction_info()</cite>.
@@ -1368,7 +1447,7 @@ of two values is returned instead single value, where the second value is record
 </div>
 </div>
 <div class="section" id="retaining-transactions">
-<span id="index-23"></span><h3>Retaining transactions<a class="headerlink" href="#retaining-transactions" title="Permalink to this headline">¶</a></h3>
+<span id="index-24"></span><h3>Retaining transactions<a class="headerlink" href="#retaining-transactions" title="Permalink to this headline">¶</a></h3>
 <p>The <a class="reference internal" href="reference.html#fdb.Transaction.commit" title="fdb.Transaction.commit"><tt class="xref py py-meth docutils literal"><span class="pre">commit()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Transaction.rollback" title="fdb.Transaction.rollback"><tt class="xref py py-meth docutils literal"><span class="pre">rollback()</span></tt></a> methods accept an optional boolean
 parameter <cite>retaining</cite> (<strong>default False</strong>) to indicate whether to recycle the transactional context of
 the transaction being resolved by the method call.</p>
@@ -1386,7 +1465,7 @@ by Ann Harrison.</p>
 <p>For more information about retaining transactions, see <cite>Firebird documentation</cite>.</p>
 </div>
 <div class="section" id="savepoints">
-<span id="index-24"></span><h3>Savepoints<a class="headerlink" href="#savepoints" title="Permalink to this headline">¶</a></h3>
+<span id="index-25"></span><h3>Savepoints<a class="headerlink" href="#savepoints" title="Permalink to this headline">¶</a></h3>
 <p>Savepoints are named, intermediate control points within an open transaction that can later be rolled
 back to, without affecting the preceding work. Multiple savepoints can exist within a single unresolved
 transaction, providing “multi-level undo” functionality.</p>
@@ -1456,7 +1535,7 @@ After rolling back entirely, the contents of the table are:
 </div>
 </div>
 <div class="section" id="using-multiple-transactions-with-the-same-connection">
-<span id="multiple-transactions"></span><span id="index-25"></span><h3>Using multiple transactions with the same connection<a class="headerlink" href="#using-multiple-transactions-with-the-same-connection" title="Permalink to this headline">¶</a></h3>
+<span id="multiple-transactions"></span><span id="index-26"></span><h3>Using multiple transactions with the same connection<a class="headerlink" href="#using-multiple-transactions-with-the-same-connection" title="Permalink to this headline">¶</a></h3>
 <p>To use additional transactions that could run simultaneously with
 <a class="reference internal" href="reference.html#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main</span> <span class="pre">transaction</span></tt></a> managed by <cite>Connection</cite>, create new
 <a class="reference internal" href="reference.html#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> object calling <a class="reference internal" href="reference.html#fdb.Connection.trans" title="fdb.Connection.trans"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.trans()</span></tt></a> method. If you don&#8217;t specify the optional
@@ -1495,7 +1574,7 @@ from this <cite>Transaction</cite> instance calling its <a class="reference inte
 </div>
 </div>
 <div class="section" id="distributed-transactions">
-<span id="index-26"></span><span id="id4"></span><h3>Distributed Transactions<a class="headerlink" href="#distributed-transactions" title="Permalink to this headline">¶</a></h3>
+<span id="index-27"></span><span id="id4"></span><h3>Distributed Transactions<a class="headerlink" href="#distributed-transactions" title="Permalink to this headline">¶</a></h3>
 <p>Distributed transactions are transactions that span multiple databases. FDB provides this Firebird feature
 through <a class="reference internal" href="reference.html#fdb.ConnectionGroup" title="fdb.ConnectionGroup"><tt class="xref py py-class docutils literal"><span class="pre">ConnectionGroup</span></tt></a> class. Instances of this class act as managers for <a class="reference internal" href="reference.html#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a>
 object that is bound to multiple connections, and to <a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">cursors</span></tt></a> bound to it and connections
@@ -1679,7 +1758,7 @@ calls <cite>rollback()</cite> otherwise. Exceptions raised in WITH block are nev
 </div>
 </div>
 <div class="section" id="database-events">
-<span id="index-27"></span><h2>Database Events<a class="headerlink" href="#database-events" title="Permalink to this headline">¶</a></h2>
+<span id="index-28"></span><h2>Database Events<a class="headerlink" href="#database-events" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="what-they-are">
 <h3>What they are<a class="headerlink" href="#what-they-are" title="Permalink to this headline">¶</a></h3>
 <p>The Firebird engine features a distributed, interprocess communication mechanism based on messages
@@ -1939,7 +2018,7 @@ Flush events
 </div>
 </div>
 <div class="section" id="working-with-services">
-<span id="index-28"></span><span id="id6"></span><h2>Working with Services<a class="headerlink" href="#working-with-services" title="Permalink to this headline">¶</a></h2>
+<span id="index-29"></span><span id="id6"></span><h2>Working with Services<a class="headerlink" href="#working-with-services" title="Permalink to this headline">¶</a></h2>
 <p>Database server maintenance tasks such as user management, load monitoring, and database backup have
 traditionally been automated by scripting the command-line tools <strong class="program">gbak</strong>, <strong class="program">gfix</strong>,
 <strong class="program">gsec</strong>, and <strong class="program">gstat</strong>.</p>
@@ -2695,6 +2774,191 @@ gbak:closing file, committing, and finishing. 74752 bytes written</pre>
 </div>
 </div>
 </div>
+<div class="section" id="working-with-database-schema">
+<span id="working-with-schema"></span><span id="index-30"></span><h2>Working with database schema<a class="headerlink" href="#working-with-database-schema" title="Permalink to this headline">¶</a></h2>
+<p>Description of database objects like tables, views, stored procedures, triggers or UDF functions that
+represent database schema is stored in set of system tables present in every database. Firebird users
+can query these tables to get information about these objects and their relations. But querying system
+tables is inconvenient, as it requires good knowledge how this information is structured and requires
+significant amount of Python code. Changes in system tables between Firebird versions further add to this
+complexity. Hence FDB provides set of classes (isolated in separate module <a class="reference internal" href="reference.html#module-fdb.schema" title="fdb.schema: Submodule for work with database metadata (schema)"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.schema</span></tt></a>) that
+transform information stored in system tables into set of Python objects that surface the vital information
+in meaningful way, and additionaly provide set of methods for most commonly used operations or checks.</p>
+<p>Database schema could be accessed in three different ways, each suitable for different use case:</p>
+<ul class="simple">
+<li>By direct creation of <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">fdb.schema.Schema</span></tt></a> instances that are then binded to particular
+<a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance. This method is best if you want to work with schema only occasionally, or
+you want to keep connections as lightweight as possible.</li>
+<li>Accessing <tt class="xref py py-attr docutils literal"><span class="pre">Connection.schema</span></tt> property. This method is more convenient than previous one, and
+represents a compromise between convenience and resource consumption. Metadata objects are loaded only
+at the first access and then kept in schema cache, and <tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt> instance is created
+and managed by connection itself.</li>
+<li>Using <tt class="xref py py-class docutils literal"><span class="pre">ConnectionWithSchema</span></tt> instead <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> by specifying
+<cite>connection_class=ConnectionWithSchema</cite> parameter to <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">connect()</span></tt></a> or <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">create_database()</span></tt></a>.
+This <cite>Connection</cite> descendant loads database metadata immediately and provides directly all attributes
+and methods provided by <tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt> class. This method is most suitable in case you want
+to work with database metadata extensively.</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<ol class="arabic simple">
+<li>Using Schema instance</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">schema</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">Schema</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">schema</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">schema</span><span class="o">.</span><span class="n">tables</span><span class="p">]</span>
+<span class="go">[&#39;COUNTRY&#39;, &#39;JOB&#39;, &#39;DEPARTMENT&#39;, &#39;EMPLOYEE&#39;, &#39;SALES&#39;, &#39;PROJECT&#39;, &#39;EMPLOYEE_PROJECT&#39;, &#39;PROJ_DEPT_BUDGET&#39;,</span>
+<span class="go"> &#39;SALARY_HISTORY&#39;, &#39;CUSTOMER&#39;]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Using Connection.schema</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">tables</span><span class="p">]</span>
+<span class="go">[&#39;COUNTRY&#39;, &#39;JOB&#39;, &#39;DEPARTMENT&#39;, &#39;EMPLOYEE&#39;, &#39;SALES&#39;, &#39;PROJECT&#39;, &#39;EMPLOYEE_PROJECT&#39;, &#39;PROJ_DEPT_BUDGET&#39;,</span>
+<span class="go"> &#39;SALARY_HISTORY&#39;, &#39;CUSTOMER&#39;]</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Using ConnectionWithSchema</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">,</span>
+<span class="go">    connection_class=fdb.ConnectionWithSchema)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">tables</span><span class="p">]</span>
+<span class="go">[&#39;COUNTRY&#39;, &#39;JOB&#39;, &#39;DEPARTMENT&#39;, &#39;EMPLOYEE&#39;, &#39;SALES&#39;, &#39;PROJECT&#39;, &#39;EMPLOYEE_PROJECT&#39;, &#39;PROJ_DEPT_BUDGET&#39;,</span>
+<span class="go"> &#39;SALARY_HISTORY&#39;, &#39;CUSTOMER&#39;]</span>
+</pre></div>
+</div>
+<div class="section" id="available-information">
+<h3>Available information<a class="headerlink" href="#available-information" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> provides information about:</p>
+<ul class="simple">
+<li><strong>Database:</strong> <a class="reference internal" href="reference.html#fdb.schema.Schema.owner_name" title="fdb.schema.Schema.owner_name"><tt class="xref py py-attr docutils literal"><span class="pre">Owner</span> <span class="pre">name</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.default_character_set" title="fdb.schema.Schema.default_character_set"><tt class="xref py py-attr docutils literal"><span class="pre">default</span> <span class="pre">character</span> <span class="pre">set</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.description" title="fdb.schema.Schema.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.security_class" title="fdb.schema.Schema.security_class"><tt class="xref py py-attr docutils literal"><span class="pre">security</span> <span class="pre">class</span></tt></a> and whether database consist
+from <a class="reference internal" href="reference.html#fdb.schema.Schema.ismultifile" title="fdb.schema.Schema.ismultifile"><tt class="xref py py-meth docutils literal"><span class="pre">single</span> <span class="pre">or</span> <span class="pre">multiple</span> <span class="pre">files</span></tt></a>.</li>
+<li><strong>Facilities:</strong> Available <a class="reference internal" href="reference.html#fdb.schema.Schema.character_sets" title="fdb.schema.Schema.character_sets"><tt class="xref py py-attr docutils literal"><span class="pre">character</span> <span class="pre">sets</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.collations" title="fdb.schema.Schema.collations"><tt class="xref py py-attr docutils literal"><span class="pre">collations</span></tt></a>, database <a class="reference internal" href="reference.html#fdb.schema.Schema.files" title="fdb.schema.Schema.files"><tt class="xref py py-attr docutils literal"><span class="pre">files</span></tt></a> and
+<a class="reference internal" href="reference.html#fdb.schema.Schema.shadows" title="fdb.schema.Schema.shadows"><tt class="xref py py-attr docutils literal"><span class="pre">shadows</span></tt></a>.</li>
+<li><strong>User database objects:</strong> <a class="reference internal" href="reference.html#fdb.schema.Schema.exceptions" title="fdb.schema.Schema.exceptions"><tt class="xref py py-attr docutils literal"><span class="pre">exceptions</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.generators" title="fdb.schema.Schema.generators"><tt class="xref py py-attr docutils literal"><span class="pre">generators</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Schema.domains" title="fdb.schema.Schema.domains"><tt class="xref py py-attr docutils literal"><span class="pre">domains</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.tables" title="fdb.schema.Schema.tables"><tt class="xref py py-attr docutils literal"><span class="pre">tables</span></tt></a> and their <a class="reference internal" href="reference.html#fdb.schema.Schema.constraints" title="fdb.schema.Schema.constraints"><tt class="xref py py-attr docutils literal"><span class="pre">constraints</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.indices" title="fdb.schema.Schema.indices"><tt class="xref py py-attr docutils literal"><span class="pre">indices</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Schema.views" title="fdb.schema.Schema.views"><tt class="xref py py-attr docutils literal"><span class="pre">views</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.triggers" title="fdb.schema.Schema.triggers"><tt class="xref py py-attr docutils literal"><span class="pre">triggers</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Schema.procedures" title="fdb.schema.Schema.procedures"><tt class="xref py py-attr docutils literal"><span class="pre">procedures</span></tt></a>,
+user <a class="reference internal" href="reference.html#fdb.schema.Schema.roles" title="fdb.schema.Schema.roles"><tt class="xref py py-attr docutils literal"><span class="pre">roles</span></tt></a> and <a class="reference internal" href="reference.html#fdb.schema.Schema.functions" title="fdb.schema.Schema.functions"><tt class="xref py py-attr docutils literal"><span class="pre">user</span> <span class="pre">defined</span> <span class="pre">functions</span></tt></a>.</li>
+<li><strong>System database objects:</strong> <a class="reference internal" href="reference.html#fdb.schema.Schema.sysgenerators" title="fdb.schema.Schema.sysgenerators"><tt class="xref py py-attr docutils literal"><span class="pre">generators</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.sysdomains" title="fdb.schema.Schema.sysdomains"><tt class="xref py py-attr docutils literal"><span class="pre">domains</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Schema.systables" title="fdb.schema.Schema.systables"><tt class="xref py py-attr docutils literal"><span class="pre">tables</span></tt></a> and their
+constraints,  <a class="reference internal" href="reference.html#fdb.schema.Schema.sysindices" title="fdb.schema.Schema.sysindices"><tt class="xref py py-attr docutils literal"><span class="pre">indices</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Schema.sysviews" title="fdb.schema.Schema.sysviews"><tt class="xref py py-attr docutils literal"><span class="pre">views</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Schema.systriggers" title="fdb.schema.Schema.systriggers"><tt class="xref py py-attr docutils literal"><span class="pre">triggers</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Schema.sysprocedures" title="fdb.schema.Schema.sysprocedures"><tt class="xref py py-attr docutils literal"><span class="pre">procedures</span></tt></a>
+and <a class="reference internal" href="reference.html#fdb.schema.Schema.sysfunctions" title="fdb.schema.Schema.sysfunctions"><tt class="xref py py-attr docutils literal"><span class="pre">functions</span></tt></a>.</li>
+<li><strong>Relations between objects:</strong> Through direct links between metadata objects and
+<a class="reference internal" href="reference.html#fdb.schema.Schema.dependencies" title="fdb.schema.Schema.dependencies"><tt class="xref py py-attr docutils literal"><span class="pre">dependencies</span></tt></a>.</li>
+</ul>
+</div>
+<div class="section" id="metadata-objects">
+<h3>Metadata objects<a class="headerlink" href="#metadata-objects" title="Permalink to this headline">¶</a></h3>
+<p>Schema information is presented as Python objects of various classes with common parent class
+<a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem" title="fdb.schema.BaseSchemaItem"><tt class="xref py py-class docutils literal"><span class="pre">BaseSchemaItem</span></tt></a> (except <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> itself), that defines several
+common attributes and methods:</p>
+<p>Attributes:</p>
+<ul class="simple">
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.name" title="fdb.schema.BaseSchemaItem.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a>: Name of database object or None if object doesn&#8217;t have a name.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.description" title="fdb.schema.BaseSchemaItem.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a>: Description (documentation text) for object or None if
+object doesn&#8217;t have a description.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.actions" title="fdb.schema.BaseSchemaItem.actions"><tt class="xref py py-attr docutils literal"><span class="pre">actions</span></tt></a>: List of supported SQL operations on metadata object instance.</li>
+</ul>
+<p>Methods:</p>
+<ul class="simple">
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor" title="fdb.schema.BaseSchemaItem.accept_visitor"><tt class="xref py py-attr docutils literal"><span class="pre">accept_visitor</span></tt></a>: <a class="reference internal" href="#visitor-pattern-support"><em>Visitor Pattern support</em></a>.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.issystemobject" title="fdb.schema.BaseSchemaItem.issystemobject"><tt class="xref py py-attr docutils literal"><span class="pre">issystemobject</span></tt></a>: Returns True if this database object is system object.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_quoted_name" title="fdb.schema.BaseSchemaItem.get_quoted_name"><tt class="xref py py-attr docutils literal"><span class="pre">get_quoted_name</span></tt></a>: Returns quoted (if necessary) name of database object.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependents" title="fdb.schema.BaseSchemaItem.get_dependents"><tt class="xref py py-attr docutils literal"><span class="pre">get_dependents</span></tt></a>: Returns list of all database objects that
+<a class="reference internal" href="#object-dependencies"><em>depend</em></a> on this one.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependencies" title="fdb.schema.BaseSchemaItem.get_dependencies"><tt class="xref py py-attr docutils literal"><span class="pre">get_dependencies</span></tt></a>: Returns list of database objects that this objects
+<a class="reference internal" href="#object-dependencies"><em>depend</em></a> on.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_sql_for" title="fdb.schema.BaseSchemaItem.get_sql_for"><tt class="xref py py-attr docutils literal"><span class="pre">get_sql_for</span></tt></a>: Returns <a class="reference internal" href="#sql-oprations"><em>SQL command string</em></a> for
+specified action on database object.</li>
+</ul>
+</div>
+<div class="section" id="visitor-pattern-support">
+<span id="id7"></span><h3>Visitor Pattern support<a class="headerlink" href="#visitor-pattern-support" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Visitor_pattern">Visitor Pattern</a> is particularly useful when you need to process various objects that need special handling
+in common algorithm (for example display information about them or generate SQL commands to create them in new
+database). Each metadata object (including <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a>) supports
+<a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor" title="fdb.schema.BaseSchemaItem.accept_visitor"><tt class="xref py py-attr docutils literal"><span class="pre">accept_visitor</span></tt></a> method that calls <cite>class-specific</cite> method on object passed
+to it as parameter. This method name always starts with &#8216;visit&#8217;. For example <a class="reference internal" href="reference.html#fdb.schema.Table" title="fdb.schema.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object
+calls <cite>visitTable</cite>. This &#8216;visit*&#8217; method has one parameter - object instance that calls it.</p>
+<p>FDB provides skeleton implementation for <a class="reference internal" href="reference.html#fdb.schema.SchemaVisitor" title="fdb.schema.SchemaVisitor"><tt class="xref py py-class docutils literal"><span class="pre">schema</span> <span class="pre">Visitor</span> <span class="pre">object</span></tt></a> that
+implements all <cite>visit*</cite> methods called by schema classes as call to method <cite>default_action</cite> that does
+nothing.</p>
+<p>Next code uses visitor pattern to print all DROP SQL statements necessary to drop database object,
+taking its dependencies into account, i.e. it could be necessary to first drop other - dependant objects
+before it could be dropped.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="c"># Object dropper</span>
+<span class="k">class</span> <span class="nc">ObjectDropper</span><span class="p">(</span><span class="n">fdb</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">SchemaVisitor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seen</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">def</span> <span class="nf">drop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seen</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">default_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">issystemobject</span><span class="p">()</span> <span class="ow">and</span> <span class="s">&#39;drop&#39;</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">actions</span><span class="p">:</span>
+           <span class="k">for</span> <span class="n">dependency</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_dependents</span><span class="p">():</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">dependency</span><span class="o">.</span><span class="n">dependent</span>
+                <span class="k">if</span> <span class="n">d</span> <span class="ow">and</span> <span class="n">d</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seen</span><span class="p">:</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+           <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seen</span><span class="p">:</span>
+                <span class="k">print</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;drop&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">visitSchema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">schema</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">visitMetadataItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">item</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">visitTableColumn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">column</span><span class="p">):</span>
+        <span class="n">column</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">visitViewColumn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">column</span><span class="p">):</span>
+        <span class="n">column</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">visitDependency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dependency</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">visitConstraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">constraint</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">visitProcedureParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">param</span><span class="p">):</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">procedure</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">visitFunctionArgument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arg</span><span class="p">):</span>
+        <span class="n">arg</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">visitDatabaseFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dbfile</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">visitShadow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">shadow</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="c"># Sample use:</span>
+
+<span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="s">&#39;JOB&#39;</span><span class="p">)</span>
+<span class="n">dropper</span> <span class="o">=</span> <span class="n">ObjectDropper</span><span class="p">()</span>
+<span class="n">dropper</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Will produce next result:</p>
+<div class="highlight-python"><pre>DROP PROCEDURE ALL_LANGS
+DROP PROCEDURE SHOW_LANGS
+DROP TABLE JOB</pre>
+</div>
+</div>
+<div class="section" id="object-dependencies">
+<span id="id8"></span><h3>Object dependencies<a class="headerlink" href="#object-dependencies" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="sql-opeations">
+<span id="sql-oprations"></span><h3>SQL opeations<a class="headerlink" href="#sql-opeations" title="Permalink to this headline">¶</a></h3>
+<p>Whenever possible</p>
+</div>
+</div>
 </div>
 
 
@@ -2712,6 +2976,8 @@ gbak:closing file, committing, and finishing. 74752 bytes written</pre>
 <li><a class="reference internal" href="#using-create-database">Using <cite>create_database</cite></a></li>
 <li><a class="reference internal" href="#deleting-databases">Deleting databases</a></li>
 <li><a class="reference internal" href="#connection-object">Connection object</a></li>
+<li><a class="reference internal" href="#getting-information-about-firebird-version">Getting information about Firebird version</a></li>
+<li><a class="reference internal" href="#database-on-disk-structure">Database On-Disk Structure</a></li>
 <li><a class="reference internal" href="#getting-information-about-database">Getting information about database</a></li>
 </ul>
 </li>
@@ -2761,6 +3027,14 @@ gbak:closing file, committing, and finishing. 74752 bytes written</pre>
 <li><a class="reference internal" href="#text-ouput-from-services">Text ouput from Services</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#working-with-database-schema">Working with database schema</a><ul>
+<li><a class="reference internal" href="#available-information">Available information</a></li>
+<li><a class="reference internal" href="#metadata-objects">Metadata objects</a></li>
+<li><a class="reference internal" href="#visitor-pattern-support">Visitor Pattern support</a></li>
+<li><a class="reference internal" href="#object-dependencies">Object dependencies</a></li>
+<li><a class="reference internal" href="#sql-opeations">SQL opeations</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -2803,11 +3077,11 @@ gbak:closing file, committing, and finishing. 74752 bytes written</pre>
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.1.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2009-2012, David Rushby, Pavel Cisar.
+        &copy; Copyright 2009-2013, David Rushby, Pavel Cisar.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

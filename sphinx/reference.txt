@@ -40,6 +40,40 @@ Module globals
 
    Helper constants for work with :attr:`Cursor.description` content.
 
+.. data:: ISOLATION_LEVEL_READ_COMMITED_LEGACY
+
+   TPB for R/W WAIT READ COMMITTED NO RECORD VERSION transaction.
+
+.. data:: ISOLATION_LEVEL_READ_COMMITED
+
+   TPB for R/W WAIT READ COMMITTED RECORD VERSION transaction.
+
+.. data:: ISOLATION_LEVEL_REPEATABLE_READ
+.. data:: ISOLATION_LEVEL_SNAPSHOT
+
+   TPB's for R/W WAIT SNAPSHOT transaction.
+
+.. data:: ISOLATION_LEVEL_SERIALIZABLE
+.. data:: ISOLATION_LEVEL_SNAPSHOT_TABLE_STABILITY
+
+   TPB's for R/W WAIT SNAPSHOT TABLE STABILITY transaction.
+
+.. data:: ISOLATION_LEVEL_READ_COMMITED_RO
+
+   TPB for R/O WAIT READ COMMITTED RECORD VERSION transaction.
+
+.. data:: MAX_BLOB_SEGMENT_SIZE
+
+.. data:: charset_map
+
+   Python dictionary that maps Firebird character set names (key) to Python character sets (value).
+
+.. data:: ODS_FB_20
+.. data:: ODS_FB_21
+.. data:: ODS_FB_25
+
+   ODS version numbers introduced by Firebird engine version.
+
 Exceptions
 ==========
 
@@ -97,17 +131,28 @@ Functions
 
 .. autofunction:: create_database
 
+Classes
+=======
+
 Connection
-==========
+----------
 
 .. autoclass:: Connection
    :member-order: groupwise
    :members:
    :inherited-members:
+
+.. autoclass:: ConnectionWithSchema
+   :member-order: groupwise
+   :members:
    :undoc-members:
 
+.. note::
+
+   For list of methods see :class:`fdb.schema.Schema`.
+
 Cursor
-======
+------
 
 .. autoclass:: Cursor
    :member-order: groupwise
@@ -116,7 +161,7 @@ Cursor
    :undoc-members:
 
 Transaction
-===========
+-----------
 
 .. autoclass:: Transaction
    :member-order: groupwise
@@ -125,7 +170,7 @@ Transaction
    :undoc-members:
 
 PreparedStatement
-=================
+-----------------
 
 .. autoclass:: PreparedStatement
    :member-order: groupwise
@@ -134,7 +179,7 @@ PreparedStatement
    :undoc-members:
 
 ConnectionGroup
-===============
+---------------
 
 .. autoclass:: ConnectionGroup
    :member-order: groupwise
@@ -143,7 +188,7 @@ ConnectionGroup
    :undoc-members:
 
 TransactionContext
-==================
+------------------
 
 .. autoclass:: TransactionContext
    :member-order: groupwise
@@ -152,7 +197,7 @@ TransactionContext
    :undoc-members:
 
 EventConduit
-============
+------------
 
 .. autoclass:: EventConduit
    :member-order: groupwise
@@ -161,7 +206,7 @@ EventConduit
    :undoc-members:
 
 BlobReader
-==========
+----------
 
 .. autoclass:: BlobReader
    :member-order: groupwise
@@ -170,7 +215,7 @@ BlobReader
    :undoc-members:
 
 TPB
-===
+---
 
 .. autoclass:: TPB
    :member-order: groupwise
@@ -202,6 +247,14 @@ RowMapping
    :inherited-members:
    :undoc-members:
 
+EventBlock
+----------
+
+.. autoclass:: EventBlock
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
 
 .. _services_api:
 
@@ -214,6 +267,8 @@ Services
 Module globals
 --------------
 
+.. data:: SHUT_LEGACY
+
 .. data:: SHUT_NORMAL
 
 .. data:: SHUT_MULTI
@@ -223,6 +278,7 @@ Module globals
 .. data:: SHUT_FULL
 
    These constants are to be passed as the `shutdown_mode` parameter to :meth:`Connection.shutdown`
+   and :meth:`Connection.bring_online`.
 
 
 .. data:: SHUT_FORCE
@@ -281,7 +337,6 @@ User
    :undoc-members:
 
 
-
 ctypes interface to Firebird client library
 ===========================================
 
@@ -291,3 +346,264 @@ ctypes interface to Firebird client library
    :synopsis: Python ctypes interface to Firebird client library
    :member-order: groupwise
    :members:
+
+Database schema
+===============
+
+.. module:: fdb.schema
+   :synopsis: Submodule for work with database metadata (schema)
+
+
+Schema
+------
+
+.. autoclass:: Schema
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+BaseSchemaItem
+--------------
+
+.. autoclass:: BaseSchemaItem
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Collation
+---------
+
+.. autoclass:: Collation
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+CharacterSet
+------------
+
+.. autoclass:: CharacterSet
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+DatabaseException
+-----------------
+
+.. autoclass:: DatabaseException
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Sequence
+--------
+
+.. autoclass:: Sequence
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Index
+-----
+
+.. autoclass:: Index
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+TableColumn
+-----------
+
+.. autoclass:: TableColumn
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+ViewColumn
+----------
+
+.. autoclass:: ViewColumn
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Domain
+------
+
+.. autoclass:: Domain
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Dependency
+----------
+
+.. autoclass:: Dependency
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Constraint
+----------
+
+.. autoclass:: Constraint
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Table
+-----
+
+.. autoclass:: Table
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+View
+----
+
+.. autoclass:: View
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Trigger
+-------
+
+.. autoclass:: Trigger
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+ProcedureParameter
+------------------
+
+.. autoclass:: ProcedureParameter
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Procedure
+---------
+
+.. autoclass:: Procedure
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Role
+----
+
+.. autoclass:: Role
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+FunctionArgument
+----------------
+
+.. autoclass:: FunctionArgument
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Function
+--------
+
+.. autoclass:: Function
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+DatabaseFile
+------------
+
+.. autoclass:: DatabaseFile
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Shadow
+------
+
+.. autoclass:: Shadow
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+SchemaVisitor
+-------------
+
+.. autoclass:: SchemaVisitor
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+
+Utilities
+=========
+
+.. module:: fdb.utils
+   :synopsis: Submodule with various classes and functions
+
+
+Functions
+---------
+
+.. autofunction:: update_meta
+.. autofunction:: iter_class_properties
+.. autofunction:: iter_class_variables
+.. autofunction:: embed_attributes
+
+LateBindingProperty
+-------------------
+
+.. autoclass:: LateBindingProperty
+   :member-order: groupwise
+   :members:
+
+Iterator
+--------
+
+.. autoclass:: Iterator
+   :member-order: groupwise
+   :members: __iter__, next, __next__
+   :inherited-members:
+   :undoc-members:
+
+EmbeddedProperty
+----------------
+
+.. autoclass:: EmbeddedProperty
+   :member-order: groupwise
+   :members: 
+
+EmbeddedAttribute
+-----------------
+
+.. autoclass:: EmbeddedAttribute
+   :member-order: groupwise
+   :members: 
+

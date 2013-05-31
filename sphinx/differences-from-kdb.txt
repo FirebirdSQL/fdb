@@ -12,7 +12,7 @@ used.
 Distributed transactions
 ========================
 
-Support for :ref:`Distributed Transactions <distributed_transactions>` works in slightly 
+Support for :ref:`Distributed Transactions <distributed_transactions>` works slightly 
 differently than in KDB. FDB uses :class:`~fdb.ConnectionGroup` class like KDB with the same 
 interface, but DT is not bound to main transaction of individual connections managed by group. 
 That means that :class:`~fdb.Cursor` instances obtained from :class:`~fdb.Connection` don't work in 
@@ -35,10 +35,10 @@ segmented BLOBs in chunks. Each chunk starts with a two byte length indicator
 followed by however many bytes of data were passed as a segment. Stream BLOBs 
 are stored as a continuous array of data bytes with no length indicators included.
 Both types of BLOBs could be accessed by the same API functions, but only stream
-BLOBs support seek operation (via isc_seek_blob function).
+BLOBs support seek operation (via `isc_seek_blob function`).
 
 FDB implements stream BLOBs as file-like objects. On input, you can simply pass 
-any file-like object (only 'read' method required) as parameter value for BLOB 
+any file-like object (only 'read' method is required) as parameter value for BLOB 
 column. For example:
 
 .. code-block:: python
@@ -49,7 +49,7 @@ column. For example:
 
 On output, stream BLOBs are represented by BlobReader instances on request. To
 request streamed access to BLOB, you have to use prepared statement for your query
-and call its set_stream_blob(column_name) method. Stream access is not allowed
+and call its `set_stream_blob(column_name)` method. Stream access is not allowed
 for cursors because cursors cache prepared statements internally, which would
 lead to dangerous situations (BlobReader life-time management) and anomalies 
 (stream access when it's not required). Example:
@@ -78,11 +78,11 @@ You can read BLOBs created as stream ones as fully materialized, and regular one
 in stream mode (without seek) without any problems, and that same apply for
 input - you can create values in the same column as stream or regular ones 
 interchangeably. From your point of view, stream BLOBs are just different 
-interface to BLOB values, with single exception - BlobReader.seek() will throw
+interface to BLOB values, with single exception - `BlobReader.seek()` will throw
 an exception if you'd call it on BLOB value that was not created as stream BLOB.
 
-To work with stream BLOBs, you don't need to use cursor.set_type_trans_in/out
-methods, i.e. calls to:
+To work with stream BLOBs, you don't need to use `cursor.set_type_trans_in/out`
+methods like in KDB, i.e. calls to:
 
 .. code-block:: python
 

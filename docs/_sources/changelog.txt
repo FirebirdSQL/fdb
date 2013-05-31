@@ -2,6 +2,8 @@
 Changelog
 #########
 
+* `Version 1.2`_ (??.?.2013)
+* `Version 1.1.1`_ (14.5.2013)
 * `Version 1.1`_ (9.4.2013)
 * `Version 1.0`_ (7.3.2013)
 * `Version 0.9.9`_ (30.11.2012)
@@ -12,6 +14,54 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.2
+===========
+
+New Features
+------------
+
+- :mod:`fdb.schema` submodule for access to / work with database metadata.
+- :mod:`fdb.utils` submodule with various helper classes and functions.
+- New :attr:`fdb.Connection.schema` property for access to database schema.
+- New :class:`~fdb.ConnectionWithSchema` connection class that provides more direct access 
+  to database schema than `Connection`.
+- New :attr:`fdb.Connection.firebird_version`, :attr:`fdb.Connection.version` and 
+  :attr:`fdb.Connection.engine_version` properties.
+- New `Connection.ods` read only property that returns ODS version number of connected database.
+  There are also new module-level constants `ODS_FB_20`, `ODS_FB_21` and `ODS_FB_25`.
+- New :attr:`fdb.Connection.query_transaction` property. This is ReadOnly ReadCommitted transaction 
+  that could be active indefinitely without blocking garbage collection. It’s used internally to query 
+  metadata, but it’s generally useful.
+
+Improvements
+------------
+
+- Optional PEP 249 (Python DB API 2.0) Extensions
+
+  - `Connection.Error`, `Connection.ProgrammingError`, etc.
+
+    All exception classes defined by the DB API standard are exposed on the Connection objects 
+    as attributes (in addition to being available at module scope).
+  - `Cursor.connection`
+
+    This read-only attribute return a reference to the Connection object on which the cursor was created.
+
+- `Cursor.transaction` read-only attribute returns a reference to the Transaction object on which the cursor 
+  was created.
+- Optimized wekref management, especially for `PreparedStatement`.
+- `create_database` now supports two methods for database screation. You can specify CREATE DATABASE statement
+  (as before) or provide set of named database parameters (SQL statement is created automatically from them).
+- Functions `connection` and `create_database` now take optional keyword parameter `connection_class` to
+  obtain instances of different class instead `Connection`.
+- Support for legacy (pre-2.5) shutdown mode with mode `fdb.services.SHUT_LEGACY`.
+- :meth:`fdb.Cursor.executemany` returns `self`, so it could be used directly as iterator.
+- Documentation inprovements.
+
+Bugs Fixed
+----------
+
+-  Unregistered: `buffers` parameter of `fdb.connection` doesn't support values greater than 255.
 
 Version 1.1.1
 =============

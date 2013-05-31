@@ -2,10 +2,11 @@ LICENSE.TXT
 MANIFEST.in
 PKG-INFO
 README
-ReleaseNotes.txt
 setup.cfg
 setup.py
+docs/.buildinfo
 docs/changelog.html
+docs/differences-from-kdb.html
 docs/genindex.html
 docs/getting-started.html
 docs/index.html
@@ -57,7 +58,9 @@ docs/_static/websupport.js
 fdb/__init__.py
 fdb/fbcore.py
 fdb/ibase.py
+fdb/schema.py
 fdb/services.py
+fdb/utils.py
 fdb.egg-info/PKG-INFO
 fdb.egg-info/SOURCES.txt
 fdb.egg-info/dependency_links.txt
@@ -89,4 +92,7 @@ sphinx/fdbtheme/static/ie6.css
 sphinx/fdbtheme/static/middlebg.png
 sphinx/fdbtheme/static/transparent.gif
 test/fbtest.fdb
+test/fbtest20.fdb
+test/fbtest21.fdb
+test/fbtest25.fdb
 test/testfdb.py

@@ -30,15 +30,14 @@ Installation from source
 
 Download the source tarball, uncompress it, then run the install command::
 
-  $ curl -O http://pypi.python.org/packages/source/f/fdb/fdb-0.9.1.tar.gz
-  $ tar -xzvf fdb-0.9.1.tar.gz
-  $ cd fdb-0.9.1
+  $ curl -O http://pypi.python.org/packages/source/f/fdb/fdb-1.2.tar.gz
+  $ tar -xzvf fdb-1.2.tar.gz
+  $ cd fdb-1.2
   $ python setup.py install
 
-.. _setuptools: http://pypi.python.org/pypi/setuptools
+.. _setuptools: https://bitbucket.org/pypa/setuptools
 .. _PYPI: http://pypi.python.org
 .. _ctypes: http://docs.python.org/library/ctypes.html
-
 
 
 Quick-start Guide
