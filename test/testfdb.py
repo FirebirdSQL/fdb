@@ -32,9 +32,10 @@ import time
 from contextlib import closing
 
 if ibase.PYTHON_MAJOR_VER == 3:
-    from io import StringIO
+    from io import StringIO, BytesIO
 else:
     from StringIO import StringIO
+    BytesIO = StringIO
 
 # Change next definition to test FDB on databases with various ODS 
 # Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb
@@ -138,13 +139,12 @@ class TestConnection(FDBTestBase):
     def test_connect(self):
         with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
             assert con._db_handle != None
-            #print 'con._dpb:',repr(con._dpb)
             assert con._dpb == ibase.b('\x01\x1c\x06sysdba\x1d\tmasterkey?\x01\x03')
     def test_properties(self):
         with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
             assert 'Firebird' in con.server_version
             assert 'Firebird' in con.firebird_version
-            assert isinstance(con.version,types.StringType)
+            assert isinstance(con.version,str)
             assert con.engine_version >= 2.0
             assert con.ods >= 11.0
             assert con.group is None
@@ -503,12 +503,8 @@ class TestDistributedTransaction(FDBTestBase):
             assert e.args == ('Error while rolling back transaction:\n- SQLCODE: -901\n- invalid transaction handle (expecting explicit transaction start)', -901, 335544332)
             
         ids1 = svc.get_limbo_transaction_ids(self.db1)
-        print ids1
-        #assert ids1 == [5]
         id1 = ids1[0]
         ids2 = svc.get_limbo_transaction_ids(self.db2)
-        #print ids1
-        #assert ids2 == [5]
         id2 = ids2[0]
         
         # Data chould be blocked by limbo transaction
@@ -1144,13 +1140,11 @@ class TestServices(FDBTestBase):
         con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
         con2 = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
         x = svc.get_attached_database_names()
-        #print repr(x)
         assert len(x) >= 2
         assert self.dbfile.upper() in [s.upper() for s in x]
             
         #assert '/opt/firebird/examples/empbuild/employee.fdb' in x
         x = svc.get_connection_count()
-        #print 'getConnectionCount',x
         assert x >= 2
         svc.close()
     def test_running(self):
@@ -1620,9 +1614,6 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
             blob_reader.seek(0)
             for line in blob_reader:
                 assert line.rstrip('\n') in blob.split('\n')
-            #blob_reader.seek(50)
-            #print blob_reader.tell()
-            #print repr(blob_reader.readline())
             blob_reader.seek(0)
             assert blob_reader.read() == blob
             blob_reader.seek(-9,os.SEEK_END)
@@ -1666,9 +1657,6 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
                 blob_reader.seek(0)
                 for line in blob_reader:
                     assert line.rstrip('\n') in blob.split('\n')
-                #blob_reader.seek(50)
-                #print blob_reader.tell()
-                #print repr(blob_reader.readline())
                 blob_reader.seek(0)
                 assert blob_reader.read() == blob
                 blob_reader.seek(-9,os.SEEK_END)
@@ -1812,27 +1800,23 @@ class TestSchema(FDBTestBase):
         if self.con.ods <= fdb.ODS_FB_20:
             assert repr(s.enum_field_subtypes) == "{0: 'BINARY', 1: 'TEXT', 2: 'BLR', 3: 'ACL', 4: 'RANGES', 5: 'SUMMARY', 6: 'FORMAT', 7: 'TRANSACTION_DESCRIPTION', 8: 'EXTERNAL_FILE_DESCRIPTION'}"
         elif self.con.ods > fdb.ODS_FB_20:
-            #print s.enum_field_subtypes
             assert repr(s.enum_field_subtypes) == "{0: 'BINARY', 1: 'TEXT', 2: 'BLR', 3: 'ACL', 4: 'RANGES', 5: 'SUMMARY', 6: 'FORMAT', 7: 'TRANSACTION_DESCRIPTION', 8: 'EXTERNAL_FILE_DESCRIPTION', 9: 'DEBUG_INFORMATION'}"
         assert repr(s.enum_function_types) == "{0: 'VALUE', 1: 'BOOLEAN'}"
         assert repr(s.enum_mechanism_types) == "{0: 'BY_VALUE', 1: 'BY_REFERENCE', 2: 'BY_VMS_DESCRIPTOR', 3: 'BY_ISC_DESCRIPTOR', 4: 'BY_SCALAR_ARRAY_DESCRIPTOR', 5: 'BY_REFERENCE_WITH_NULL'}"
         if self.con.ods <= fdb.ODS_FB_20:
             assert repr(s.enum_parameter_mechanism_types) == "{}"
         elif self.con.ods > fdb.ODS_FB_20:
-            #print s.enum_parameter_mechanism_types
             assert repr(s.enum_parameter_mechanism_types) == "{0: 'NORMAL', 1: 'TYPE OF'}"
         assert repr(s.enum_procedure_types) == "{0: 'LEGACY', 1: 'SELECTABLE', 2: 'EXECUTABLE'}"
         if self.con.ods <= fdb.ODS_FB_20:
             assert repr(s.enum_relation_types) == "{}"
         elif self.con.ods > fdb.ODS_FB_20:
-            #print s.enum_relation_types
             assert repr(s.enum_relation_types) == "{0: 'PERSISTENT', 1: 'VIEW', 2: 'EXTERNAL', 3: 'VIRTUAL', 4: 'GLOBAL_TEMPORARY_PRESERVE', 5: 'GLOBAL_TEMPORARY_DELETE'}"
         assert repr(s.enum_system_flag_types) == "{0: 'USER', 1: 'SYSTEM', 2: 'QLI', 3: 'CHECK_CONSTRAINT', 4: 'REFERENTIAL_CONSTRAINT', 5: 'VIEW_CHECK'}"
         assert repr(s.enum_transaction_state_types) == "{1: 'LIMBO', 2: 'COMMITTED', 3: 'ROLLED_BACK'}"
         if self.con.ods <= fdb.ODS_FB_20:
             assert repr(s.enum_trigger_types) == "{1: 'PRE_STORE', 2: 'POST_STORE', 3: 'PRE_MODIFY', 4: 'POST_MODIFY', 5: 'PRE_ERASE', 6: 'POST_ERASE'}"
         elif self.con.ods > fdb.ODS_FB_20:
-            #print s.enum_trigger_types
             assert repr(s.enum_trigger_types) == "{8192: 'CONNECT', 1: 'PRE_STORE', 2: 'POST_STORE', 3: 'PRE_MODIFY', 4: 'POST_MODIFY', 5: 'PRE_ERASE', 6: 'POST_ERASE', 8193: 'DISCONNECT', 8194: 'TRANSACTION_START', 8195: 'TRANSACTION_COMMIT', 8196: 'TRANSACTION_ROLLBACK'}"
         # properties
         assert s.description == None
@@ -2014,7 +1998,7 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('drop',badparam='')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         
     def testCharacterSet(self):
         c = self.con.schema.get_character_set('UTF8')
@@ -2042,12 +2026,12 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter',badparam='UCS_BASIC')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         try:
             c.get_sql_for('alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Missing required parameter: 'collation'."
+            assert e.args[0] == "Missing required parameter: 'collation'."
         #
         assert c.get_collation('UCS_BASIC').name == 'UCS_BASIC'
         assert c.get_collation_by_id(c.get_collation('UCS_BASIC').id).name == 'UCS_BASIC'
@@ -2081,23 +2065,23 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter',badparam="New message.")
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         try:
             c.get_sql_for('alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Missing required parameter: 'message'."
+            assert e.args[0] == "Missing required parameter: 'message'."
         assert c.get_sql_for('create_or_alter',message="New message.") == "CREATE OR ALTER EXCEPTION UNKNOWN_EMP_ID 'New message.'"
         try:
             c.get_sql_for('create_or_alter',badparam="New message.")
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         try:
             c.get_sql_for('create_or_alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Missing required parameter: 'message'."
+            assert e.args[0] == "Missing required parameter: 'message'."
     def testSequence(self):
         # System generator
         c = self.con.schema.get_sequence('RDB$FIELD_NAME')
@@ -2140,12 +2124,12 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter',badparam=10)
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         try:
             c.get_sql_for('alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Missing required parameter: 'value'."
+            assert e.args[0] == "Missing required parameter: 'value'."
     def testTableColumn(self):
         # System column
         c = self.con.schema.get_table('RDB$PAGES').get_column('RDB$PAGE_NUMBER')
@@ -2198,17 +2182,17 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter',badparam=10)
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         try:
             c.get_sql_for('alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Parameter required."
+            assert e.args[0] == "Parameter required."
         try:
             c.get_sql_for('alter',expression='(1+1)')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Change from persistent column to computed is not allowed."
+            assert e.args[0] == "Change from persistent column to computed is not allowed."
         # Computed column
         c = self.con.schema.get_table('EMPLOYEE').get_column('FULL_NAME')
         assert c.isnullable()
@@ -2223,7 +2207,7 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter',datatype='VARCHAR(50)')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Change from computed column to persistent is not allowed."
+            assert e.args[0] == "Change from computed column to persistent is not allowed."
         # Array column
         c = self.con.schema.get_table('AR').get_column('C2')
         assert c.datatype == 'INTEGER[4, 0:3, 2]'
@@ -2257,7 +2241,8 @@ class TestSchema(FDBTestBase):
         assert c.index_type == 'DESCENDING'
         assert c.partner_index is None
         assert c.expression is None
-        assert str(c.statistics) == '0.0384615398943'
+        # startswith() is necessary, because Python 3 returns more precise value.
+        assert str(c.statistics).startswith('0.0384615398943')
         assert repr(c.segment_names) == "['JOB_COUNTRY', 'MAX_SALARY']"
         assert len(c.segments) == 2
         for segment in c.segments:
@@ -2268,7 +2253,6 @@ class TestSchema(FDBTestBase):
         if self.con.ods <= fdb.ODS_FB_20:
             assert repr(c.segment_statistics) == '[None, None]'
         elif self.con.ods > fdb.ODS_FB_20:
-            #print c.segment_statistics
             assert repr(c.segment_statistics) == '[0.1428571492433548, 0.03846153989434242]'
         assert c.constraint is None
         #
@@ -2379,12 +2363,12 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter',badparam=10)
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         try:
             c.get_sql_for('alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Parameter required."
+            assert e.args[0] == "Parameter required."
         # Domain with quoted name
         c = self.con.schema.get_domain('FIRSTNAME')
         assert c.name == 'FIRSTNAME'
@@ -2685,7 +2669,6 @@ class TestSchema(FDBTestBase):
                     ('EMPLOYEE', 'LAST_NAME', 0), ('EMPLOYEE', 'PHONE_EXT', 0), 
                     ('DEPARTMENT', 'LOCATION', 0), ('DEPARTMENT', 'PHONE_NO', 0)])
         #
-        #print c.id
         assert c.id ==143
         assert c.sql == """SELECT
     emp_no, first_name, last_name, phone_ext, location, phone_no
@@ -2738,12 +2721,12 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter',badparam='select * from country')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         try:
             c.get_sql_for('alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Missing required parameter: 'query'."
+            assert e.args[0] == "Missing required parameter: 'query'."
 
         assert c.get_sql_for('create_or_alter',query='select * from country') == \
                "CREATE OR ALTER VIEW PHONE_LIST \n   AS\n     select * from country"
@@ -2806,12 +2789,12 @@ END"""
             c.get_sql_for('alter')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Header or body definition required."
+            assert e.args[0] == "Header or body definition required."
         try:
             c.get_sql_for('alter',declare="DECLARE VARIABLE i integer;")
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Header or body definition required."
+            assert e.args[0] == "Header or body definition required."
         assert c.get_sql_for('alter',fire_on='AFTER INSERT',active=False,sequence=0,
                              declare='  DECLARE VARIABLE i integer;\n  DECLARE VARIABLE x integer;',
                              code='  i = 1;\n  x = 2;') == """ALTER TRIGGER SET_EMP_NO INACTIVE
@@ -2847,7 +2830,7 @@ END"""
             c.get_sql_for('alter',fire_on='ON CONNECT')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Trigger type change is not allowed."
+            assert e.args[0] == "Trigger type change is not allowed."
         assert c.get_sql_for('create_or_alter') == """CREATE OR ALTER TRIGGER SET_EMP_NO FOR EMPLOYEE ACTIVE
 BEFORE INSERT POSITION 0
 AS
@@ -3011,7 +2994,7 @@ END"""
             c.get_sql_for('alter',declare="DECLARE VARIABLE i integer;")
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Missing required parameter: 'code'."
+            assert e.args[0] == "Missing required parameter: 'code'."
         assert c.get_sql_for('alter',code='') == """ALTER PROCEDURE GET_EMP_PROJ
 AS
 BEGIN
@@ -3380,7 +3363,7 @@ END"""
             c.get_sql_for('drop',badparam='')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         assert c.get_sql_for('declare') == """DECLARE EXTERNAL FUNCTION STRLEN
   CSTRING(32767)
 RETURNS INTEGER BY VALUE
@@ -3390,7 +3373,7 @@ MODULE_NAME 'ib_udf'"""
             c.get_sql_for('declare',badparam='')
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Unsupported parameter(s) 'badparam'"
+            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
         #
         c = self._mockFunction('STRING2BLOB')
         assert len(c.arguments) == 2
@@ -3675,11 +3658,11 @@ class TestBugs(FDBTestBase):
         self.con.commit()
         # test data
         data_bytes = (1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9)
-        blob_data = "".join((chr(i) for i in data_bytes))
+        blob_data = fdb.bs(data_bytes)
         cur.execute("insert into fdbtest3 (id, t_blob) values (?, ?)",
                     (1, blob_data))
         cur.execute("insert into fdbtest3 (id, t_blob) values (?, ?)",
-                    (2, StringIO(blob_data)))
+                    (2, BytesIO(blob_data)))
         self.con.commit()
         # PYFB-XX: binary blob trucated at zero-byte
         cur.execute("select t_blob from fdbtest3 where id = 1")
@@ -3717,7 +3700,7 @@ class TestBugs(FDBTestBase):
             cur.fetchall()
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Cannot fetch from this cursor because it has not executed a statement."
+            assert e.args[0] == "Cannot fetch from this cursor because it has not executed a statement."
 
         cur.execute("select * from RDB$DATABASE")
         cur.fetchall()
@@ -3726,7 +3709,7 @@ class TestBugs(FDBTestBase):
             cur.fetchall()
             raise Exception("Exception expected")
         except Exception as e:
-            assert e.message == "Attempt to fetch row of results after statement that does not produce result set."
+            assert e.args[0] == "Attempt to fetch row of results after statement that does not produce result set."
 
         cur.execute("insert into table1 (ID,C1) values (1,1) returning ID")
         row = cur.fetchall()

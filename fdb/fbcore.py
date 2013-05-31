@@ -31,9 +31,9 @@ import decimal
 import weakref
 import threading
 
-import ibase
-import schema
-import utils
+from . import ibase
+from . import schema
+from . import utils
 
 try:
     # Python 2
@@ -677,7 +677,8 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
             dsn = database
 
     dsn = b(dsn,_FS_ENCODING)
-    
+    if charset:
+        charset = charset.upper()
     dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,
                     force_write, no_reserve, db_key_scope)
 

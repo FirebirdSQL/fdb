@@ -20,8 +20,9 @@
 
 import sys
 import os
-import fbcore as fdb
-from utils import LateBindingProperty
+import fdb
+#from . import fbcore as fdb
+from fdb.utils import LateBindingProperty
 import string
 import weakref
 
@@ -243,7 +244,7 @@ class Schema(object):
         self.enum_object_types = enum_dict('RDB$OBJECT_TYPE')
         # Object type codes
         self.enum_object_type_codes = dict(((value,key) for key,value 
-                                            in self.enum_object_types.iteritems()))
+                                            in self.enum_object_types.items()))
         # Character set names
         self.enum_character_set_names = enum_dict('RDB$CHARACTER_SET_NAME')
         # Field types
@@ -1413,7 +1414,7 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
         return self._attributes['RDB$INDEX_INACTIVE'] == 1
     def isenforcer(self):
         "Returns True if index is used to enforce a constraint."
-        return self.schema._get_constraint_indices().has_key(self.name)
+        return self.name in self.schema._get_constraint_indices()
 
 class ViewColumn(BaseSchemaItem):
     """Represents view column.
