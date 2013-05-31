@@ -501,9 +501,9 @@ order by RDB$SHADOW_NUMBER""")
     collations = LateBindingProperty(_get_collations,None,None,
         "List of all collations in database.\nItems are :class:`Collation` objects.")
     character_sets = LateBindingProperty(_get_character_sets,None,None,
-        "List of all character sets in database.\nItems are CharacterSet objects.")
+        "List of all character sets in database.\nItems are :class:`CharacterSet` objects.")
     exceptions = LateBindingProperty(_get_exceptions,None,None,
-        "List of all exceptions in database.\nItems are :class:`Exception` objects.")
+        "List of all exceptions in database.\nItems are :class:`DatabaseException` objects.")
     generators = LateBindingProperty(_get_generators,None,None,
         "List of all user generators in database.\nItems are :class:`Sequence` objects.")
     sysgenerators = LateBindingProperty(_get_sysgenerators,None,None,
@@ -823,7 +823,7 @@ class BaseSchemaItem(object):
     def _get_recreate_sql(self,**params):
         return 'RE'+self._get_create_sql(**params)
     def _get_create_or_alter_sql(self,**params):
-        return 'CREATE OR '+self._get_alter_sql(**params)
+        return 'CREATE OR ALTER' + self._get_create_sql(**params)[6:]
     #--- properties
 
     name = LateBindingProperty(_get_name,None,None,
@@ -855,7 +855,7 @@ class BaseSchemaItem(object):
         return [d for d in self.schema.dependencies if d.depended_on_name == self.name and 
             d.depended_on_type in self._type_code]
     def get_dependencies(self):
-        "Returns list of database objects that this objects depend on."
+        "Returns list of database objects that this object depend on."
         return [d for d in self.schema.dependencies if d.dependent_name == self.name and 
             d.dependent_type in self._type_code]
     def get_sql_for(self,action,**params):
@@ -863,7 +863,7 @@ class BaseSchemaItem(object):
         
         Supported actions are defined by :attr:`actions` list.
         
-        :raises ProgrammingError: For unsupported action.
+        :raises ProgrammingError: For unsupported action or wrong parameters passed.
         """
         _action = action.lower() 
         if _action in self._actions:
@@ -1042,8 +1042,7 @@ class DatabaseException(BaseSchemaItem):
 
     Supported SQL actions: 
     
-    - User exception: create, recreate, alter(message=string), 
-      create_or_alter(message=string), drop
+    - User exception: create, recreate, alter(message=string), create_or_alter, drop
     - System exception: none
     """
     def __init__(self,schema,attributes):
@@ -1255,7 +1254,7 @@ class TableColumn(BaseSchemaItem):
                 if d.depended_on_name == self._attributes['RDB$RELATION_NAME'] 
                 and d.depended_on_type == 0 and d.field_name == self.name]
     def get_dependencies(self):
-        "Return list of database objects that this objects depend on."
+        "Return list of database objects that this object depend on."
         return [d for d in self.schema.dependencies 
                 if d.dependent_name == self._attributes['RDB$RELATION_NAME'] 
                 and d.dependent_type == 0 and d.field_name == self.name]
@@ -1499,7 +1498,7 @@ class ViewColumn(BaseSchemaItem):
                 if d.depended_on_name == self._attributes['RDB$RELATION_NAME'] 
                 and d.depended_on_type == 1 and d.field_name == self.name]
     def get_dependencies(self):
-        "Return list of database objects that this objects depend on."
+        "Return list of database objects that this object depend on."
         return [d for d in self.schema.dependencies 
                 if d.dependent_name == self._attributes['RDB$RELATION_NAME'] 
                 and d.dependent_type == 1 and d.field_name == self.name]
@@ -1736,36 +1735,29 @@ class Dependency(BaseSchemaItem):
     def _get_depended_on_type(self):
         return self._attributes['RDB$DEPENDED_ON_TYPE']
     def _get_dependent(self):
-        if self.dependent_type == 0:
+        if self.dependent_type == 0: # TABLE
             t = self.schema.get_table(self.dependent_name)
-            if self.field_name:
-                return t.get_column(self.field_name)
-            else:
-                return t
-        elif self.dependent_type == 1:
+        elif self.dependent_type == 1: # VIEW
             return self.schema.get_view(self.dependent_name)
-        elif self.dependent_type == 2:
+        elif self.dependent_type == 2: # TRIGGER
             return self.schema.get_trigger(self.dependent_name)
-        elif self.dependent_type == 3:
-            ## ToDo: Implement handler for COMPUTED FIELDs if necessary
-            #return None
+        elif self.dependent_type == 3: # COMPUTED FIELD (i.e. DOMAIN)
             return self.schema.get_domain(self.dependent_name)
-        elif self.dependent_type == 4:
+        elif self.dependent_type == 4: 
             ## ToDo: Implement handler for VALIDATION if necessary
             return None
-        elif self.dependent_type == 5:
+        elif self.dependent_type == 5: #PROCEDURE
             return self.schema.get_procedure(self.dependent_name)
-        elif self.dependent_type == 6:
+        elif self.dependent_type == 6: # EXPRESSION INDEX
             return self.schema.get_index(self.dependent_name)
-        elif self.dependent_type == 7:
+        elif self.dependent_type == 7: # EXCEPTION
             return self.schema.get_exception(self.dependent_name)
         elif self.dependent_type == 8:
             ## ToDo: Implement handler for USER if necessary
             return None
-        elif self.dependent_type == 9:
-            ## ToDo: Implement handler for FIELD if necessary
-            return None
-        elif self.dependent_type == 10:
+        elif self.dependent_type == 9: # FIELD (i.e. DOMAIN)
+            return self.schema.get_domain(self.dependent_name)
+        elif self.dependent_type == 10: # INDEX
             return self.schema.get_index(self.dependent_name)
         elif self.dependent_type == 11:
             ## ToDo: Implement handler for DEPENDENT COUNT if necessary
@@ -1773,47 +1765,44 @@ class Dependency(BaseSchemaItem):
         elif self.dependent_type == 12:
             ## ToDo: Implement handler for USER GROUP if necessary
             return None
-        elif self.dependent_type == 13:
+        elif self.dependent_type == 13: # ROLE
             return self.schema.get_role(self.dependent_name)
-        elif self.dependent_type == 14:
+        elif self.dependent_type == 14: # GENERATOR
             return self.schema.get_generator(self.dependent_name)
-        elif self.dependent_type == 15:
-            ## ToDo: Implement handler for UDF
-            return None
+        elif self.dependent_type == 15: # UDF
+            return self.schema.get_function(self.dependent_name)
         elif self.dependent_type == 16:
             ## ToDo: Implement handler for BLOB_FILTER
             return None
         return None
     def _get_depended_on(self):
-        if self.depended_on_type == 0:
+        if self.depended_on_type == 0: # TABLE
             t = self.schema.get_table(self.depended_on_name)
             if self.field_name:
                 return t.get_column(self.field_name)
             else:
                 return t
-        elif self.depended_on_type == 1:
+        elif self.depended_on_type == 1: # VIEW
             return self.schema.get_view(self.depended_on_name)
-        elif self.depended_on_type == 2:
+        elif self.depended_on_type == 2: # TRIGGER
             return self.schema.get_trigger(self.depended_on_name)
-        elif self.depended_on_type == 3:
-            ## ToDo: Implement handler for COMPUTED FIELDs if necessary
-            return None
+        elif self.depended_on_type == 3: # COMPUTED FIELD (i.e. DOMAIN)
+            return self.schema.get_domain(self.depended_on_name)
         elif self.depended_on_type == 4:
             ## ToDo: Implement handler for VALIDATION if necessary
             return None
-        elif self.depended_on_type == 5:
+        elif self.depended_on_type == 5: #PROCEDURE
             return self.schema.get_procedure(self.depended_on_name)
-        elif self.depended_on_type == 6:
+        elif self.depended_on_type == 6: # EXPRESSION INDEX
             return self.schema.get_index(self.depended_on_name)
-        elif self.depended_on_type == 7:
+        elif self.depended_on_type == 7: # EXCEPTION
             return self.schema.get_exception(self.depended_on_name)
         elif self.depended_on_type == 8:
             ## ToDo: Implement handler for USER if necessary
             return None
-        elif self.depended_on_type == 9:
-            ## ToDo: Implement handler for FIELD if necessary
-            return None
-        elif self.depended_on_type == 10:
+        elif self.depended_on_type == 9: # FIELD (i.e. DOMAIN)
+            return self.schema.get_domain(self.depended_on_name)
+        elif self.depended_on_type == 10: # INDEX
             return self.schema.get_index(self.depended_on_name)
         elif self.depended_on_type == 11:
             ## ToDo: Implement handler for DEPENDENT COUNT if necessary
@@ -1821,13 +1810,12 @@ class Dependency(BaseSchemaItem):
         elif self.depended_on_type == 12:
             ## ToDo: Implement handler for USER GROUP if necessary
             return None
-        elif self.depended_on_type == 13:
+        elif self.depended_on_type == 13: # ROLE
             return self.schema.get_role(self.depended_on_name)
-        elif self.depended_on_type == 14:
+        elif self.depended_on_type == 14: # GENERATOR
             return self.schema.get_generator(self.depended_on_name)
-        elif self.depended_on_type == 15:
-            ## ToDo: Implement handler for UDF
-            return None
+        elif self.depended_on_type == 15: # UDF
+            return self.schema.get_function(self.depended_on_name)
         elif self.depended_on_type == 16:
             ## ToDo: Implement handler for BLOB_FILTER
             return None
@@ -2212,8 +2200,8 @@ class View(BaseSchemaItem):
 
     Supported SQL actions: 
     
-    - User views: create, recreate, alter(columns=string,query=string,check=bool), 
-      create_or_alter(columns=string_or_list,query=string,check=bool), drop
+    - User views: create, recreate, alter(columns=string_or_list,query=string,check=bool), 
+      create_or_alter, drop
     - System views: none
     """
     def __init__(self,schema,attributes):
@@ -2403,8 +2391,6 @@ class Trigger(BaseSchemaItem):
         if not (header or body):
             raise fdb.ProgrammingError("Header or body definition required.")
         return 'ALTER TRIGGER %s%s%s' % (self.get_quoted_name(),header,body)
-    def _get_create_or_alter_sql(self,**params):
-        return 'CREATE OR ALTER' + self._get_create_sql(**params)[6:]
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP TRIGGER %s' % self.get_quoted_name()
@@ -2732,8 +2718,6 @@ class Procedure(BaseSchemaItem):
             body = '%sAS\nBEGIN\nEND' % ('' if header else '\n')
         #
         return 'ALTER PROCEDURE %s%s%s' % (self.get_quoted_name(),header,body)
-    def _get_create_or_alter_sql(self,**params):
-        return 'CREATE OR ALTER' + self._get_create_sql(**params)[6:]
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP PROCEDURE %s' % self.get_quoted_name()

@@ -776,11 +776,11 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
         
         sql = "create database '%s' user '%s' password '%s'" % (dsn,user,password)
         if page_size:
-            sql = '%s page_size %i' % (sql,args['page_size'])
+            sql = '%s page_size %i' % (sql,page_size)
         if length:
-            sql = '%s length %i' % (sql,args['length'])
+            sql = '%s length %i' % (sql,length)
         if charset:
-            sql = '%s default character set %s' % (sql,args['character_set'])
+            sql = '%s default character set %s' % (sql,charset.upper())
         if files:
             sql = '%s %s' % (sql,files)
         

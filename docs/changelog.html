@@ -63,7 +63,7 @@
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference internal" href="#version-1-2">Version 1.2</a> (??.?.2013)</li>
+<li><a class="reference internal" href="#version-1-2">Version 1.2</a> (31.5.2013)</li>
 <li><a class="reference internal" href="#version-1-1-1">Version 1.1.1</a> (14.5.2013)</li>
 <li><a class="reference internal" href="#version-1-1">Version 1.1</a> (9.4.2013)</li>
 <li><a class="reference internal" href="#version-1-0">Version 1.0</a> (7.3.2013)</li>
@@ -132,6 +132,8 @@ obtain instances of different class instead <cite>Connection</cite>.</p>
 <h3>Bugs Fixed<a class="headerlink" href="#bugs-fixed" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Unregistered: <cite>buffers</cite> parameter of <cite>fdb.connection</cite> doesn&#8217;t support values greater than 255.</li>
+<li>Unregistered: Lowercase character set name passed to <cite>fdb.connect</cite> may result in wrong funcion of automatic
+data conversions and other failures (exceptions raised).</li>
 </ul>
 </div>
 </div>

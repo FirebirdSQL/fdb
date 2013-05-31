@@ -19,7 +19,7 @@ docs/search.html
 docs/searchindex.js
 docs/usage-guide.html
 docs/_sources/changelog.txt
-docs/_sources/differecnes-from-kdb.txt
+docs/_sources/differences-from-kdb.txt
 docs/_sources/getting-started.txt
 docs/_sources/index.txt
 docs/_sources/license.txt

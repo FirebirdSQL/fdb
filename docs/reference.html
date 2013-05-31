@@ -1015,7 +1015,7 @@ to create connections with direct schema interface.</p>
 <dt id="fdb.ConnectionWithSchema.character_sets">
 <tt class="descname">character_sets</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.character_sets" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of all character sets in database.
-Items are CharacterSet objects.</p>
+Items are <tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1174,7 +1174,7 @@ If the argument is a string, the return value is the same object.</p>
 <dt id="fdb.ConnectionWithSchema.exceptions">
 <tt class="descname">exceptions</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.exceptions" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of all exceptions in database.
-Items are <tt class="xref py py-class docutils literal"><span class="pre">Exception</span></tt> objects.</p>
+Items are <tt class="xref py py-class docutils literal"><span class="pre">DatabaseException</span></tt> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4731,7 +4731,7 @@ reloaded from database on next reference.</p>
 <dt id="fdb.schema.Schema.character_sets">
 <tt class="descname">character_sets</tt><a class="headerlink" href="#fdb.schema.Schema.character_sets" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of all character sets in database.
-Items are CharacterSet objects.</p>
+Items are <a class="reference internal" href="#fdb.schema.CharacterSet" title="fdb.schema.CharacterSet"><tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt></a> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4862,7 +4862,7 @@ Items are <a class="reference internal" href="#fdb.schema.Domain" title="fdb.sch
 <dt id="fdb.schema.Schema.exceptions">
 <tt class="descname">exceptions</tt><a class="headerlink" href="#fdb.schema.Schema.exceptions" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of all exceptions in database.
-Items are <tt class="xref py py-class docutils literal"><span class="pre">Exception</span></tt> objects.</p>
+Items are <a class="reference internal" href="#fdb.schema.DatabaseException" title="fdb.schema.DatabaseException"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseException</span></tt></a> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -5049,7 +5049,7 @@ Items are <a class="reference internal" href="#fdb.schema.View" title="fdb.schem
 <dl class="method">
 <dt id="fdb.schema.BaseSchemaItem.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.BaseSchemaItem.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5074,7 +5074,7 @@ Items are <a class="reference internal" href="#fdb.schema.View" title="fdb.schem
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -5141,7 +5141,7 @@ Items are <a class="reference internal" href="#fdb.schema.View" title="fdb.schem
 <dl class="method">
 <dt id="fdb.schema.Collation.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Collation.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5166,7 +5166,7 @@ Items are <a class="reference internal" href="#fdb.schema.View" title="fdb.schem
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -5302,7 +5302,7 @@ this character set.</p>
 <dl class="method">
 <dt id="fdb.schema.CharacterSet.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.CharacterSet.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5327,7 +5327,7 @@ this character set.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -5397,8 +5397,7 @@ this character set.</p>
 <dd><p>Represents database exception.</p>
 <p>Supported SQL actions:</p>
 <ul class="simple">
-<li>User exception: create, recreate, alter(message=string), 
-create_or_alter(message=string), drop</li>
+<li>User exception: create, recreate, alter(message=string), create_or_alter, drop</li>
 <li>System exception: none</li>
 </ul>
 <dl class="method">
@@ -5418,7 +5417,7 @@ create_or_alter(message=string), drop</li>
 <dl class="method">
 <dt id="fdb.schema.DatabaseException.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.DatabaseException.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5443,7 +5442,7 @@ create_or_alter(message=string), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -5521,7 +5520,7 @@ create_or_alter(message=string), drop</li>
 <dl class="method">
 <dt id="fdb.schema.Sequence.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Sequence.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5546,7 +5545,7 @@ create_or_alter(message=string), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -5624,7 +5623,7 @@ create_or_alter(message=string), drop</li>
 <dl class="method">
 <dt id="fdb.schema.Index.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Index.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5649,7 +5648,7 @@ create_or_alter(message=string), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -5811,7 +5810,7 @@ create_or_alter(message=string), drop</li>
 <dl class="method">
 <dt id="fdb.schema.TableColumn.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.TableColumn.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return list of database objects that this objects depend on.</p>
+<dd><p>Return list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5836,7 +5835,7 @@ create_or_alter(message=string), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -5970,7 +5969,7 @@ create_or_alter(message=string), drop</li>
 <dl class="method">
 <dt id="fdb.schema.ViewColumn.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.ViewColumn.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return list of database objects that this objects depend on.</p>
+<dd><p>Return list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -5995,7 +5994,7 @@ create_or_alter(message=string), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -6116,7 +6115,7 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <dl class="method">
 <dt id="fdb.schema.Domain.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Domain.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -6141,7 +6140,7 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -6360,7 +6359,7 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -6468,7 +6467,7 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <dl class="method">
 <dt id="fdb.schema.Constraint.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Constraint.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -6493,7 +6492,7 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -6668,7 +6667,7 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <dl class="method">
 <dt id="fdb.schema.Table.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Table.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -6693,7 +6692,7 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -6863,8 +6862,8 @@ Items are <a class="reference internal" href="#fdb.schema.Trigger" title="fdb.sc
 <dd><p>Represents database View.</p>
 <p>Supported SQL actions:</p>
 <ul class="simple">
-<li>User views: create, recreate, alter(columns=string,query=string,check=bool), 
-create_or_alter(columns=string_or_list,query=string,check=bool), drop</li>
+<li>User views: create, recreate, alter(columns=string_or_list,query=string,check=bool), 
+create_or_alter, drop</li>
 <li>System views: none</li>
 </ul>
 <dl class="method">
@@ -6890,7 +6889,7 @@ create_or_alter(columns=string_or_list,query=string,check=bool), drop</li>
 <dl class="method">
 <dt id="fdb.schema.View.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.View.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -6915,7 +6914,7 @@ create_or_alter(columns=string_or_list,query=string,check=bool), drop</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -7057,7 +7056,7 @@ code=string_or_list)</li>
 <dl class="method">
 <dt id="fdb.schema.Trigger.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Trigger.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -7082,7 +7081,7 @@ code=string_or_list)</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -7222,7 +7221,7 @@ code=string_or_list)</li>
 <dl class="method">
 <dt id="fdb.schema.ProcedureParameter.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.ProcedureParameter.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -7253,7 +7252,7 @@ code=string_or_list)</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -7394,7 +7393,7 @@ code=string_or_list)</li>
 <dl class="method">
 <dt id="fdb.schema.Procedure.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Procedure.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -7425,7 +7424,7 @@ code=string_or_list)</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -7553,7 +7552,7 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 <dl class="method">
 <dt id="fdb.schema.Role.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Role.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -7578,7 +7577,7 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -7646,7 +7645,7 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 <dl class="method">
 <dt id="fdb.schema.FunctionArgument.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.FunctionArgument.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -7677,7 +7676,7 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -7854,7 +7853,7 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dl class="method">
 <dt id="fdb.schema.Function.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Function.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -7879,7 +7878,7 @@ is used (including BLOB and ARRAY descriptors).</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -7983,7 +7982,7 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dl class="method">
 <dt id="fdb.schema.DatabaseFile.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.DatabaseFile.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -8008,7 +8007,7 @@ is used (including BLOB and ARRAY descriptors).</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>
@@ -8094,7 +8093,7 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dl class="method">
 <dt id="fdb.schema.Shadow.get_dependencies">
 <tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Shadow.get_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns list of database objects that this objects depend on.</p>
+<dd><p>Returns list of database objects that this object depend on.</p>
 </dd></dl>
 
 <dl class="method">
@@ -8119,7 +8118,7 @@ is used (including BLOB and ARRAY descriptors).</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action.</td>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
 </tr>
 </tbody>
 </table>

@@ -2786,22 +2786,22 @@ transform information stored in system tables into set of Python objects that su
 in meaningful way, and additionaly provide set of methods for most commonly used operations or checks.</p>
 <p>Database schema could be accessed in three different ways, each suitable for different use case:</p>
 <ul class="simple">
-<li>By direct creation of <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">fdb.schema.Schema</span></tt></a> instances that are then binded to particular
-<a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance. This method is best if you want to work with schema only occasionally, or
-you want to keep connections as lightweight as possible.</li>
-<li>Accessing <tt class="xref py py-attr docutils literal"><span class="pre">Connection.schema</span></tt> property. This method is more convenient than previous one, and
+<li>By direct creation of <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">fdb.schema.Schema</span></tt></a> instances that are then <a class="reference internal" href="reference.html#fdb.schema.Schema.bind" title="fdb.schema.Schema.bind"><tt class="xref py py-meth docutils literal"><span class="pre">binded</span></tt></a>
+to particular <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance. This method is best if you want to work with schema only
+occasionally, or you want to keep connections as lightweight as possible.</li>
+<li>Accessing <a class="reference internal" href="reference.html#fdb.Connection.schema" title="fdb.Connection.schema"><tt class="xref py py-attr docutils literal"><span class="pre">fdb.Connection.schema</span></tt></a> property. This method is more convenient than previous one, and
 represents a compromise between convenience and resource consumption. Metadata objects are loaded only
 at the first access and then kept in schema cache, and <tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt> instance is created
 and managed by connection itself.</li>
-<li>Using <tt class="xref py py-class docutils literal"><span class="pre">ConnectionWithSchema</span></tt> instead <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> by specifying
+<li>Using <a class="reference internal" href="reference.html#fdb.ConnectionWithSchema" title="fdb.ConnectionWithSchema"><tt class="xref py py-class docutils literal"><span class="pre">ConnectionWithSchema</span></tt></a> instead <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> by specifying
 <cite>connection_class=ConnectionWithSchema</cite> parameter to <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">connect()</span></tt></a> or <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">create_database()</span></tt></a>.
 This <cite>Connection</cite> descendant loads database metadata immediately and provides directly all attributes
-and methods provided by <tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt> class. This method is most suitable in case you want
+and methods provided by <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> class. This method is most suitable in case you want
 to work with database metadata extensively.</li>
 </ul>
 <p><strong>Examples:</strong></p>
 <ol class="arabic simple">
-<li>Using Schema instance</li>
+<li>Using Schema instance:</li>
 </ol>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
@@ -2813,7 +2813,7 @@ to work with database metadata extensively.</li>
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
-<li>Using Connection.schema</li>
+<li>Using Connection.schema:</li>
 </ol>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
@@ -2823,7 +2823,7 @@ to work with database metadata extensively.</li>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li>Using ConnectionWithSchema</li>
+<li>Using ConnectionWithSchema:</li>
 </ol>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">,</span>
@@ -2870,27 +2870,34 @@ common attributes and methods:</p>
 <li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.name" title="fdb.schema.BaseSchemaItem.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a>: Name of database object or None if object doesn&#8217;t have a name.</li>
 <li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.description" title="fdb.schema.BaseSchemaItem.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a>: Description (documentation text) for object or None if
 object doesn&#8217;t have a description.</li>
-<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.actions" title="fdb.schema.BaseSchemaItem.actions"><tt class="xref py py-attr docutils literal"><span class="pre">actions</span></tt></a>: List of supported SQL operations on metadata object instance.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.actions" title="fdb.schema.BaseSchemaItem.actions"><tt class="xref py py-attr docutils literal"><span class="pre">actions</span></tt></a>: List of supported SQL operations on schema object instance.</li>
 </ul>
 <p>Methods:</p>
 <ul class="simple">
-<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor" title="fdb.schema.BaseSchemaItem.accept_visitor"><tt class="xref py py-attr docutils literal"><span class="pre">accept_visitor</span></tt></a>: <a class="reference internal" href="#visitor-pattern-support"><em>Visitor Pattern support</em></a>.</li>
-<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.issystemobject" title="fdb.schema.BaseSchemaItem.issystemobject"><tt class="xref py py-attr docutils literal"><span class="pre">issystemobject</span></tt></a>: Returns True if this database object is system object.</li>
-<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_quoted_name" title="fdb.schema.BaseSchemaItem.get_quoted_name"><tt class="xref py py-attr docutils literal"><span class="pre">get_quoted_name</span></tt></a>: Returns quoted (if necessary) name of database object.</li>
-<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependents" title="fdb.schema.BaseSchemaItem.get_dependents"><tt class="xref py py-attr docutils literal"><span class="pre">get_dependents</span></tt></a>: Returns list of all database objects that
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor" title="fdb.schema.BaseSchemaItem.accept_visitor"><tt class="xref py py-meth docutils literal"><span class="pre">accept_visitor()</span></tt></a>: <a class="reference internal" href="#visitor-pattern-support"><em>Visitor Pattern support</em></a>.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.issystemobject" title="fdb.schema.BaseSchemaItem.issystemobject"><tt class="xref py py-meth docutils literal"><span class="pre">issystemobject()</span></tt></a>: Returns True if this database object is system object.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_quoted_name" title="fdb.schema.BaseSchemaItem.get_quoted_name"><tt class="xref py py-meth docutils literal"><span class="pre">get_quoted_name()</span></tt></a>: Returns quoted (if necessary) name of database object.</li>
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependents" title="fdb.schema.BaseSchemaItem.get_dependents"><tt class="xref py py-meth docutils literal"><span class="pre">get_dependents()</span></tt></a>: Returns list of all database objects that
 <a class="reference internal" href="#object-dependencies"><em>depend</em></a> on this one.</li>
-<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependencies" title="fdb.schema.BaseSchemaItem.get_dependencies"><tt class="xref py py-attr docutils literal"><span class="pre">get_dependencies</span></tt></a>: Returns list of database objects that this objects
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependencies" title="fdb.schema.BaseSchemaItem.get_dependencies"><tt class="xref py py-meth docutils literal"><span class="pre">get_dependencies()</span></tt></a>: Returns list of database objects that this object
 <a class="reference internal" href="#object-dependencies"><em>depend</em></a> on.</li>
-<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_sql_for" title="fdb.schema.BaseSchemaItem.get_sql_for"><tt class="xref py py-attr docutils literal"><span class="pre">get_sql_for</span></tt></a>: Returns <a class="reference internal" href="#sql-oprations"><em>SQL command string</em></a> for
+<li><a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_sql_for" title="fdb.schema.BaseSchemaItem.get_sql_for"><tt class="xref py py-meth docutils literal"><span class="pre">get_sql_for()</span></tt></a>: Returns <a class="reference internal" href="#sql-oprations"><em>SQL command string</em></a> for
 specified action on database object.</li>
 </ul>
+<p>There are next schema objects: <a class="reference internal" href="reference.html#fdb.schema.Collation" title="fdb.schema.Collation"><tt class="xref py py-class docutils literal"><span class="pre">Collation</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.CharacterSet" title="fdb.schema.CharacterSet"><tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.DatabaseException" title="fdb.schema.DatabaseException"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseException</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Sequence" title="fdb.schema.Sequence"><tt class="xref py py-class docutils literal"><span class="pre">Sequence</span></tt></a> (Generator), <a class="reference internal" href="reference.html#fdb.schema.Domain" title="fdb.schema.Domain"><tt class="xref py py-class docutils literal"><span class="pre">Domain</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Index" title="fdb.schema.Index"><tt class="xref py py-class docutils literal"><span class="pre">Index</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Table" title="fdb.schema.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.TableColumn" title="fdb.schema.TableColumn"><tt class="xref py py-class docutils literal"><span class="pre">TableColumn</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Constraint" title="fdb.schema.Constraint"><tt class="xref py py-class docutils literal"><span class="pre">Constraint</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.View" title="fdb.schema.View"><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.ViewColumn" title="fdb.schema.ViewColumn"><tt class="xref py py-class docutils literal"><span class="pre">ViewColumn</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Trigger" title="fdb.schema.Trigger"><tt class="xref py py-class docutils literal"><span class="pre">Trigger</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.ProcedureParameter" title="fdb.schema.ProcedureParameter"><tt class="xref py py-class docutils literal"><span class="pre">ProcedureParameter</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Function" title="fdb.schema.Function"><tt class="xref py py-class docutils literal"><span class="pre">Function</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.FunctionArgument" title="fdb.schema.FunctionArgument"><tt class="xref py py-class docutils literal"><span class="pre">FunctionArgument</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Role" title="fdb.schema.Role"><tt class="xref py py-class docutils literal"><span class="pre">Role</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Dependency" title="fdb.schema.Dependency"><tt class="xref py py-class docutils literal"><span class="pre">Dependency</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.DatabaseFile" title="fdb.schema.DatabaseFile"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseFile</span></tt></a> and <a class="reference internal" href="reference.html#fdb.schema.Shadow" title="fdb.schema.Shadow"><tt class="xref py py-class docutils literal"><span class="pre">Shadow</span></tt></a>.</p>
 </div>
 <div class="section" id="visitor-pattern-support">
 <span id="id7"></span><h3>Visitor Pattern support<a class="headerlink" href="#visitor-pattern-support" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="http://en.wikipedia.org/wiki/Visitor_pattern">Visitor Pattern</a> is particularly useful when you need to process various objects that need special handling
 in common algorithm (for example display information about them or generate SQL commands to create them in new
 database). Each metadata object (including <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a>) supports
-<a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor" title="fdb.schema.BaseSchemaItem.accept_visitor"><tt class="xref py py-attr docutils literal"><span class="pre">accept_visitor</span></tt></a> method that calls <cite>class-specific</cite> method on object passed
+<a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor" title="fdb.schema.BaseSchemaItem.accept_visitor"><tt class="xref py py-meth docutils literal"><span class="pre">accept_visitor()</span></tt></a> method that calls <cite>class-specific</cite> method on object passed
 to it as parameter. This method name always starts with &#8216;visit&#8217;. For example <a class="reference internal" href="reference.html#fdb.schema.Table" title="fdb.schema.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> object
 calls <cite>visitTable</cite>. This &#8216;visit*&#8217; method has one parameter - object instance that calls it.</p>
 <p>FDB provides skeleton implementation for <a class="reference internal" href="reference.html#fdb.schema.SchemaVisitor" title="fdb.schema.SchemaVisitor"><tt class="xref py py-class docutils literal"><span class="pre">schema</span> <span class="pre">Visitor</span> <span class="pre">object</span></tt></a> that
@@ -2953,10 +2960,492 @@ DROP TABLE JOB</pre>
 </div>
 <div class="section" id="object-dependencies">
 <span id="id8"></span><h3>Object dependencies<a class="headerlink" href="#object-dependencies" title="Permalink to this headline">¶</a></h3>
+<p>Close relations between metadata object like <cite>ownership</cite> (Table vs. TableColumn, Index or Trigger) or
+<cite>cooperation</cite> (like FK Index vs. partner UQ/PK Index) are defined directly using properties of particular
+schema objects. Besides close releations Firebird also uses <cite>dependencies</cite>, that describe functional
+dependency between otherwise independent metadata objects. For example stored procedure can call other stored
+procedures, define its parameters using domains or work with tables or views. Removing or changing these
+objects may/will cause the procedure to stop working correctly, so Firebird tracks these dependencies.
+FDB surfaces these dependencies as <a class="reference internal" href="reference.html#fdb.schema.Dependency" title="fdb.schema.Dependency"><tt class="xref py py-class docutils literal"><span class="pre">Dependency</span></tt></a> schema objects, and all schema objects
+have <a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependents" title="fdb.schema.BaseSchemaItem.get_dependents"><tt class="xref py py-meth docutils literal"><span class="pre">get_dependents()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_dependencies" title="fdb.schema.BaseSchemaItem.get_dependencies"><tt class="xref py py-meth docutils literal"><span class="pre">get_dependencies()</span></tt></a>
+methods to get list of <a class="reference internal" href="reference.html#fdb.schema.Dependency" title="fdb.schema.Dependency"><tt class="xref py py-class docutils literal"><span class="pre">Dependency</span></tt></a> instances that describe these dependencies.</p>
+<p><a class="reference internal" href="reference.html#fdb.schema.Dependency" title="fdb.schema.Dependency"><tt class="xref py py-class docutils literal"><span class="pre">Dependency</span></tt></a> object provides names and types of dependent/depended on database objects,
+and access to their respective schema Python objects as well.</p>
 </div>
-<div class="section" id="sql-opeations">
-<span id="sql-oprations"></span><h3>SQL opeations<a class="headerlink" href="#sql-opeations" title="Permalink to this headline">¶</a></h3>
-<p>Whenever possible</p>
+<div class="section" id="sql-operations">
+<span id="sql-oprations"></span><h3>SQL operations<a class="headerlink" href="#sql-operations" title="Permalink to this headline">¶</a></h3>
+<p>FDB doesn&#8217;t allow you to change database metadata directly using schema objects. Instead it supports
+generation of DDL SQL commands from schema objects using <a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.get_sql_for" title="fdb.schema.BaseSchemaItem.get_sql_for"><tt class="xref py py-meth docutils literal"><span class="pre">get_sql_for()</span></tt></a> method
+present on all schema objects except Schema itself. DDL commands that could be generated depend on object
+type and context (for example it&#8217;s not possible to generate DDL commands for system database objects), and
+list of DDL commands that could be generated for particular schema object could be obtained from its
+<a class="reference internal" href="reference.html#fdb.schema.BaseSchemaItem.actions" title="fdb.schema.BaseSchemaItem.actions"><tt class="xref py py-attr docutils literal"><span class="pre">actions</span></tt></a> attribute.</p>
+<p>Possible <cite>actions</cite> could be: create, recreate, create_or_alter, alter, drop, activate, deactivate, recompute
+and declare. Some actions require/allow additional parameters.</p>
+<table border="1" class="docutils">
+<caption>SQL actions</caption>
+<colgroup>
+<col width="20%" />
+<col width="15%" />
+<col width="15%" />
+<col width="5%" />
+<col width="45%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Schema class</th>
+<th class="head">Action</th>
+<th class="head">Parameter</th>
+<th class="head">Required</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Collation" title="fdb.schema.Collation"><tt class="xref py py-class docutils literal"><span class="pre">Collation</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.CharacterSet" title="fdb.schema.CharacterSet"><tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt></a></td>
+<td>alter</td>
+<td>collation</td>
+<td>Yes</td>
+<td><a class="reference internal" href="reference.html#fdb.schema.Collation" title="fdb.schema.Collation"><tt class="xref py py-class docutils literal"><span class="pre">Collation</span></tt></a> instance or collation name</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reference.html#fdb.schema.DatabaseException" title="fdb.schema.DatabaseException"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseException</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>recreate</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>alter</td>
+<td>message</td>
+<td>Yes</td>
+<td>string.</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>create_or_alter</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Sequence" title="fdb.schema.Sequence"><tt class="xref py py-class docutils literal"><span class="pre">Sequence</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>alter</td>
+<td>value</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reference.html#fdb.schema.Domain" title="fdb.schema.Domain"><tt class="xref py py-class docutils literal"><span class="pre">Domain</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>alter</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>One from next parameters required</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>name</td>
+<td>No</td>
+<td>string</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>default</td>
+<td>No</td>
+<td>string definition or None to drop default</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>check</td>
+<td>No</td>
+<td>string definition or None to drop check</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>datatype</td>
+<td>No</td>
+<td>string SQL datatype definition</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Constraint" title="fdb.schema.Constraint"><tt class="xref py py-class docutils literal"><span class="pre">Constraint</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Index" title="fdb.schema.Index"><tt class="xref py py-class docutils literal"><span class="pre">Index</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>activate</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>deactivate</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>recompute</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reference.html#fdb.schema.Table" title="fdb.schema.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>recreate</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.TableColumn" title="fdb.schema.TableColumn"><tt class="xref py py-class docutils literal"><span class="pre">TableColumn</span></tt></a></td>
+<td>alter</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>One from next parameters required</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>name</td>
+<td>No</td>
+<td>string</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>datatype</td>
+<td>No</td>
+<td>string SQL type definition</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>position</td>
+<td>No</td>
+<td>integer</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>expression</td>
+<td>No</td>
+<td>string with COMPUTED BY expression</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reference.html#fdb.schema.View" title="fdb.schema.View"><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>recreate</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>alter</td>
+<td>columns</td>
+<td>No</td>
+<td>string or list of strings</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>query</td>
+<td>Yes</td>
+<td>string</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>check</td>
+<td>No</td>
+<td>True for WITH CHECK OPTION clause</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>create_or_alter</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Trigger" title="fdb.schema.Trigger"><tt class="xref py py-class docutils literal"><span class="pre">Trigger</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>recreate</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>create_or_alter</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>alter</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>Requires parameters for either header or body definition.</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>fire_on</td>
+<td>No</td>
+<td>string</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>active</td>
+<td>No</td>
+<td>bool</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>sequence</td>
+<td>No</td>
+<td>integer</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>declare</td>
+<td>No</td>
+<td>string or list of strings</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>code</td>
+<td>No</td>
+<td>string or list of strings</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a></td>
+<td>create</td>
+<td>no_code</td>
+<td>No</td>
+<td>True to supress procedure body from output</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>recreate</td>
+<td>no_code</td>
+<td>No</td>
+<td>True to supress procedure body from output</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>create_or_alter</td>
+<td>no_code</td>
+<td>No</td>
+<td>True to supress procedure body from output</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Role" title="fdb.schema.Role"><tt class="xref py py-class docutils literal"><span class="pre">Role</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.Function" title="fdb.schema.Function"><tt class="xref py py-class docutils literal"><span class="pre">Function</span></tt></a></td>
+<td>declare</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="reference.html#fdb.schema.DatabaseFile" title="fdb.schema.DatabaseFile"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseFile</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="reference.html#fdb.schema.Shadow" title="fdb.schema.Shadow"><tt class="xref py py-class docutils literal"><span class="pre">Shadow</span></tt></a></td>
+<td>create</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>drop</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="s">&#39;EMPLOYEE&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">t</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;create&#39;</span><span class="p">)</span>
+<span class="go">CREATE TABLE EMPLOYEE</span>
+<span class="go">(</span>
+<span class="go">  EMP_NO EMPNO NOT NULL,</span>
+<span class="go">  FIRST_NAME &quot;FIRSTNAME&quot; NOT NULL,</span>
+<span class="go">  LAST_NAME &quot;LASTNAME&quot; NOT NULL,</span>
+<span class="go">  PHONE_EXT VARCHAR(4),</span>
+<span class="go">  HIRE_DATE TIMESTAMP DEFAULT &#39;NOW&#39; NOT NULL,</span>
+<span class="go">  DEPT_NO DEPTNO NOT NULL,</span>
+<span class="go">  JOB_CODE JOBCODE NOT NULL,</span>
+<span class="go">  JOB_GRADE JOBGRADE NOT NULL,</span>
+<span class="go">  JOB_COUNTRY COUNTRYNAME NOT NULL,</span>
+<span class="go">  SALARY SALARY NOT NULL,</span>
+<span class="go">  FULL_NAME COMPUTED BY (last_name || &#39;, &#39; || first_name),</span>
+<span class="go">  PRIMARY KEY (EMP_NO)</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">indices</span><span class="p">:</span>
+<span class="gp">... </span>   <span class="k">if</span> <span class="s">&#39;create&#39;</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">actions</span><span class="p">:</span>
+<span class="gp">... </span>       <span class="k">print</span> <span class="n">i</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;create&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">CREATE ASCENDING INDEX NAMEX</span>
+<span class="go">   ON EMPLOYEE (LAST_NAME,FIRST_NAME)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">constraints</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ischeck</span><span class="p">()</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">isfkey</span><span class="p">()]:</span>
+<span class="gp">... </span>   <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;create&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">ALTER TABLE EMPLOYEE ADD FOREIGN KEY (DEPT_NO)</span>
+<span class="go">  REFERENCES DEPARTMENT (DEPT_NO)</span>
+<span class="go">ALTER TABLE EMPLOYEE ADD FOREIGN KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)</span>
+<span class="go">  REFERENCES JOB (JOB_CODE,JOB_GRADE,JOB_COUNTRY)</span>
+<span class="go">ALTER TABLE EMPLOYEE ADD CHECK ( salary &gt;= (SELECT min_salary FROM job WHERE</span>
+<span class="go">                        job.job_code = employee.job_code AND</span>
+<span class="go">                        job.job_grade = employee.job_grade AND</span>
+<span class="go">                        job.job_country = employee.job_country) AND</span>
+<span class="go">            salary &lt;= (SELECT max_salary FROM job WHERE</span>
+<span class="go">                        job.job_code = employee.job_code AND</span>
+<span class="go">                        job.job_grade = employee.job_grade AND</span>
+<span class="go">                        job.job_country = employee.job_country))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">get_procedure</span><span class="p">(</span><span class="s">&#39;GET_EMP_PROJ&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;recreate&#39;</span><span class="p">,</span><span class="n">no_code</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">RECREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)</span>
+<span class="go">RETURNS (PROJ_ID CHAR(5))</span>
+<span class="go">AS</span>
+<span class="go">BEGIN</span>
+<span class="go">END</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;create_or_alter&#39;</span><span class="p">)</span>
+<span class="go">CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)</span>
+<span class="go">RETURNS (PROJ_ID CHAR(5))</span>
+<span class="go">AS</span>
+<span class="go">BEGIN</span>
+<span class="go">     FOR SELECT proj_id</span>
+<span class="go">             FROM employee_project</span>
+<span class="go">             WHERE emp_no = :emp_no</span>
+<span class="go">             INTO :proj_id</span>
+<span class="go">     DO</span>
+<span class="go">             SUSPEND;</span>
+<span class="go">END</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;alter&#39;</span><span class="p">,</span><span class="nb">input</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;In1 INTEGER&#39;</span><span class="p">,</span><span class="s">&#39;In2 VARCHAR(5)&#39;</span><span class="p">],</span>
+<span class="gp">... </span><span class="n">output</span><span class="o">=</span><span class="s">&#39;Out1 INETEGER,</span><span class="se">\n</span><span class="s">Out2 VARCHAR(10)&#39;</span><span class="p">,</span><span class="n">declare</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;declare variable i integer = 1;&#39;</span><span class="p">],</span>
+<span class="gp">... </span><span class="n">code</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/* body */&#39;</span><span class="p">,</span><span class="s">&#39;Out1 = i&#39;</span><span class="p">,</span><span class="s">&quot;Out2 = &#39;Value&#39;&quot;</span><span class="p">])</span>
+<span class="go">ALTER PROCEDURE GET_EMP_PROJ (</span>
+<span class="go">  In1 INTEGER,</span>
+<span class="go">  In2 VARCHAR(5)</span>
+<span class="go">)</span>
+<span class="go">RETURNS (Out1 INETEGER,</span>
+<span class="go">Out2 VARCHAR(10))</span>
+<span class="go">AS</span>
+<span class="go">  declare variable i integer = 1;</span>
+<span class="go">BEGIN</span>
+<span class="go">  /* body */</span>
+<span class="go">  Out1 = i</span>
+<span class="go">  Out2 = &#39;Value&#39;</span>
+<span class="go">END</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -3032,7 +3521,7 @@ DROP TABLE JOB</pre>
 <li><a class="reference internal" href="#metadata-objects">Metadata objects</a></li>
 <li><a class="reference internal" href="#visitor-pattern-support">Visitor Pattern support</a></li>
 <li><a class="reference internal" href="#object-dependencies">Object dependencies</a></li>
-<li><a class="reference internal" href="#sql-opeations">SQL opeations</a></li>
+<li><a class="reference internal" href="#sql-operations">SQL operations</a></li>
 </ul>
 </li>
 </ul>

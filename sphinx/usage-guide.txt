@@ -3043,22 +3043,22 @@ in meaningful way, and additionaly provide set of methods for most commonly used
 
 Database schema could be accessed in three different ways, each suitable for different use case:
 
-- By direct creation of :class:`fdb.schema.Schema` instances that are then binded to particular 
-  :class:`Connection` instance. This method is best if you want to work with schema only occasionally, or
-  you want to keep connections as lightweight as possible.
-- Accessing :attr:`Connection.schema` property. This method is more convenient than previous one, and 
+- By direct creation of :class:`fdb.schema.Schema` instances that are then :meth:`binded <fdb.schema.Schema.bind>` 
+  to particular :class:`Connection` instance. This method is best if you want to work with schema only 
+  occasionally, or you want to keep connections as lightweight as possible.
+- Accessing :attr:`fdb.Connection.schema` property. This method is more convenient than previous one, and 
   represents a compromise between convenience and resource consumption. Metadata objects are loaded only 
   at the first access and then kept in schema cache, and :class:`~fdb.schem.Schema` instance is created
   and managed by connection itself.
-- Using :class:`ConnectionWithSchema` instead :class:`Connection` by specifying 
+- Using :class:`~fdb.ConnectionWithSchema` instead :class:`Connection` by specifying 
   `connection_class=ConnectionWithSchema` parameter to :func:`~fdb.connect` or :func:`~fdb.create_database`.
   This `Connection` descendant loads database metadata immediately and provides directly all attributes 
-  and methods provided by :class:`~fdb.schem.Schema` class. This method is most suitable in case you want
+  and methods provided by :class:`~fdb.schema.Schema` class. This method is most suitable in case you want
   to work with database metadata extensively.
 
 **Examples:**
 
-1. Using Schema instance
+1. Using Schema instance:
 
 .. code-block:: python
 
@@ -3070,7 +3070,7 @@ Database schema could be accessed in three different ways, each suitable for dif
    ['COUNTRY', 'JOB', 'DEPARTMENT', 'EMPLOYEE', 'SALES', 'PROJECT', 'EMPLOYEE_PROJECT', 'PROJ_DEPT_BUDGET', 
     'SALARY_HISTORY', 'CUSTOMER']
 
-2. Using Connection.schema
+2. Using Connection.schema:
 
 .. code-block:: python
 
@@ -3080,7 +3080,7 @@ Database schema could be accessed in three different ways, each suitable for dif
    ['COUNTRY', 'JOB', 'DEPARTMENT', 'EMPLOYEE', 'SALES', 'PROJECT', 'EMPLOYEE_PROJECT', 'PROJ_DEPT_BUDGET', 
     'SALARY_HISTORY', 'CUSTOMER']
 
-3. Using ConnectionWithSchema
+3. Using ConnectionWithSchema:
 
 .. code-block:: python
 
@@ -3131,19 +3131,27 @@ Attributes:
 - :attr:`~fdb.schema.BaseSchemaItem.name`: Name of database object or None if object doesn't have a name.
 - :attr:`~fdb.schema.BaseSchemaItem.description`: Description (documentation text) for object or None if 
   object doesn't have a description.
-- :attr:`~fdb.schema.BaseSchemaItem.actions`: List of supported SQL operations on metadata object instance.
+- :attr:`~fdb.schema.BaseSchemaItem.actions`: List of supported SQL operations on schema object instance.
 
 Methods:
 
-- :attr:`~fdb.schema.BaseSchemaItem.accept_visitor`: :ref:`Visitor Pattern support <visitor-pattern-support>`.
-- :attr:`~fdb.schema.BaseSchemaItem.issystemobject`: Returns True if this database object is system object.
-- :attr:`~fdb.schema.BaseSchemaItem.get_quoted_name`: Returns quoted (if necessary) name of database object.
-- :attr:`~fdb.schema.BaseSchemaItem.get_dependents`: Returns list of all database objects that 
+- :meth:`~fdb.schema.BaseSchemaItem.accept_visitor`: :ref:`Visitor Pattern support <visitor-pattern-support>`.
+- :meth:`~fdb.schema.BaseSchemaItem.issystemobject`: Returns True if this database object is system object.
+- :meth:`~fdb.schema.BaseSchemaItem.get_quoted_name`: Returns quoted (if necessary) name of database object.
+- :meth:`~fdb.schema.BaseSchemaItem.get_dependents`: Returns list of all database objects that 
   :ref:`depend <object-dependencies>` on this one.
-- :attr:`~fdb.schema.BaseSchemaItem.get_dependencies`: Returns list of database objects that this objects 
+- :meth:`~fdb.schema.BaseSchemaItem.get_dependencies`: Returns list of database objects that this object 
   :ref:`depend <object-dependencies>` on.
-- :attr:`~fdb.schema.BaseSchemaItem.get_sql_for`: Returns :ref:`SQL command string <sql-oprations>` for 
+- :meth:`~fdb.schema.BaseSchemaItem.get_sql_for`: Returns :ref:`SQL command string <sql-oprations>` for 
   specified action on database object.
+
+There are next schema objects: :class:`~fdb.schema.Collation`, :class:`~fdb.schema.CharacterSet`,
+:class:`~fdb.schema.DatabaseException`, :class:`~fdb.schema.Sequence` (Generator), :class:`~fdb.schema.Domain`,
+:class:`~fdb.schema.Index`, :class:`~fdb.schema.Table`, :class:`~fdb.schema.TableColumn`,
+:class:`~fdb.schema.Constraint`, :class:`~fdb.schema.View`, :class:`~fdb.schema.ViewColumn`, 
+:class:`~fdb.schema.Trigger`, :class:`~fdb.schema.Procedure`, :class:`~fdb.schema.ProcedureParameter`,
+:class:`~fdb.schema.Function`, :class:`~fdb.schema.FunctionArgument`, :class:`~fdb.schema.Role`,
+:class:`~fdb.schema.Dependency`, :class:`~fdb.schema.DatabaseFile` and :class:`~fdb.schema.Shadow`.
 
 .. _visitor-pattern-support:
 
@@ -3153,7 +3161,7 @@ Visitor Pattern support
 `Visitor Pattern`_ is particularly useful when you need to process various objects that need special handling
 in common algorithm (for example display information about them or generate SQL commands to create them in new 
 database). Each metadata object (including :class:`~fdb.schema.Schema`) supports 
-:attr:`~fdb.schema.BaseSchemaItem.accept_visitor` method that calls `class-specific` method on object passed 
+:meth:`~fdb.schema.BaseSchemaItem.accept_visitor` method that calls `class-specific` method on object passed 
 to it as parameter. This method name always starts with 'visit'. For example :class:`~fdb.schema.Table` object 
 calls `visitTable`. This 'visit*' method has one parameter - object instance that calls it.
 
@@ -3223,17 +3231,428 @@ Will produce next result::
 Object dependencies
 -------------------
 
+Close relations between metadata object like `ownership` (Table vs. TableColumn, Index or Trigger) or
+`cooperation` (like FK Index vs. partner UQ/PK Index) are defined directly using properties of particular
+schema objects. Besides close releations Firebird also uses `dependencies`, that describe functional
+dependency between otherwise independent metadata objects. For example stored procedure can call other stored
+procedures, define its parameters using domains or work with tables or views. Removing or changing these
+objects may/will cause the procedure to stop working correctly, so Firebird tracks these dependencies.
+FDB surfaces these dependencies as :class:`~fdb.schema.Dependency` schema objects, and all schema objects 
+have :meth:`~fdb.schema.BaseSchemaItem.get_dependents` and :meth:`~fdb.schema.BaseSchemaItem.get_dependencies` 
+methods to get list of :class:`~fdb.schema.Dependency` instances that describe these dependencies.
 
+:class:`~fdb.schema.Dependency` object provides names and types of dependent/depended on database objects,
+and access to their respective schema Python objects as well.
 
 .. _sql-oprations:
 
-SQL opeations
--------------
+SQL operations
+--------------
 
-Whenever possible 
+FDB doesn't allow you to change database metadata directly using schema objects. Instead it supports
+generation of DDL SQL commands from schema objects using :meth:`~fdb.schema.BaseSchemaItem.get_sql_for` method
+present on all schema objects except Schema itself. DDL commands that could be generated depend on object
+type and context (for example it's not possible to generate DDL commands for system database objects), and 
+list of DDL commands that could be generated for particular schema object could be obtained from its 
+:attr:`~fdb.schema.BaseSchemaItem.actions` attribute.
 
+Possible `actions` could be: create, recreate, create_or_alter, alter, drop, activate, deactivate, recompute
+and declare. Some actions require/allow additional parameters.
 
+.. list-table:: SQL actions
+   :widths: 20 15 15 5 45
+   :header-rows: 1
 
+   * - Schema class
+     - Action
+     - Parameter
+     - Required
+     - Description
+   * - :class:`~fdb.schema.Collation`
+     - create
+     - 
+     - 
+     - 
+   * - 
+     - drop
+     - 
+     -
+     - 
+   * - :class:`~fdb.schema.CharacterSet`
+     - alter
+     - collation
+     - Yes
+     - :class:`~fdb.schema.Collation` instance or collation name
+   * - :class:`~fdb.schema.DatabaseException`
+     - create
+     - 
+     - 
+     -
+   * - 
+     - recreate
+     - 
+     -
+     - 
+   * - 
+     - alter
+     - message
+     - Yes
+     - string.
+   * - 
+     - create_or_alter
+     - 
+     - 
+     - 
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Sequence`
+     - create
+     - 
+     -
+     -
+   * - 
+     - alter
+     - value
+     - Yes
+     - integer
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Domain`
+     - create
+     - 
+     -
+     -
+   * - 
+     - alter
+     - 
+     - 
+     - One from next parameters required
+   * - 
+     - 
+     - name
+     - No
+     - string
+   * - 
+     - 
+     - default
+     - No
+     - string definition or None to drop default
+   * - 
+     - 
+     - check
+     - No
+     - string definition or None to drop check
+   * - 
+     - 
+     - datatype
+     - No
+     - string SQL datatype definition
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Constraint`
+     - create
+     - 
+     -
+     -
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Index`
+     - create
+     - 
+     -
+     -
+   * - 
+     - activate
+     - 
+     -
+     -
+   * - 
+     - deactivate
+     - 
+     -
+     -
+   * - 
+     - recompute
+     - 
+     -
+     -
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Table`
+     - create
+     - 
+     -
+     -
+   * - 
+     - recreate
+     - 
+     -
+     -
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.TableColumn`
+     - alter
+     - 
+     - 
+     - One from next parameters required
+   * - 
+     - 
+     - name
+     - No
+     - string
+   * - 
+     - 
+     - datatype
+     - No
+     - string SQL type definition
+   * - 
+     - 
+     - position
+     - No
+     - integer
+   * - 
+     - 
+     - expression
+     - No
+     - string with COMPUTED BY expression
+   * - :class:`~fdb.schema.View`
+     - create
+     - 
+     -
+     -
+   * - 
+     - recreate
+     - 
+     -
+     -
+   * - 
+     - alter
+     - columns
+     - No
+     - string or list of strings
+   * - 
+     - 
+     - query
+     - Yes
+     - string
+   * - 
+     - 
+     - check
+     - No
+     - True for WITH CHECK OPTION clause
+   * - 
+     - create_or_alter
+     - 
+     - 
+     - 
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Trigger`
+     - create
+     - 
+     -
+     -
+   * - 
+     - recreate
+     - 
+     -
+     -
+   * - 
+     - create_or_alter
+     - 
+     -
+     -
+   * - 
+     - alter
+     - 
+     -
+     - Requires parameters for either header or body definition.
+   * - 
+     - 
+     - fire_on
+     - No
+     - string
+   * - 
+     - 
+     - active
+     - No
+     - bool
+   * - 
+     - 
+     - sequence
+     - No
+     - integer
+   * - 
+     - 
+     - declare
+     - No
+     - string or list of strings
+   * - 
+     - 
+     - code
+     - No
+     - string or list of strings
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Procedure`
+     - create
+     - no_code
+     - No
+     - True to supress procedure body from output
+   * - 
+     - recreate
+     - no_code
+     - No
+     - True to supress procedure body from output
+   * - 
+     - create_or_alter
+     - no_code
+     - No
+     - True to supress procedure body from output
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Role`
+     - create
+     - 
+     -
+     -
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Function`
+     - declare
+     - 
+     -
+     -
+   * - 
+     - drop
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.DatabaseFile`
+     - create
+     - 
+     -
+     -
+   * - :class:`~fdb.schema.Shadow`
+     - create
+     - 
+     -
+     -
+   * - 
+     - drop
+     - 
+     -
+     -
+
+**Examples:**
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='employee',user='sysdba', password='masterkey')
+   >>> t = con.schema.get_table('EMPLOYEE')
+   >>> print t.get_sql_for('create')
+   CREATE TABLE EMPLOYEE
+   (
+     EMP_NO EMPNO NOT NULL,
+     FIRST_NAME "FIRSTNAME" NOT NULL,
+     LAST_NAME "LASTNAME" NOT NULL,
+     PHONE_EXT VARCHAR(4),
+     HIRE_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,
+     DEPT_NO DEPTNO NOT NULL,
+     JOB_CODE JOBCODE NOT NULL,
+     JOB_GRADE JOBGRADE NOT NULL,
+     JOB_COUNTRY COUNTRYNAME NOT NULL,
+     SALARY SALARY NOT NULL,
+     FULL_NAME COMPUTED BY (last_name || ', ' || first_name),
+     PRIMARY KEY (EMP_NO)
+   )
+   >>> for i in t.indices:
+   ...    if 'create' in i.actions:
+   ...        print i.get_sql_for('create')
+   ...      
+   CREATE ASCENDING INDEX NAMEX
+      ON EMPLOYEE (LAST_NAME,FIRST_NAME)
+   >>> for c in [x for x in t.constraints if x.ischeck() or x.isfkey()]:
+   ...    print c.get_sql_for('create')
+   ... 
+   ALTER TABLE EMPLOYEE ADD FOREIGN KEY (DEPT_NO)
+     REFERENCES DEPARTMENT (DEPT_NO)
+   ALTER TABLE EMPLOYEE ADD FOREIGN KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)
+     REFERENCES JOB (JOB_CODE,JOB_GRADE,JOB_COUNTRY)
+   ALTER TABLE EMPLOYEE ADD CHECK ( salary >= (SELECT min_salary FROM job WHERE
+                           job.job_code = employee.job_code AND
+                           job.job_grade = employee.job_grade AND
+                           job.job_country = employee.job_country) AND
+               salary <= (SELECT max_salary FROM job WHERE
+                           job.job_code = employee.job_code AND
+                           job.job_grade = employee.job_grade AND
+                           job.job_country = employee.job_country))
+   >>> p = con.schema.get_procedure('GET_EMP_PROJ')
+   >>> print p.get_sql_for('recreate',no_code=True)
+   RECREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+   RETURNS (PROJ_ID CHAR(5))
+   AS
+   BEGIN
+   END
+   >>> print p.get_sql_for('create_or_alter')
+   CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+   RETURNS (PROJ_ID CHAR(5))
+   AS
+   BEGIN
+	FOR SELECT proj_id
+		FROM employee_project
+		WHERE emp_no = :emp_no
+		INTO :proj_id
+	DO
+		SUSPEND;
+   END 
+   >>> print p.get_sql_for('alter',input=['In1 INTEGER','In2 VARCHAR(5)'],
+   ... output='Out1 INETEGER,\nOut2 VARCHAR(10)',declare=['declare variable i integer = 1;'],
+   ... code=['/* body */','Out1 = i',"Out2 = 'Value'"])
+   ALTER PROCEDURE GET_EMP_PROJ (
+     In1 INTEGER,
+     In2 VARCHAR(5)
+   )
+   RETURNS (Out1 INETEGER,
+   Out2 VARCHAR(10))
+   AS
+     declare variable i integer = 1;
+   BEGIN
+     /* body */
+     Out1 = i
+     Out2 = 'Value'
+   END
 
 
 

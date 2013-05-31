@@ -2071,17 +2071,7 @@ class TestSchema(FDBTestBase):
             raise Exception("Exception expected")
         except Exception as e:
             assert e.args[0] == "Missing required parameter: 'message'."
-        assert c.get_sql_for('create_or_alter',message="New message.") == "CREATE OR ALTER EXCEPTION UNKNOWN_EMP_ID 'New message.'"
-        try:
-            c.get_sql_for('create_or_alter',badparam="New message.")
-            raise Exception("Exception expected")
-        except Exception as e:
-            assert e.args[0] == "Unsupported parameter(s) 'badparam'"
-        try:
-            c.get_sql_for('create_or_alter')
-            raise Exception("Exception expected")
-        except Exception as e:
-            assert e.args[0] == "Missing required parameter: 'message'."
+        assert c.get_sql_for('create_or_alter') == "CREATE OR ALTER EXCEPTION UNKNOWN_EMP_ID 'Invalid employee number or project id.'"
     def testSequence(self):
         # System generator
         c = self.con.schema.get_sequence('RDB$FIELD_NAME')
@@ -2728,8 +2718,12 @@ class TestSchema(FDBTestBase):
         except Exception as e:
             assert e.args[0] == "Missing required parameter: 'query'."
 
-        assert c.get_sql_for('create_or_alter',query='select * from country') == \
-               "CREATE OR ALTER VIEW PHONE_LIST \n   AS\n     select * from country"
+        assert c.get_sql_for('create_or_alter') == """CREATE OR ALTER VIEW PHONE_LIST (EMP_NO,FIRST_NAME,LAST_NAME,PHONE_EXT,LOCATION,PHONE_NO)
+   AS
+     SELECT
+    emp_no, first_name, last_name, phone_ext, location, phone_no
+    FROM employee, department
+    WHERE employee.dept_no = department.dept_no"""
         
     def testTrigger(self):
         # System trigger

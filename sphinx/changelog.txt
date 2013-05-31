@@ -2,7 +2,7 @@
 Changelog
 #########
 
-* `Version 1.2`_ (??.?.2013)
+* `Version 1.2`_ (31.5.2013)
 * `Version 1.1.1`_ (14.5.2013)
 * `Version 1.1`_ (9.4.2013)
 * `Version 1.0`_ (7.3.2013)
@@ -61,7 +61,9 @@ Improvements
 Bugs Fixed
 ----------
 
--  Unregistered: `buffers` parameter of `fdb.connection` doesn't support values greater than 255.
+- Unregistered: `buffers` parameter of `fdb.connection` doesn't support values greater than 255.
+- Unregistered: Lowercase character set name passed to `fdb.connect` may result in wrong funcion of automatic
+  data conversions and other failures (exceptions raised).
 
 Version 1.1.1
 =============
