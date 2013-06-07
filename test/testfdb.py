@@ -89,8 +89,8 @@ class FDBTestBase(unittest.TestCase):
         super(FDBTestBase,self).__init__(methodName)
         self.output = StringIO()
     def clear_output(self):
-        self.output.pos = 0
-        self.output.buf = ''
+        self.output.close()
+        self.output = StringIO()
     def show_output(self):
         sys.stdout.write(self.output.getvalue())
         sys.stdout.flush()
@@ -159,7 +159,7 @@ class TestConnection(FDBTestBase):
     def test_connect_role(self):
         with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',role='role')) as con:
             self.assertIsNotNone(con._db_handle)
-            self.assertEqual(con._dpb,'\x01\x1c\x06sysdba\x1d\tmasterkey<\x04role?\x01\x03')
+            self.assertEqual(con._dpb,ibase.b('\x01\x1c\x06sysdba\x1d\tmasterkey<\x04role?\x01\x03'))
     def test_transaction(self):
         with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
             self.assertIsNotNone(con.main_transaction)
@@ -3739,7 +3739,7 @@ MODULE_NAME 'fbudf'""")
         v = SchemaVisitor(self,'create',follow='dependencies')
         c = self.con.schema.get_procedure('ALL_LANGS')
         c.accept_visitor(v)
-        #print '"""%s"""' % self.output.getvalue()
+        #print ('"""%s"""' % self.output.getvalue())
         self.maxDiff = None
         output = "CREATE TABLE JOB\n(\n  JOB_CODE JOBCODE NOT NULL,\n" \
             "  JOB_GRADE JOBGRADE NOT NULL,\n" \
@@ -3796,8 +3796,8 @@ MODULE_NAME 'fbudf'""")
 
         v = SchemaVisitor(self,'drop',follow='dependents')
         c = self.con.schema.get_table('JOB')
-        c.accept_visitor(v)
         self.clear_output()
+        c.accept_visitor(v)
         self.assertEqual(self.output.getvalue(),"""DROP PROCEDURE ALL_LANGS
 DROP PROCEDURE SHOW_LANGS
 DROP TABLE JOB
@@ -3819,7 +3819,7 @@ class TestMonitor(FDBTestBase):
         self.assertTrue(s.closed)
         s.bind(self.con)
         # properties
-        self.assertEqual(s.db.name,self.dbfile)
+        self.assertEqual(s.db.name.upper(),self.dbfile.upper())
         self.assertFalse(s.db.read_only)
         self.assertFalse(s.closed)
         #
@@ -3886,7 +3886,7 @@ class TestMonitor(FDBTestBase):
             return
         m = self.con.monitor
         m.refresh()
-        self.assertEqual(m.db.name,self.dbfile,"DatabaseInfo.name")
+        self.assertEqual(m.db.name.upper(),self.dbfile.upper())
         self.assertEqual(m.db.page_size,4096)
         if self.con.ods == fdb.ODS_FB_20:
             self.assertEqual(m.db.ods,11.0)
@@ -3924,11 +3924,11 @@ class TestMonitor(FDBTestBase):
         self.assertEqual(s.id,self.con.db_info(fdb.isc_info_attachment_id))
         self.assertIsInstance(s.server_pid,int)
         self.assertIn(s.state,[fdb.monitor.STATE_ACTIVE,fdb.monitor.STATE_IDLE])
-        self.assertEqual(s.name,self.dbfile)
+        self.assertEqual(s.name.upper(),self.dbfile.upper())
         self.assertEqual(s.user,'SYSDBA')
         self.assertEqual(s.role,'NONE')
-        self.assertEqual(s.remote_protocol,'TCPv4')
-        self.assertEqual(s.remote_address,'127.0.0.1')
+        self.assertIn(s.remote_protocol,['XNET','TCPv4'])
+        self.assertIsInstance(s.remote_address,str)
         self.assertIsInstance(s.remote_pid,int)
         self.assertIsInstance(s.remote_process,str)
         self.assertIsInstance(s.character_set,fdb.schema.CharacterSet)

@@ -4,7 +4,6 @@ PKG-INFO
 README
 setup.cfg
 setup.py
-docs/.buildinfo
 docs/changelog.html
 docs/differences-from-kdb.html
 docs/genindex.html
