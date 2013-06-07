@@ -2788,10 +2788,10 @@ class TestSchema(FDBTestBase):
                     ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2), 
                     ('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2), 
                     ('CHECK_4', 2), ('SET_EMP_NO', 2), ('SAVE_SALARY_CHANGE', 2), 
-                    ('SAVE_SALARY_CHANGE', 2), ('DELETE_EMPLOYEE', 5), 
-                    ('DELETE_EMPLOYEE', 5), ('PHONE_LIST', 1), ('ORG_CHART', 5), 
+                    ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1), 
+                    ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5), 
                     ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5), 
-                    ('ORG_CHART', 5)])
+                    ('ORG_CHART', 5), ('ORG_CHART', 5)])
         elif self.con.ods >= fdb.ODS_FB_25:
             self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
                    [('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1), 

@@ -1655,7 +1655,7 @@ class ConnectionWithSchema(Connection):
     def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None):
         super(ConnectionWithSchema,self).__init__(db_handle,dpb,sql_dialect,charset)
         self.__schema = schema.Schema()
-        self.__schema.bind(weakref.proxy(self))
+        self.__schema.bind(self)
         self.__schema._set_as_internal()
         # Injecting callables bound to embedded Schema instance
         for attr in dir(self.__schema):
