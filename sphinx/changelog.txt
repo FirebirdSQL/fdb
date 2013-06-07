@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.3`_ (7.6.2013)
 * `Version 1.2`_ (31.5.2013)
 * `Version 1.1.1`_ (14.5.2013)
 * `Version 1.1`_ (9.4.2013)
@@ -14,6 +15,26 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.3
+===========
+
+New Features
+------------
+
+- :mod:`fdb.monitor` submodule for access to / work with monitoring tables.
+- New :attr:`fdb.Connection.monitor` property for access to monitoring tables.
+
+Improvements
+------------
+
+- :attr:`~fdb.schema.Schema.closed` property and :meth:`~fdb.schema.Schema.clear` method for Schema.
+- Unit tests reworked.
+
+Bugs Fixed
+----------
+
+- Unregistered: Bug in :meth:`fdb.schema.Schema.close` and :meth:`fdb.schema.Schema.bind`.
 
 Version 1.2
 ===========

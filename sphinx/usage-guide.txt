@@ -3047,12 +3047,11 @@ Database schema could be accessed in three different ways, each suitable for dif
   to particular :class:`Connection` instance. This method is best if you want to work with schema only 
   occasionally, or you want to keep connections as lightweight as possible.
 - Accessing :attr:`fdb.Connection.schema` property. This method is more convenient than previous one, and 
-  represents a compromise between convenience and resource consumption. Metadata objects are loaded only 
-  at the first access and then kept in schema cache, and :class:`~fdb.schem.Schema` instance is created
-  and managed by connection itself.
+  represents a compromise between convenience and resource consumption because :class:`~fdb.schem.Schema` instance is not created until first reference and is managed by connection itself. Individual metadata
+  objects are not loaded from system tables until first reference.
 - Using :class:`~fdb.ConnectionWithSchema` instead :class:`Connection` by specifying 
   `connection_class=ConnectionWithSchema` parameter to :func:`~fdb.connect` or :func:`~fdb.create_database`.
-  This `Connection` descendant loads database metadata immediately and provides directly all attributes 
+  This `Connection` descendant loads all database metadata immediately and provides directly all attributes 
   and methods provided by :class:`~fdb.schema.Schema` class. This method is most suitable in case you want
   to work with database metadata extensively.
 
@@ -3090,6 +3089,15 @@ Database schema could be accessed in three different ways, each suitable for dif
    >>> [t.name for t in con.tables]
    ['COUNTRY', 'JOB', 'DEPARTMENT', 'EMPLOYEE', 'SALES', 'PROJECT', 'EMPLOYEE_PROJECT', 'PROJ_DEPT_BUDGET', 
     'SALARY_HISTORY', 'CUSTOMER']
+
+.. note::
+
+   Individual metadata information (i.e. information about :attr:`domains <fdb.schema.Schema.domains>`, :attr:`tables <fdb.schema.Schema.tables>` etc.) is loaded on first access and cached for further reference until it's :meth:`clared <fdb.schema.Schema.clear>` or :meth:`reload <fdb.schema.Schema.reload>` is
+   requested.
+
+   Because once loaded information is cached, it's good to :meth:`clar <fdb.schema.Schema.clear>` it
+   when it's no longer needed to conserve memory.
+
 
 
 Available information
@@ -3653,6 +3661,89 @@ and declare. Some actions require/allow additional parameters.
      Out1 = i
      Out2 = 'Value'
    END
+
+
+Working with monitoring tables
+==============================
+
+Starting from Firebird 2.1 (ODS 11.1) its possible to monitor server-side activity happening inside a particular database. The engine offers a set of “virtual” tables (so-called "monitoring tables") that 
+provides the user with a snapshot of the current activity within the given database. FDB provides access
+to this information through set of classes (isolated in separate module :mod:`fdb.monitor`) that transform information stored in monitoring tables into set of Python objects that surface the information in meaningful way, and additionaly provide set of methods for available operations or checks.
+
+Like database schema, monitoring tables could be accessed in two different ways, each suitable for different use case:
+
+- By direct creation of :class:`fdb.monitor.Monitor` instances that are then binded to particular 
+  :class:`~fdb.Connection` instance. This method is best if you want to work with monitoring data only occasionally, or you want to keep connections as lightweight as possible.
+- Accessing :attr:`fdb.Connection.monitor` property. This method is more convenient than previous one, and
+  represents a compromise between convenience and resource consumption because :class:`~fdb.monitor.Monitor` instance is not created until first reference and is managed by connection itself.
+
+**Examples:**
+
+1. Using Monitor instance:
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='employee',user='sysdba', password='masterkey')
+   >>> monitor = fdb.monitor.Monitor()
+   >>> monitor.bind(con)
+   >>> monitor.db.name
+   '/opt/firebird/examples/empbuild/employee.fdb'
+
+2. Using Connection.monitor:
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='employee',user='sysdba', password='masterkey')
+   >>> con.monitor.db.name
+   '/opt/firebird/examples/empbuild/employee.fdb'
+
+Available information
+---------------------
+
+The :class:`~fdb.monitor.Monitor` provides information about: 
+
+- :attr:`Database <fdb.monitor.Monitor.db>`.
+- :attr:`Connections <fdb.monitor.Monitor.attachments>` to database and :attr:`current <fdb.monitor.Monitor.this_attachment>` connection.
+- :attr:`Transactions <fdb.monitor.Monitor.transactions>`.
+- Executed :attr:`SQL statements <fdb.monitor.Monitor.statements>`.
+- PSQL :attr:`callstack <fdb.monitor.Monitor.callstack>`.
+- Page and row :attr:`I/O statistics <fdb.monitor.Monitor.iostats>`, including memory usage.
+- :attr:`Context variables <fdb.monitor.Monitor.variables>`.
+
+Activity snapshot
+-----------------
+
+The key term of the monitoring feature is an `activity snapshot`. It represents the current state of the
+database, comprising a variety of information about the database itself, active attachments and users,
+transactions, prepared and running statements, and more.
+
+A snapshot is created the first time any of the monitoring information is being accessed from in the given
+`Monitor` instance and it is preserved until :attr:`~fdb.monitor.Monitor.closed`, 
+:meth:`clared <fdb.monitor.Monitor.clear>` or :meth:`refreshed <fdb.monitor.Monitor.refresh>`, in order 
+that accessed information is always consistent.
+
+There are two ways to refresh the snapshot:
+
+1. Call :meth:`Monitor.clear() <fdb.monitor.Monitor.clear>` method. New snapshot will be taken on next 
+   access to monitoring information.
+2. Call :meth:`Monitor.refresh() <fdb.monitor.Monitor.refresh>` method to take the new snapshot immediately.
+
+.. important::
+
+   In both cases, any instances of information objects your application may hold would be obsolete. Using 
+   them may result in error, or (more likely) provide outdated information.
+
+.. note::
+
+   Individual monitoring information (i.e. information about :attr:`connections <fdb.monitor.Monitor.attachments>`, :attr:`transactions <fdb.monitor.Monitor.transactions>` etc.) is 
+   loaded from activity snapshot on first access and cached for further reference until it's 
+   :meth:`clared <fdb.monitor.Monitor.clear>` or snapshot is :meth:`refreshed <fdb.monitor.Monitor.refresh>`.
+
+   Because once loaded information is cached, it's good to :meth:`clar <fdb.monitor.Monitor.clear>` it
+   when it's no longer needed to conserve memory.
+
 
 
 

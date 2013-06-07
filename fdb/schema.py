@@ -206,82 +206,23 @@ class Schema(object):
         self._con = None
         self._ic = None
         self.__internal = False
+    def __del__(self):
+        if not self.closed:
+            self._close()
+    def __get_closed(self):
+        return self._con is None
+    def __fail_if_closed(self):
+        if self.closed:
+            raise fdb.ProgrammingError("Schema is not binded to connection.")
+    def _close(self):
+        self._ic.close()
+        self._con = None
+        self._ic = None
     def _set_as_internal(self):
         """Mark this instance as `internal` (embedded). This blocks calls to 
         :meth:`bind` and :meth:`close`."""
         self.__internal = True
-    def bind(self, connection):
-        """Bind this instance to specified :class:`~fdb.Connection`.
-        
-        :param connection: :class:`~fdb.Connection` instance. 
-        
-        :raises ProgrammingError: If Schema object was set as internal (via 
-            :meth:`_set_as_internal`).
-        """
-        if self.__internal:
-            raise ProgrammingError("Call to 'bind' not allowed for embedded Schema.")
-        if self._con:
-            self.close()
-        self._con = connection
-        self._ic = self._con.query_transaction.cursor()
-
-        self.__clear()
-        
-        self._ic.execute('select * from RDB$DATABASE')
-        row = self._ic.fetchonemap()
-        self.__description = row['RDB$DESCRIPTION']
-        self._default_charset_name = row['RDB$CHARACTER_SET_NAME'].strip()
-        self.__security_class = row['RDB$SECURITY_CLASS']
-        if self.__security_class: self.__security_class = self.__security_class.strip()
-        self._ic.execute("select RDB$OWNER_NAME from RDB$RELATIONS where RDB$RELATION_NAME = 'RDB$DATABASE'")
-        self.__owner = self._ic.fetchone()[0].strip()
-        # Load enumerate types defined in RDB$TYPES table
-        enum_select = 'select RDB$TYPE, RDB$TYPE_NAME from RDB$TYPES where RDB$FIELD_NAME = ?'
-        def enum_dict(enum_type):
-            return dict((key,value.strip()) for key, value 
-                        in self._ic.execute(enum_select,(enum_type,)))
-        # Object types
-        self.enum_object_types = enum_dict('RDB$OBJECT_TYPE')
-        # Object type codes
-        self.enum_object_type_codes = dict(((value,key) for key,value 
-                                            in self.enum_object_types.items()))
-        # Character set names
-        self.enum_character_set_names = enum_dict('RDB$CHARACTER_SET_NAME')
-        # Field types
-        self.enum_field_types = enum_dict('RDB$FIELD_TYPE')
-        # Field sub types
-        self.enum_field_subtypes = enum_dict('RDB$FIELD_SUB_TYPE')
-        # Function types
-        self.enum_function_types = enum_dict('RDB$FUNCTION_TYPE')
-        # Mechanism Types
-        self.enum_mechanism_types = enum_dict('RDB$MECHANISM')
-        # Parameter Mechanism Types
-        self.enum_parameter_mechanism_types = enum_dict('RDB$PARAMETER_MECHANISM')
-        # Procedure Types
-        self.enum_procedure_types = enum_dict('RDB$PROCEDURE_TYPE')
-        if not self.enum_procedure_types:
-            self.enum_procedure_types = {0: 'LEGACY', 1: 'SELECTABLE', 2: 'EXECUTABLE'}
-        # Relation Types
-        self.enum_relation_types = enum_dict('RDB$RELATION_TYPE')
-        # System Flag Types
-        self.enum_system_flag_types = enum_dict('RDB$SYSTEM_FLAG')
-        # Transaction State Types
-        self.enum_transaction_state_types = enum_dict('RDB$TRANSACTION_STATE')
-        # Trigger Types
-        self.enum_trigger_types = enum_dict('RDB$TRIGGER_TYPE')
-        
-    def close(self):
-        """Sever link to :class:`~fdb.Connection`.
-        
-        :raises ProgrammingError: If Schema object was set as internal (via 
-            :meth:`_set_as_internal`).
-        """
-        if self.__internal:
-            raise ProgrammingError("Call to 'close' not allowed for embedded Schema.")
-        self._ic.close()
-        self._con = None
-        self._ic = None
-        self.__clear()
+        self._con = weakref.proxy(self._con)
     def __object_by_name(self,list,name):
         if name is None: return None
         for o in list:
@@ -289,9 +230,47 @@ class Schema(object):
                 return o
         return None
 
-    def __clear(self):
-        #self.dsn = self.user = self.database = None
-        self.reload()
+    def __clear(self,data=None):
+        if data:
+            data = data.lower()
+            if data not in ['tables','view','domains','indices','dependencies',
+                            'generators','sequences','triggers','procedures',
+                            'constraints','collations','character sets',
+                            'exceptions','roles','functions','files','shadows']:
+                raise fdb.ProgrammingError("Unknown metadata category '%s'" % data)
+        if (not data or data == 'tables'):
+            self.__tables = None
+        if (not data or data == 'views'):
+            self.__views = None
+        if (not data or data == 'domains'):
+            self.__domains = None
+        if (not data or data == 'indices'):
+            self.__indices = None
+            self.__constraint_indices = None
+        if (not data or data == 'dependencies'):
+            self.__dependencies = None
+        if (not data or data in ['generators','sequences']):
+            self.__generators = None
+        if (not data or data == 'triggers'):
+            self.__triggers = None
+        if (not data or data == 'procedures'):
+            self.__procedures = None
+        if (not data or data == 'constraints'):
+            self.__constraints = None
+        if (not data or data == 'collations'):
+            self.__collations = None
+        if (not data or data == 'character sets'):
+            self.__character_sets = None
+        if (not data or data == 'exceptions'):
+            self.__exceptions = None
+        if (not data or data == 'roles'):
+            self.__roles = None
+        if (not data or data == 'functions'):
+            self.__functions = None
+        if (not data or data == 'files'):
+            self.__files = None
+        if (not data or data == 'shadows'):
+            self.__shadows = None
 
     #--- protected
 
@@ -326,21 +305,25 @@ order by r.RDB$DIMENSION""" % field.name)]
         return self.__security_class
     def _get_collations(self):
         if self.__collations is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$collations")
             self.__collations = [Collation(self,row) for row in self._ic.itermap()]
         return self.__collations
     def _get_character_sets(self):
         if self.__character_sets is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$character_sets")
             self.__character_sets = [CharacterSet(self,row) for row in self._ic.itermap()]
         return self.__character_sets
     def _get_exceptions(self):
         if self.__exceptions is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$exceptions")
             self.__exceptions = [DatabaseException(self,row) for row in self._ic.itermap()]
         return self.__exceptions
     def _get_all_domains(self):
         if self.__domains is None:
+            self.__fail_if_closed()
             self._ic.execute("""select RDB$FIELD_NAME, RDB$VALIDATION_SOURCE, 
 RDB$COMPUTED_SOURCE, RDB$DEFAULT_SOURCE, RDB$FIELD_LENGTH, RDB$FIELD_SCALE, 
 RDB$FIELD_TYPE, RDB$FIELD_SUB_TYPE, RDB$DESCRIPTION, RDB$SYSTEM_FLAG, 
@@ -355,6 +338,7 @@ RDB$CHARACTER_SET_ID, RDB$FIELD_PRECISION from RDB$FIELDS""")
         return [d for d in self._get_all_domains() if d.issystemobject()]
     def _get_all_tables(self):
         if self.__tables is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$relations where rdb$view_blr is null")
             self.__tables = [Table(self,row) for row in self._ic.itermap()]
         return self.__tables
@@ -364,6 +348,7 @@ RDB$CHARACTER_SET_ID, RDB$FIELD_PRECISION from RDB$FIELDS""")
         return [t for t in self._get_all_tables() if t.issystemobject()]
     def _get_all_views(self):
         if self.__views is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$relations where rdb$view_blr is not null")
             self.__views = [View(self,row) for row in self._ic.itermap()]
         return self.__views
@@ -373,12 +358,14 @@ RDB$CHARACTER_SET_ID, RDB$FIELD_PRECISION from RDB$FIELDS""")
         return [v for v in self._get_all_views() if v.issystemobject()]
     def _get_constraint_indices(self):
         if self.__constraint_indices is None:
+            self.__fail_if_closed()
             self._ic.execute("""select RDB$INDEX_NAME, RDB$CONSTRAINT_NAME 
 from RDB$RELATION_CONSTRAINTS where RDB$INDEX_NAME is not null""")
             self.__constraint_indices = dict([(key.strip(),value.strip()) for key, value in self._ic])
         return self.__constraint_indices
     def _get_all_indices(self):
         if self.__indices is None:
+            self.__fail_if_closed()
             # Dummy call to _get_constraint_indices() is necessary as 
             # Index.issystemobject() that is called in Index.__init__() will 
             # drop result from internal cursor and we'll not load all indices.
@@ -395,6 +382,7 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
         return [i for i in self._get_all_indices() if i.issystemobject()]
     def _get_all_generators(self):
         if self.__generators is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$generators")
             self.__generators = [Sequence(self,row) for row in self._ic.itermap()]
         return self.__generators
@@ -404,6 +392,7 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
         return [g for g in self._get_all_generators() if g.issystemobject()]
     def _get_all_triggers(self):
         if self.__triggers is None:
+            self.__fail_if_closed()
             self._ic.execute("""select RDB$TRIGGER_NAME, RDB$RELATION_NAME, 
 RDB$TRIGGER_SEQUENCE, RDB$TRIGGER_TYPE, RDB$TRIGGER_SOURCE, RDB$DESCRIPTION, 
 RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
@@ -415,6 +404,7 @@ RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
         return [g for g in self._get_all_triggers() if g.issystemobject()]
     def _get_all_procedures(self):
         if self.__procedures is None:
+            self.__fail_if_closed()
             cols = ['RDB$PROCEDURE_NAME', 'RDB$PROCEDURE_ID', 'RDB$PROCEDURE_INPUTS', 
                     'RDB$PROCEDURE_OUTPUTS', 'RDB$DESCRIPTION', 'RDB$PROCEDURE_SOURCE', 
                     'RDB$SECURITY_CLASS', 'RDB$OWNER_NAME', 'RDB$SYSTEM_FLAG']
@@ -429,6 +419,7 @@ RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
         return [p for p in self._get_all_procedures() if p.issystemobject()]
     def _get_constraints(self):
         if self.__constraints is None:
+            self.__fail_if_closed()
             # Dummy call to _get_all_tables() is necessary as 
             # Constraint.issystemobject() that is called in Constraint.__init__() 
             # will drop result from internal cursor and we'll not load all constraints.
@@ -452,16 +443,19 @@ left outer join rdb$check_constraints K on C.rdb$constraint_name = K.rdb$constra
         return self.__constraints
     def _get_roles(self):
         if self.__roles is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$roles")
             self.__roles = [Role(self,row) for row in self._ic.itermap()]
         return self.__roles
     def _get_dependencies(self):
         if self.__dependencies is None:
+            self.__fail_if_closed()
             self._ic.execute("select * from rdb$dependencies")
             self.__dependencies = [Dependency(self,row) for row in self._ic.itermap()]
         return self.__dependencies
     def _get_all_functions(self):
         if self.__functions is None:
+            self.__fail_if_closed()
             self._ic.execute("""select RDB$FUNCTION_NAME, RDB$FUNCTION_TYPE, 
 RDB$DESCRIPTION, RDB$MODULE_NAME, RDB$ENTRYPOINT, RDB$RETURN_ARGUMENT, 
 RDB$SYSTEM_FLAG from rdb$functions""")
@@ -473,6 +467,7 @@ RDB$SYSTEM_FLAG from rdb$functions""")
         return [p for p in self._get_all_functions() if p.issystemobject()]
     def _get_files(self):
         if self.__files is None:
+            self.__fail_if_closed()
             self._ic.execute("""select RDB$FILE_NAME, RDB$FILE_SEQUENCE, 
 RDB$FILE_START, RDB$FILE_LENGTH from RDB$FILES
 where RDB$SHADOW_NUMBER = 0
@@ -481,6 +476,7 @@ order by RDB$FILE_SEQUENCE""")
         return self.__files
     def _get_shadows(self):
         if self.__shadows is None:
+            self.__fail_if_closed()
             self._ic.execute("""select RDB$FILE_FLAGS, RDB$SHADOW_NUMBER
 from RDB$FILES
 where RDB$SHADOW_NUMBER > 0 AND RDB$FILE_SEQUENCE = 0
@@ -490,6 +486,8 @@ order by RDB$SHADOW_NUMBER""")
 
     #--- Properties
 
+    #: True if link to :class:`~fdb.Connection` is closed.
+    closed = property(__get_closed)
     description = LateBindingProperty(_get_description,None,None,
         "Database description or None if it doesn't have a description.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,
@@ -553,6 +551,76 @@ order by RDB$SHADOW_NUMBER""")
 
     #--- Public
 
+    def bind(self, connection):
+        """Bind this instance to specified :class:`~fdb.Connection`.
+        
+        :param connection: :class:`~fdb.Connection` instance. 
+        
+        :raises ProgrammingError: If Schema object was set as internal (via 
+            :meth:`_set_as_internal`).
+        """
+        if self.__internal:
+            raise fdb.ProgrammingError("Call to 'bind' not allowed for embedded Schema.")
+        if self._con:
+            self.close()
+        self._con = connection
+        self._ic = self._con.query_transaction.cursor()
+
+        self.__clear()
+        
+        self._ic.execute('select * from RDB$DATABASE')
+        row = self._ic.fetchonemap()
+        self.__description = row['RDB$DESCRIPTION']
+        self._default_charset_name = row['RDB$CHARACTER_SET_NAME'].strip()
+        self.__security_class = row['RDB$SECURITY_CLASS']
+        if self.__security_class: self.__security_class = self.__security_class.strip()
+        self._ic.execute("select RDB$OWNER_NAME from RDB$RELATIONS where RDB$RELATION_NAME = 'RDB$DATABASE'")
+        self.__owner = self._ic.fetchone()[0].strip()
+        # Load enumerate types defined in RDB$TYPES table
+        enum_select = 'select RDB$TYPE, RDB$TYPE_NAME from RDB$TYPES where RDB$FIELD_NAME = ?'
+        def enum_dict(enum_type):
+            return dict((key,value.strip()) for key, value 
+                        in self._ic.execute(enum_select,(enum_type,)))
+        # Object types
+        self.enum_object_types = enum_dict('RDB$OBJECT_TYPE')
+        # Object type codes
+        self.enum_object_type_codes = dict(((value,key) for key,value 
+                                            in self.enum_object_types.items()))
+        # Character set names
+        self.enum_character_set_names = enum_dict('RDB$CHARACTER_SET_NAME')
+        # Field types
+        self.enum_field_types = enum_dict('RDB$FIELD_TYPE')
+        # Field sub types
+        self.enum_field_subtypes = enum_dict('RDB$FIELD_SUB_TYPE')
+        # Function types
+        self.enum_function_types = enum_dict('RDB$FUNCTION_TYPE')
+        # Mechanism Types
+        self.enum_mechanism_types = enum_dict('RDB$MECHANISM')
+        # Parameter Mechanism Types
+        self.enum_parameter_mechanism_types = enum_dict('RDB$PARAMETER_MECHANISM')
+        # Procedure Types
+        self.enum_procedure_types = enum_dict('RDB$PROCEDURE_TYPE')
+        if not self.enum_procedure_types:
+            self.enum_procedure_types = {0: 'LEGACY', 1: 'SELECTABLE', 2: 'EXECUTABLE'}
+        # Relation Types
+        self.enum_relation_types = enum_dict('RDB$RELATION_TYPE')
+        # System Flag Types
+        self.enum_system_flag_types = enum_dict('RDB$SYSTEM_FLAG')
+        # Transaction State Types
+        self.enum_transaction_state_types = enum_dict('RDB$TRANSACTION_STATE')
+        # Trigger Types
+        self.enum_trigger_types = enum_dict('RDB$TRIGGER_TYPE')
+        
+    def close(self):
+        """Sever link to :class:`~fdb.Connection`.
+        
+        :raises ProgrammingError: If Schema object was set as internal (via 
+            :meth:`_set_as_internal`).
+        """
+        if self.__internal:
+            raise fdb.ProgrammingError("Call to 'close' not allowed for embedded Schema.")
+        self._close()
+        self.__clear()
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitSchema(self)` on parameter object.
         
@@ -562,6 +630,9 @@ order by RDB$SHADOW_NUMBER""")
     
     #--- Basic Database manipulation routines
 
+    def clear(self):
+        "Drop all cached metadata objects."
+        self.__clear()
     def reload(self,data=None):
         """Drop all or specified category of cached metadata objects, so they're 
         reloaded from database on next reference. 
@@ -592,47 +663,11 @@ order by RDB$SHADOW_NUMBER""")
         
         .. note:: Also commits query transaction.
         """
-        if data:
-            data = data.lower()
-            if data not in ['tables','view','domains','indices','dependencies',
-                            'generators','sequences','triggers','procedures',
-                            'constraints','collations','character sets',
-                            'exceptions','roles','functions','files','shadows']:
-                raise fdb.ProgrammingError("Unknown metadata category '%s'" % data)
-        if (not data or data == 'tables'):
-            self.__tables = None
-        if (not data or data == 'views'):
-            self.__views = None
-        if (not data or data == 'domains'):
-            self.__domains = None
-        if (not data or data == 'indices'):
-            self.__indices = None
-            self.__constraint_indices = None
-        if (not data or data == 'dependencies'):
-            self.__dependencies = None
-        if (not data or data in ['generators','sequences']):
-            self.__generators = None
-        if (not data or data == 'triggers'):
-            self.__triggers = None
-        if (not data or data == 'procedures'):
-            self.__procedures = None
-        if (not data or data == 'constraints'):
-            self.__constraints = None
-        if (not data or data == 'collations'):
-            self.__collations = None
-        if (not data or data == 'character sets'):
-            self.__character_sets = None
-        if (not data or data == 'exceptions'):
-            self.__exceptions = None
-        if (not data or data == 'roles'):
-            self.__roles = None
-        if (not data or data == 'functions'):
-            self.__functions = None
-        if (not data or data == 'files'):
-            self.__files = None
-        if (not data or data == 'shadows'):
-            self.__shadows = None
-        self._ic.transaction.commit()
+        self.__clear(data)
+        if not self.closed:
+            self._ic.transaction.commit()
+
+
     def ismultifile(self):
         "Returns true if database has multiple files."
         return len(self.files) > 0

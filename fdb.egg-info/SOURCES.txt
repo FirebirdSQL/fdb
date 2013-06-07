@@ -58,6 +58,7 @@ docs/_static/websupport.js
 fdb/__init__.py
 fdb/fbcore.py
 fdb/ibase.py
+fdb/monitor.py
 fdb/schema.py
 fdb/services.py
 fdb/utils.py

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.2 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.3 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.2',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.2 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.3 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -946,6 +946,12 @@ For example it&#8217;s &#8216;LI-V2.5.2.26540 Firebird 2.5&#8217; for Firebird 2
 <dd><p>(Read Only) Main <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> instance for this connection
 Connection methods <a class="reference internal" href="#fdb.Connection.begin" title="fdb.Connection.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a>, <a class="reference internal" href="#fdb.Connection.savepoint" title="fdb.Connection.savepoint"><tt class="xref py py-meth docutils literal"><span class="pre">savepoint()</span></tt></a>, <a class="reference internal" href="#fdb.Connection.commit" title="fdb.Connection.commit"><tt class="xref py py-meth docutils literal"><span class="pre">commit()</span></tt></a> and
 <a class="reference internal" href="#fdb.Connection.rollback" title="fdb.Connection.rollback"><tt class="xref py py-meth docutils literal"><span class="pre">rollback()</span></tt></a> are delegated to this transaction object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.Connection.monitor">
+<tt class="descclassname">Connection.</tt><tt class="descname">monitor</tt><a class="headerlink" href="#fdb.Connection.monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Read Only) (<a class="reference internal" href="#fdb.monitor.Monitor" title="fdb.monitor.Monitor"><tt class="xref py py-class docutils literal"><span class="pre">Monitor</span></tt></a>) Database monitoring object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4397,6 +4403,12 @@ specified to add a user.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Schema.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Schema.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop all cached metadata objects.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Schema.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Schema.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sever link to <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a>.</p>
@@ -4732,6 +4744,12 @@ reloaded from database on next reference.</p>
 <tt class="descname">character_sets</tt><a class="headerlink" href="#fdb.schema.Schema.character_sets" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of all character sets in database.
 Items are <a class="reference internal" href="#fdb.schema.CharacterSet" title="fdb.schema.CharacterSet"><tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.closed">
+<tt class="descname">closed</tt><a class="headerlink" href="#fdb.schema.Schema.closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if link to <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> is closed.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -8335,6 +8353,1075 @@ is used (including BLOB and ARRAY descriptors).</td>
 
 </div>
 </div>
+<div class="section" id="module-fdb.monitor">
+<span id="monitoring-information"></span><h2>Monitoring information<a class="headerlink" href="#module-fdb.monitor" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="constants">
+<h3>Constants<a class="headerlink" href="#constants" title="Permalink to this headline">¶</a></h3>
+<dl class="data">
+<dt id="fdb.monitor.SHUTDOWN_MODE_ONLINE">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">SHUTDOWN_MODE_ONLINE</tt><a class="headerlink" href="#fdb.monitor.SHUTDOWN_MODE_ONLINE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.SHUTDOWN_MODE_MULTI">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">SHUTDOWN_MODE_MULTI</tt><a class="headerlink" href="#fdb.monitor.SHUTDOWN_MODE_MULTI" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.SHUTDOWN_MODE_SINGLE">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">SHUTDOWN_MODE_SINGLE</tt><a class="headerlink" href="#fdb.monitor.SHUTDOWN_MODE_SINGLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.SHUTDOWN_MODE_FULL">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">SHUTDOWN_MODE_FULL</tt><a class="headerlink" href="#fdb.monitor.SHUTDOWN_MODE_FULL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shutdown modes for <a class="reference internal" href="#fdb.monitor.DatabaseInfo.shutdown_mode" title="fdb.monitor.DatabaseInfo.shutdown_mode"><tt class="xref py py-attr docutils literal"><span class="pre">DatabaseInfo.shutdown_mode</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.BACKUP_STATE_NORMAL">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">BACKUP_STATE_NORMAL</tt><a class="headerlink" href="#fdb.monitor.BACKUP_STATE_NORMAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.BACKUP_STATE_STALLED">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">BACKUP_STATE_STALLED</tt><a class="headerlink" href="#fdb.monitor.BACKUP_STATE_STALLED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.BACKUP_STATE_MERGE">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">BACKUP_STATE_MERGE</tt><a class="headerlink" href="#fdb.monitor.BACKUP_STATE_MERGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backup states for  <a class="reference internal" href="#fdb.monitor.DatabaseInfo.backup_state" title="fdb.monitor.DatabaseInfo.backup_state"><tt class="xref py py-attr docutils literal"><span class="pre">DatabaseInfo.backup_state</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.STATE_IDLE">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">STATE_IDLE</tt><a class="headerlink" href="#fdb.monitor.STATE_IDLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.STATE_ACTIVE">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">STATE_ACTIVE</tt><a class="headerlink" href="#fdb.monitor.STATE_ACTIVE" title="Permalink to this definition">¶</a></dt>
+<dd><p>States for <a class="reference internal" href="#fdb.monitor.AttachmentInfo.state" title="fdb.monitor.AttachmentInfo.state"><tt class="xref py py-attr docutils literal"><span class="pre">AttachmentInfo.state</span></tt></a>, <a class="reference internal" href="#fdb.monitor.TransactionInfo.state" title="fdb.monitor.TransactionInfo.state"><tt class="xref py py-attr docutils literal"><span class="pre">TransactionInfo.state</span></tt></a>.
+and <a class="reference internal" href="#fdb.monitor.StatementInfo.state" title="fdb.monitor.StatementInfo.state"><tt class="xref py py-attr docutils literal"><span class="pre">StatementInfo.state</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.ISOLATION_CONSISTENCY">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">ISOLATION_CONSISTENCY</tt><a class="headerlink" href="#fdb.monitor.ISOLATION_CONSISTENCY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.ISOLATION_CONCURRENCY">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">ISOLATION_CONCURRENCY</tt><a class="headerlink" href="#fdb.monitor.ISOLATION_CONCURRENCY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.ISOLATION_READ_COMMITTED_RV">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">ISOLATION_READ_COMMITTED_RV</tt><a class="headerlink" href="#fdb.monitor.ISOLATION_READ_COMMITTED_RV" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.ISOLATION_READ_COMMITTED_NO_RV">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">ISOLATION_READ_COMMITTED_NO_RV</tt><a class="headerlink" href="#fdb.monitor.ISOLATION_READ_COMMITTED_NO_RV" title="Permalink to this definition">¶</a></dt>
+<dd><p>Isolation modes for <a class="reference internal" href="#fdb.monitor.TransactionInfo.isolation_mode" title="fdb.monitor.TransactionInfo.isolation_mode"><tt class="xref py py-attr docutils literal"><span class="pre">TransactionInfo.isolation_mode</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.INFINITE_WAIT">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">INFINITE_WAIT</tt><a class="headerlink" href="#fdb.monitor.INFINITE_WAIT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.NO_WAIT">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">NO_WAIT</tt><a class="headerlink" href="#fdb.monitor.NO_WAIT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Special timeout values for <a class="reference internal" href="#fdb.monitor.TransactionInfo.lock_timeout" title="fdb.monitor.TransactionInfo.lock_timeout"><tt class="xref py py-attr docutils literal"><span class="pre">TransactionInfo.lock_timeout</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.STAT_DATABASE">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">STAT_DATABASE</tt><a class="headerlink" href="#fdb.monitor.STAT_DATABASE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.STAT_ATTACHMENT">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">STAT_ATTACHMENT</tt><a class="headerlink" href="#fdb.monitor.STAT_ATTACHMENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.STAT_TRANSACTION">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">STAT_TRANSACTION</tt><a class="headerlink" href="#fdb.monitor.STAT_TRANSACTION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.STAT_STATEMENT">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">STAT_STATEMENT</tt><a class="headerlink" href="#fdb.monitor.STAT_STATEMENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.monitor.STAT_CALL">
+<tt class="descclassname">fdb.monitor.</tt><tt class="descname">STAT_CALL</tt><a class="headerlink" href="#fdb.monitor.STAT_CALL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group codes for <a class="reference internal" href="#fdb.monitor.IOStatsInfo.group" title="fdb.monitor.IOStatsInfo.group"><tt class="xref py py-attr docutils literal"><span class="pre">IOStatsInfo.group</span></tt></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="monitor">
+<h3>Monitor<a class="headerlink" href="#monitor" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.Monitor">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">Monitor</tt><a class="headerlink" href="#fdb.monitor.Monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for access to Firebird monitoring tables.</p>
+<dl class="method">
+<dt id="fdb.monitor.Monitor.bind">
+<tt class="descname">bind</tt><big>(</big><em>connection</em><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind this instance to specified <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection</strong> &#8211; <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">If Monitor object was set as internal (via 
+<tt class="xref py py-meth docutils literal"><span class="pre">_set_as_internal()</span></tt>) or database has ODS lower than 11.1.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.Monitor.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop all cached information objects. Force reload of fresh monitoring
+information on next reference.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.Monitor.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sever link to <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">If Monitor object was set as internal (via 
+<tt class="xref py py-meth docutils literal"><span class="pre">_set_as_internal()</span></tt>).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.Monitor.get_attachment">
+<tt class="descname">get_attachment</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.get_attachment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get <a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> by ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Attachment ID.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> with specified ID or <cite>None</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.Monitor.get_call">
+<tt class="descname">get_call</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.get_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get <a class="reference internal" href="#fdb.monitor.CallStackInfo" title="fdb.monitor.CallStackInfo"><tt class="xref py py-class docutils literal"><span class="pre">CallStackInfo</span></tt></a> by ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Callstack ID.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.monitor.CallStackInfo" title="fdb.monitor.CallStackInfo"><tt class="xref py py-class docutils literal"><span class="pre">CallStackInfo</span></tt></a> with specified ID or <cite>None</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.Monitor.get_statement">
+<tt class="descname">get_statement</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.get_statement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get <a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> by ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Statement ID.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> with specified ID or <cite>None</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.Monitor.get_transaction">
+<tt class="descname">get_transaction</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.get_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get <a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a> by ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Transaction ID.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a> with specified ID or <cite>None</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.Monitor.refresh">
+<tt class="descname">refresh</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.Monitor.refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reloads fresh monitoring information.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.attachments">
+<tt class="descname">attachments</tt><a class="headerlink" href="#fdb.monitor.Monitor.attachments" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all attachments.
+Items are <a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.callstack">
+<tt class="descname">callstack</tt><a class="headerlink" href="#fdb.monitor.Monitor.callstack" title="Permalink to this definition">¶</a></dt>
+<dd><p>List with complete call stack.
+Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title="fdb.monitor.CallStackInfo"><tt class="xref py py-class docutils literal"><span class="pre">CallStackInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.closed">
+<tt class="descname">closed</tt><a class="headerlink" href="#fdb.monitor.Monitor.closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if link to <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> is closed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.db">
+<tt class="descname">db</tt><a class="headerlink" href="#fdb.monitor.Monitor.db" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.DatabaseInfo" title="fdb.monitor.DatabaseInfo"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseInfo</span></tt></a> object for attached database.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.iostats">
+<tt class="descname">iostats</tt><a class="headerlink" href="#fdb.monitor.Monitor.iostats" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all I/O statistics.
+Items are <a class="reference internal" href="#fdb.monitor.IOStatsInfo" title="fdb.monitor.IOStatsInfo"><tt class="xref py py-class docutils literal"><span class="pre">IOStatsInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.statements">
+<tt class="descname">statements</tt><a class="headerlink" href="#fdb.monitor.Monitor.statements" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all statements.
+Items are <a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.this_attachment">
+<tt class="descname">this_attachment</tt><a class="headerlink" href="#fdb.monitor.Monitor.this_attachment" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> object for current connection.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.transactions">
+<tt class="descname">transactions</tt><a class="headerlink" href="#fdb.monitor.Monitor.transactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all transactions.
+Items are <a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.Monitor.variables">
+<tt class="descname">variables</tt><a class="headerlink" href="#fdb.monitor.Monitor.variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all context variables.
+Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" title="fdb.monitor.ContextVariableInfo"><tt class="xref py py-class docutils literal"><span class="pre">ContextVariableInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="baseinfoitem">
+<h3>BaseInfoItem<a class="headerlink" href="#baseinfoitem" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.BaseInfoItem">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">BaseInfoItem</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.BaseInfoItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for all database monitoring objects.</p>
+<dl class="attribute">
+<dt id="fdb.monitor.BaseInfoItem.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.BaseInfoItem.monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weak reference to parent <a class="reference internal" href="#fdb.monitor.Monitor" title="fdb.monitor.Monitor"><tt class="xref py py-class docutils literal"><span class="pre">Monitor</span></tt></a> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.BaseInfoItem.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.BaseInfoItem.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="databaseinfo">
+<h3>DatabaseInfo<a class="headerlink" href="#databaseinfo" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.DatabaseInfo">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">DatabaseInfo</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.DatabaseInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about attached database.</p>
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.backup_state">
+<tt class="descname">backup_state</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.backup_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current state of database with respect to nbackup physical backup.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.cache_size">
+<tt class="descname">cache_size</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.cache_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of pages allocated in the page cache.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.created">
+<tt class="descname">created</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.created" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creation date and time, i.e., when the database was created or last restored.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.forced_writes">
+<tt class="descname">forced_writes</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.forced_writes" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if database uses synchronous writes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.iostats">
+<tt class="descname">iostats</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.iostats" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.IOStatsInfo" title="fdb.monitor.IOStatsInfo"><tt class="xref py py-class docutils literal"><span class="pre">IOStatsInfo</span></tt></a> for this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.DatabaseInfo.monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.name">
+<tt class="descname">name</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database pathname or alias.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.next_transaction">
+<tt class="descname">next_transaction</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.next_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction ID of the next transaction that will be started.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.oat">
+<tt class="descname">oat</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.oat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction ID of the oldest active transaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.ods">
+<tt class="descname">ods</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.ods" title="Permalink to this definition">¶</a></dt>
+<dd><p>On-Disk Structure (ODS) version number.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.oit">
+<tt class="descname">oit</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.oit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction ID of the oldest [interesting] transaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.ost">
+<tt class="descname">ost</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.ost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction ID of the Oldest Snapshot, i.e., the number of the OAT when the last garbage collection was done.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.page_size">
+<tt class="descname">page_size</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.page_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Size of database page in bytes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.pages">
+<tt class="descname">pages</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.pages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of pages allocated on disk.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.read_only">
+<tt class="descname">read_only</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.read_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if database is Read Only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.reserve_space">
+<tt class="descname">reserve_space</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.reserve_space" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if database reserves space on data pages.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.shutdown_mode">
+<tt class="descname">shutdown_mode</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.shutdown_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current shutdown mode.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.sql_dialect">
+<tt class="descname">sql_dialect</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.sql_dialect" title="Permalink to this definition">¶</a></dt>
+<dd><p>SQL dialect of the database.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.sweep_interval">
+<tt class="descname">sweep_interval</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.sweep_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sweep interval configured in the database header. Value 0 indicates that sweeping is disabled.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="attachmentinfo">
+<h3>AttachmentInfo<a class="headerlink" href="#attachmentinfo" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.AttachmentInfo">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">AttachmentInfo</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.AttachmentInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about attachment (connection) to database.</p>
+<dl class="method">
+<dt id="fdb.monitor.AttachmentInfo.isactive">
+<tt class="descname">isactive</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.AttachmentInfo.isactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if attachment is active.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.AttachmentInfo.isgcallowed">
+<tt class="descname">isgcallowed</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.AttachmentInfo.isgcallowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if Garbage Collection is enabled for this attachment.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.AttachmentInfo.isidle">
+<tt class="descname">isidle</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.AttachmentInfo.isidle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if attachment is idle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.AttachmentInfo.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.AttachmentInfo.terminate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Terminates client session associated with this attachment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">If database has ODS lower than 11.2 or
+this attachement is current session.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.character_set">
+<tt class="descname">character_set</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.character_set" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.schema.CharacterSet" title="fdb.schema.CharacterSet"><tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt></a> for this attachment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.id">
+<tt class="descname">id</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attachment ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.iostats">
+<tt class="descname">iostats</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.iostats" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.IOStatsInfo" title="fdb.monitor.IOStatsInfo"><tt class="xref py py-class docutils literal"><span class="pre">IOStatsInfo</span></tt></a> for this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.AttachmentInfo.monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.name">
+<tt class="descname">name</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database pathname or alias.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.remote_address">
+<tt class="descname">remote_address</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remote address.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.remote_pid">
+<tt class="descname">remote_pid</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_pid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remote client process ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.remote_process">
+<tt class="descname">remote_process</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remote client process pathname.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.remote_protocol">
+<tt class="descname">remote_protocol</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_protocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remote protocol name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.role">
+<tt class="descname">role</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.role" title="Permalink to this definition">¶</a></dt>
+<dd><p>Role name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.server_pid">
+<tt class="descname">server_pid</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.server_pid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Server process ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.state">
+<tt class="descname">state</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attachment state (idle/active).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.statements">
+<tt class="descname">statements</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.statements" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of statements associated with attachment.
+Items are <a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.timestamp">
+<tt class="descname">timestamp</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attachment date/time.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.transactions">
+<tt class="descname">transactions</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.transactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of transactions associated with attachment.
+Items are <a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.user">
+<tt class="descname">user</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.user" title="Permalink to this definition">¶</a></dt>
+<dd><p>User name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.variables">
+<tt class="descname">variables</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of variables associated with attachment.
+Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" title="fdb.monitor.ContextVariableInfo"><tt class="xref py py-class docutils literal"><span class="pre">ContextVariableInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="transactioninfo">
+<h3>TransactionInfo<a class="headerlink" href="#transactioninfo" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.TransactionInfo">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">TransactionInfo</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.TransactionInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about transaction.</p>
+<dl class="method">
+<dt id="fdb.monitor.TransactionInfo.isactive">
+<tt class="descname">isactive</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.TransactionInfo.isactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if transaction is active.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.TransactionInfo.isautocommit">
+<tt class="descname">isautocommit</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.TransactionInfo.isautocommit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True for autocommited transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.TransactionInfo.isautoundo">
+<tt class="descname">isautoundo</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.TransactionInfo.isautoundo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True for transaction with automatic undo.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.TransactionInfo.isidle">
+<tt class="descname">isidle</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.TransactionInfo.isidle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if transaction is idle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.TransactionInfo.isreadonly">
+<tt class="descname">isreadonly</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.TransactionInfo.isreadonly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if transaction is Read Only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.attachment">
+<tt class="descname">attachment</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.attachment" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> instance to which this transaction belongs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.id">
+<tt class="descname">id</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.iostats">
+<tt class="descname">iostats</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.iostats" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.IOStatsInfo" title="fdb.monitor.IOStatsInfo"><tt class="xref py py-class docutils literal"><span class="pre">IOStatsInfo</span></tt></a> for this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.isolation_mode">
+<tt class="descname">isolation_mode</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.isolation_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction isolation mode code.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.lock_timeout">
+<tt class="descname">lock_timeout</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.lock_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lock timeout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.TransactionInfo.monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.oldest">
+<tt class="descname">oldest</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.oldest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Oldest transaction (local OIT).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.oldest_active">
+<tt class="descname">oldest_active</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.oldest_active" title="Permalink to this definition">¶</a></dt>
+<dd><p>Oldest active transaction (local OAT).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.state">
+<tt class="descname">state</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction state (idle/active).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.statements">
+<tt class="descname">statements</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.statements" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of statements associated with transaction.
+Items are <a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.timestamp">
+<tt class="descname">timestamp</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction start date/time.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.top">
+<tt class="descname">top</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.top" title="Permalink to this definition">¶</a></dt>
+<dd><p>Top transaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.variables">
+<tt class="descname">variables</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of variables associated with transaction.
+Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" title="fdb.monitor.ContextVariableInfo"><tt class="xref py py-class docutils literal"><span class="pre">ContextVariableInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="statementinfo">
+<h3>StatementInfo<a class="headerlink" href="#statementinfo" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.StatementInfo">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">StatementInfo</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.StatementInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about executed SQL statement.</p>
+<dl class="method">
+<dt id="fdb.monitor.StatementInfo.isactive">
+<tt class="descname">isactive</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.StatementInfo.isactive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if statement is active.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.StatementInfo.isidle">
+<tt class="descname">isidle</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.StatementInfo.isidle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if statement is idle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.StatementInfo.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.StatementInfo.terminate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Terminates execution of statement.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">If this attachement is current session.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.attachment">
+<tt class="descname">attachment</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.attachment" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> instance to which this statement belongs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.callstack">
+<tt class="descname">callstack</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.callstack" title="Permalink to this definition">¶</a></dt>
+<dd><p>List with call stack for statement.
+Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title="fdb.monitor.CallStackInfo"><tt class="xref py py-class docutils literal"><span class="pre">CallStackInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.id">
+<tt class="descname">id</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statement ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.iostats">
+<tt class="descname">iostats</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.iostats" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.IOStatsInfo" title="fdb.monitor.IOStatsInfo"><tt class="xref py py-class docutils literal"><span class="pre">IOStatsInfo</span></tt></a> for this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.StatementInfo.monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.sql_text">
+<tt class="descname">sql_text</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.sql_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statement text, if appropriate.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.state">
+<tt class="descname">state</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statement state (idle/active).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.timestamp">
+<tt class="descname">timestamp</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statement start date/time.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.transaction">
+<tt class="descname">transaction</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a> instance to which this statement belongs or None.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="callstackinfo">
+<h3>CallStackInfo<a class="headerlink" href="#callstackinfo" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.CallStackInfo">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">CallStackInfo</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.CallStackInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about PSQL call (stack frame).</p>
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.caller">
+<tt class="descname">caller</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.caller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call stack entry (<a class="reference internal" href="#fdb.monitor.CallStackInfo" title="fdb.monitor.CallStackInfo"><tt class="xref py py-class docutils literal"><span class="pre">CallStackInfo</span></tt></a>) of the caller.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.column">
+<tt class="descname">column</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.column" title="Permalink to this definition">¶</a></dt>
+<dd><p>SQL source column number.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.dbobject">
+<tt class="descname">dbobject</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.dbobject" title="Permalink to this definition">¶</a></dt>
+<dd><p>PSQL object. <a class="reference internal" href="#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a> or <a class="reference internal" href="#fdb.schema.Trigger" title="fdb.schema.Trigger"><tt class="xref py py-class docutils literal"><span class="pre">Trigger</span></tt></a> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.id">
+<tt class="descname">id</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.iostats">
+<tt class="descname">iostats</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.iostats" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.IOStatsInfo" title="fdb.monitor.IOStatsInfo"><tt class="xref py py-class docutils literal"><span class="pre">IOStatsInfo</span></tt></a> for this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.line">
+<tt class="descname">line</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.line" title="Permalink to this definition">¶</a></dt>
+<dd><p>SQL source line number.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.CallStackInfo.monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.statement">
+<tt class="descname">statement</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.statement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Top-level <a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> instance to which this call stack entry belongs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.timestamp">
+<tt class="descname">timestamp</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request start date/time.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="iostatsinfo">
+<h3>IOStatsInfo<a class="headerlink" href="#iostatsinfo" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.IOStatsInfo">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">IOStatsInfo</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.IOStatsInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about page and row level I/O operations, and about memory consumption.</p>
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.backouts">
+<tt class="descname">backouts</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.backouts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of records where a new primary record version or a change to an existing primary record version is backed out due to rollback or savepoint undo.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.deletes">
+<tt class="descname">deletes</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.deletes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of deleted records.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.expunges">
+<tt class="descname">expunges</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.expunges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of records where record version chain is being deleted due to deletions by transactions older than OAT.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.fetches">
+<tt class="descname">fetches</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.fetches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of page fetches.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.group">
+<tt class="descname">group</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object group code.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.idx_reads">
+<tt class="descname">idx_reads</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.idx_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of records read via an index.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.inserts">
+<tt class="descname">inserts</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.inserts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of inserted records.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.marks">
+<tt class="descname">marks</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.marks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of pages with changes pending.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.max_memory_allocated">
+<tt class="descname">max_memory_allocated</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.max_memory_allocated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum number of bytes allocated from the operating system by this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.max_memory_used">
+<tt class="descname">max_memory_used</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.max_memory_used" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum number of bytes used by this object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.memory_allocated">
+<tt class="descname">memory_allocated</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.memory_allocated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of bytes currently allocated at the OS level.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.memory_used">
+<tt class="descname">memory_used</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.memory_used" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of bytes currently in use.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.IOStatsInfo.monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.owner">
+<tt class="descname">owner</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object that owns this IOStats instance. Could be either 
+<a class="reference internal" href="#fdb.monitor.DatabaseInfo" title="fdb.monitor.DatabaseInfo"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseInfo</span></tt></a>, <a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a>, <a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a>, 
+<a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> or <a class="reference internal" href="#fdb.monitor.CallStackInfo" title="fdb.monitor.CallStackInfo"><tt class="xref py py-class docutils literal"><span class="pre">CallStackInfo</span></tt></a> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.purges">
+<tt class="descname">purges</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.purges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of records where record version chain is being purged of versions no longer needed by OAT or younger transactions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.reads">
+<tt class="descname">reads</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of page reads.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.seq_reads">
+<tt class="descname">seq_reads</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.seq_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of records read sequentially.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.updates">
+<tt class="descname">updates</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.updates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of updated records.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.writes">
+<tt class="descname">writes</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.writes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of page writes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="contextvariableinfo">
+<h3>ContextVariableInfo<a class="headerlink" href="#contextvariableinfo" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.monitor.ContextVariableInfo">
+<em class="property">class </em><tt class="descclassname">fdb.monitor.</tt><tt class="descname">ContextVariableInfo</tt><big>(</big><em>monitor</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.monitor.ContextVariableInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about context variable.</p>
+<dl class="method">
+<dt id="fdb.monitor.ContextVariableInfo.isattachmentvar">
+<tt class="descname">isattachmentvar</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.isattachmentvar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if variable is associated to attachment context.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.monitor.ContextVariableInfo.istransactionvar">
+<tt class="descname">istransactionvar</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.istransactionvar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if variable is associated to transaction context.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.ContextVariableInfo.attachment">
+<tt class="descname">attachment</tt><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.attachment" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> instance to which this context variable belongs or None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.ContextVariableInfo.monitor">
+<tt class="descname">monitor</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.ContextVariableInfo.name">
+<tt class="descname">name</tt><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context variable name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.ContextVariableInfo.stat_id">
+<tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.stat_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.ContextVariableInfo.transaction">
+<tt class="descname">transaction</tt><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a> instance to which this context variable belongs or None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.ContextVariableInfo.value">
+<tt class="descname">value</tt><a class="headerlink" href="#fdb.monitor.ContextVariableInfo.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value of context variable.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="module-fdb.utils">
 <span id="utilities"></span><h2>Utilities<a class="headerlink" href="#module-fdb.utils" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id4">
@@ -8597,6 +9684,19 @@ of parent object.</p>
 <li><a class="reference internal" href="#schemavisitor">SchemaVisitor</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#module-fdb.monitor">Monitoring information</a><ul>
+<li><a class="reference internal" href="#constants">Constants</a></li>
+<li><a class="reference internal" href="#monitor">Monitor</a></li>
+<li><a class="reference internal" href="#baseinfoitem">BaseInfoItem</a></li>
+<li><a class="reference internal" href="#databaseinfo">DatabaseInfo</a></li>
+<li><a class="reference internal" href="#attachmentinfo">AttachmentInfo</a></li>
+<li><a class="reference internal" href="#transactioninfo">TransactionInfo</a></li>
+<li><a class="reference internal" href="#statementinfo">StatementInfo</a></li>
+<li><a class="reference internal" href="#callstackinfo">CallStackInfo</a></li>
+<li><a class="reference internal" href="#iostatsinfo">IOStatsInfo</a></li>
+<li><a class="reference internal" href="#contextvariableinfo">ContextVariableInfo</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-fdb.utils">Utilities</a><ul>
 <li><a class="reference internal" href="#id4">Functions</a></li>
 <li><a class="reference internal" href="#latebindingproperty">LateBindingProperty</a></li>
@@ -8647,7 +9747,7 @@ of parent object.</p>
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

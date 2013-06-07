@@ -9,7 +9,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; FDB 1.2 documentation</title>
+    <title>Index &mdash; FDB 1.3 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.2',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.2 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.3 documentation" href="index.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <!--[if lte IE 6]>
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -302,12 +302,12 @@
   <dt><a href="reference.html#fdb.ConnectionGroup.add">add() (fdb.ConnectionGroup method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.Connection.add_user">add_user() (fdb.services.Connection method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.apilevel">apilevel (in module fdb)</a>
   </dt>
@@ -328,6 +328,28 @@
       </dl></dd>
       
   <dt><a href="reference.html#fdb.Cursor.arraysize">arraysize (fdb.Cursor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.attachment">attachment (fdb.monitor.ContextVariableInfo attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.attachment">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.attachment">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo">AttachmentInfo (class in fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor.attachments">attachments (fdb.monitor.Monitor attribute)</a>
   </dt>
 
       
@@ -352,7 +374,27 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.backouts">backouts (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.services.Connection.backup">backup() (fdb.services.Connection method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.backup_state">backup_state (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.BACKUP_STATE_MERGE">BACKUP_STATE_MERGE (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.BACKUP_STATE_NORMAL">BACKUP_STATE_NORMAL (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.BACKUP_STATE_STALLED">BACKUP_STATE_STALLED (in module fdb.monitor)</a>
   </dt>
 
       
@@ -363,6 +405,12 @@
   <dt><a href="reference.html#fdb.schema.ViewColumn.base_field">base_field (fdb.schema.ViewColumn attribute)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.monitor.BaseInfoItem">BaseInfoItem (class in fdb.monitor)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.BaseSchemaItem">BaseSchemaItem (class in fdb.schema)</a>
   </dt>
@@ -382,11 +430,15 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.Schema.bind">bind() (fdb.schema.Schema method)</a>
+  <dt><a href="reference.html#fdb.monitor.Monitor.bind">bind() (fdb.monitor.Monitor method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Schema.bind">(fdb.schema.Schema method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="usage-guide.html#index-18">BLOB</a>
   </dt>
@@ -420,7 +472,29 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.cache_size">cache_size (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.caller">caller (fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.Cursor.callproc">callproc() (fdb.Cursor method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor.callstack">callstack (fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.callstack">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo">CallStackInfo (class in fdb.monitor)</a>
   </dt>
 
       
@@ -454,10 +528,14 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.Collation.character_set">character_set (fdb.schema.Collation attribute)</a>
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.character_set">character_set (fdb.monitor.AttachmentInfo attribute)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Collation.character_set">(fdb.schema.Collation attribute)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.Domain.character_set">(fdb.schema.Domain attribute)</a>
   </dt>
@@ -493,6 +571,16 @@
   <dt><a href="reference.html#fdb.ConnectionGroup.clear">clear() (fdb.ConnectionGroup method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.Monitor.clear">(fdb.monitor.Monitor method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Schema.clear">(fdb.schema.Schema method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.Cursor.clear_cache">clear_cache() (fdb.Cursor method)</a>
   </dt>
@@ -527,6 +615,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.monitor.Monitor.close">(fdb.monitor.Monitor method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Schema.close">(fdb.schema.Schema method)</a>
   </dt>
 
@@ -558,6 +650,14 @@
 
         
   <dt><a href="reference.html#fdb.fbcore.EventBlock.closed">(fdb.fbcore.EventBlock attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.Monitor.closed">(fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Schema.closed">(fdb.schema.Schema attribute)</a>
   </dt>
 
         
@@ -602,9 +702,15 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.ProcedureParameter.column">column (fdb.schema.ProcedureParameter attribute)</a>
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.column">column (fdb.monitor.CallStackInfo attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.ProcedureParameter.column">(fdb.schema.ProcedureParameter attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Constraint.column_name">column_name (fdb.schema.Constraint attribute)</a>
   </dt>
@@ -679,12 +785,12 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Cursor.connection">connection (fdb.Cursor attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Connection.DatabaseError">Connection.DatabaseError</a>
   </dt>
@@ -764,6 +870,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo">ContextVariableInfo (class in fdb.monitor)</a>
+  </dt>
+
+      
   <dt>
     conversion
   </dt>
@@ -813,6 +923,10 @@
       </dl></dd>
       
   <dt><a href="reference.html#fdb.create_database">create_database() (in module fdb)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.created">created (fdb.monitor.DatabaseInfo attribute)</a>
   </dt>
 
       
@@ -943,6 +1057,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo">DatabaseInfo (class in fdb.monitor)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.DataError">DataError</a>
   </dt>
 
@@ -969,6 +1087,10 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.Monitor.db">db (fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.Connection.db_info">db_info() (fdb.Connection method)</a>
   </dt>
 
@@ -982,6 +1104,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.dbobject">dbobject (fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.schema.Domain.default">default (fdb.schema.Domain attribute)</a>
   </dt>
@@ -1058,6 +1184,12 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.deletes">deletes (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="reference.html#fdb.schema.Dependency.depended_on">depended_on (fdb.schema.Dependency attribute)</a>
   </dt>
 
@@ -1065,8 +1197,6 @@
   <dt><a href="reference.html#fdb.schema.Dependency.depended_on_name">depended_on_name (fdb.schema.Dependency attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Dependency.depended_on_type">depended_on_type (fdb.schema.Dependency attribute)</a>
   </dt>
@@ -1543,6 +1673,10 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.expunges">expunges (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Table.external_file">external_file (fdb.schema.Table attribute)</a>
   </dt>
 
@@ -1577,6 +1711,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#module-fdb.monitor">fdb.monitor (module)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#module-fdb.schema">fdb.schema (module)</a>
   </dt>
 
@@ -1594,6 +1732,10 @@
 
       
   <dt><a href="reference.html#fdb.Cursor.fetchallmap">fetchallmap() (fdb.Cursor method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.fetches">fetches (fdb.monitor.IOStatsInfo attribute)</a>
   </dt>
 
       
@@ -1709,6 +1851,10 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.forced_writes">forced_writes (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Table.foreign_keys">foreign_keys (fdb.schema.Table attribute)</a>
   </dt>
 
@@ -1780,6 +1926,14 @@
 
       
   <dt><a href="reference.html#fdb.services.Connection.get_attached_database_names">get_attached_database_names() (fdb.services.Connection method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor.get_attachment">get_attachment() (fdb.monitor.Monitor method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor.get_call">get_call() (fdb.monitor.Monitor method)</a>
   </dt>
 
       
@@ -2261,11 +2415,19 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.Monitor.get_statement">get_statement() (fdb.monitor.Monitor method)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.services.Connection.get_statistics">get_statistics() (fdb.services.Connection method)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.schema.Schema.get_table">get_table() (fdb.schema.Schema method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor.get_transaction">get_transaction() (fdb.monitor.Monitor method)</a>
   </dt>
 
       
@@ -2294,6 +2456,12 @@
   <dt><a href="reference.html#fdb.Connection.group">group (fdb.Connection attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.group">(fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.services.User.group_id">group_id (fdb.services.User attribute)</a>
   </dt>
@@ -2359,10 +2527,26 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="reference.html#fdb.schema.CharacterSet.id">id (fdb.schema.CharacterSet attribute)</a>
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.id">id (fdb.monitor.AttachmentInfo attribute)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.id">(fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.id">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.id">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.CharacterSet.id">(fdb.schema.CharacterSet attribute)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.Collation.id">(fdb.schema.Collation attribute)</a>
   </dt>
@@ -2397,6 +2581,10 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.idx_reads">idx_reads (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Index">Index (class in fdb.schema)</a>
   </dt>
 
@@ -2423,6 +2611,10 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.INFINITE_WAIT">INFINITE_WAIT (in module fdb.monitor)</a>
+  </dt>
+
+      
   <dt>
     information about
   </dt>
@@ -2446,6 +2638,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.inserts">inserts (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.IntegrityError">IntegrityError</a>
   </dt>
 
@@ -2458,19 +2654,75 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.iostats">iostats (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.iostats">(fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.iostats">(fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.Monitor.iostats">(fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.iostats">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.iostats">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo">IOStatsInfo (class in fdb.monitor)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Collation.isaccentinsensitive">isaccentinsensitive() (fdb.schema.Collation method)</a>
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.Trigger.isactive">isactive() (fdb.schema.Trigger method)</a>
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.isactive">isactive() (fdb.monitor.AttachmentInfo method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.isactive">(fdb.monitor.StatementInfo method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.isactive">(fdb.monitor.TransactionInfo method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Trigger.isactive">(fdb.schema.Trigger method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Trigger.isafter">isafter() (fdb.schema.Trigger method)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.schema.Domain.isarray">isarray() (fdb.schema.Domain method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.isattachmentvar">isattachmentvar() (fdb.monitor.ContextVariableInfo method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.isautocommit">isautocommit() (fdb.monitor.TransactionInfo method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.isautoundo">isautoundo() (fdb.monitor.TransactionInfo method)</a>
   </dt>
 
       
@@ -2556,9 +2808,29 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.isgcallowed">isgcallowed() (fdb.monitor.AttachmentInfo method)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Table.isgtt">isgtt() (fdb.schema.Table method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.isidle">isidle() (fdb.monitor.AttachmentInfo method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.isidle">(fdb.monitor.StatementInfo method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.isidle">(fdb.monitor.TransactionInfo method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Index.isinactive">isinactive() (fdb.schema.Index method)</a>
   </dt>
@@ -2569,8 +2841,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.ProcedureParameter.isinput">isinput() (fdb.schema.ProcedureParameter method)</a>
   </dt>
@@ -2610,6 +2880,14 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.ISOLATION_CONCURRENCY">ISOLATION_CONCURRENCY (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.ISOLATION_CONSISTENCY">ISOLATION_CONSISTENCY (in module fdb.monitor)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.TPB.isolation_level">isolation_level (fdb.TPB attribute)</a>
   </dt>
 
@@ -2642,6 +2920,18 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.isolation_mode">isolation_mode (fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.ISOLATION_READ_COMMITTED_NO_RV">ISOLATION_READ_COMMITTED_NO_RV (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.ISOLATION_READ_COMMITTED_RV">ISOLATION_READ_COMMITTED_RV (in module fdb.monitor)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Collation.ispadded">ispadded() (fdb.schema.Collation method)</a>
   </dt>
 
@@ -2651,6 +2941,10 @@
 
       
   <dt><a href="reference.html#fdb.schema.Constraint.ispkey">ispkey() (fdb.schema.Constraint method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.isreadonly">isreadonly() (fdb.monitor.TransactionInfo method)</a>
   </dt>
 
       
@@ -2747,6 +3041,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.istransactionvar">istransactionvar() (fdb.monitor.ContextVariableInfo method)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.schema.Constraint.isunique">isunique() (fdb.schema.Constraint method)</a>
   </dt>
@@ -2886,13 +3184,23 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.line">line (fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.TPB.lock_resolution">lock_resolution (fdb.TPB attribute)</a>
   </dt>
 
       
-  <dt><a href="reference.html#fdb.TPB.lock_timeout">lock_timeout (fdb.TPB attribute)</a>
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.lock_timeout">lock_timeout (fdb.monitor.TransactionInfo attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.TPB.lock_timeout">(fdb.TPB attribute)</a>
+  </dt>
+
+      </dl></dd>
   </dl></td>
 </tr></table>
 
@@ -2915,11 +3223,23 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.marks">marks (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Constraint.match_option">match_option (fdb.schema.Constraint attribute)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.MAX_BLOB_SEGMENT_SIZE">MAX_BLOB_SEGMENT_SIZE (in module fdb)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.max_memory_allocated">max_memory_allocated (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.max_memory_used">max_memory_used (fdb.monitor.IOStatsInfo attribute)</a>
   </dt>
 
       
@@ -2936,8 +3256,16 @@
   <dt><a href="reference.html#fdb.ConnectionGroup.members">members() (fdb.ConnectionGroup method)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.memory_allocated">memory_allocated (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.memory_used">memory_used (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.schema.DatabaseException.message">message (fdb.schema.DatabaseException attribute)</a>
   </dt>
@@ -2958,6 +3286,48 @@
   <dt><a href="reference.html#fdb.schema.Function.module_name">module_name (fdb.schema.Function attribute)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor">Monitor (class in fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.Connection.monitor">monitor (fdb.Connection attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.monitor">(fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.BaseInfoItem.monitor">(fdb.monitor.BaseInfoItem attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.monitor">(fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.monitor">(fdb.monitor.ContextVariableInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.monitor">(fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.monitor">(fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.monitor">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.monitor">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt>
     multiple
@@ -2990,6 +3360,18 @@
       <dd><dl>
         
   <dt><a href="reference.html#fdb.PreparedStatement.name">(fdb.PreparedStatement attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.name">(fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.name">(fdb.monitor.ContextVariableInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.name">(fdb.monitor.DatabaseInfo attribute)</a>
   </dt>
 
         
@@ -3096,8 +3478,6 @@
   <dt><a href="reference.html#fdb.services.Connection.nbackup">nbackup() (fdb.services.Connection method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.BlobReader.next">next() (fdb.BlobReader method)</a>
   </dt>
@@ -3116,8 +3496,18 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.next_transaction">next_transaction (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.PreparedStatement.NO_FETCH_ATTEMPTED_YET">NO_FETCH_ATTEMPTED_YET (fdb.PreparedStatement attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.NO_WAIT">NO_WAIT (in module fdb.monitor)</a>
   </dt>
 
       
@@ -3135,9 +3525,19 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.oat">oat (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.Connection.ods">ods (fdb.Connection attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.ods">(fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.ODS_FB_20">ODS_FB_20 (in module fdb)</a>
   </dt>
@@ -3150,8 +3550,20 @@
   <dt><a href="reference.html#fdb.ODS_FB_25">ODS_FB_25 (in module fdb)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.oit">oit (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.oldest">oldest (fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.oldest_active">oldest_active (fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.OperationalError">OperationalError</a>
   </dt>
@@ -3167,7 +3579,15 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.ost">ost (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Procedure.output_params">output_params (fdb.schema.Procedure attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.owner">owner (fdb.monitor.IOStatsInfo attribute)</a>
   </dt>
 
       
@@ -3202,6 +3622,14 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.page_size">page_size (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.pages">pages (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
       
   <dt>
     parameter
@@ -3285,12 +3713,12 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Cursor.prep">prep() (fdb.Cursor method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.ConnectionGroup.prepare">prepare() (fdb.ConnectionGroup method)</a>
   </dt>
@@ -3350,6 +3778,10 @@
   <dt><a href="reference.html#fdb.ProgrammingError">ProgrammingError</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.purges">purges (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -3385,6 +3817,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.read_only">read_only (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.BlobReader.readline">readline() (fdb.BlobReader method)</a>
   </dt>
 
@@ -3405,11 +3841,35 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.reads">reads (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor.refresh">refresh() (fdb.monitor.Monitor method)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Trigger.relation">relation (fdb.schema.Trigger attribute)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.schema.Schema.reload">reload() (fdb.schema.Schema method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.remote_address">remote_address (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.remote_pid">remote_pid (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.remote_process">remote_process (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.remote_protocol">remote_protocol (fdb.monitor.AttachmentInfo attribute)</a>
   </dt>
 
       
@@ -3420,6 +3880,8 @@
   <dt><a href="reference.html#fdb.services.Connection.remove_user">remove_user() (fdb.services.Connection method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.TableReservation.render">render() (fdb.TableReservation method)</a>
   </dt>
@@ -3435,11 +3897,13 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.reserve_space">reserve_space (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.services.Connection.restore">restore() (fdb.services.Connection method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.fbcore.EventBlock.result_buf">result_buf (fdb.fbcore.EventBlock attribute)</a>
   </dt>
@@ -3465,6 +3929,10 @@
 
       
   <dt><a href="reference.html#fdb.schema.Role">Role (class in fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.role">role (fdb.monitor.AttachmentInfo attribute)</a>
   </dt>
 
       
@@ -3706,6 +4174,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.seq_reads">seq_reads (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Sequence">Sequence (class in fdb.schema)</a>
   </dt>
 
@@ -3733,6 +4205,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.server_pid">server_pid (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.Connection.server_version">server_version (fdb.Connection attribute)</a>
   </dt>
@@ -3799,8 +4275,6 @@
   <dt><a href="reference.html#fdb.schema.Shadow.SHADOW_MANUAL">SHADOW_MANUAL (fdb.schema.Shadow attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.ConnectionWithSchema.shadows">shadows (fdb.ConnectionWithSchema attribute)</a>
   </dt>
@@ -3839,12 +4313,34 @@
   <dt><a href="reference.html#fdb.services.SHUT_NORMAL">SHUT_NORMAL (in module fdb.services)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.SHUT_SINGLE">SHUT_SINGLE (in module fdb.services)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.services.Connection.shutdown">shutdown() (fdb.services.Connection method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.shutdown_mode">shutdown_mode (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.SHUTDOWN_MODE_FULL">SHUTDOWN_MODE_FULL (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.SHUTDOWN_MODE_MULTI">SHUTDOWN_MODE_MULTI (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.SHUTDOWN_MODE_ONLINE">SHUTDOWN_MODE_ONLINE (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.SHUTDOWN_MODE_SINGLE">SHUTDOWN_MODE_SINGLE (in module fdb.monitor)</a>
   </dt>
 
       
@@ -3893,14 +4389,122 @@
   <dt><a href="reference.html#fdb.Connection.sql_dialect">sql_dialect (fdb.Connection attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.sql_dialect">(fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.sql_text">sql_text (fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.schema.DatabaseFile.start">start (fdb.schema.DatabaseFile attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.STAT_ATTACHMENT">STAT_ATTACHMENT (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.STAT_CALL">STAT_CALL (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.STAT_DATABASE">STAT_DATABASE (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.stat_id">stat_id (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.BaseInfoItem.stat_id">(fdb.monitor.BaseInfoItem attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.stat_id">(fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.stat_id">(fdb.monitor.ContextVariableInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.stat_id">(fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.stat_id">(fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.stat_id">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.stat_id">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.STAT_STATEMENT">STAT_STATEMENT (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.STAT_TRANSACTION">STAT_TRANSACTION (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.state">state (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.state">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.state">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.STATE_ACTIVE">STATE_ACTIVE (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.STATE_IDLE">STATE_IDLE (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.statement">statement (fdb.monitor.CallStackInfo attribute)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.PreparedStatement.statement_type">statement_type (fdb.PreparedStatement attribute)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.monitor.StatementInfo">StatementInfo (class in fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.statements">statements (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.Monitor.statements">(fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.statements">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Index.statistics">statistics (fdb.schema.Index attribute)</a>
   </dt>
@@ -3928,6 +4532,10 @@
       </dl></dd>
       
   <dt><a href="reference.html#fdb.services.Connection.sweep">sweep() (fdb.services.Connection method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.DatabaseInfo.sweep_interval">sweep_interval (fdb.monitor.DatabaseInfo attribute)</a>
   </dt>
 
       
@@ -4075,7 +4683,43 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.terminate">terminate() (fdb.monitor.AttachmentInfo method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.terminate">(fdb.monitor.StatementInfo method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.Monitor.this_attachment">this_attachment (fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.threadsafety">threadsafety (in module fdb)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.timestamp">timestamp (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.timestamp">(fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.timestamp">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.timestamp">(fdb.monitor.TransactionInfo attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.top">top (fdb.monitor.TransactionInfo attribute)</a>
   </dt>
 
       
@@ -4094,6 +4738,8 @@
   <dt><a href="reference.html#fdb.services.Connection.trace_start">trace_start() (fdb.services.Connection method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.Connection.trace_stop">trace_stop() (fdb.services.Connection method)</a>
   </dt>
@@ -4102,8 +4748,6 @@
   <dt><a href="reference.html#fdb.services.Connection.trace_suspend">trace_suspend() (fdb.services.Connection method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Connection.trans">trans() (fdb.Connection method)</a>
   </dt>
@@ -4170,6 +4814,14 @@
   <dt><a href="reference.html#fdb.TransactionContext.transaction">(fdb.TransactionContext attribute)</a>
   </dt>
 
+        
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.transaction">(fdb.monitor.ContextVariableInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.StatementInfo.transaction">(fdb.monitor.StatementInfo attribute)</a>
+  </dt>
+
       </dl></dd>
       
   <dt><a href="reference.html#fdb.Connection.transaction_info">transaction_info() (fdb.Connection method)</a>
@@ -4190,9 +4842,23 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo">TransactionInfo (class in fdb.monitor)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.Connection.transactions">transactions (fdb.Connection attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.transactions">(fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.Monitor.transactions">(fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Trigger">Trigger (class in fdb.schema)</a>
   </dt>
@@ -4257,6 +4923,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.updates">updates (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
   <dt>
     usage
   </dt>
@@ -4275,6 +4945,10 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.User">User (class in fdb.services)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.user">user (fdb.monitor.AttachmentInfo attribute)</a>
   </dt>
 
       
@@ -4300,9 +4974,15 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.Sequence.value">value (fdb.schema.Sequence attribute)</a>
+  <dt><a href="reference.html#fdb.monitor.ContextVariableInfo.value">value (fdb.monitor.ContextVariableInfo attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Sequence.value">(fdb.schema.Sequence attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.fbcore._RowMapping.values">values() (fdb.fbcore._RowMapping method)</a>
   </dt>
@@ -4310,6 +4990,20 @@
       <dd><dl>
         
   <dt><a href="reference.html#fdb.TableReservation.values">(fdb.TableReservation method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.AttachmentInfo.variables">variables (fdb.monitor.AttachmentInfo attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.monitor.Monitor.variables">(fdb.monitor.Monitor attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.monitor.TransactionInfo.variables">(fdb.monitor.TransactionInfo attribute)</a>
   </dt>
 
       </dl></dd>
@@ -4363,12 +5057,12 @@
   <dt><a href="reference.html#fdb.schema.SchemaVisitor.visitDomain">visitDomain() (fdb.schema.SchemaVisitor method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.SchemaVisitor.visitException">visitException() (fdb.schema.SchemaVisitor method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.SchemaVisitor.visitFunction">visitFunction() (fdb.schema.SchemaVisitor method)</a>
   </dt>
@@ -4470,6 +5164,10 @@
   <dt><a href="reference.html#fdb.services.WRITE_FORCED">WRITE_FORCED (in module fdb.services)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.monitor.IOStatsInfo.writes">writes (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -4509,7 +5207,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

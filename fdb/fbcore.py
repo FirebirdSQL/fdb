@@ -33,6 +33,7 @@ import threading
 
 from . import ibase
 from . import schema
+from . import monitor
 from . import utils
 
 try:
@@ -162,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.2'
+__version__ = '1.3'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -883,6 +884,7 @@ class Connection(object):
         self.__conduits = []
         self.__group = None
         self.__schema = None
+        self.__monitor = None
         self.__ods = None
 
         # (integer) sql_dialect for this connection, do not change.
@@ -891,7 +893,6 @@ class Connection(object):
         self._isc_status = ISC_STATUS_ARRAY()
         self._db_handle = db_handle
         # Cursor for internal use
-        #self.__ic = Cursor(self, self._query_transaction)
         self.__ic = self.query_transaction.cursor()
         self.__ic._set_as_internal()
         # Get Firebird engine version
@@ -900,7 +901,6 @@ class Connection(object):
         (x,self.__version) = x[0].split('V')
         x = self.__version.split('.')
         self.__engine_version = float('%s.%s' % (x[0],x[1]))
-    
     def __remove_group(self, group_ref):
         self.__group = None
     def __ensure_group_membership(self, must_be_member, err_msg):
@@ -1000,9 +1000,19 @@ class Connection(object):
     def _get_schema(self):
         if not self.__schema:
             self.__schema = schema.Schema()
-            self.__schema.bind(weakref.proxy(self))
+            self.__schema.bind(self)
             self.__schema._set_as_internal()
         return self.__schema
+    def _get_monitor(self):
+        if not self.__monitor:
+            if self.ods >= ODS_FB_21:
+                self.__monitor = monitor.Monitor()
+                self.__monitor.bind(self)
+                self.__monitor._set_as_internal()
+            else:
+                raise ProgrammingError("Monitoring tables are available only " \
+                                       "for databases with ODS 11.1 and higher.")
+        return self.__monitor
     def _get_array_sqlsubtype(self, relation, column):
         subtype = self.__sqlsubtype_cache.get((relation,column))
         if subtype is not None:
@@ -1625,6 +1635,9 @@ class Connection(object):
     schema = utils.LateBindingProperty(_get_schema)
     #: (Read Only) (float) On-Disk Structure (ODS) version.
     ods = property(__get_ods)
+    
+    #: (Read Only) (:class:`~fdb.monitor.Monitor`) Database monitoring object.
+    monitor = utils.LateBindingProperty(_get_monitor)
 
 
 @utils.embed_attributes(schema.Schema,'schema')

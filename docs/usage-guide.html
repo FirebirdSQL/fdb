@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Usage Guide &mdash; FDB 1.2 documentation</title>
+    <title>Usage Guide &mdash; FDB 1.3 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.2',
+        VERSION:     '1.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.2 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.3 documentation" href="index.html" />
     <link rel="next" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
     <link rel="prev" title="Getting Started with FDB" href="getting-started.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -2790,12 +2790,11 @@ in meaningful way, and additionaly provide set of methods for most commonly used
 to particular <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance. This method is best if you want to work with schema only
 occasionally, or you want to keep connections as lightweight as possible.</li>
 <li>Accessing <a class="reference internal" href="reference.html#fdb.Connection.schema" title="fdb.Connection.schema"><tt class="xref py py-attr docutils literal"><span class="pre">fdb.Connection.schema</span></tt></a> property. This method is more convenient than previous one, and
-represents a compromise between convenience and resource consumption. Metadata objects are loaded only
-at the first access and then kept in schema cache, and <tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt> instance is created
-and managed by connection itself.</li>
+represents a compromise between convenience and resource consumption because <tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt> instance is not created until first reference and is managed by connection itself. Individual metadata
+objects are not loaded from system tables until first reference.</li>
 <li>Using <a class="reference internal" href="reference.html#fdb.ConnectionWithSchema" title="fdb.ConnectionWithSchema"><tt class="xref py py-class docutils literal"><span class="pre">ConnectionWithSchema</span></tt></a> instead <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> by specifying
 <cite>connection_class=ConnectionWithSchema</cite> parameter to <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">connect()</span></tt></a> or <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">create_database()</span></tt></a>.
-This <cite>Connection</cite> descendant loads database metadata immediately and provides directly all attributes
+This <cite>Connection</cite> descendant loads all database metadata immediately and provides directly all attributes
 and methods provided by <a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> class. This method is most suitable in case you want
 to work with database metadata extensively.</li>
 </ul>
@@ -2832,6 +2831,13 @@ to work with database metadata extensively.</li>
 <span class="go">[&#39;COUNTRY&#39;, &#39;JOB&#39;, &#39;DEPARTMENT&#39;, &#39;EMPLOYEE&#39;, &#39;SALES&#39;, &#39;PROJECT&#39;, &#39;EMPLOYEE_PROJECT&#39;, &#39;PROJ_DEPT_BUDGET&#39;,</span>
 <span class="go"> &#39;SALARY_HISTORY&#39;, &#39;CUSTOMER&#39;]</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Individual metadata information (i.e. information about <a class="reference internal" href="reference.html#fdb.schema.Schema.domains" title="fdb.schema.Schema.domains"><tt class="xref py py-attr docutils literal"><span class="pre">domains</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.Schema.tables" title="fdb.schema.Schema.tables"><tt class="xref py py-attr docutils literal"><span class="pre">tables</span></tt></a> etc.) is loaded on first access and cached for further reference until it&#8217;s <a class="reference internal" href="reference.html#fdb.schema.Schema.clear" title="fdb.schema.Schema.clear"><tt class="xref py py-meth docutils literal"><span class="pre">clared</span></tt></a> or <a class="reference internal" href="reference.html#fdb.schema.Schema.reload" title="fdb.schema.Schema.reload"><tt class="xref py py-meth docutils literal"><span class="pre">reload</span></tt></a> is
+requested.</p>
+<p class="last">Because once loaded information is cached, it&#8217;s good to <a class="reference internal" href="reference.html#fdb.schema.Schema.clear" title="fdb.schema.Schema.clear"><tt class="xref py py-meth docutils literal"><span class="pre">clar</span></tt></a> it
+when it&#8217;s no longer needed to conserve memory.</p>
 </div>
 <div class="section" id="available-information">
 <h3>Available information<a class="headerlink" href="#available-information" title="Permalink to this headline">¶</a></h3>
@@ -3448,6 +3454,82 @@ and declare. Some actions require/allow additional parameters.</p>
 </div>
 </div>
 </div>
+<div class="section" id="working-with-monitoring-tables">
+<h2>Working with monitoring tables<a class="headerlink" href="#working-with-monitoring-tables" title="Permalink to this headline">¶</a></h2>
+<p>Starting from Firebird 2.1 (ODS 11.1) its possible to monitor server-side activity happening inside a particular database. The engine offers a set of “virtual” tables (so-called &#8220;monitoring tables&#8221;) that
+provides the user with a snapshot of the current activity within the given database. FDB provides access
+to this information through set of classes (isolated in separate module <a class="reference internal" href="reference.html#module-fdb.monitor" title="fdb.monitor: Submodule for work with database monitoring tables"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.monitor</span></tt></a>) that transform information stored in monitoring tables into set of Python objects that surface the information in meaningful way, and additionaly provide set of methods for available operations or checks.</p>
+<p>Like database schema, monitoring tables could be accessed in two different ways, each suitable for different use case:</p>
+<ul class="simple">
+<li>By direct creation of <a class="reference internal" href="reference.html#fdb.monitor.Monitor" title="fdb.monitor.Monitor"><tt class="xref py py-class docutils literal"><span class="pre">fdb.monitor.Monitor</span></tt></a> instances that are then binded to particular
+<a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance. This method is best if you want to work with monitoring data only occasionally, or you want to keep connections as lightweight as possible.</li>
+<li>Accessing <a class="reference internal" href="reference.html#fdb.Connection.monitor" title="fdb.Connection.monitor"><tt class="xref py py-attr docutils literal"><span class="pre">fdb.Connection.monitor</span></tt></a> property. This method is more convenient than previous one, and
+represents a compromise between convenience and resource consumption because <a class="reference internal" href="reference.html#fdb.monitor.Monitor" title="fdb.monitor.Monitor"><tt class="xref py py-class docutils literal"><span class="pre">Monitor</span></tt></a> instance is not created until first reference and is managed by connection itself.</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<ol class="arabic simple">
+<li>Using Monitor instance:</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">monitor</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">Monitor</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">monitor</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">con</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">monitor</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;/opt/firebird/examples/empbuild/employee.fdb&#39;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Using Connection.monitor:</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;/opt/firebird/examples/empbuild/employee.fdb&#39;</span>
+</pre></div>
+</div>
+<div class="section" id="id9">
+<h3>Available information<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="reference.html#fdb.monitor.Monitor" title="fdb.monitor.Monitor"><tt class="xref py py-class docutils literal"><span class="pre">Monitor</span></tt></a> provides information about:</p>
+<ul class="simple">
+<li><a class="reference internal" href="reference.html#fdb.monitor.Monitor.db" title="fdb.monitor.Monitor.db"><tt class="xref py py-attr docutils literal"><span class="pre">Database</span></tt></a>.</li>
+<li><a class="reference internal" href="reference.html#fdb.monitor.Monitor.attachments" title="fdb.monitor.Monitor.attachments"><tt class="xref py py-attr docutils literal"><span class="pre">Connections</span></tt></a> to database and <a class="reference internal" href="reference.html#fdb.monitor.Monitor.this_attachment" title="fdb.monitor.Monitor.this_attachment"><tt class="xref py py-attr docutils literal"><span class="pre">current</span></tt></a> connection.</li>
+<li><a class="reference internal" href="reference.html#fdb.monitor.Monitor.transactions" title="fdb.monitor.Monitor.transactions"><tt class="xref py py-attr docutils literal"><span class="pre">Transactions</span></tt></a>.</li>
+<li>Executed <a class="reference internal" href="reference.html#fdb.monitor.Monitor.statements" title="fdb.monitor.Monitor.statements"><tt class="xref py py-attr docutils literal"><span class="pre">SQL</span> <span class="pre">statements</span></tt></a>.</li>
+<li>PSQL <a class="reference internal" href="reference.html#fdb.monitor.Monitor.callstack" title="fdb.monitor.Monitor.callstack"><tt class="xref py py-attr docutils literal"><span class="pre">callstack</span></tt></a>.</li>
+<li>Page and row <a class="reference internal" href="reference.html#fdb.monitor.Monitor.iostats" title="fdb.monitor.Monitor.iostats"><tt class="xref py py-attr docutils literal"><span class="pre">I/O</span> <span class="pre">statistics</span></tt></a>, including memory usage.</li>
+<li><a class="reference internal" href="reference.html#fdb.monitor.Monitor.variables" title="fdb.monitor.Monitor.variables"><tt class="xref py py-attr docutils literal"><span class="pre">Context</span> <span class="pre">variables</span></tt></a>.</li>
+</ul>
+</div>
+<div class="section" id="activity-snapshot">
+<h3>Activity snapshot<a class="headerlink" href="#activity-snapshot" title="Permalink to this headline">¶</a></h3>
+<p>The key term of the monitoring feature is an <cite>activity snapshot</cite>. It represents the current state of the
+database, comprising a variety of information about the database itself, active attachments and users,
+transactions, prepared and running statements, and more.</p>
+<p>A snapshot is created the first time any of the monitoring information is being accessed from in the given
+<cite>Monitor</cite> instance and it is preserved until <a class="reference internal" href="reference.html#fdb.monitor.Monitor.closed" title="fdb.monitor.Monitor.closed"><tt class="xref py py-attr docutils literal"><span class="pre">closed</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.monitor.Monitor.clear" title="fdb.monitor.Monitor.clear"><tt class="xref py py-meth docutils literal"><span class="pre">clared</span></tt></a> or <a class="reference internal" href="reference.html#fdb.monitor.Monitor.refresh" title="fdb.monitor.Monitor.refresh"><tt class="xref py py-meth docutils literal"><span class="pre">refreshed</span></tt></a>, in order
+that accessed information is always consistent.</p>
+<p>There are two ways to refresh the snapshot:</p>
+<ol class="arabic simple">
+<li>Call <a class="reference internal" href="reference.html#fdb.monitor.Monitor.clear" title="fdb.monitor.Monitor.clear"><tt class="xref py py-meth docutils literal"><span class="pre">Monitor.clear()</span></tt></a> method. New snapshot will be taken on next
+access to monitoring information.</li>
+<li>Call <a class="reference internal" href="reference.html#fdb.monitor.Monitor.refresh" title="fdb.monitor.Monitor.refresh"><tt class="xref py py-meth docutils literal"><span class="pre">Monitor.refresh()</span></tt></a> method to take the new snapshot immediately.</li>
+</ol>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">In both cases, any instances of information objects your application may hold would be obsolete. Using
+them may result in error, or (more likely) provide outdated information.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Individual monitoring information (i.e. information about <a class="reference internal" href="reference.html#fdb.monitor.Monitor.attachments" title="fdb.monitor.Monitor.attachments"><tt class="xref py py-attr docutils literal"><span class="pre">connections</span></tt></a>, <a class="reference internal" href="reference.html#fdb.monitor.Monitor.transactions" title="fdb.monitor.Monitor.transactions"><tt class="xref py py-attr docutils literal"><span class="pre">transactions</span></tt></a> etc.) is
+loaded from activity snapshot on first access and cached for further reference until it&#8217;s
+<a class="reference internal" href="reference.html#fdb.monitor.Monitor.clear" title="fdb.monitor.Monitor.clear"><tt class="xref py py-meth docutils literal"><span class="pre">clared</span></tt></a> or snapshot is <a class="reference internal" href="reference.html#fdb.monitor.Monitor.refresh" title="fdb.monitor.Monitor.refresh"><tt class="xref py py-meth docutils literal"><span class="pre">refreshed</span></tt></a>.</p>
+<p class="last">Because once loaded information is cached, it&#8217;s good to <a class="reference internal" href="reference.html#fdb.monitor.Monitor.clear" title="fdb.monitor.Monitor.clear"><tt class="xref py py-meth docutils literal"><span class="pre">clar</span></tt></a> it
+when it&#8217;s no longer needed to conserve memory.</p>
+</div>
+</div>
+</div>
 </div>
 
 
@@ -3524,6 +3606,11 @@ and declare. Some actions require/allow additional parameters.</p>
 <li><a class="reference internal" href="#sql-operations">SQL operations</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#working-with-monitoring-tables">Working with monitoring tables</a><ul>
+<li><a class="reference internal" href="#id9">Available information</a></li>
+<li><a class="reference internal" href="#activity-snapshot">Activity snapshot</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -3566,7 +3653,7 @@ and declare. Some actions require/allow additional parameters.</p>
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

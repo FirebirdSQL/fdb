@@ -562,6 +562,136 @@ SchemaVisitor
    :undoc-members:
 
 
+Monitoring information
+======================
+
+.. module:: fdb.monitor
+   :synopsis: Submodule for work with database monitoring tables
+
+Constants
+---------
+
+.. data:: SHUTDOWN_MODE_ONLINE
+.. data:: SHUTDOWN_MODE_MULTI
+.. data:: SHUTDOWN_MODE_SINGLE
+.. data:: SHUTDOWN_MODE_FULL
+
+   Shutdown modes for :attr:`DatabaseInfo.shutdown_mode`.
+
+.. data:: BACKUP_STATE_NORMAL
+.. data:: BACKUP_STATE_STALLED
+.. data:: BACKUP_STATE_MERGE
+
+   Backup states for  :attr:`DatabaseInfo.backup_state`.
+
+.. data:: STATE_IDLE
+.. data:: STATE_ACTIVE
+
+   States for :attr:`AttachmentInfo.state`, :attr:`TransactionInfo.state`.
+   and :attr:`StatementInfo.state`.
+
+.. data:: ISOLATION_CONSISTENCY
+.. data:: ISOLATION_CONCURRENCY
+.. data:: ISOLATION_READ_COMMITTED_RV
+.. data:: ISOLATION_READ_COMMITTED_NO_RV
+
+   Isolation modes for :attr:`TransactionInfo.isolation_mode`.
+
+.. data:: INFINITE_WAIT
+.. data:: NO_WAIT
+
+   Special timeout values for :attr:`TransactionInfo.lock_timeout`.
+
+.. data:: STAT_DATABASE
+.. data:: STAT_ATTACHMENT
+.. data:: STAT_TRANSACTION
+.. data:: STAT_STATEMENT
+.. data:: STAT_CALL
+
+   Group codes for :attr:`IOStatsInfo.group`.
+
+Monitor
+-------
+
+.. autoclass:: Monitor
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+BaseInfoItem
+------------
+
+.. autoclass:: BaseInfoItem
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+DatabaseInfo
+------------
+
+.. autoclass:: DatabaseInfo
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+AttachmentInfo
+--------------
+
+.. autoclass:: AttachmentInfo
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+TransactionInfo
+---------------
+
+.. autoclass:: TransactionInfo
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+StatementInfo
+-------------
+
+.. autoclass:: StatementInfo
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+CallStackInfo
+-------------
+
+.. autoclass:: CallStackInfo
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+IOStatsInfo
+-----------
+
+.. autoclass:: IOStatsInfo
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+ContextVariableInfo
+-------------------
+
+.. autoclass:: ContextVariableInfo
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+
 Utilities
 =========
 
