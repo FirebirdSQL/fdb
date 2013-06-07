@@ -40,7 +40,7 @@ else:
 
 # Change next definition to test FDB on databases with various ODS 
 # Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb
-FBTEST_DB = 'fbtest25.fdb'
+FBTEST_DB = 'fbtest21.fdb'
 
 class SchemaVisitor(fdb.schema.SchemaVisitor):
     def __init__(self,test,action,follow='dependencies'):
@@ -3940,7 +3940,10 @@ class TestMonitor(FDBTestBase):
         for x in s.statements:
             self.assertIsInstance(x,fdb.monitor.StatementInfo)
         self.assertIsInstance(s.variables,list)
-        self.assertGreater(len(s.variables),0)
+        if self.con.ods >= fdb.ODS_FB_25:
+            self.assertGreater(len(s.variables),0)
+        else:
+            self.assertEqual(len(s.variables),0)
         for x in s.variables:
             self.assertIsInstance(x,fdb.monitor.ContextVariableInfo)
         self.assertEqual(s.iostats.group,fdb.monitor.STAT_ATTACHMENT)
@@ -3984,7 +3987,10 @@ class TestMonitor(FDBTestBase):
         #
         s = m.get_transaction(c.transaction.trans_info(fdb.isc_info_tra_id))
         self.assertIsInstance(s.variables,list)
-        self.assertGreater(len(s.variables),0)
+        if self.con.ods >= fdb.ODS_FB_25:
+            self.assertGreater(len(s.variables),0)
+        else:
+            self.assertEqual(len(s.variables),0)
         for x in s.variables:
             self.assertIsInstance(x,fdb.monitor.ContextVariableInfo)
     def testStatementInfo(self):
@@ -4105,12 +4111,18 @@ class TestMonitor(FDBTestBase):
         self.assertIsInstance(s.backouts,int)
         self.assertIsInstance(s.purges,int)
         self.assertIsInstance(s.expunges,int)
-        self.assertIsInstance(s.memory_used,int)
-        self.assertIsInstance(s.memory_allocated,int)
-        self.assertIsInstance(s.max_memory_used,int)
-        self.assertIsInstance(s.max_memory_allocated,int)
+        if self.con.ods >= fdb.ODS_FB_25:
+            self.assertIsInstance(s.memory_used,int)
+            self.assertIsInstance(s.memory_allocated,int)
+            self.assertIsInstance(s.max_memory_used,int)
+            self.assertIsInstance(s.max_memory_allocated,int)
+        else:
+            self.assertIsNone(s.memory_used)
+            self.assertIsNone(s.memory_allocated)
+            self.assertIsNone(s.max_memory_used)
+            self.assertIsNone(s.max_memory_allocated)
     def testContextVariableInfo(self):
-        if self.con.ods < fdb.ODS_FB_21:
+        if self.con.ods <= fdb.ODS_FB_21:
             return
         c = self.con.cursor()
         sql = "select RDB$SET_CONTEXT('USER_SESSION','SVAR','TEST_VALUE') from rdb$database"
