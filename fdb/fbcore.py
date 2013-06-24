@@ -80,7 +80,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_info_attachment_id, isc_info_backout_count,
     isc_info_base_level, isc_info_bpage_errors, isc_info_creation_date,
     isc_info_cur_log_part_offset, isc_info_cur_logfile_name,
-    isc_info_current_memory, isc_info_db_SQL_dialect,
+    isc_info_current_memory, 
     isc_info_db_class, isc_info_db_id, isc_info_db_provider,
     isc_info_db_read_only, isc_info_db_size_in_pages,
     isc_info_db_sql_dialect, isc_info_delete_count,
@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.3'
+__version__ = '1.4'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -2806,11 +2806,6 @@ class PreparedStatement(object):
                 elif vartype == SQL_BLOB:
                     blobid = ISC_QUAD(0, 0)
                     blob_handle = isc_blob_handle()
-                    ### Todo: verify handling of P version differences
-                    if ((self.__charset or 
-                         (PYTHON_MAJOR_VER == 3 and isinstance(value, str))) 
-                        and sqlvar.sqlsubtype == 1):
-                        value = value.encode(self.__python_charset)
                     if hasattr(value,'read'):
                         # It seems we've got file-like object, use stream BLOB
                         api.isc_create_blob2(self._isc_status,
@@ -2848,10 +2843,13 @@ class PreparedStatement(object):
                                                         "Cursor.write_input_blob/isc_close_blob:")
                     else:
                         # Non-stream BLOB
-                        if isinstance(value, str if PYTHON_MAJOR_VER == 3 else UnicodeType):
-                            raise TypeError('Unicode strings are not'
-                                            ' acceptable input for'
-                                            ' a non-textual BLOB column.')
+                        if isinstance(value, myunicode):
+                            if sqlvar.sqlsubtype == 1:
+                                value = value.encode(self.__python_charset)
+                            else:
+                                raise TypeError('Unicode strings are not'
+                                                ' acceptable input for'
+                                                ' a non-textual BLOB column.')
                         blob = ctypes.create_string_buffer(value)
                         api.isc_create_blob2(self._isc_status,
                                                self.cursor._connection._db_handle,
