@@ -336,22 +336,31 @@ User
    :inherited-members:
    :undoc-members:
 
+.. module:: fdb.ibase
+   :synopsis: Python ctypes interface to Firebird client library
+
+.. module:: fdb.blr
+   :synopsis: Python ctypes interface to Firebird client library (BLR)
+
 
 ctypes interface to Firebird client library
 ===========================================
 
-:ref:`ctypes <python:module-ctypes>` interface to `fbclient.so/dll` is defined in submodule :mod:`fdb.ibase`.
-
-.. automodule:: fdb.ibase
-   :synopsis: Python ctypes interface to Firebird client library
-   :member-order: groupwise
-   :members:
+:ref:`ctypes <python:module-ctypes>` interface to `fbclient.so/dll` is defined in submodule :mod:`fdb.ibase`
+and :mod:`fdb.blr`.
 
 Database schema
 ===============
 
 .. module:: fdb.schema
    :synopsis: Submodule for work with database metadata (schema)
+
+Functions
+---------
+
+.. autofunction:: get_grants
+
+.. autofunction:: isKeyword
 
 
 Schema
@@ -547,6 +556,15 @@ Shadow
 ------
 
 .. autoclass:: Shadow
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Privilege
+-------------
+
+.. autoclass:: Privilege
    :member-order: groupwise
    :members:
    :inherited-members:

@@ -25,6 +25,7 @@ import fdb
 from fdb.utils import LateBindingProperty
 import string
 import weakref
+from itertools import groupby
 
 # Firebird Field Types
 
@@ -95,7 +96,74 @@ PROCPAR_TYPE_OF_DOMAIN = 2
 PROCPAR_TYPE_OF_COLUMN = 3
 
 #--- Functions
+def get_grants(privileges,grantors=None):
+    """Get list of minimal set of SQL GRANT statamenets necessary to grant
+    specified privileges.
+    
+    :param list privileges: List of :class:`Privilege` instances.
+    :param list grantors: List of standard grantor names. Generates GRANTED BY
+        clause for privileges granted by user that's not in list.
+    """
+    tp = {'S':'SELECT','I':'INSERT','U':'UPDATE','D':'DELETE','R':'REFERENCES'}
 
+    def skey(item):
+        return (item.user_name,item.user_type,item.grantor_name,
+                item.subject_name,item.subject_type,item.has_grant(),
+                item.privilege in tp,item.privilege, item.field_name,)
+    def gkey(item):
+        return (item.user_name,item.user_type,item.grantor_name,
+                item.subject_name,item.subject_type,item.has_grant(),
+                item.privilege in tp,)
+    def gkey2(item):
+        return item.privilege
+
+    grants = []
+    p = list(privileges)
+    p.sort(key=skey)
+    for k, g in groupby(p,gkey):
+        g = list(g)
+        item = g[0]
+        if item.has_grant():
+            admin_option = ' WITH %s OPTION' % ('ADMIN' if item.privilege == 'M' 
+                                                else 'GRANT')
+        else: 
+            admin_option = ''
+        uname = item.user_name
+        user = item.user
+        if isinstance(user,Procedure):
+            utype = 'PROCEDURE '
+        elif isinstance(user,Trigger):
+            utype = 'TRIGGER '
+        elif isinstance(user,View):
+            utype = 'VIEW '
+        else:
+            utype = ''
+        sname = item.subject_name
+        if (grantors is not None) and (item.grantor_name not in grantors):
+            granted_by = ' GRANTED BY %s' % item.grantor_name
+        else:
+            granted_by = ''
+        priv_list = []
+        for k,items in groupby(g,gkey2):
+            items = list(items)
+            item = items[0]
+            if item.privilege in tp:
+                privilege = tp[item.privilege]
+                if len(items) > 1:
+                    privilege += '(%s)' % ','.join(i.field_name for i in items if i.field_name)
+                elif item.field_name is not None:
+                    privilege += '(%s)' % item.field_name
+                priv_list.append(privilege)
+            elif item.privilege == 'X': # procedure
+                privilege = 'EXECUTE ON PROCEDURE '
+            else: # role membership
+                privilege = ''
+        if priv_list:
+            privilege = ', '.join(priv_list)
+            privilege +=  ' ON '
+        grants.append('GRANT %s%s TO %s%s%s%s' % (privilege,sname,utype,
+                                           uname,admin_option,granted_by))
+    return grants
 def isKeyword(ident):
     "Returns True if `ident` is Firebird keyword."
     return ident in ['ABS','ACCENT','ACOS','ACTION','ACTIVE','ADD','ADMIN',
@@ -236,7 +304,8 @@ class Schema(object):
             if data not in ['tables','view','domains','indices','dependencies',
                             'generators','sequences','triggers','procedures',
                             'constraints','collations','character sets',
-                            'exceptions','roles','functions','files','shadows']:
+                            'exceptions','roles','functions','files','shadows',
+                            'privileges','users']:
                 raise fdb.ProgrammingError("Unknown metadata category '%s'" % data)
         if (not data or data == 'tables'):
             self.__tables = None
@@ -271,6 +340,10 @@ class Schema(object):
             self.__files = None
         if (not data or data == 'shadows'):
             self.__shadows = None
+        if (not data or data == 'privileges'):
+            self.__privileges = None
+        if (not data or data == 'users'):
+            self.__users = None
 
     #--- protected
 
@@ -292,6 +365,35 @@ class Schema(object):
 FROM RDB$FIELD_DIMENSIONS r
 where r.RDB$FIELD_NAME = '%s'
 order by r.RDB$DIMENSION""" % field.name)]
+    def _get_item(self,name,itype,subname=None):
+        if itype == 0: # Relation
+            return self.get_table(name)
+        elif itype == 1: # View
+            return self.get_view(name)
+        elif itype == 2: # Trigger
+            return self.get_trigger(name)
+        elif itype == 5: # Procedure
+            return self.get_procedure(name)
+        elif itype == 8: # User
+            result = self.__object_by_name(self._get_users(),name)
+            if not result:
+                result = fdb.services.User(name)
+                self.__users.append(result)
+            return result
+        elif itype == 9: # Field
+            return self.get_table(name).get_column(subname)
+        elif itype == 10: # Index
+            return self.get_index(name)
+        elif itype == 13: # Role
+            return self.get_role(name)
+        elif itype == 14: # Generator
+            return self.get_sequence(name)
+        elif itype == 15: # UDF
+            return self.get_function(name)
+        elif itype == 17: # Collation
+            return self.get_collation(name)
+        else:
+            raise fdb.ProgrammingError('Unsupported subject type')
 
     #--- special attribute access methods
 
@@ -483,6 +585,20 @@ where RDB$SHADOW_NUMBER > 0 AND RDB$FILE_SEQUENCE = 0
 order by RDB$SHADOW_NUMBER""")
             self.__shadows = [Shadow(self,row) for row in self._ic.itermap()]
         return self.__shadows
+    def _get_privileges(self):
+        if self.__privileges is None:
+            self.__fail_if_closed()
+            self._ic.execute("""select RDB$USER, RDB$GRANTOR, RDB$PRIVILEGE, 
+RDB$GRANT_OPTION, RDB$RELATION_NAME, RDB$FIELD_NAME, RDB$USER_TYPE, RDB$OBJECT_TYPE
+FROM RDB$USER_PRIVILEGES""")
+            self.__privileges = [Privilege(self,row) for row in self._ic.itermap()]
+        return self.__privileges
+    def _get_users(self):
+        if self.__users is None:
+            self.__fail_if_closed()
+            self._ic.execute("select distinct(RDB$USER) FROM RDB$USER_PRIVILEGES")
+            self.__users = [fdb.services.User(row[0].strip()) for row in self._ic]
+        return self.__users
 
     #--- Properties
 
@@ -548,6 +664,8 @@ order by RDB$SHADOW_NUMBER""")
         "List of all extension files defined for database.\nItems are :class:`DatabaseFile` objects.")
     shadows = LateBindingProperty(_get_shadows,None,None,
         "List of all shadows defined for database.\nItems are :class:`Shadow` objects.")
+    privileges = LateBindingProperty(_get_privileges,None,None,
+        "List of all privileges defined for database.\nItems are :class:`Privilege` objects.")
 
     #--- Public
 
@@ -658,6 +776,8 @@ order by RDB$SHADOW_NUMBER""")
         - functions
         - files
         - shadows
+        - privileges
+        - users
         
         :raises ProgrammingError: For undefined metadata category.
         
@@ -776,14 +896,6 @@ order by RDB$SHADOW_NUMBER""")
         :returns: :class:`Function` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_functions(),name)
-    #def get_file(self,name):
-        #"""Get :class:`DatabaseFile` by name.
-        
-        #:param string name: Database file name.
-        
-        #:returns: :class:`DatabaseFile` with specified name or `None`.
-        #"""
-        #return self.__object_by_name(self._get_files(),name)
     def get_collation_by_id(self,charset_id,collation_id):
         """Get :class:`Collation` by ID.
         
@@ -809,7 +921,32 @@ order by RDB$SHADOW_NUMBER""")
                 return charset
         else:
             return None
-
+    def get_privileges_of(self,user, user_type=None):
+        """Get list of all privileges granted to user/database object. 
+        
+        :param user: User name or instance of class that represents possible user.
+            Allowed classes are :class:`~fdb.services.User`, :class:`Table`, 
+            :class:`View`, :class:`Procedure`, :class:`Trigger` or :class:`Role`.
+        :param int user_type: **Required if** `user` is provided as string name.
+            Numeric code for user type, see :attr:`Schema.enum_object_types`.
+        :returns: List of :class:`Privilege` objects.
+        
+        :raises ProgrammingError: For unknown `user_type` code.
+        """
+        if isinstance(user,(fdb.StringType,fdb.UnicodeType)):
+            if (user_type is None) or (user_type not in self.enum_object_types):
+                raise fdb.ProgrammingError("Unknown user_type code.")
+            else:
+                uname = user
+                utype = [user_type]
+        elif isinstance(user,(Table,View,Procedure,Trigger,Role)):
+            uname = user.name
+            utype = user._type_code 
+        elif isinstance(user,fdb.services.User):
+            uname = user.name
+            utype = [8]
+        return [p for p in self.privileges
+                if ((p.user_name == uname) and (p.user_type in utype))]
 
 class BaseSchemaItem(object):
     """Base class for all database schema objects.
@@ -859,6 +996,7 @@ class BaseSchemaItem(object):
         return 'RE'+self._get_create_sql(**params)
     def _get_create_or_alter_sql(self,**params):
         return 'CREATE OR ALTER' + self._get_create_sql(**params)[6:]
+
     #--- properties
 
     name = LateBindingProperty(_get_name,None,None,
@@ -1257,6 +1395,11 @@ class TableColumn(BaseSchemaItem):
                                                self._attributes['RDB$COLLATION_ID'])
     def _get_datatype(self):
         return self.domain.datatype
+    def _get_privileges(self):
+        return [p for p in self.schema.privileges
+                if (p.subject_name == self.table.name and 
+                    p.field_name == self.name and 
+                    p.subject_type in self.table._type_code)]
 
     #--- Properties
 
@@ -1274,6 +1417,8 @@ class TableColumn(BaseSchemaItem):
                                 "Collation object or None.")
     datatype = LateBindingProperty(_get_datatype,None,None,
                                 "Comlete SQL datatype definition.")
+    privileges = LateBindingProperty(_get_privileges,None,None,
+        "List of :class:`Privilege` objects granted to this object.")
     
     #--- Public
     
@@ -1499,6 +1644,11 @@ class ViewColumn(BaseSchemaItem):
                                                self._attributes['RDB$COLLATION_ID'])
     def _get_datatype(self):
         return self.domain.datatype
+    def _get_privileges(self):
+        return [p for p in self.schema.privileges
+                if (p.subject_name == self.view.name and 
+                    p.field_name == self.name and 
+                    p.subject_type == 0)] # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
 
@@ -1518,6 +1668,8 @@ class ViewColumn(BaseSchemaItem):
                                 "Collation object or None.")
     datatype = LateBindingProperty(_get_datatype,None,None,
                                 "Comlete SQL datatype definition.")
+    privileges = LateBindingProperty(_get_privileges,None,None,
+        "List of :class:`Privilege` objects granted to this object.")
     
     #--- Public
     
@@ -2162,6 +2314,10 @@ from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION
         return None
     def _get_foreign_keys(self):
         return [c for c in self.constraints if c.isfkey()]
+    def _get_privileges(self):
+        return [p for p in self.schema.privileges
+                if ((p.subject_name == self.name) and 
+                    (p.subject_type in self._type_code))]
 
     #--- Properties
 
@@ -2193,6 +2349,8 @@ from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION
         "Returns list of indices defined for table.\nItems are :class:`Index` objects.")
     triggers = LateBindingProperty(_get_triggers,None,None,
         "Returns list of triggers defined for table.\nItems are :class:`Trigger` objects.")
+    privileges = LateBindingProperty(_get_privileges,None,None,
+        "List of :class:`Privilege` objects granted to this object.")
 
     #--- Public
     
@@ -2310,6 +2468,10 @@ v.RDB$RELATION_NAME as BASE_RELATION
     where r.RDB$RELATION_NAME = ? 
     order by RDB$FIELD_POSITION""",(self.name,))]
         return self.__columns
+    def _get_privileges(self):
+        return [p for p in self.schema.privileges
+                if ((p.subject_name == self.name) and 
+                    (p.subject_type == 0))] # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
 
@@ -2328,6 +2490,8 @@ v.RDB$RELATION_NAME as BASE_RELATION
         "Returns list of columns defined for view.\nItems are :class:`ViewColumn` objects.")
     triggers = LateBindingProperty(_get_triggers,None,None,
         "Returns list of triggers defined for view.\nItems are :class:`Trigger` objects.")
+    privileges = LateBindingProperty(_get_privileges,None,None,
+        "List of :class:`Privilege` objects granted to this object.")
 
     #--- Public
     
@@ -2803,7 +2967,11 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
     def _get_valid_blr(self):
         result = self._attributes.get('RDB$VALID_BLR')
         return bool(result) if result is not None else None
-
+    def _get_privileges(self):
+        return [p for p in self.schema.privileges
+                if ((p.subject_name == self.name) and 
+                    (p.subject_type in self._type_code))]
+    
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,"Internal unique ID number.")
@@ -2816,6 +2984,8 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
         "List of input parameters.\nInstances are :class:`ProcedureParameter` instances.")
     output_params = LateBindingProperty(_get_output_params,None,None,
         "List of output parameters.\nInstances are :class:`ProcedureParameter` instances.")
+    privileges = LateBindingProperty(_get_privileges,None,None,
+        "List of :class:`Privilege` objects granted to this object.")
     # FB 2.1
     proc_type = LateBindingProperty(_get_proc_type,None,None,
         "Procedure type code. See :attr:`fdb.Connection.enum_procedure_types`.")
@@ -2877,10 +3047,16 @@ class Role(BaseSchemaItem):
         return self._attributes['RDB$ROLE_NAME']
     def _get_owner_name(self):
         return self._attributes['RDB$OWNER_NAME']
+    def _get_privileges(self):
+        return [p for p in self.schema.privileges
+                if ((p.subject_name == self.name) and 
+                    (p.subject_type in self._type_code))]
 
     #--- Properties
 
     owner_name = LateBindingProperty(_get_owner_name,None,None,"User name of role owner.")
+    privileges = LateBindingProperty(_get_privileges,None,None,
+        "List of :class:`Privilege` objects granted to this object.")
 
     #--- Public
     
@@ -3238,6 +3414,166 @@ order by RDB$FILE_SEQUENCE""",(self._attributes['RDB$SHADOW_NUMBER'],))]
         "Returns True if it's CONDITIONAL shadow."
         return bool(self.flags & self.SHADOW_CONDITIONAL)
 
+class Privilege(BaseSchemaItem):
+    """Represents priviledge to database object.
+
+    Supported SQL actions: grant(grantors),revoke(grantors,grant_option)
+    """
+    def __init__(self,schema,attributes):
+        super(Privilege,self).__init__(schema,attributes)
+        self._type_code = []
+        
+        self._actions = ['grant','revoke']
+
+        self._strip_attribute('RDB$USER')
+        self._strip_attribute('RDB$GRANTOR')
+        self._strip_attribute('RDB$PRIVILEGE')
+        self._strip_attribute('RDB$RELATION_NAME')
+        self._strip_attribute('RDB$FIELD_NAME')
+    def _get_grant_sql(self,**params):
+        self._check_params(params,['grantors'])
+        grantors = params.get('grantors')
+        privileges = {'S':'SELECT','I':'INSERT','U':'UPDATE','D':'DELETE','R':'REFERENCES'}
+        admin_option = ' WITH GRANT OPTION' if self.has_grant() else ''
+        if self.privilege in privileges:
+            privilege = privileges[self.privilege]
+            if self.field_name is not None:
+                privilege += '(%s)' % self.field_name
+            privilege +=  ' ON '
+        elif self.privilege == 'X': # procedure
+            privilege = 'EXECUTE ON PROCEDURE '
+        else: # role membership
+            privilege = ''
+            admin_option = ' WITH ADMIN OPTION' if self.has_grant() else ''
+        user = self.user
+        if isinstance(user,Procedure):
+            utype = 'PROCEDURE '
+        elif isinstance(user,Trigger):
+            utype = 'TRIGGER '
+        elif isinstance(user,View):
+            utype = 'VIEW '
+        else:
+            utype = ''
+        if (grantors is not None) and (self.grantor_name not in grantors):
+            granted_by = ' GRANTED BY %s' % self.grantor_name
+        else:
+            granted_by = ''
+        return 'GRANT %s%s TO %s%s%s%s' % (privilege,self.subject_name,utype,
+                                       self.user_name,admin_option,granted_by)
+    def _get_revoke_sql(self,**params):
+        self._check_params(params,['grant_option','grantors'])
+        grantors = params.get('grantors')
+        option_only = params.get('grant_option',False)
+        if option_only and not self.has_grant():
+            raise fdb.ProgrammingError("Can't revoke grant option that wasn't granted.")
+        privileges = {'S':'SELECT','I':'INSERT','U':'UPDATE','D':'DELETE','R':'REFERENCES'}
+        admin_option = 'GRANT OPTION FOR ' if self.has_grant() and option_only else ''
+        if self.privilege in privileges:
+            privilege = privileges[self.privilege]
+            if self.field_name is not None:
+                privilege += '(%s)' % self.field_name
+            privilege +=  ' ON '
+        elif self.privilege == 'X': # procedure
+            privilege = 'EXECUTE ON PROCEDURE '
+        else: # role membership
+            privilege = ''
+            admin_option = 'ADMIN OPTION FOR' if self.has_grant() and option_only else ''
+        user = self.user
+        if isinstance(user,Procedure):
+            utype = 'PROCEDURE '
+        elif isinstance(user,Trigger):
+            utype = 'TRIGGER '
+        elif isinstance(user,View):
+            utype = 'VIEW '
+        else:
+            utype = ''
+        if (grantors is not None) and (self.grantor_name not in grantors):
+            granted_by = ' GRANTED BY %s' % self.grantor_name
+        else:
+            granted_by = ''
+        return 'REVOKE %s%s%s FROM %s%s%s' % (admin_option,privilege,
+                                                self.subject_name,utype,
+                                                self.user_name,granted_by)
+    def _get_user(self):
+        return self.schema._get_item(self._attributes['RDB$USER'],
+                                     self._attributes['RDB$USER_TYPE'])
+    def _get_grantor(self):
+        return fdb.services.User(self._attributes['RDB$GRANTOR'])
+    def _get_privilege(self):
+        return self._attributes['RDB$PRIVILEGE']
+    def _get_subject(self):
+        rname = self._attributes['RDB$RELATION_NAME']
+        result = self.schema._get_item(rname, self.subject_type, self.field_name)
+        if result is None and self.subject_type == 0:
+            # Views are logged as tables, so try again for view code
+            result = self.schema._get_item(rname, 1, self.field_name)
+        return result
+    def _get_user_name(self):
+        return self._attributes['RDB$USER']
+    def _get_user_type(self):
+        return self._attributes['RDB$USER_TYPE']
+    def _get_grantor_name(self):
+        return self._attributes['RDB$GRANTOR']
+    def _get_subject_name(self):
+        return self._attributes['RDB$RELATION_NAME']
+    def _get_subject_type(self):
+        return self._attributes['RDB$OBJECT_TYPE']
+    def _get_field_name(self):
+        return self._attributes['RDB$FIELD_NAME']
+
+    #--- Properties
+
+    user = LateBindingProperty(_get_user,None,None,
+        "Grantee. Either :class:`~fdb.services.User`, :class:`Role`, " \
+        ":class:`Procedure`, :class:`Trigger` or :class:`View` object.")
+    grantor = LateBindingProperty(_get_grantor,None,None,
+        "Grantor :class:`~fdb.services.User` object.")
+    privilege = LateBindingProperty(_get_privilege,None,None,"Privilege code.")
+    subject = LateBindingProperty(_get_subject,None,None,
+        "Priviledge subject. Either :class:`Role`, :class:`Table`, :class:`View` " \
+        "or :class:`Procedure` object.")
+    user_name = LateBindingProperty(_get_user_name,None,None,"User name.")
+    user_type = LateBindingProperty(_get_user_type,None,None,"User type.")
+    grantor_name = LateBindingProperty(_get_grantor_name,None,None,"Grantor name.")
+    subject_name = LateBindingProperty(_get_subject_name,None,None,"Subject name.")
+    subject_type = LateBindingProperty(_get_subject_type,None,None,"Subject type.")
+    field_name = LateBindingProperty(_get_field_name,None,None,"Field name.")
+
+    def accept_visitor(self,visitor):
+        """Visitor Pattern support. Calls `visitPrivilege(self)` on parameter object.
+        
+        :param visitor: Visitor object of Vistior Pattern.
+        """
+        visitor.visitPrivilege(self)
+    def has_grant(self):
+        "Returns True if privilege comes with GRANT OPTION."
+        return bool(self._attributes['RDB$GRANT_OPTION'])
+    def issystemobject(self):
+        "Returns True."
+        return True
+    def isselect(self):
+        "Returns True if this is SELECT privilege."
+        return self.privilege == 'S'
+    def isinsert(self):
+        "Returns True if this is INSERT privilege."
+        return self.privilege == 'I'
+    def isupdate(self):
+        "Returns True if this is UPDATE privilege."
+        return self.privilege == 'U'
+    def isdelete(self):
+        "Returns True if this is DELETE privilege."
+        return self.privilege == 'D'
+    def isexecute(self):
+        "Returns True if this is EXECUTE privilege."
+        return self.privilege == 'X'
+    def isreference(self):
+        "Returns True if this is REFERENCE privilege."
+        return self.privilege == 'R'
+    def ismembership(self):
+        "Returns True if this is ROLE membership privilege."
+        return self.privilege == 'M'
+        
+    
 class SchemaVisitor(object):
     """Helper class for implementation of schema Visitor.
     

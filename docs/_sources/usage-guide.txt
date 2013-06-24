@@ -3126,6 +3126,12 @@ The :class:`~fdb.schema.Schema` provides information about:
   and :attr:`functions <fdb.schema.Schema.sysfunctions>`.
 - **Relations between objects:** Through direct links between metadata objects and 
   :attr:`dependencies <fdb.schema.Schema.dependencies>`.
+- **Privileges:** :attr:`All <fdb.schema.Schema.privileges>` privileges, or privileges granted for specific 
+  :attr:`table <fdb.schema.Table.privileges>`, :attr:`table column <fdb.schema.TableColumn.privileges>`, 
+  :attr:`view <fdb.schema.View.privileges>`, :attr:`view column <fdb.schema.ViewColumn.privileges>`, 
+  :attr:`procedure <fdb.schema.Procedure.privileges>` or :attr:`role <fdb.schema.Role.privileges>`. It's also
+  possible to get all privileges :meth:`granted to <fdb.schema.Schema.get_privileges_of>` specific user, role, 
+  procedure, trigger or view.
 
 Metadata objects
 ----------------
@@ -3581,6 +3587,22 @@ and declare. Some actions require/allow additional parameters.
      - 
      -
      -
+   * - :class:`~fdb.schema.Privilege`
+     - grant
+     - grantors
+     - No
+     - List of grantor names. Generates GRANTED BY clause if grantor is not in list.
+   * - 
+     - revoke
+     - grantors
+     - No
+     - List of grantor names. Generates GRANTED BY clause if grantor is not in list.
+   * - 
+     - 
+     - grant_option
+     - No
+     - True to get REVOKE of GRANT/ADMIN OPTION only. Raises ProgrammingError if privilege
+       doesn't have such option.
 
 **Examples:**
 
@@ -3662,6 +3684,56 @@ and declare. Some actions require/allow additional parameters.
      Out2 = 'Value'
    END
 
+Working with user privileges
+============================
+
+User or database object privileges are part of database metadata accesible through FDB 
+:class:`~fdb.schema.Schema` support.
+Each discrete privilege is represented by :class:`~fdb.schema.Privilege` instance. You can access either 
+:attr:`all <fdb.schema.Schema.privileges>` privileges, or privileges granted for specific 
+:attr:`table <fdb.schema.Table.privileges>`, :attr:`table column <fdb.schema.TableColumn.privileges>`, 
+:attr:`view <fdb.schema.View.privileges>`, :attr:`view column <fdb.schema.ViewColumn.privileges>`, 
+:attr:`procedure <fdb.schema.Procedure.privileges>` or :attr:`role <fdb.schema.Role.privileges>`. It's also
+possible to get all privileges :meth:`granted to <fdb.schema.Schema.get_privileges_of>` specific user, role, 
+procedure, trigger or view.
+
+:class:`~fdb.schema.Privilege` class supports :meth:`~fdb.schema.Privilege.get_sql_for` method to generate
+GRANT and REVOKE SQL statements for given privilege. If you want to generate grant/revoke statements for
+set of privileges (for example all privileges granted on specific object or grated to specific user), it's
+more convenient to use function :func:`~fdb.schema.get_grants` that returns list of minimal set of SQL 
+commands required to task.
+
+**Examples:**
+
+.. code-block:: python
+
+   >>> import fdb
+   >>> con = fdb.connect(dsn='employee',user='sysdba', password='masterkey')
+   >>> t = con.schema.get_table('EMPLOYEE')
+   >>> for p in t.privileges:
+   ...    print p.get_sql_for('grant')
+   ... 
+   GRANT SELECT ON EMPLOYEE TO SYSDBA WITH GRANT OPTION
+   GRANT INSERT ON EMPLOYEE TO SYSDBA WITH GRANT OPTION
+   GRANT UPDATE ON EMPLOYEE TO SYSDBA WITH GRANT OPTION
+   GRANT DELETE ON EMPLOYEE TO SYSDBA WITH GRANT OPTION
+   GRANT REFERENCES ON EMPLOYEE TO SYSDBA WITH GRANT OPTION
+   GRANT SELECT ON EMPLOYEE TO PUBLIC WITH GRANT OPTION
+   GRANT INSERT ON EMPLOYEE TO PUBLIC WITH GRANT OPTION
+   GRANT UPDATE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION
+   GRANT DELETE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION
+   GRANT REFERENCES ON EMPLOYEE TO PUBLIC WITH GRANT OPTION
+   >>> for p in fdb.schema.get_grants(t.privileges):
+   ...    print p
+   ...    
+   GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION
+   GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON EMPLOYEE TO SYSDBA WITH GRANT OPTION
+
+Normally generated GRANT/REVOKE statements don't contain grantor's name, because GRANTED BY clause
+is supported only since Firebird 2.5. If you want to get GRANT/REVOKE statements including this clause,
+use `grantors` parameter for `get_sql_for` and `get_grants`. This parameter is a list of grantor names,
+and GRANTED BY clause is generated only for privileges not granted by user from this list. It's useful
+to suppress GRANTED BY clause for SYSDBA or database owner.
 
 Working with monitoring tables
 ==============================

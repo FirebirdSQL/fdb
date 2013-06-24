@@ -9,7 +9,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; FDB 1.3 documentation</title>
+    <title>Index &mdash; FDB 1.4 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.3 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4 documentation" href="index.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <!--[if lte IE 6]>
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -148,6 +148,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Privilege.accept_visitor">(fdb.schema.Privilege method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Procedure.accept_visitor">(fdb.schema.Procedure method)</a>
   </dt>
 
@@ -247,6 +251,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.actions">(fdb.schema.Index attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Privilege.actions">(fdb.schema.Privilege attribute)</a>
   </dt>
 
         
@@ -1285,6 +1293,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Privilege.description">(fdb.schema.Privilege attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Procedure.description">(fdb.schema.Procedure attribute)</a>
   </dt>
 
@@ -1703,6 +1715,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#module-fdb.blr">fdb.blr (module)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#module-fdb.fbcore">fdb.fbcore (module)</a>
   </dt>
 
@@ -1769,12 +1785,18 @@
   <dt><a href="reference.html#fdb.Cursor.fetchonemap">fetchonemap() (fdb.Cursor method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Dependency.field_name">field_name (fdb.schema.Dependency attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Privilege.field_name">(fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Domain.field_type">field_type (fdb.schema.Domain attribute)</a>
   </dt>
@@ -2032,6 +2054,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Privilege.get_dependencies">(fdb.schema.Privilege method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Procedure.get_dependencies">(fdb.schema.Procedure method)</a>
   </dt>
 
@@ -2118,6 +2144,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Privilege.get_dependents">(fdb.schema.Privilege method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Procedure.get_dependents">(fdb.schema.Procedure method)</a>
   </dt>
 
@@ -2175,6 +2205,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.schema.get_grants">get_grants() (in module fdb.schema)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.services.Connection.get_home_directory">get_home_directory() (fdb.services.Connection method)</a>
   </dt>
 
@@ -2190,18 +2224,22 @@
   <dt><a href="reference.html#fdb.services.Connection.get_lock_file_directory">get_lock_file_directory() (fdb.services.Connection method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.Connection.get_log">get_log() (fdb.services.Connection method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.Connection.get_message_file_directory">get_message_file_directory() (fdb.services.Connection method)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.schema.Procedure.get_param">get_param() (fdb.schema.Procedure method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Schema.get_privileges_of">get_privileges_of() (fdb.schema.Schema method)</a>
   </dt>
 
       
@@ -2251,6 +2289,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.get_quoted_name">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Privilege.get_quoted_name">(fdb.schema.Privilege method)</a>
   </dt>
 
         
@@ -2374,6 +2416,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Privilege.get_sql_for">(fdb.schema.Privilege method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Procedure.get_sql_for">(fdb.schema.Procedure method)</a>
   </dt>
 
@@ -2453,6 +2499,14 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.schema.Privilege.grantor">grantor (fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.grantor_name">grantor_name (fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.Connection.group">group (fdb.Connection attribute)</a>
   </dt>
 
@@ -2499,11 +2553,15 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.Procedure.has_input">has_input() (fdb.schema.Procedure method)</a>
+  <dt><a href="reference.html#fdb.schema.Privilege.has_grant">has_grant() (fdb.schema.Privilege method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference.html#fdb.schema.Procedure.has_input">has_input() (fdb.schema.Procedure method)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.schema.Procedure.has_output">has_output() (fdb.schema.Procedure method)</a>
   </dt>
@@ -2780,15 +2838,25 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.Trigger.isdelete">isdelete() (fdb.schema.Trigger method)</a>
+  <dt><a href="reference.html#fdb.schema.Privilege.isdelete">isdelete() (fdb.schema.Privilege method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Trigger.isdelete">(fdb.schema.Trigger method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.TableColumn.isdomainbased">isdomainbased() (fdb.schema.TableColumn method)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.schema.Index.isenforcer">isenforcer() (fdb.schema.Index method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.isexecute">isexecute() (fdb.schema.Privilege method)</a>
   </dt>
 
       
@@ -2815,8 +2883,6 @@
   <dt><a href="reference.html#fdb.schema.Table.isgtt">isgtt() (fdb.schema.Table method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.monitor.AttachmentInfo.isidle">isidle() (fdb.monitor.AttachmentInfo method)</a>
   </dt>
@@ -2841,16 +2907,32 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.ProcedureParameter.isinput">isinput() (fdb.schema.ProcedureParameter method)</a>
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.Trigger.isinsert">isinsert() (fdb.schema.Trigger method)</a>
+  <dt><a href="reference.html#fdb.schema.Privilege.isinsert">isinsert() (fdb.schema.Privilege method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Trigger.isinsert">(fdb.schema.Trigger method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.schema.isKeyword">isKeyword() (in module fdb.schema)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.schema.Shadow.ismanual">ismanual() (fdb.schema.Shadow method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.ismembership">ismembership() (fdb.schema.Privilege method)</a>
   </dt>
 
       
@@ -2948,11 +3030,19 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.schema.Privilege.isreference">isreference() (fdb.schema.Privilege method)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.FunctionArgument.isreturning">isreturning() (fdb.schema.FunctionArgument method)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.services.Connection.isrunning">isrunning() (fdb.services.Connection method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.isselect">isselect() (fdb.schema.Privilege method)</a>
   </dt>
 
       
@@ -2998,6 +3088,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.issystemobject">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Privilege.issystemobject">(fdb.schema.Privilege method)</a>
   </dt>
 
         
@@ -3056,9 +3150,15 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.Trigger.isupdate">isupdate() (fdb.schema.Trigger method)</a>
+  <dt><a href="reference.html#fdb.schema.Privilege.isupdate">isupdate() (fdb.schema.Privilege method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Trigger.isupdate">(fdb.schema.Trigger method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Domain.isvalidated">isvalidated() (fdb.schema.Domain method)</a>
   </dt>
@@ -3181,10 +3281,14 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="reference.html#fdb.monitor.CallStackInfo.line">line (fdb.monitor.CallStackInfo attribute)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="reference.html#fdb.monitor.CallStackInfo.line">line (fdb.monitor.CallStackInfo attribute)</a>
+  <dt><a href="reference.html#fdb.services.User.load_information">load_information() (fdb.services.User method)</a>
   </dt>
 
       
@@ -3416,6 +3520,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.name">(fdb.schema.Index attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Privilege.name">(fdb.schema.Privilege attribute)</a>
   </dt>
 
         
@@ -3713,8 +3821,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Cursor.prep">prep() (fdb.Cursor method)</a>
   </dt>
@@ -3729,6 +3835,8 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt>
     prepared
@@ -3748,6 +3856,48 @@
   <dt><a href="reference.html#fdb.schema.Table.primary_key">primary_key (fdb.schema.Table attribute)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.schema.Privilege">Privilege (class in fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.privilege">privilege (fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.ConnectionWithSchema.privileges">privileges (fdb.ConnectionWithSchema attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Procedure.privileges">(fdb.schema.Procedure attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Role.privileges">(fdb.schema.Role attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Schema.privileges">(fdb.schema.Schema attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Table.privileges">(fdb.schema.Table attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.TableColumn.privileges">(fdb.schema.TableColumn attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.View.privileges">(fdb.schema.View attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.ViewColumn.privileges">(fdb.schema.ViewColumn attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Procedure.proc_type">proc_type (fdb.schema.Procedure attribute)</a>
   </dt>
@@ -4079,6 +4229,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Privilege.schema">(fdb.schema.Privilege attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Procedure.schema">(fdb.schema.Procedure attribute)</a>
   </dt>
 
@@ -4313,8 +4467,6 @@
   <dt><a href="reference.html#fdb.services.SHUT_NORMAL">SHUT_NORMAL (in module fdb.services)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.SHUT_SINGLE">SHUT_SINGLE (in module fdb.services)</a>
   </dt>
@@ -4323,6 +4475,8 @@
   <dt><a href="reference.html#fdb.services.Connection.shutdown">shutdown() (fdb.services.Connection method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.monitor.DatabaseInfo.shutdown_mode">shutdown_mode (fdb.monitor.DatabaseInfo attribute)</a>
   </dt>
@@ -4530,6 +4684,18 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.subject">subject (fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.subject_name">subject_name (fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.subject_type">subject_type (fdb.schema.Privilege attribute)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.services.Connection.sweep">sweep() (fdb.services.Connection method)</a>
   </dt>
@@ -4941,22 +5107,36 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.User">User (class in fdb.services)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.monitor.AttachmentInfo.user">user (fdb.monitor.AttachmentInfo attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Privilege.user">(fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.services.Connection.user_exists">user_exists() (fdb.services.Connection method)</a>
   </dt>
 
       
   <dt><a href="reference.html#fdb.services.User.user_id">user_id (fdb.services.User attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.user_name">user_name (fdb.schema.Privilege attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Privilege.user_type">user_type (fdb.schema.Privilege attribute)</a>
   </dt>
 
   </dl></td>
@@ -5207,7 +5387,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

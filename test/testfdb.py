@@ -40,7 +40,7 @@ else:
 
 # Change next definition to test FDB on databases with various ODS 
 # Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb
-FBTEST_DB = 'fbtest21.fdb'
+FBTEST_DB = 'fbtest20.fdb'
 
 class SchemaVisitor(fdb.schema.SchemaVisitor):
     def __init__(self,test,action,follow='dependencies'):
@@ -1082,11 +1082,13 @@ class TestInsertData(FDBTestBase):
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
         self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con2 = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',charset='utf-8')
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
         #self.con.execute_immediate("RECREATE TABLE T2 (C1 Smallint,C2 Integer,C3 Bigint,C4 Char(5),C5 Varchar(10),C6 Date,C7 Time,C8 Timestamp,C9 Blob sub_type 1,C10 Numeric(18,2),C11 Decimal(18,2),C12 Float,C13 Double precision,C14 Numeric(8,4),C15 Decimal(8,4))")
         #self.con.commit()
     def tearDown(self):
+        self.con2.close()
         self.con.execute_immediate("delete from t")
         self.con.execute_immediate("delete from t2")
         self.con.commit()
@@ -1145,18 +1147,39 @@ class TestInsertData(FDBTestBase):
               datetime.datetime(2011, 11, 13, 15, 0, 1, 200000))])
     def test_insert_blob(self):
         cur = self.con.cursor()
+        cur2 = self.con2.cursor()
         cur.execute('insert into T2 (C1,C9) values (?,?)',[4,'This is a BLOB!'])
-        self.con.commit()
+        cur.transaction.commit()
         cur.execute('select C1,C9 from T2 where C1 = 4')
         rows = cur.fetchall()
         self.assertListEqual(rows,[(4, 'This is a BLOB!')])
+        # Non-textual BLOB
+        cur.execute('insert into T2 (C1,C16) values (?,?)',[8,'This is a BLOB!'])
+        cur.transaction.commit()
+        cur.execute('select C1,C16 from T2 where C1 = 8')
+        rows = cur.fetchall()
+        self.assertListEqual(rows,[(8, 'This is a BLOB!')])
         # BLOB bigger than max. segment size
         big_blob = '123456789' * 10000
         cur.execute('insert into T2 (C1,C9) values (?,?)',[5,big_blob])
-        self.con.commit()
+        cur.transaction.commit()
         cur.execute('select C1,C9 from T2 where C1 = 5')
         row = cur.fetchone()
         self.assertEqual(row[1],big_blob)
+        # Unicode in BLOB
+        blob_text = 'This is a BLOB!'
+        if not isinstance(blob_text,ibase.myunicode):
+            blob_text = blob_text.decode('utf-8')
+        cur2.execute('insert into T2 (C1,C9) values (?,?)',[6,blob_text])
+        cur2.transaction.commit()
+        cur2.execute('select C1,C9 from T2 where C1 = 6')
+        rows = cur2.fetchall()
+        self.assertListEqual(rows,[(6, blob_text)])
+        # Unicode non-textual BLOB
+        with self.assertRaises(TypeError) as cm:
+            cur2.execute('insert into T2 (C1,C16) values (?,?)',[7,blob_text])
+        self.assertTupleEqual(cm.exception.args,
+            ("Unicode strings are not acceptable input for a non-textual BLOB column.",))
     def test_insert_float_double(self):
         cur = self.con.cursor()
         cur.execute('insert into T2 (C1,C12,C13) values (?,?,?)',[5,1.0,1.0])
@@ -2772,15 +2795,15 @@ class TestSchema(FDBTestBase):
         d = c.get_dependents()
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
-                   [('RDB$9', 3), ('RDB$9', 3), ('CHECK_3', 2), ('CHECK_3', 2), 
-                    ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_4', 2), ('CHECK_4', 2), 
-                    ('CHECK_4', 2), ('CHECK_4', 2), ('PHONE_LIST', 1), 
+                   [('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1), 
                     ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('PHONE_LIST', 1), 
-                    ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('SET_EMP_NO', 2), 
-                    ('SAVE_SALARY_CHANGE', 2), ('SAVE_SALARY_CHANGE', 2), 
-                    ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5), ('ORG_CHART', 5), 
-                    ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5), 
-                    ('ORG_CHART', 5)])
+                    ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('CHECK_3', 2), 
+                    ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2), 
+                    ('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2), 
+                    ('CHECK_4', 2), ('SET_EMP_NO', 2), ('SAVE_SALARY_CHANGE', 2), 
+                    ('SAVE_SALARY_CHANGE', 2), ('DELETE_EMPLOYEE', 5), 
+                    ('DELETE_EMPLOYEE', 5), ('ORG_CHART', 5), ('ORG_CHART', 5), 
+                    ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5)])
         elif self.con.ods == fdb.ODS_FB_21:
             self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
                    [('PHONE_LIST', 1), ('PHONE_LIST', 1), ('PHONE_LIST', 1), 
@@ -3735,11 +3758,760 @@ MODULE_NAME 'fbudf'""")
   FILE '/path/shadow.sf2' STARTING AT 1000 LENGTH 500
   FILE '/path/shadow.sf3' STARTING AT 1500""")
         self.assertEqual(c.get_sql_for('drop'),"DROP SHADOW 3")
+    def testPrivilegeBasic(self):
+        p = self.con.schema.get_procedure('ALL_LANGS')
+        #
+        self.assertIsInstance(p.privileges,list)
+        self.assertEqual(len(p.privileges),2)
+        c = p.privileges[0]
+        # common properties
+        self.assertIsNone(c.name)
+        self.assertIsNone(c.description)
+        self.assertListEqual(c.actions,['grant', 'revoke'])
+        self.assertFalse(c.issystemobject())
+        self.assertIsNone(c.get_quoted_name())
+        self.assertListEqual(c.get_dependents(),[])
+        self.assertListEqual(c.get_dependencies(),[])
+        #
+        self.assertIsInstance(c.user,fdb.services.User)
+        self.assertIn(c.user.name,['SYSDBA','PUBLIC'])
+        self.assertIsInstance(c.grantor,fdb.services.User)
+        self.assertEqual(c.grantor.name,'SYSDBA')
+        self.assertEqual(c.privilege,'X')
+        self.assertIsInstance(c.subject,sm.Procedure)
+        self.assertEqual(c.subject.name,'ALL_LANGS')
+        self.assertIn(c.user_name,['SYSDBA','PUBLIC'])
+        self.assertEqual(c.user_type,self.con.schema.enum_object_type_codes['USER'])
+        self.assertEqual(c.grantor_name,'SYSDBA')
+        self.assertEqual(c.subject_name,'ALL_LANGS')
+        self.assertEqual(c.subject_type,self.con.schema.enum_object_type_codes['PROCEDURE'])
+        self.assertIsNone(c.field_name)
+        #
+        self.assertFalse(c.has_grant())
+        self.assertFalse(c.isselect())
+        self.assertFalse(c.isinsert())
+        self.assertFalse(c.isupdate())
+        self.assertFalse(c.isdelete())
+        self.assertTrue(c.isexecute())
+        self.assertFalse(c.isreference())
+        self.assertFalse(c.ismembership())
+        #
+        self.assertEqual(c.get_sql_for('grant'),
+            "GRANT EXECUTE ON PROCEDURE ALL_LANGS TO SYSDBA")
+        self.assertEqual(c.get_sql_for('grant',grantors=[]),
+            "GRANT EXECUTE ON PROCEDURE ALL_LANGS TO SYSDBA GRANTED BY SYSDBA")
+        self.assertEqual(c.get_sql_for('grant',grantors=['SYSDBA','TEST_USER']),
+            "GRANT EXECUTE ON PROCEDURE ALL_LANGS TO SYSDBA")
+        with self.assertRaises(fdb.ProgrammingError) as cm:
+            c.get_sql_for('grant',badparam=True)
+        self.assertTupleEqual(cm.exception.args,
+            ("Unsupported parameter(s) 'badparam'",))
+        self.assertEqual(c.get_sql_for('revoke'),
+            "REVOKE EXECUTE ON PROCEDURE ALL_LANGS FROM SYSDBA")
+        self.assertEqual(c.get_sql_for('revoke',grantors=[]),
+            "REVOKE EXECUTE ON PROCEDURE ALL_LANGS FROM SYSDBA GRANTED BY SYSDBA")
+        self.assertEqual(c.get_sql_for('revoke',grantors=['SYSDBA','TEST_USER']),
+            "REVOKE EXECUTE ON PROCEDURE ALL_LANGS FROM SYSDBA")
+        with self.assertRaises(fdb.ProgrammingError) as cm:
+            c.get_sql_for('revoke',grant_option=True)
+        self.assertTupleEqual(cm.exception.args,
+            ("Can't revoke grant option that wasn't granted.",))
+        with self.assertRaises(fdb.ProgrammingError) as cm:
+            c.get_sql_for('revoke',badparam=True)
+        self.assertTupleEqual(cm.exception.args,
+            ("Unsupported parameter(s) 'badparam'",))
+        c = p.privileges[1]
+        self.assertEqual(c.get_sql_for('grant'),
+            "GRANT EXECUTE ON PROCEDURE ALL_LANGS TO PUBLIC WITH GRANT OPTION")
+        self.assertEqual(c.get_sql_for('revoke'),
+            "REVOKE EXECUTE ON PROCEDURE ALL_LANGS FROM PUBLIC")
+        self.assertEqual(c.get_sql_for('revoke',grant_option=True),
+            "REVOKE GRANT OPTION FOR EXECUTE ON PROCEDURE ALL_LANGS FROM PUBLIC")
+        # get_privileges_of()
+        u = fdb.services.User('PUBLIC')
+        p = self.con.schema.get_privileges_of(u)
+        if self.con.ods <= fdb.ODS_FB_20:
+            self.assertEqual(len(p),66)
+        else:
+            self.assertEqual(len(p),68)
+        with self.assertRaises(fdb.ProgrammingError) as cm:
+            p = self.con.schema.get_privileges_of('PUBLIC')
+        self.assertTupleEqual(cm.exception.args,
+            ("Unknown user_type code.",))
+        with self.assertRaises(fdb.ProgrammingError) as cm:
+            p = self.con.schema.get_privileges_of('PUBLIC',50)
+        self.assertTupleEqual(cm.exception.args,
+            ("Unknown user_type code.",))
+        #
+    def testPrivilegeExtended(self):
+        def get_privilege(obj,privilege):
+            x = [x for x in obj.privileges if x.privilege == privilege]
+            return x[0]
+        p = []
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'ALL_LANGS', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': None}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'ALL_LANGS', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'ALL_LANGS', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'TEST_ROLE', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'ALL_LANGS', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 13, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'ALL_LANGS', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'T_USER', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': 'CURRENCY', 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': 'COUNTRY', 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': 'COUNTRY', 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': 'CURRENCY', 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'COUNTRY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'ORG_CHART', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 5, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'ORG_CHART', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 5, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'ORG_CHART', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': None}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'ORG_CHART', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'PHONE_LIST', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': 'EMP_NO', 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'RDB$PAGES', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'RDB$PAGES', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'U', 
+                                               'RDB$RELATION_NAME': 'RDB$PAGES', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'D', 
+                                               'RDB$RELATION_NAME': 'RDB$PAGES', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'R', 
+                                               'RDB$RELATION_NAME': 'RDB$PAGES', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'RDB$PAGES', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'SHIP_ORDER', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': None}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PUBLIC', 
+                                               'RDB$PRIVILEGE': 'X', 
+                                               'RDB$RELATION_NAME': 'SHIP_ORDER', 
+                                               'RDB$OBJECT_TYPE': 5, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 1}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'T_USER', 
+                                               'RDB$PRIVILEGE': 'M', 
+                                               'RDB$RELATION_NAME': 'TEST_ROLE', 
+                                               'RDB$OBJECT_TYPE': 13, 
+                                               'RDB$USER_TYPE': 8, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SAVE_SALARY_CHANGE', 
+                                               'RDB$PRIVILEGE': 'I', 
+                                               'RDB$RELATION_NAME': 'SALARY_HISTORY', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 2, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PHONE_LIST', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'DEPARTMENT', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 1, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'PHONE_LIST', 
+                                               'RDB$PRIVILEGE': 'S', 
+                                               'RDB$RELATION_NAME': 'EMPLOYEE', 
+                                               'RDB$OBJECT_TYPE': 0, 
+                                               'RDB$USER_TYPE': 1, 
+                                               'RDB$FIELD_NAME': None, 
+                                               'RDB$GRANTOR': 'SYSDBA', 
+                                               'RDB$GRANT_OPTION': 0}))
+        #
+        self.con.schema.__dict__['_Schema__privileges'] = p
+        # Table
+        p = self.con.schema.get_table('COUNTRY')
+        self.assertEqual(len(p.privileges),19)
+        self.assertEqual(len([x for x in p.privileges if x.user_name == 'SYSDBA']),5)
+        self.assertEqual(len([x for x in p.privileges if x.user_name == 'PUBLIC']),5)
+        self.assertEqual(len([x for x in p.privileges if x.user_name == 'T_USER']),9)
+        #
+        self.assertTrue(get_privilege(p,'S').isselect())
+        self.assertTrue(get_privilege(p,'I').isinsert())
+        self.assertTrue(get_privilege(p,'U').isupdate())
+        self.assertTrue(get_privilege(p,'D').isdelete())
+        self.assertTrue(get_privilege(p,'R').isreference())
+        #
+        x = p.privileges[0]
+        self.assertIsInstance(x.subject,sm.Table)
+        self.assertEqual(x.subject.name,p.name)
+        # TableColumn
+        p = p.get_column('CURRENCY')
+        self.assertEqual(len(p.privileges),2)
+        x = p.privileges[0]
+        self.assertIsInstance(x.subject,sm.Table)
+        self.assertEqual(x.field_name,p.name)
+        # View
+        p = self.con.schema.get_view('PHONE_LIST')
+        self.assertEqual(len(p.privileges),11)
+        self.assertEqual(len([x for x in p.privileges if x.user_name == 'SYSDBA']),5)
+        self.assertEqual(len([x for x in p.privileges if x.user_name == 'PUBLIC']),6)
+        #
+        x = p.privileges[0]
+        self.assertIsInstance(x.subject,sm.View)
+        self.assertEqual(x.subject.name,p.name)
+        # ViewColumn
+        p = p.get_column('EMP_NO')
+        self.assertEqual(len(p.privileges),1)
+        x = p.privileges[0]
+        self.assertIsInstance(x.subject,sm.View)
+        self.assertEqual(x.field_name,p.name)
+        # Procedure
+        p = self.con.schema.get_procedure('ORG_CHART')
+        self.assertEqual(len(p.privileges),2)
+        self.assertEqual(len([x for x in p.privileges if x.user_name == 'SYSDBA']),1)
+        self.assertEqual(len([x for x in p.privileges if x.user_name == 'PUBLIC']),1)
+        #
+        x = p.privileges[0]
+        self.assertFalse(x.has_grant())
+        self.assertIsInstance(x.subject,sm.Procedure)
+        self.assertEqual(x.subject.name,p.name)
+        #
+        x = p.privileges[1]
+        self.assertTrue(x.has_grant())
+        # Role
+        p = self.con.schema.get_role('TEST_ROLE')
+        self.assertEqual(len(p.privileges),1)
+        x = p.privileges[0]
+        self.assertIsInstance(x.subject,sm.Role)
+        self.assertEqual(x.subject.name,p.name)
+        self.assertTrue(x.ismembership())
+        # Trigger as grantee
+        p = self.con.schema.get_table('SALARY_HISTORY')
+        x = p.privileges[0]
+        self.assertIsInstance(x.user,sm.Trigger)
+        self.assertEqual(x.user.name,'SAVE_SALARY_CHANGE')
+        # View as grantee
+        p = self.con.schema.get_view('PHONE_LIST')
+        x = self.con.schema.get_privileges_of(p)
+        self.assertEqual(len(x),2)
+        x = x[0]
+        self.assertIsInstance(x.user,sm.View)
+        self.assertEqual(x.user.name,'PHONE_LIST')
+        # get_grants()
+        self.assertListEqual(sm.get_grants(p.privileges),
+            ['GRANT REFERENCES(EMP_NO) ON PHONE_LIST TO PUBLIC', 
+             'GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON PHONE_LIST TO PUBLIC WITH GRANT OPTION', 
+             'GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON PHONE_LIST TO SYSDBA WITH GRANT OPTION'])
+        p = self.con.schema.get_table('COUNTRY')
+        self.assertListEqual(sm.get_grants(p.privileges),
+            ['GRANT DELETE, INSERT, UPDATE ON COUNTRY TO PUBLIC', 
+             'GRANT REFERENCES, SELECT ON COUNTRY TO PUBLIC WITH GRANT OPTION', 
+             'GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON COUNTRY TO SYSDBA WITH GRANT OPTION', 
+             'GRANT DELETE, INSERT, REFERENCES(COUNTRY,CURRENCY), SELECT, UPDATE(COUNTRY,CURRENCY) ON COUNTRY TO T_USER'])
+        p = self.con.schema.get_role('TEST_ROLE')
+        self.assertListEqual(sm.get_grants(p.privileges),['GRANT TEST_ROLE TO T_USER'])
+        p = self.con.schema.get_table('SALARY_HISTORY')
+        self.assertListEqual(sm.get_grants(p.privileges),
+            ['GRANT INSERT ON SALARY_HISTORY TO TRIGGER SAVE_SALARY_CHANGE'])
+        p = self.con.schema.get_procedure('ORG_CHART')
+        self.assertListEqual(sm.get_grants(p.privileges),
+            ['GRANT EXECUTE ON PROCEDURE ORG_CHART TO PUBLIC WITH GRANT OPTION', 
+             'GRANT EXECUTE ON PROCEDURE ORG_CHART TO SYSDBA'])
+        #
     def testVisitor(self):
         v = SchemaVisitor(self,'create',follow='dependencies')
         c = self.con.schema.get_procedure('ALL_LANGS')
         c.accept_visitor(v)
-        #print ('"""%s"""' % self.output.getvalue())
         self.maxDiff = None
         output = "CREATE TABLE JOB\n(\n  JOB_CODE JOBCODE NOT NULL,\n" \
             "  JOB_GRADE JOBGRADE NOT NULL,\n" \

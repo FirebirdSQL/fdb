@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Usage Guide &mdash; FDB 1.3 documentation</title>
+    <title>Usage Guide &mdash; FDB 1.4 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.3 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4 documentation" href="index.html" />
     <link rel="next" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
     <link rel="prev" title="Getting Started with FDB" href="getting-started.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -2864,6 +2864,12 @@ constraints,  <a class="reference internal" href="reference.html#fdb.schema.Sche
 and <a class="reference internal" href="reference.html#fdb.schema.Schema.sysfunctions" title="fdb.schema.Schema.sysfunctions"><tt class="xref py py-attr docutils literal"><span class="pre">functions</span></tt></a>.</li>
 <li><strong>Relations between objects:</strong> Through direct links between metadata objects and
 <a class="reference internal" href="reference.html#fdb.schema.Schema.dependencies" title="fdb.schema.Schema.dependencies"><tt class="xref py py-attr docutils literal"><span class="pre">dependencies</span></tt></a>.</li>
+<li><strong>Privileges:</strong> <a class="reference internal" href="reference.html#fdb.schema.Schema.privileges" title="fdb.schema.Schema.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">All</span></tt></a> privileges, or privileges granted for specific
+<a class="reference internal" href="reference.html#fdb.schema.Table.privileges" title="fdb.schema.Table.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">table</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.TableColumn.privileges" title="fdb.schema.TableColumn.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">table</span> <span class="pre">column</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.View.privileges" title="fdb.schema.View.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">view</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.ViewColumn.privileges" title="fdb.schema.ViewColumn.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">view</span> <span class="pre">column</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Procedure.privileges" title="fdb.schema.Procedure.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">procedure</span></tt></a> or <a class="reference internal" href="reference.html#fdb.schema.Role.privileges" title="fdb.schema.Role.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">role</span></tt></a>. It&#8217;s also
+possible to get all privileges <a class="reference internal" href="reference.html#fdb.schema.Schema.get_privileges_of" title="fdb.schema.Schema.get_privileges_of"><tt class="xref py py-meth docutils literal"><span class="pre">granted</span> <span class="pre">to</span></tt></a> specific user, role,
+procedure, trigger or view.</li>
 </ul>
 </div>
 <div class="section" id="metadata-objects">
@@ -3372,6 +3378,25 @@ and declare. Some actions require/allow additional parameters.</p>
 <td>&nbsp;</td>
 <td>&nbsp;</td>
 </tr>
+<tr class="row-odd"><td><a class="reference internal" href="reference.html#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a></td>
+<td>grant</td>
+<td>grantors</td>
+<td>No</td>
+<td>List of grantor names. Generates GRANTED BY clause if grantor is not in list.</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>revoke</td>
+<td>grantors</td>
+<td>No</td>
+<td>List of grantor names. Generates GRANTED BY clause if grantor is not in list.</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>grant_option</td>
+<td>No</td>
+<td>True to get REVOKE of GRANT/ADMIN OPTION only. Raises ProgrammingError if privilege
+doesn&#8217;t have such option.</td>
+</tr>
 </tbody>
 </table>
 <p><strong>Examples:</strong></p>
@@ -3453,6 +3478,52 @@ and declare. Some actions require/allow additional parameters.</p>
 </pre></div>
 </div>
 </div>
+</div>
+<div class="section" id="working-with-user-privileges">
+<h2>Working with user privileges<a class="headerlink" href="#working-with-user-privileges" title="Permalink to this headline">¶</a></h2>
+<p>User or database object privileges are part of database metadata accesible through FDB
+<a class="reference internal" href="reference.html#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> support.
+Each discrete privilege is represented by <a class="reference internal" href="reference.html#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> instance. You can access either
+<a class="reference internal" href="reference.html#fdb.schema.Schema.privileges" title="fdb.schema.Schema.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">all</span></tt></a> privileges, or privileges granted for specific
+<a class="reference internal" href="reference.html#fdb.schema.Table.privileges" title="fdb.schema.Table.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">table</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.TableColumn.privileges" title="fdb.schema.TableColumn.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">table</span> <span class="pre">column</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.View.privileges" title="fdb.schema.View.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">view</span></tt></a>, <a class="reference internal" href="reference.html#fdb.schema.ViewColumn.privileges" title="fdb.schema.ViewColumn.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">view</span> <span class="pre">column</span></tt></a>,
+<a class="reference internal" href="reference.html#fdb.schema.Procedure.privileges" title="fdb.schema.Procedure.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">procedure</span></tt></a> or <a class="reference internal" href="reference.html#fdb.schema.Role.privileges" title="fdb.schema.Role.privileges"><tt class="xref py py-attr docutils literal"><span class="pre">role</span></tt></a>. It&#8217;s also
+possible to get all privileges <a class="reference internal" href="reference.html#fdb.schema.Schema.get_privileges_of" title="fdb.schema.Schema.get_privileges_of"><tt class="xref py py-meth docutils literal"><span class="pre">granted</span> <span class="pre">to</span></tt></a> specific user, role,
+procedure, trigger or view.</p>
+<p><a class="reference internal" href="reference.html#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> class supports <a class="reference internal" href="reference.html#fdb.schema.Privilege.get_sql_for" title="fdb.schema.Privilege.get_sql_for"><tt class="xref py py-meth docutils literal"><span class="pre">get_sql_for()</span></tt></a> method to generate
+GRANT and REVOKE SQL statements for given privilege. If you want to generate grant/revoke statements for
+set of privileges (for example all privileges granted on specific object or grated to specific user), it&#8217;s
+more convenient to use function <a class="reference internal" href="reference.html#fdb.schema.get_grants" title="fdb.schema.get_grants"><tt class="xref py py-func docutils literal"><span class="pre">get_grants()</span></tt></a> that returns list of minimal set of SQL
+commands required to task.</p>
+<p><strong>Examples:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fdb</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;employee&#39;</span><span class="p">,</span><span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;masterkey&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="s">&#39;EMPLOYEE&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">privileges</span><span class="p">:</span>
+<span class="gp">... </span>   <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">get_sql_for</span><span class="p">(</span><span class="s">&#39;grant&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">GRANT SELECT ON EMPLOYEE TO SYSDBA WITH GRANT OPTION</span>
+<span class="go">GRANT INSERT ON EMPLOYEE TO SYSDBA WITH GRANT OPTION</span>
+<span class="go">GRANT UPDATE ON EMPLOYEE TO SYSDBA WITH GRANT OPTION</span>
+<span class="go">GRANT DELETE ON EMPLOYEE TO SYSDBA WITH GRANT OPTION</span>
+<span class="go">GRANT REFERENCES ON EMPLOYEE TO SYSDBA WITH GRANT OPTION</span>
+<span class="go">GRANT SELECT ON EMPLOYEE TO PUBLIC WITH GRANT OPTION</span>
+<span class="go">GRANT INSERT ON EMPLOYEE TO PUBLIC WITH GRANT OPTION</span>
+<span class="go">GRANT UPDATE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION</span>
+<span class="go">GRANT DELETE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION</span>
+<span class="go">GRANT REFERENCES ON EMPLOYEE TO PUBLIC WITH GRANT OPTION</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">fdb</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">get_grants</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">privileges</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">print</span> <span class="n">p</span>
+<span class="gp">...</span>
+<span class="go">GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION</span>
+<span class="go">GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON EMPLOYEE TO SYSDBA WITH GRANT OPTION</span>
+</pre></div>
+</div>
+<p>Normally generated GRANT/REVOKE statements don&#8217;t contain grantor&#8217;s name, because GRANTED BY clause
+is supported only since Firebird 2.5. If you want to get GRANT/REVOKE statements including this clause,
+use <cite>grantors</cite> parameter for <cite>get_sql_for</cite> and <cite>get_grants</cite>. This parameter is a list of grantor names,
+and GRANTED BY clause is generated only for privileges not granted by user from this list. It&#8217;s useful
+to suppress GRANTED BY clause for SYSDBA or database owner.</p>
 </div>
 <div class="section" id="working-with-monitoring-tables">
 <h2>Working with monitoring tables<a class="headerlink" href="#working-with-monitoring-tables" title="Permalink to this headline">¶</a></h2>
@@ -3606,6 +3677,7 @@ when it&#8217;s no longer needed to conserve memory.</p>
 <li><a class="reference internal" href="#sql-operations">SQL operations</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#working-with-user-privileges">Working with user privileges</a></li>
 <li><a class="reference internal" href="#working-with-monitoring-tables">Working with monitoring tables</a><ul>
 <li><a class="reference internal" href="#id9">Available information</a></li>
 <li><a class="reference internal" href="#activity-snapshot">Activity snapshot</a></li>
@@ -3653,7 +3725,7 @@ when it&#8217;s no longer needed to conserve memory.</p>
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

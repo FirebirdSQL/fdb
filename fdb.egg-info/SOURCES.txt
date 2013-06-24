@@ -4,6 +4,7 @@ PKG-INFO
 README
 setup.cfg
 setup.py
+docs/.buildinfo
 docs/changelog.html
 docs/differences-from-kdb.html
 docs/genindex.html
@@ -55,6 +56,7 @@ docs/_static/up-pressed.png
 docs/_static/up.png
 docs/_static/websupport.js
 fdb/__init__.py
+fdb/blr.py
 fdb/fbcore.py
 fdb/ibase.py
 fdb/monitor.py

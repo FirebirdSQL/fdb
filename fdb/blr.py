@@ -1,0 +1,285 @@
+#coding:utf-8
+#
+#   PROGRAM/MODULE: fdb
+#   FILE:           blr.py
+#   DESCRIPTION:    BLR-related definitions
+#   CREATED:        12.6.2013
+#
+#  Software distributed under the License is distributed AS IS,
+#  WITHOUT WARRANTY OF ANY KIND, either express or implied.
+#  See the License for the specific language governing rights
+#  and limitations under the License.
+#
+#  The Original Code was created by Pavel Cisar
+#
+#  Copyright (c) 2011 Pavel Cisar <pcisar@users.sourceforge.net>
+#  and all contributors signed below.
+#
+#  All Rights Reserved.
+#  Contributor(s): Philippe Makowski <pmakowski@ibphoenix.fr>
+#                  ______________________________________.
+#
+# See LICENSE.TXT for details.
+
+
+blr_inner = 0
+blr_left = 1
+blr_right = 2
+blr_full = 3
+
+blr_gds_code = 0
+blr_sql_code = 1
+blr_exception = 2
+blr_trigger_code = 3
+blr_default_code = 4
+blr_raise = 5
+blr_exception_msg = 6
+
+blr_version4 = 4
+blr_version5 = 5
+blr_eoc = 76
+blr_end = 255
+
+blr_assignment = 1
+blr_begin = 2
+blr_dcl_variable = 3
+blr_message = 4
+blr_erase = 5
+blr_fetch = 6
+blr_for = 7
+blr_if = 8
+blr_loop = 9
+blr_modify = 10
+blr_handler = 11
+blr_receive = 12
+blr_select = 13
+blr_send = 14
+blr_store = 15
+blr_label = 17
+blr_leave = 18
+blr_store2 = 19
+blr_post = 20
+blr_literal = 21
+blr_dbkey = 22
+blr_field = 23
+blr_fid = 24
+blr_parameter = 25
+blr_variable = 26
+blr_average = 27
+blr_count = 28
+blr_maximum = 29
+blr_minimum = 30
+blr_total = 31
+blr_add = 34
+blr_subtract = 35
+blr_multiply = 36
+blr_divide = 37
+blr_negate = 38
+blr_concatenate = 39
+blr_substring = 40
+blr_parameter2 = 41
+blr_from = 42
+blr_via = 43
+blr_parameter2_old = 44
+blr_user_name = 44
+blr_null = 45
+blr_equiv = 46
+blr_eql = 47
+blr_neq = 48
+blr_gtr = 49
+blr_geq = 50
+blr_lss = 51
+blr_leq = 52
+blr_containing = 53
+blr_matching = 54
+blr_starting = 55
+blr_between = 56
+blr_or = 57
+blr_and = 58
+blr_not = 59
+blr_any = 60
+blr_missing = 61
+blr_unique = 62
+blr_like = 63
+blr_rse = 67
+blr_first = 68
+blr_project = 69
+blr_sort = 70
+blr_boolean = 71
+blr_ascending = 72
+blr_descending = 73
+blr_relation = 74
+blr_rid = 75
+blr_union = 76
+blr_map = 77
+blr_group_by = 78
+blr_aggregate = 79
+blr_join_type = 80
+blr_agg_count = 83
+blr_agg_max = 84
+blr_agg_min = 85
+blr_agg_total = 86
+blr_agg_average = 87
+blr_parameter3 = 88
+blr_run_max = 89
+blr_run_min = 90
+blr_run_total = 91
+blr_run_average = 92
+blr_agg_count2 = 93
+blr_agg_count_distinct = 94
+blr_agg_total_distinct = 95
+blr_agg_average_distinct = 96
+blr_function = 100
+blr_gen_id = 101
+blr_prot_mask = 102
+blr_upcase = 103
+blr_lock_state = 104
+blr_value_if = 105
+blr_matching2 = 106
+blr_index = 107
+blr_ansi_like = 108
+blr_seek = 112
+
+blr_continue = 0
+blr_forward = 1
+blr_backward = 2
+blr_bof_forward = 3
+blr_eof_backward = 4
+
+blr_run_count = 118
+blr_rs_stream = 119
+blr_exec_proc = 120
+blr_procedure = 124
+blr_pid = 125
+blr_exec_pid = 126
+blr_singular = 127
+blr_abort = 128
+blr_block = 129
+blr_error_handler = 130
+blr_cast = 131
+blr_start_savepoint = 134
+blr_end_savepoint = 135
+
+# Access plan items
+blr_plan = 139
+blr_merge = 140
+blr_join = 141
+blr_sequential = 142
+blr_navigational = 143
+blr_indices = 144
+blr_retrieve = 145
+
+blr_relation2 = 146
+blr_rid2 = 147
+blr_set_generator = 150
+blr_ansi_any = 151
+blr_exists = 152
+blr_record_version = 154
+blr_stall = 155
+blr_ansi_all = 158
+blr_extract = 159
+
+# sub parameters for blr_extract
+blr_extract_year = 0
+blr_extract_month = 1
+blr_extract_day = 2
+blr_extract_hour = 3
+blr_extract_minute = 4
+blr_extract_second = 5
+blr_extract_weekday = 6
+blr_extract_yearday = 7
+# Added in FB 2.1
+blr_extract_millisecond = 8
+blr_extract_week = 9
+
+blr_current_date = 160
+blr_current_timestamp = 161
+blr_current_time = 162
+
+# Those codes reuse BLR code space
+blr_post_arg = 163
+blr_exec_into = 164
+blr_user_savepoint = 165
+blr_dcl_cursor = 166
+blr_cursor_stmt = 167
+blr_current_timestamp2 = 168
+blr_current_time2 = 169
+blr_agg_list = 170
+blr_agg_list_distinct = 171
+blr_modify2 = 172
+
+# FB 1.0 specific BLR
+blr_current_role = 174
+blr_skip = 175
+
+# FB 1.5 specific BLR
+blr_exec_sql = 176
+blr_internal_info = 177
+blr_nullsfirst = 178
+blr_writelock = 179
+blr_nullslast = 180
+
+# FB 2.0 specific BLR
+blr_lowcase = 181
+blr_strlen = 182
+
+# sub parameter for blr_strlen
+blr_strlen_bit = 0
+blr_strlen_char = 1
+blr_strlen_octet = 2
+
+blr_trim = 183
+
+# first sub parameter for blr_trim
+blr_trim_both = 0
+blr_trim_leading = 1
+blr_trim_trailing = 2
+
+# second sub parameter for blr_trim
+blr_trim_spaces = 0
+blr_trim_characters = 1
+
+# These codes are actions for user-defined savepoints
+
+blr_savepoint_set = 0
+blr_savepoint_release = 1
+blr_savepoint_undo = 2
+blr_savepoint_release_single = 3
+
+# These codes are actions for cursors
+
+blr_cursor_open = 0
+blr_cursor_close = 1
+blr_cursor_fetch = 2
+
+# FB 2.1 specific BLR
+
+blr_init_variable = 184
+blr_recurse = 185
+blr_sys_function = 186
+
+# FB 2.5 specific BLR
+
+blr_auto_trans = 187
+blr_similar = 188
+blr_exec_stmt = 189
+
+# subcodes of blr_exec_stmt
+blr_exec_stmt_inputs = 1	# input parameters count
+blr_exec_stmt_outputs = 2	# output parameters count
+blr_exec_stmt_sql = 3
+blr_exec_stmt_proc_block = 4
+blr_exec_stmt_data_src = 5
+blr_exec_stmt_user = 6
+blr_exec_stmt_pwd = 7
+blr_exec_stmt_tran = 8	# not implemented yet
+blr_exec_stmt_tran_clone = 9	# make transaction parameters equal to current transaction
+blr_exec_stmt_privs = 10
+blr_exec_stmt_in_params = 11	# not named input parameters
+blr_exec_stmt_in_params2 = 12	# named input parameters
+blr_exec_stmt_out_params = 13	# output parameters
+blr_exec_stmt_role = 14
+
+blr_stmt_expr = 190
+blr_derived_expr = 191
+

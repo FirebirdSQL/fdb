@@ -1527,7 +1527,7 @@ class Connection(object):
                                               ibase.isc_action_svc_display_user
                                               )
         if user_name:
-            user_name = user_name.upper()  # 2002.12.11
+            user_name = user_name.upper()
             reqBuf.add_string(ibase.isc_spb_sec_username, user_name)
         self._act(reqBuf)
         raw = self._QR(ibase.isc_info_svc_get_users)
@@ -1714,7 +1714,25 @@ class User(object):
         return '<fdb.services.User %s>' % (
             (self.name is None and 'without a name')
             or 'named "%s"' % self.name)
-
+    def load_information(self,svc):
+        """Load information about user from server.
+        
+        :param svc: Open service connection.
+        :type svc: :class:`Connection`
+        :returns: True if information was successfuly retrieved, False otherwise.
+        
+        :raises ProgrammingError: If user name is not defined.
+        """
+        if self.name is None:
+            raise fdb.ProgrammingError("Can't load information about user without name.")
+        user = svc.get_users(self.name)
+        if len(user) > 0:
+            self.first_name = user.first_name
+            self.middle_name = user.middle_name
+            self.last_name = user.last_name
+            self.user_id = user.user_id
+            self.group_id = user.group_id
+        return len(user) > 0
 
 class _ServiceActionRequestBuilder(object):
     # This private class helps public facilities in this module to build

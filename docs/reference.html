@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.3 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.4 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.3',
+        VERSION:     '1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.3 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -1223,6 +1223,13 @@ If the argument is a string, the return value is the same object.</p>
 <dt id="fdb.ConnectionWithSchema.owner_name">
 <tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.owner_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database owner name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all privileges defined for database.
+Items are <tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4311,7 +4318,26 @@ including call to any <cite>trace_</cite> method will fail with exception.</p>
 <dl class="class">
 <dt id="fdb.services.User">
 <em class="property">class </em><tt class="descclassname">fdb.services.</tt><tt class="descname">User</tt><big>(</big><em>name=None</em><big>)</big><a class="headerlink" href="#fdb.services.User" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
+<dd><dl class="method">
+<dt id="fdb.services.User.load_information">
+<tt class="descname">load_information</tt><big>(</big><em>svc</em><big>)</big><a class="headerlink" href="#fdb.services.User.load_information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load information about user from server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>svc</strong> (<a class="reference internal" href="#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a>) &#8211; Open service connection.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if information was successfuly retrieved, False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">If user name is not defined.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.services.User.first_name">
 <tt class="descname">first_name</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.services.User.first_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>First name.</p>
@@ -4356,14 +4382,44 @@ specified to add a user.</p>
 
 </dd></dl>
 
-</div>
+<span class="target" id="module-fdb.ibase"></span><span class="target" id="module-fdb.blr"></span></div>
 </div>
 <div class="section" id="ctypes-interface-to-firebird-client-library">
 <h2>ctypes interface to Firebird client library<a class="headerlink" href="#ctypes-interface-to-firebird-client-library" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="http://docs.python.org/whatsnew/2.5.html#module-ctypes" title="(in Python v2.7)"><em class="xref std std-ref">ctypes</em></a> interface to <cite>fbclient.so/dll</cite> is defined in submodule <a class="reference internal" href="#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.ibase</span></tt></a>.</p>
-<span class="target" id="module-fdb.ibase"></span></div>
+<p><a class="reference external" href="http://docs.python.org/whatsnew/2.5.html#module-ctypes" title="(in Python v2.7)"><em class="xref std std-ref">ctypes</em></a> interface to <cite>fbclient.so/dll</cite> is defined in submodule <a class="reference internal" href="#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.ibase</span></tt></a>
+and <a class="reference internal" href="#module-fdb.blr" title="fdb.blr: Python ctypes interface to Firebird client library (BLR)"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.blr</span></tt></a>.</p>
+</div>
 <div class="section" id="module-fdb.schema">
 <span id="database-schema"></span><h2>Database schema<a class="headerlink" href="#module-fdb.schema" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3>Functions<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="fdb.schema.get_grants">
+<tt class="descclassname">fdb.schema.</tt><tt class="descname">get_grants</tt><big>(</big><em>privileges</em>, <em>grantors=None</em><big>)</big><a class="headerlink" href="#fdb.schema.get_grants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of minimal set of SQL GRANT statamenets necessary to grant
+specified privileges.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>privileges</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> instances.</li>
+<li><strong>grantors</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of standard grantor names. Generates GRANTED BY
+clause for privileges granted by user that&#8217;s not in list.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fdb.schema.isKeyword">
+<tt class="descclassname">fdb.schema.</tt><tt class="descname">isKeyword</tt><big>(</big><em>ident</em><big>)</big><a class="headerlink" href="#fdb.schema.isKeyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if <cite>ident</cite> is Firebird keyword.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="schema">
 <h3>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
@@ -4590,6 +4646,34 @@ specified to add a user.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Schema.get_privileges_of">
+<tt class="descname">get_privileges_of</tt><big>(</big><em>user</em>, <em>user_type=None</em><big>)</big><a class="headerlink" href="#fdb.schema.Schema.get_privileges_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of all privileges granted to user/database object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user</strong> &#8211; User name or instance of class that represents possible user.
+Allowed classes are <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>, <a class="reference internal" href="#fdb.schema.Table" title="fdb.schema.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a>, 
+<a class="reference internal" href="#fdb.schema.View" title="fdb.schema.View"><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt></a>, <a class="reference internal" href="#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a>, <a class="reference internal" href="#fdb.schema.Trigger" title="fdb.schema.Trigger"><tt class="xref py py-class docutils literal"><span class="pre">Trigger</span></tt></a> or <a class="reference internal" href="#fdb.schema.Role" title="fdb.schema.Role"><tt class="xref py py-class docutils literal"><span class="pre">Role</span></tt></a>.</li>
+<li><strong>user_type</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; <strong>Required if</strong> <cite>user</cite> is provided as string name.
+Numeric code for user type, see <a class="reference internal" href="#fdb.schema.Schema.enum_object_types" title="fdb.schema.Schema.enum_object_types"><tt class="xref py py-attr docutils literal"><span class="pre">Schema.enum_object_types</span></tt></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first last">For unknown <cite>user_type</cite> code.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Schema.get_procedure">
 <tt class="descname">get_procedure</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#fdb.schema.Schema.get_procedure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get <a class="reference internal" href="#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a> by name.</p>
@@ -4723,6 +4807,8 @@ reloaded from database on next reference.</p>
 <li>functions</li>
 <li>files</li>
 <li>shadows</li>
+<li>privileges</li>
+<li>users</li>
 </ul>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -4921,6 +5007,13 @@ Items are <a class="reference internal" href="#fdb.schema.Index" title="fdb.sche
 <dt id="fdb.schema.Schema.owner_name">
 <tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Schema.owner_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database owner name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.schema.Schema.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all privileges defined for database.
+Items are <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -5944,6 +6037,12 @@ this character set.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.TableColumn.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.schema.TableColumn.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects granted to this object.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.TableColumn.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.TableColumn.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -6082,6 +6181,12 @@ this character set.</p>
 <dt id="fdb.schema.ViewColumn.position">
 <tt class="descname">position</tt><a class="headerlink" href="#fdb.schema.ViewColumn.position" title="Permalink to this definition">¶</a></dt>
 <dd><p>Column&#8217;s sequence number in row.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.ViewColumn.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.schema.ViewColumn.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects granted to this object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -6846,6 +6951,12 @@ Items are <a class="reference internal" href="#fdb.schema.Index" title="fdb.sche
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Table.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.schema.Table.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects granted to this object.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Table.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Table.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -7015,6 +7126,12 @@ Items are <a class="reference internal" href="#fdb.schema.ViewColumn" title="fdb
 <dt id="fdb.schema.View.owner_name">
 <tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.View.owner_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>User name of view&#8217;s creator.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.View.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.schema.View.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects granted to this object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -7511,6 +7628,12 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Procedure.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.schema.Procedure.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects granted to this object.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Procedure.proc_type">
 <tt class="descname">proc_type</tt><a class="headerlink" href="#fdb.schema.Procedure.proc_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Procedure type code. See <tt class="xref py py-attr docutils literal"><span class="pre">fdb.Connection.enum_procedure_types</span></tt>.</p>
@@ -7629,6 +7752,12 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 <dt id="fdb.schema.Role.owner_name">
 <tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Role.owner_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>User name of role owner.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Role.privileges">
+<tt class="descname">privileges</tt><a class="headerlink" href="#fdb.schema.Role.privileges" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><tt class="xref py py-class docutils literal"><span class="pre">Privilege</span></tt></a> objects granted to this object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -8221,6 +8350,201 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dt id="fdb.schema.Shadow.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Shadow.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="privilege">
+<h3>Privilege<a class="headerlink" href="#privilege" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="fdb.schema.Privilege">
+<em class="property">class </em><tt class="descclassname">fdb.schema.</tt><tt class="descname">Privilege</tt><big>(</big><em>schema</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.schema.Privilege" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents priviledge to database object.</p>
+<p>Supported SQL actions: grant(grantors),revoke(grantors,grant_option)</p>
+<dl class="method">
+<dt id="fdb.schema.Privilege.accept_visitor">
+<tt class="descname">accept_visitor</tt><big>(</big><em>visitor</em><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.accept_visitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visitor Pattern support. Calls <cite>visitPrivilege(self)</cite> on parameter object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>visitor</strong> &#8211; Visitor object of Vistior Pattern.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.get_dependencies">
+<tt class="descname">get_dependencies</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.get_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of database objects that this object depend on.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.get_dependents">
+<tt class="descname">get_dependents</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.get_dependents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of all database objects that depend on this one.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.get_quoted_name">
+<tt class="descname">get_quoted_name</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.get_quoted_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns quoted (if necessary) name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.get_sql_for">
+<tt class="descname">get_sql_for</tt><big>(</big><em>action</em>, <em>**params</em><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.get_sql_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns SQL command for specified action on metadata object.</p>
+<p>Supported actions are defined by <a class="reference internal" href="#fdb.schema.Privilege.actions" title="fdb.schema.Privilege.actions"><tt class="xref py py-attr docutils literal"><span class="pre">actions</span></tt></a> list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">For unsupported action or wrong parameters passed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.has_grant">
+<tt class="descname">has_grant</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.has_grant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if privilege comes with GRANT OPTION.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.isdelete">
+<tt class="descname">isdelete</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.isdelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this is DELETE privilege.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.isexecute">
+<tt class="descname">isexecute</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.isexecute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this is EXECUTE privilege.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.isinsert">
+<tt class="descname">isinsert</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.isinsert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this is INSERT privilege.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.ismembership">
+<tt class="descname">ismembership</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.ismembership" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this is ROLE membership privilege.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.isreference">
+<tt class="descname">isreference</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.isreference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this is REFERENCE privilege.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.isselect">
+<tt class="descname">isselect</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.isselect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this is SELECT privilege.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.issystemobject">
+<tt class="descname">issystemobject</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.issystemobject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Privilege.isupdate">
+<tt class="descname">isupdate</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Privilege.isupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this is UPDATE privilege.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.actions">
+<tt class="descname">actions</tt><a class="headerlink" href="#fdb.schema.Privilege.actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of supported SQL operations on metadata object instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.description">
+<tt class="descname">description</tt><a class="headerlink" href="#fdb.schema.Privilege.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database object description or None if object doesn&#8217;t have a description.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.field_name">
+<tt class="descname">field_name</tt><a class="headerlink" href="#fdb.schema.Privilege.field_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.grantor">
+<tt class="descname">grantor</tt><a class="headerlink" href="#fdb.schema.Privilege.grantor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grantor <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.grantor_name">
+<tt class="descname">grantor_name</tt><a class="headerlink" href="#fdb.schema.Privilege.grantor_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grantor name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.name">
+<tt class="descname">name</tt><a class="headerlink" href="#fdb.schema.Privilege.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database object name or None if object doesn&#8217;t have a name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.privilege">
+<tt class="descname">privilege</tt><a class="headerlink" href="#fdb.schema.Privilege.privilege" title="Permalink to this definition">¶</a></dt>
+<dd><p>Privilege code.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.schema">
+<tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Privilege.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.subject">
+<tt class="descname">subject</tt><a class="headerlink" href="#fdb.schema.Privilege.subject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Priviledge subject. Either <a class="reference internal" href="#fdb.schema.Role" title="fdb.schema.Role"><tt class="xref py py-class docutils literal"><span class="pre">Role</span></tt></a>, <a class="reference internal" href="#fdb.schema.Table" title="fdb.schema.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a>, <a class="reference internal" href="#fdb.schema.View" title="fdb.schema.View"><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt></a> or <a class="reference internal" href="#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a> object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.subject_name">
+<tt class="descname">subject_name</tt><a class="headerlink" href="#fdb.schema.Privilege.subject_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subject name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.subject_type">
+<tt class="descname">subject_type</tt><a class="headerlink" href="#fdb.schema.Privilege.subject_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subject type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.user">
+<tt class="descname">user</tt><a class="headerlink" href="#fdb.schema.Privilege.user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grantee. Either <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>, <a class="reference internal" href="#fdb.schema.Role" title="fdb.schema.Role"><tt class="xref py py-class docutils literal"><span class="pre">Role</span></tt></a>, <a class="reference internal" href="#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a>, <a class="reference internal" href="#fdb.schema.Trigger" title="fdb.schema.Trigger"><tt class="xref py py-class docutils literal"><span class="pre">Trigger</span></tt></a> or <a class="reference internal" href="#fdb.schema.View" title="fdb.schema.View"><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt></a> object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.user_name">
+<tt class="descname">user_name</tt><a class="headerlink" href="#fdb.schema.Privilege.user_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>User name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Privilege.user_type">
+<tt class="descname">user_type</tt><a class="headerlink" href="#fdb.schema.Privilege.user_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>User type.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -9424,8 +9748,8 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 </div>
 <div class="section" id="module-fdb.utils">
 <span id="utilities"></span><h2>Utilities<a class="headerlink" href="#module-fdb.utils" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id4">
-<h3>Functions<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Functions<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="fdb.utils.update_meta">
 <tt class="descclassname">fdb.utils.</tt><tt class="descname">update_meta</tt><big>(</big><em>self</em>, <em>other</em><big>)</big><a class="headerlink" href="#fdb.utils.update_meta" title="Permalink to this definition">¶</a></dt>
@@ -9659,6 +9983,7 @@ of parent object.</p>
 </li>
 <li><a class="reference internal" href="#ctypes-interface-to-firebird-client-library">ctypes interface to Firebird client library</a></li>
 <li><a class="reference internal" href="#module-fdb.schema">Database schema</a><ul>
+<li><a class="reference internal" href="#id4">Functions</a></li>
 <li><a class="reference internal" href="#schema">Schema</a></li>
 <li><a class="reference internal" href="#baseschemaitem">BaseSchemaItem</a></li>
 <li><a class="reference internal" href="#collation">Collation</a></li>
@@ -9681,6 +10006,7 @@ of parent object.</p>
 <li><a class="reference internal" href="#function">Function</a></li>
 <li><a class="reference internal" href="#databasefile">DatabaseFile</a></li>
 <li><a class="reference internal" href="#shadow">Shadow</a></li>
+<li><a class="reference internal" href="#privilege">Privilege</a></li>
 <li><a class="reference internal" href="#schemavisitor">SchemaVisitor</a></li>
 </ul>
 </li>
@@ -9698,7 +10024,7 @@ of parent object.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-fdb.utils">Utilities</a><ul>
-<li><a class="reference internal" href="#id4">Functions</a></li>
+<li><a class="reference internal" href="#id5">Functions</a></li>
 <li><a class="reference internal" href="#latebindingproperty">LateBindingProperty</a></li>
 <li><a class="reference internal" href="#iterator">Iterator</a></li>
 <li><a class="reference internal" href="#embeddedproperty">EmbeddedProperty</a></li>
@@ -9747,7 +10073,7 @@ of parent object.</p>
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

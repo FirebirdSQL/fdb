@@ -67,7 +67,7 @@ __all__ = (# Common with KInterbasDB
            'isc_info_allocation', 'isc_info_attachment_id', 'isc_info_backout_count', 
            'isc_info_base_level', 'isc_info_bpage_errors', 'isc_info_creation_date', 
            'isc_info_cur_log_part_offset', 'isc_info_cur_logfile_name', 
-           'isc_info_current_memory', 'isc_info_db_SQL_dialect', 'isc_info_db_class', 
+           'isc_info_current_memory', 'isc_info_db_class', 
            'isc_info_db_id', 'isc_info_db_provider', 'isc_info_db_read_only', 
            'isc_info_db_size_in_pages', 'isc_info_db_sql_dialect', 
            'isc_info_delete_count', 'isc_info_dpage_errors', 'isc_info_expunge_count', 
