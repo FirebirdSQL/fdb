@@ -1154,11 +1154,12 @@ class TestInsertData(FDBTestBase):
         rows = cur.fetchall()
         self.assertListEqual(rows,[(4, 'This is a BLOB!')])
         # Non-textual BLOB
-        cur.execute('insert into T2 (C1,C16) values (?,?)',[8,'This is a BLOB!'])
+        blob_data = fdb.bs([0,1,2,3,4,5,6,7,8,9,10])
+        cur.execute('insert into T2 (C1,C16) values (?,?)',[8,blob_data])
         cur.transaction.commit()
         cur.execute('select C1,C16 from T2 where C1 = 8')
         rows = cur.fetchall()
-        self.assertListEqual(rows,[(8, 'This is a BLOB!')])
+        self.assertListEqual(rows,[(8, blob_data)])
         # BLOB bigger than max. segment size
         big_blob = '123456789' * 10000
         cur.execute('insert into T2 (C1,C9) values (?,?)',[5,big_blob])
