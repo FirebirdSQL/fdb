@@ -109,7 +109,7 @@ def get_grants(privileges,grantors=None):
     def skey(item):
         return (item.user_name,item.user_type,item.grantor_name,
                 item.subject_name,item.subject_type,item.has_grant(),
-                item.privilege in tp,item.privilege, item.field_name,)
+                item.privilege in tp,item.privilege, str(item.field_name),)
     def gkey(item):
         return (item.user_name,item.user_type,item.grantor_name,
                 item.subject_name,item.subject_type,item.has_grant(),
