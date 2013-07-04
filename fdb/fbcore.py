@@ -336,6 +336,7 @@ ISOLATION_LEVEL_READ_COMMITED_RO = bs([isc_tpb_version3,
 ODS_FB_20 = 11.0
 ODS_FB_21 = 11.1
 ODS_FB_25 = 11.2
+ODS_FB_30 = 12.0
 
 # Private constants
 
@@ -898,7 +899,13 @@ class Connection(object):
         # Get Firebird engine version
         verstr = self.db_info([isc_info_firebird_version])[isc_info_firebird_version]
         x = verstr.split()
-        (x,self.__version) = x[0].split('V')
+        if x[0].find('V') > 0:
+            (x,self.__version) = x[0].split('V')
+        elif x[0].find('T') > 0:
+            (x,self.__version) = x[0].split('T')
+        else:
+            # Unknown version
+            self.__version = '0.0.0.0'
         x = self.__version.split('.')
         self.__engine_version = float('%s.%s' % (x[0],x[1]))
     def __remove_group(self, group_ref):

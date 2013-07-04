@@ -204,7 +204,7 @@ def connect(host='service_mgr',
     # connection string:
     #   'service_mgr:service_mgr'.
     if not host.endswith('service_mgr'):
-        if not host.endswith(':'):
+        if host and not host.endswith(':'):
             host += ':'
         host += 'service_mgr'
 
@@ -256,6 +256,18 @@ class Connection(object):
             raise fdb.exception_from_status(fdb.DatabaseError,
                                             self._isc_status,
                                             "Services/isc_service_attach:")
+        # Get Firebird engine version
+        verstr = self.get_server_version()
+        x = verstr.split()
+        if x[0].find('V') > 0:
+            (x,self.__version) = x[0].split('V')
+        elif x[0].find('T') > 0:
+            (x,self.__version) = x[0].split('T')
+        else:
+            # Unknown version
+            self.__version = '0.0.0.0'
+        x = self.__version.split('.')
+        self.__engine_version = float('%s.%s' % (x[0],x[1]))
     def __del__(self):
         self.close()
     def next(self):
@@ -310,6 +322,10 @@ class Connection(object):
                 return self._line_buffer.pop(0)
             self.__fetching = False
             return None
+    def __get_version(self):
+        return self.__version
+    def __get_engine_version(self):
+        return self.__engine_version
     def _bytes_to_str(self, sb):
         ### Todo: verify handling of P version differences, refactor
         if ibase.PYTHON_MAJOR_VER == 3:
@@ -1682,6 +1698,11 @@ class Connection(object):
     closed = property(__get_closed)
     #: (Read Only) `True` if connection is fetching result.
     fetching = property(__get_fetching)
+    #: (Read Only) (string) Firebird version number string of connected server.
+    #: Uses Firebird version numbers in form: major.minor.subrelease.build
+    version = property(__get_version)
+    #: (Read Only) (float) Firebird version number of connected server. Only major.minor version.
+    engine_version = property(__get_engine_version)
 
 class User(object):
     def __init__(self, name=None):

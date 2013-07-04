@@ -39,8 +39,15 @@ else:
     BytesIO = StringIO
 
 # Change next definition to test FDB on databases with various ODS 
-# Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb
+# Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb, fbtest30.fdb
 FBTEST_DB = 'fbtest20.fdb'
+# Default server host
+#FBTEST_HOST = ''
+FBTEST_HOST = 'localhost'
+# Default user
+FBTEST_USER = 'SYSDBA'
+# Default user password
+FBTEST_PASSWORD = 'masterkey'
 
 class SchemaVisitor(fdb.schema.SchemaVisitor):
     def __init__(self,test,action,follow='dependencies'):
@@ -127,7 +134,8 @@ class TestCreateDrop(FDBTestBase):
         if os.path.exists(self.dbfile):
             os.remove(self.dbfile)
     def test_create_drop(self):
-        with closing(fdb.create_database("create database '"+self.dbfile+"' user 'sysdba' password 'masterkey'")) as con:
+        with closing(fdb.create_database(host=FBTEST_HOST,database=self.dbfile,
+                                         user=FBTEST_USER,password=FBTEST_PASSWORD)) as con:
             con.drop_database()
 
 class TestConnection(FDBTestBase):
@@ -138,11 +146,18 @@ class TestConnection(FDBTestBase):
     def tearDown(self):
         pass
     def test_connect(self):
-        with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
+        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                                 password=FBTEST_PASSWORD)) as con:
             self.assertIsNotNone(con._db_handle)
-            self.assertEqual(con._dpb,ibase.b('\x01\x1c\x06sysdba\x1d\tmasterkey?\x01\x03'))
+            dpb = [1,0x1c,len(FBTEST_USER)]
+            dpb.extend(ord(x) for x in FBTEST_USER)
+            dpb.extend((0x1d,len(FBTEST_PASSWORD)))
+            dpb.extend(ord(x) for x in FBTEST_PASSWORD)
+            dpb.extend((ord('?'),1,3))
+            self.assertEqual(con._dpb,fdb.bs(dpb))
     def test_properties(self):
-        with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
+        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                                 password=FBTEST_PASSWORD)) as con:
             self.assertIn('Firebird',con.server_version)
             self.assertIn('Firebird',con.firebird_version)
             self.assertIsInstance(con.version,str)
@@ -157,11 +172,21 @@ class TestConnection(FDBTestBase):
             self.assertIsInstance(con.schema,fdb.schema.Schema)
             self.assertFalse(con.closed)
     def test_connect_role(self):
-        with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',role='role')) as con:
+        rolename = 'role'
+        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                                 password=FBTEST_PASSWORD,role=rolename)) as con:
             self.assertIsNotNone(con._db_handle)
-            self.assertEqual(con._dpb,ibase.b('\x01\x1c\x06sysdba\x1d\tmasterkey<\x04role?\x01\x03'))
+            dpb = [1,0x1c,len(FBTEST_USER)]
+            dpb.extend(ord(x) for x in FBTEST_USER)
+            dpb.extend((0x1d,len(FBTEST_PASSWORD)))
+            dpb.extend(ord(x) for x in FBTEST_PASSWORD)
+            dpb.extend((ord('<'),len(rolename)))
+            dpb.extend(ord(x) for x in rolename)
+            dpb.extend((ord('?'),1,3))
+            self.assertEqual(con._dpb,fdb.bs(dpb))
     def test_transaction(self):
-        with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
+        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                                 password=FBTEST_PASSWORD)) as con:
             self.assertIsNotNone(con.main_transaction)
             self.assertFalse(con.main_transaction.active)
             self.assertFalse(con.main_transaction.closed)
@@ -193,18 +218,21 @@ class TestConnection(FDBTestBase):
             self.assertFalse(tr.active)
             self.assertTrue(tr.closed)
     def test_execute_immediate(self):
-        with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
+        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                                 password=FBTEST_PASSWORD)) as con:
             con.execute_immediate("recreate table t (c1 integer)")
             con.commit()
             con.execute_immediate("delete from t")
             con.commit()
     def test_database_info(self):
-        with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
+        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                                 password=FBTEST_PASSWORD)) as con:
             self.assertEqual(con.database_info(fdb.isc_info_db_read_only,'i'),0)
             self.assertEqual(con.database_info(fdb.isc_info_page_size,'i'),4096)
             self.assertEqual(con.database_info(fdb.isc_info_db_sql_dialect,'i'),3)
     def test_db_info(self):
-        with closing(fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')) as con:
+        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                                 password=FBTEST_PASSWORD)) as con:
             res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                                fdb.isc_info_db_sql_dialect,fdb.isc_info_user_names])
             self.assertDictEqual(res,{53: {'SYSDBA': 1}, 62: 3, 14: 4096, 63: 0})
@@ -214,7 +242,8 @@ class TestTransaction(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
     def tearDown(self):
@@ -316,15 +345,21 @@ class TestDistributedTransaction(FDBTestBase):
         self.db1 = os.path.join(self.dbpath,'fbtest-1.fdb')
         self.db2 = os.path.join(self.dbpath,'fbtest-2.fdb')
         if not os.path.exists(self.db1):
-            self.con1 = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.db1)
+            self.con1 = fdb.create_database(host=FBTEST_HOST,database=self.db1,
+                                            user=FBTEST_USER,
+                                            password=FBTEST_PASSWORD)
         else:
-            self.con1 = fdb.connect(dsn=self.db1,user='SYSDBA',password='masterkey')
+            self.con1 = fdb.connect(host=FBTEST_HOST,database=self.db1,
+                                    user=FBTEST_USER,password=FBTEST_PASSWORD)
         self.con1.execute_immediate("recreate table T (PK integer, C1 integer)")
         self.con1.commit()
         if not os.path.exists(self.db2):
-            self.con2 = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.db2)
+            self.con2 = fdb.create_database(host=FBTEST_HOST,database=self.db2,
+                                            user=FBTEST_USER,
+                                            password=FBTEST_PASSWORD)
         else:
-            self.con2 = fdb.connect(dsn=self.db2,user='SYSDBA',password='masterkey')
+            self.con2 = fdb.connect(host=FBTEST_HOST,database=self.db2,
+                                    user=FBTEST_USER,password=FBTEST_PASSWORD)
         self.con2.execute_immediate("recreate table T (PK integer, C1 integer)")
         self.con2.commit()
     def tearDown(self):
@@ -332,11 +367,13 @@ class TestDistributedTransaction(FDBTestBase):
             # We can't drop database via connection in group
             self.con1.group.disband()
         if not self.con1:
-            self.con1 = fdb.connect(dsn=self.db1,user='SYSDBA',password='masterkey')
+            self.con1 = fdb.connect(host=FBTEST_HOST,database=self.db1,
+                                    user=FBTEST_USER,password=FBTEST_PASSWORD)
         self.con1.drop_database()
         self.con1.close()
         if not self.con2:
-            self.con2 = fdb.connect(dsn=self.db2,user='SYSDBA',password='masterkey')
+            self.con2 = fdb.connect(host=FBTEST_HOST,database=self.db2,
+                                    user=FBTEST_USER,password=FBTEST_PASSWORD)
         self.con2.drop_database()
         self.con2.close()
     def test_context_manager(self):
@@ -469,7 +506,7 @@ class TestDistributedTransaction(FDBTestBase):
         self.assertIsNone(self.con2.group)
     def test_limbo_transactions(self):
         cg = fdb.ConnectionGroup((self.con1,self.con2))
-        svc = fdb.services.connect(password='masterkey')
+        svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
 
         ids1 = svc.get_limbo_transaction_ids(self.db1)
         self.assertEqual(ids1,[])
@@ -503,9 +540,11 @@ class TestDistributedTransaction(FDBTestBase):
         
         # Data chould be blocked by limbo transaction
         if not self.con1:
-            self.con1 = fdb.connect(dsn=self.db1,user='SYSDBA',password='masterkey')
+            self.con1 = fdb.connect(dsn=self.db1,user=FBTEST_USER,
+                                    password=FBTEST_PASSWORD)
         if not self.con2:
-            self.con2 = fdb.connect(dsn=self.db2,user='SYSDBA',password='masterkey')
+            self.con2 = fdb.connect(dsn=self.db2,user=FBTEST_USER,
+                                    password=FBTEST_PASSWORD)
         c1 = self.con1.cursor()
         c1.execute('select * from t')
         with self.assertRaises(fdb.DatabaseError) as cm:
@@ -520,7 +559,7 @@ class TestDistributedTransaction(FDBTestBase):
                 ('Cursor.fetchone:\n- SQLCODE: -911\n- record from transaction %i is stuck in limbo' % id2, -911, 335544459))
 
         # resolve via service
-        svc = fdb.services.connect(password='masterkey')
+        svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
         svc.commit_limbo_transaction(self.db1,id1)
         svc.rollback_limbo_transaction(self.db2,id2)
 
@@ -541,7 +580,8 @@ class TestCursor(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
     def tearDown(self):
@@ -769,7 +809,8 @@ class TestCursor(FDBTestBase):
         cur.execute('select * from project')
         self.assertEqual(cur.rowcount,0)
         cur.fetchone()
-        self.assertEqual(cur.rowcount,6)
+        rcount = 1 if FBTEST_HOST == '' and self.con.engine_version >= 3.0 else 6 
+        self.assertEqual(cur.rowcount,rcount)
     def test_name(self):
         def assign_name():
             cur.name = 'testx'
@@ -822,7 +863,8 @@ class TestPreparedStatement(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
     def tearDown(self):
@@ -862,7 +904,8 @@ class TestArrays(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
         tbl = """recreate table AR (c1 integer, 
                                     c2 integer[1:4,0:3,1:2], 
                                     c3 varchar(15)[0:5,1:2],
@@ -1081,8 +1124,11 @@ class TestInsertData(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
-        self.con2 = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',charset='utf-8')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
+        self.con2 = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                                user=FBTEST_USER,password=FBTEST_PASSWORD,
+                                charset='utf-8')
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
         #self.con.execute_immediate("RECREATE TABLE T2 (C1 Smallint,C2 Integer,C3 Bigint,C4 Char(5),C5 Varchar(10),C6 Date,C7 Time,C8 Timestamp,C9 Blob sub_type 1,C10 Numeric(18,2),C11 Decimal(18,2),C12 Float,C13 Double precision,C14 Numeric(8,4),C15 Decimal(8,4))")
@@ -1214,7 +1260,8 @@ class TestStoredProc(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
         self.con.close()
     def test_callproc(self):
@@ -1236,24 +1283,29 @@ class TestServices(FDBTestBase):
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
     def test_attach(self):
-        svc = fdb.services.connect(password='masterkey')
+        svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
         svc.close()
     def test_query(self):
-        svc = fdb.services.connect(password='masterkey')
+        svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
         self.assertEqual(svc.get_service_manager_version(),2)
         self.assertIn('Firebird',svc.get_server_version())
         self.assertIn('Firebird',svc.get_architecture())
         x = svc.get_home_directory()
         #self.assertEqual(x,'/opt/firebird/')
-        self.assertIn('security2.fdb',svc.get_security_database_path())
+        if svc.engine_version < 3.0:
+            self.assertIn('security2.fdb',svc.get_security_database_path())
+        else:
+            self.assertIn('security3.fdb',svc.get_security_database_path())
         x = svc.get_lock_file_directory()
         #self.assertEqual(x,'/tmp/firebird/')
         x = svc.get_server_capabilities()
         self.assertIsInstance(x,type(tuple()))
         x = svc.get_message_file_directory()
         #self.assertEqual(x,'/opt/firebird/')
-        con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
-        con2 = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
+        con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                          user=FBTEST_USER,password=FBTEST_PASSWORD)
+        con2 = fdb.connect(host=FBTEST_HOST,database='employee',
+                           user=FBTEST_USER,password=FBTEST_PASSWORD)
         self.assertGreaterEqual(len(svc.get_attached_database_names()),2)
         self.assertIn(self.dbfile.upper(),
                       [s.upper() for s in svc.get_attached_database_names()])
@@ -1262,7 +1314,7 @@ class TestServices(FDBTestBase):
         self.assertGreaterEqual(svc.get_connection_count(),2)
         svc.close()
     def test_running(self):
-        svc = fdb.services.connect(password='masterkey')
+        svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
         self.assertFalse(svc.isrunning())
         svc.get_log()
         self.assertTrue(svc.isrunning())
@@ -1272,7 +1324,7 @@ class TestServices(FDBTestBase):
         self.assertFalse(svc.isrunning())
         svc.close()
     def test_wait(self):
-        svc = fdb.services.connect(password='masterkey')
+        svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
         self.assertFalse(svc.isrunning())
         svc.get_log()
         #self.assertTrue(svc.isrunning())
@@ -1290,10 +1342,12 @@ class TestServices2(FDBTestBase):
         self.fbk = os.path.join(self.dbpath,'test_employee.fbk')
         self.fbk2 = os.path.join(self.dbpath,'test_employee.fbk2')
         self.rfdb = os.path.join(self.dbpath,'test_employee.fdb')
-        self.svc = fdb.services.connect(password='masterkey')
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
         if not os.path.exists(self.rfdb):
-            c = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.rfdb)
+            c = fdb.create_database(host=FBTEST_HOST,database=self.rfdb,
+                                    user=FBTEST_USER,password=FBTEST_PASSWORD)
             c.close()
     def tearDown(self):
         self.svc.close()
@@ -1432,8 +1486,8 @@ class TestServices2(FDBTestBase):
           max_sql_length 2048
         </database>
         """ % self.dbfile
-        svc2 = fdb.services.connect(password='masterkey')
-        svcx = fdb.services.connect(password='masterkey')
+        svc2 = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
+        svcx = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
         # Start trace sessions
         trace1_id = self.svc.trace_start(trace_config,'test_trace_1')
         trace2_id = svc2.trace_start(trace_config)
@@ -1585,7 +1639,8 @@ class TestEvents(FDBTestBase):
         self.dbfile = os.path.join(self.dbpath,'fbevents.fdb')
         if os.path.exists(self.dbfile):
             os.remove(self.dbfile)
-        self.con = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.dbfile)
+        self.con = fdb.create_database(host=FBTEST_HOST,database=self.dbfile,
+                                       user=FBTEST_USER,password=FBTEST_PASSWORD)
         c = self.con.cursor()
         c.execute("CREATE TABLE T (PK Integer, C1 Integer)")
         c.execute("""CREATE TRIGGER EVENTS_AU FOR T ACTIVE
@@ -1693,7 +1748,8 @@ class TestStreamBLOBs(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
         #self.con.execute_immediate("RECREATE TABLE T2 (C1 Smallint,C2 Integer,C3 Bigint,C4 Char(5),C5 Varchar(10),C6 Date,C7 Time,C8 Timestamp,C9 Blob sub_type 1,C10 Numeric(18,2),C11 Decimal(18,2),C12 Float,C13 Double precision,C14 Numeric(8,4),C15 Decimal(8,4))")
@@ -1803,7 +1859,9 @@ class TestCharsetConversion(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',charset='utf8')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD,
+                               charset='utf8')
         #self.con.execute_immediate("recreate table t (c1 integer)")
         #self.con.commit()
         #self.con.execute_immediate("RECREATE TABLE T2 (C1 Smallint,C2 Integer,C3 Bigint,C4 Char(5),C5 Varchar(10),C6 Date,C7 Time,C8 Timestamp,C9 Blob sub_type 1,C10 Numeric(18,2),C11 Decimal(18,2),C12 Float,C13 Double precision,C14 Numeric(8,4),C15 Decimal(8,4))")
@@ -1834,8 +1892,8 @@ class TestCharsetConversion(FDBTestBase):
             s5 = s5.decode('utf8')
             s30 = s30.decode('utf8')
         
-        con1250 = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey',
-                              charset='win1250')
+        con1250 = fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                              password=FBTEST_PASSWORD,charset='win1250')
         c_utf8 = self.con.cursor()
         c_win1250 = con1250.cursor()
         
@@ -1904,7 +1962,8 @@ class TestSchema(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
         self.con.close()
     def testSchemaBindClose(self):
@@ -1945,7 +2004,7 @@ class TestSchema(FDBTestBase):
                  'TRIGGER': 2, 'RELATION': 0, 'USER': 8, 'DEPENDENT_COUNT': 11, 
                  'USER_GROUP': 12, 'BLOB_FILTER': 16, 'ROLE': 13, 
                  'VALIDATION': 4, 'PROCEDURE': 5, 'VIEW': 1})
-        elif self.con.ods > fdb.ODS_FB_20:
+        elif self.con.ods > fdb.ODS_FB_20 and self.con.ods < fdb.ODS_FB_30:
             self.assertDictEqual(s.enum_object_types,
                 {0: 'RELATION', 1: 'VIEW', 2: 'TRIGGER', 3: 'COMPUTED_FIELD', 
                  4: 'VALIDATION', 5: 'PROCEDURE', 6: 'EXPRESSION_INDEX', 
@@ -1958,6 +2017,21 @@ class TestSchema(FDBTestBase):
                  'COMPUTED_FIELD': 3, 'TRIGGER': 2, 'RELATION': 0, 'USER': 8, 
                  'USER_GROUP': 12, 'BLOB_FILTER': 16, 'ROLE': 13, 
                  'VALIDATION': 4, 'PROCEDURE': 5, 'VIEW': 1})
+        else:
+            self.assertDictEqual(s.enum_object_types,
+                {0: 'RELATION', 1: 'VIEW', 2: 'TRIGGER', 3: 'COMPUTED_FIELD', 
+                 4: 'VALIDATION', 5: 'PROCEDURE', 6: 'EXPRESSION_INDEX', 
+                 7: 'EXCEPTION', 8: 'USER', 9: 'FIELD', 10: 'INDEX', 
+                 11: 'CHARACTER_SET',12: 'USER_GROUP', 13: 'ROLE', 
+                 14: 'GENERATOR', 15: 'UDF', 16: 'BLOB_FILTER', 17: 'COLLATION',
+                 18:'PACKAGE',19:'PACKAGE BODY'})
+            self.assertDictEqual(s.enum_object_type_codes,
+                {'INDEX': 10, 'EXCEPTION': 7, 'GENERATOR': 14, 'COLLATION': 17, 
+                 'UDF': 15, 'EXPRESSION_INDEX': 6, 'FIELD': 9, 
+                 'COMPUTED_FIELD': 3, 'TRIGGER': 2, 'RELATION': 0, 'USER': 8, 
+                 'USER_GROUP': 12, 'BLOB_FILTER': 16, 'ROLE': 13, 
+                 'VALIDATION': 4, 'PROCEDURE': 5, 'VIEW': 1, 'CHARACTER_SET':11,
+                 'PACKAGE':18, 'PACKAGE BODY':19})
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertDictEqual(s.enum_character_set_names,
                 {0: 'NONE', 1: 'BINARY', 2: 'ASCII7', 3: 'SQL_TEXT', 4: 'UTF-8', 
@@ -2003,11 +2077,18 @@ class TestSchema(FDBTestBase):
                  56: 'WIN_950', 57: 'WIN_936', 58: 'WIN_1255', 59: 'WIN_1256', 
                  60: 'WIN_1257', 63: 'KOI8R', 64: 'KOI8U', 65: 'WIN_1258', 
                  66: 'TIS620', 67: 'GBK', 68: 'CP943C', 69: 'GB18030'})
-        self.assertDictEqual(s.enum_field_types,
-                {35: 'TIMESTAMP', 37: 'VARYING', 7: 'SHORT', 8: 'LONG', 
-                 9: 'QUAD', 10: 'FLOAT', 12: 'DATE', 45: 'BLOB_ID', 14: 'TEXT', 
-                 13: 'TIME', 16: 'INT64', 40: 'CSTRING', 27: 'DOUBLE', 
-                 261: 'BLOB'})
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertDictEqual(s.enum_field_types,
+                    {35: 'TIMESTAMP', 37: 'VARYING', 7: 'SHORT', 8: 'LONG', 
+                     9: 'QUAD', 10: 'FLOAT', 12: 'DATE', 45: 'BLOB_ID', 14: 'TEXT', 
+                     13: 'TIME', 16: 'INT64', 40: 'CSTRING', 27: 'DOUBLE', 
+                     261: 'BLOB'})
+        else:
+            self.assertDictEqual(s.enum_field_types,
+                    {35: 'TIMESTAMP', 37: 'VARYING', 7: 'SHORT', 8: 'LONG', 
+                     9: 'QUAD', 10: 'FLOAT', 12: 'DATE', 45: 'BLOB_ID', 14: 'TEXT', 
+                     13: 'TIME', 16: 'INT64', 40: 'CSTRING', 27: 'DOUBLE', 
+                     261: 'BLOB', 23:'BOOLEAN'})
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertDictEqual(s.enum_field_subtypes,
                 {0: 'BINARY', 1: 'TEXT', 2: 'BLR', 3: 'ACL', 4: 'RANGES', 
@@ -2087,8 +2168,10 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.collations),138)
         elif self.con.ods == fdb.ODS_FB_21:
             self.assertEqual(len(s.collations),146)
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.collations),149)
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(len(s.collations),150)
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(len(s.character_sets),48)
         elif self.con.ods == fdb.ODS_FB_21:
@@ -2097,35 +2180,48 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.character_sets),52)
         self.assertEqual(len(s.exceptions),5)
         self.assertEqual(len(s.generators),2)
-        self.assertEqual(len(s.sysgenerators),9)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.sysgenerators),9)
+            self.assertEqual(len(s.syssequences),9)
+        else:
+            self.assertEqual(len(s.sysgenerators),11)
+            self.assertEqual(len(s.syssequences),11)
         self.assertEqual(len(s.sequences),2)
-        self.assertEqual(len(s.syssequences),9)
         self.assertEqual(len(s.domains),15)
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(len(s.sysdomains),203)
         elif self.con.ods == fdb.ODS_FB_21:
             self.assertEqual(len(s.sysdomains),227)
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.sysdomains),230)
+        else:
+            self.assertEqual(len(s.sysdomains),247)
         self.assertEqual(len(s.indices),12)
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(len(s.sysindices),72)
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.sysindices),75)
+        else:
+            self.assertEqual(len(s.sysindices),78)
         self.assertEqual(len(s.tables),15)
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(len(s.systables),33)
         elif self.con.ods == fdb.ODS_FB_21:
             self.assertEqual(len(s.systables),40)
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.systables),42)
+        else:
+            self.assertEqual(len(s.systables),44)
         self.assertEqual(len(s.views),1)
         self.assertEqual(len(s.sysviews),0)
         self.assertEqual(len(s.triggers),6)
         self.assertEqual(len(s.systriggers),63)
         self.assertEqual(len(s.procedures),10)
         self.assertEqual(len(s.sysprocedures),0)
-        self.assertEqual(len(s.constraints),80)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.constraints),80)
+        else:
+            self.assertEqual(len(s.constraints),106)
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(len(s.roles),1)
         elif self.con.ods >= fdb.ODS_FB_25:
@@ -2137,7 +2233,10 @@ class TestSchema(FDBTestBase):
         elif self.con.ods >= fdb.ODS_FB_25:
             self.assertEqual(len(s.dependencies),163)
         self.assertEqual(len(s.functions),0)
-        self.assertEqual(len(s.sysfunctions),2)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.sysfunctions),2)
+        else:
+            self.assertEqual(len(s.sysfunctions),0)
         self.assertEqual(len(s.files),0)
         #
         self.assertIsInstance(s.collations[0],sm.Collation)
@@ -2162,7 +2261,8 @@ class TestSchema(FDBTestBase):
         self.assertIsInstance(s.constraints[0],sm.Constraint)
         #self.assertIsInstance(s.roles[0],sm.Role)
         self.assertIsInstance(s.dependencies[0],sm.Dependency)
-        self.assertIsInstance(s.sysfunctions[0],sm.Function)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsInstance(s.sysfunctions[0],sm.Function)
         #self.assertIsInstance(s.files[0],sm.DatabaseFile)
         #
         self.assertEqual(s.get_collation('OCTETS').name,'OCTETS')
@@ -2178,7 +2278,8 @@ class TestSchema(FDBTestBase):
         self.assertEqual(s.get_procedure('GET_EMP_PROJ').name,'GET_EMP_PROJ')
         self.assertEqual(s.get_constraint('INTEG_1').name,'INTEG_1')
         #self.assertEqual(s.get_role('X').name,'X')
-        self.assertEqual(s.get_function('RDB$GET_CONTEXT').name,'RDB$GET_CONTEXT')
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(s.get_function('RDB$GET_CONTEXT').name,'RDB$GET_CONTEXT')
         self.assertEqual(s.get_collation_by_id(0,0).name,'NONE')
         self.assertEqual(s.get_character_set_by_id(0).name,'NONE')
         self.assertFalse(s.ismultifile())
@@ -2358,7 +2459,10 @@ class TestSchema(FDBTestBase):
         self.assertIsInstance(d.depended_on,sm.Sequence)
         self.assertListEqual(c.get_dependencies(),[])
         #
-        self.assertEqual(c.id,10)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(c.id,10)
+        else:
+            self.assertEqual(c.id,12)
         self.assertEqual(c.value,145)
         #
         self.assertEqual(c.get_sql_for('create'),"CREATE SEQUENCE EMP_NO_GEN")
@@ -2838,8 +2942,10 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.table_type,'PERSISTENT')
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(c.security_class,'SQL$EMPLOYEE')
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$7')
+        else:
+            self.assertEqual(c.security_class,'SQL$482')
         self.assertIsNone(c.external_file)
         self.assertEqual(c.owner_name,'SYSDBA')
         if self.con.ods <= fdb.ODS_FB_20:
@@ -2930,8 +3036,10 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.format,1)
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(c.security_class,'SQL$PHONE_LIST')
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$8')
+        else:
+            self.assertEqual(c.security_class,'SQL$483')
         self.assertEqual(c.owner_name,'SYSDBA')
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(c.default_class,'SQL$DEFAULT17')
@@ -3186,13 +3294,18 @@ END""")
 END""")
         if self.con.ods < fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$GET_EMP_PROJ')
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$20')
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(c.security_class,'SQL$497')
         self.assertEqual(c.owner_name,'SYSDBA')
         self.assertListEqual([x.name for x in c.input_params],['EMP_NO'])
         self.assertListEqual([x.name for x in c.output_params],['PROJ_ID'])
         self.assertEqual(c.proc_type,0)
-        self.assertIsNone(c.valid_blr)
+        if self.con.engine_version >= 3.0:
+            self.assertTrue(c.valid_blr)
+        else:
+            self.assertIsNone(c.valid_blr)
         #
         self.assertEqual(c.get_param('EMP_NO').name,'EMP_NO')
         self.assertEqual(c.get_param('PROJ_ID').name,'PROJ_ID')
@@ -4582,7 +4695,8 @@ class TestMonitor(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
+                               user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
         self.con.close()
     def testMonitorBindClose(self):
@@ -4665,8 +4779,10 @@ class TestMonitor(FDBTestBase):
             self.assertEqual(m.db.ods,11.0)
         elif self.con.ods == fdb.ODS_FB_21:
             self.assertEqual(m.db.ods,11.1)
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(m.db.ods,11.2)
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(m.db.ods,12.0)
         self.assertIsInstance(m.db.oit,int)
         self.assertIsInstance(m.db.oat,int)
         self.assertIsInstance(m.db.ost,int)
@@ -4700,10 +4816,16 @@ class TestMonitor(FDBTestBase):
         self.assertEqual(s.name.upper(),self.dbfile.upper())
         self.assertEqual(s.user,'SYSDBA')
         self.assertEqual(s.role,'NONE')
-        self.assertIn(s.remote_protocol,['XNET','TCPv4'])
-        self.assertIsInstance(s.remote_address,str)
-        self.assertIsInstance(s.remote_pid,int)
-        self.assertIsInstance(s.remote_process,str)
+        if not FBTEST_HOST and self.con.engine_version >= 3.0:
+            self.assertIsNone(s.remote_protocol)
+            self.assertIsNone(s.remote_address)
+            self.assertIsNone(s.remote_pid)
+            self.assertIsNone(s.remote_process)
+        else:
+            self.assertIn(s.remote_protocol,['XNET','TCPv4'])
+            self.assertIsInstance(s.remote_address,str)
+            self.assertIsInstance(s.remote_pid,int)
+            self.assertIsInstance(s.remote_process,str)
         self.assertIsInstance(s.character_set,fdb.schema.CharacterSet)
         self.assertIsInstance(s.timestamp,datetime.datetime)
         self.assertIsInstance(s.transactions,list)
@@ -4933,13 +5055,14 @@ class TestConnectionWithSchema(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        #self.con = fdb.connect(dsn=self.dbfile,user='sysdba',password='masterkey')
+        #self.con = fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
         #self.con.close()
         pass
     def testConnectSchema(self):
-        s = fdb.connect(dsn=self.dbfile,user='sysdba',
-                        password='masterkey',connection_class=fdb.ConnectionWithSchema)
+        s = fdb.connect(host=FBTEST_HOST,database=self.dbfile,user=FBTEST_USER,
+                        password=FBTEST_PASSWORD,
+                        connection_class=fdb.ConnectionWithSchema)
         self.assertEqual(len(s.tables),15)
         self.assertEqual(s.get_table('JOB').name,'JOB')
 
@@ -4951,7 +5074,8 @@ class TestBugs(FDBTestBase):
         self.dbfile = os.path.join(self.dbpath,'fbbugs.fdb')
         if os.path.exists(self.dbfile):
             os.remove(self.dbfile)
-        self.con = fdb.create_database("CREATE DATABASE '%s' USER 'SYSDBA' PASSWORD 'masterkey'" % self.dbfile)
+        self.con = fdb.create_database(host=FBTEST_HOST,database=self.dbfile,
+                                       user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
         self.con.drop_database()
         self.con.close()
