@@ -1892,7 +1892,7 @@ class TestCharsetConversion(FDBTestBase):
             s5 = s5.decode('utf8')
             s30 = s30.decode('utf8')
         
-        con1250 = fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+        con1250 = fdb.connect(host=FBTEST_HOST,database=self.dbfile,user=FBTEST_USER,
                               password=FBTEST_PASSWORD,charset='win1250')
         c_utf8 = self.con.cursor()
         c_win1250 = con1250.cursor()
