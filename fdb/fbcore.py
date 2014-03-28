@@ -693,7 +693,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
         raise exception_from_status(DatabaseError, _isc_status,
                                     "Error while connecting to database:")
 
-    return connection_class(_db_handle, dpb, sql_dialect, charset)
+    return connection_class(_db_handle, dpb, sql_dialect, charset, isolation_level)
 
 def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None, 
                     host=None, port=3050, database=None, 
@@ -859,7 +859,8 @@ class Connection(object):
     #: (integer) sql_dialect for this connection, do not change.
     sql_dialect = 3
     
-    def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None):
+    def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None,
+                 isolation_level=ISOLATION_LEVEL_READ_COMMITED):
         """
         :param db_handle: Database handle provided by factory function.
         :param dpb: Database Parameter Block associated with database handle.
@@ -872,7 +873,7 @@ class Connection(object):
             self.__charset = None
         self._python_charset = charset_map.get(self.charset, self.charset)
 
-        self._default_tpb = ISOLATION_LEVEL_READ_COMMITED
+        self._default_tpb = isolation_level
         # Main transaction
         self._main_transaction = Transaction([self], 
                                              default_tpb=self._default_tpb)
