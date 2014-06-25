@@ -234,6 +234,7 @@ on r.MON$STAT_ID = io.MON$STAT_ID and r.MON$STAT_GROUP = io.MON$STAT_GROUP""")
         "Reloads fresh monitoring information."
         self.__fail_if_closed()
         self._ic.transaction.commit()
+        self.clear()
         self._get_database()
     def get_attachment(self,id):
         """Get :class:`AttachmentInfo` by ID.
