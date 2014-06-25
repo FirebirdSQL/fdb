@@ -170,8 +170,18 @@ threadsafety = 1
 paramstyle = 'qmark'
 
 def load_api(fb_library_name=None):
+    """Initializes bindings to Firebird Client Library unless they are already initialized.
+    Called automatically by :func:`fdb.connect` and :func:`fdb.create_database`
+    without parameter.
+
+    :param string fb_library_name: (optional) Path to Firebird Client Library.
+       When it's not specified, FDB does its best to locate appropriate client library.
+
+    :returns: :class:`fdb.ibase.fbclient_API` instance.
+    """
     if not hasattr(sys.modules[__name__],'api'):
         setattr(sys.modules[__name__],'api',fbclient_API(fb_library_name))
+    return getattr(sys.modules[__name__],'api')
 
 # Exceptions required by Python Database API
 
