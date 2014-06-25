@@ -17,6 +17,24 @@ Changelog
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
 
+Version 1.4.1
+=============
+
+Improvements
+------------
+
+- PYFB-40 - fbclient.dll is not found if not in path.
+  Aside from registry lookup, client library isn't loaded until first call to :func:`fdb.connect`, :func:`fdb.create_database`
+  or :func:`fdb.load_api` (which now supports optional specification of Firebird Client Library to load). 
+- Adjustments for Firebird 3.0 (Alpha1)
+- Properties :attr:`~fdb.services.Connection.version` and :attr:`~fdb.services.Connection.engine_version` added to :class:`fdb.services.Connection`
+
+Bugs Fixed
+----------
+
+- Unregistered - isolation_level parameter for fdb.connection has no effect.
+- Unregistered - Information gathered from monitoring tables is not properly dropped upon refresh request.
+
 Version 1.4
 ===========
 

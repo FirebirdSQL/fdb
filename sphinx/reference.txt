@@ -131,6 +131,8 @@ Functions
 
 .. autofunction:: create_database
 
+.. autofunction:: load_api
+
 Classes
 =======
 
@@ -335,19 +337,6 @@ User
    :members:
    :inherited-members:
    :undoc-members:
-
-.. module:: fdb.ibase
-   :synopsis: Python ctypes interface to Firebird client library
-
-.. module:: fdb.blr
-   :synopsis: Python ctypes interface to Firebird client library (BLR)
-
-
-ctypes interface to Firebird client library
-===========================================
-
-:ref:`ctypes <python:module-ctypes>` interface to `fbclient.so/dll` is defined in submodule :mod:`fdb.ibase`
-and :mod:`fdb.blr`.
 
 Database schema
 ===============
@@ -752,6 +741,22 @@ EmbeddedAttribute
 -----------------
 
 .. autoclass:: EmbeddedAttribute
+   :member-order: groupwise
+   :members: 
+
+.. module:: fdb.blr
+   :synopsis: Python ctypes interface to Firebird client library (BLR)
+
+.. module:: fdb.ibase
+   :synopsis: Python ctypes interface to Firebird client library
+
+ctypes interface to Firebird client library
+===========================================
+
+:ref:`ctypes <python:module-ctypes>` interface to `fbclient.so/dll` is defined in submodule :mod:`fdb.ibase`
+and :mod:`fdb.blr`.
+
+.. autoclass:: fbclient_API
    :member-order: groupwise
    :members: 
 

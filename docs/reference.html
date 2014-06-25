@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.4 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.4.1 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.4',
+        VERSION:     '1.4.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4.1 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -350,7 +350,7 @@ which is not supported by the database</p>
 </table>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">You may specify the database using either <cite>dns</cite> or <cite>database</cite> (with optional <cite>host</cite>), 
+<p class="last">You may specify the database using either <cite>dns</cite> or <cite>database</cite> (with optional <cite>host</cite>),
 but not both.</p>
 </div>
 <p>Examples:</p>
@@ -363,7 +363,7 @@ but not both.</p>
 <dl class="function">
 <dt id="fdb.create_database">
 <tt class="descclassname">fdb.</tt><tt class="descname">create_database</tt><big>(</big><em>sql=''</em>, <em>sql_dialect=3</em>, <em>dsn=''</em>, <em>user=None</em>, <em>password=None</em>, <em>host=None</em>, <em>port=3050</em>, <em>database=None</em>, <em>page_size=None</em>, <em>length=None</em>, <em>charset=None</em>, <em>files=None</em>, <em>connection_class=None</em><big>)</big><a class="headerlink" href="#fdb.create_database" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new database. Parameters could be specified either by supplied 
+<dd><p>Creates a new database. Parameters could be specified either by supplied
 &#8220;CREATE DATABASE&#8221; statement, or set of database parameters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -407,6 +407,25 @@ but not both.</p>
 </div>
 </dd></dl>
 
+<dl class="function">
+<dt id="fdb.load_api">
+<tt class="descclassname">fdb.</tt><tt class="descname">load_api</tt><big>(</big><em>fb_library_name=None</em><big>)</big><a class="headerlink" href="#fdb.load_api" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes bindings to Firebird Client Library unless they are already initialized.
+Called automatically by <a class="reference internal" href="#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></tt></a> and <a class="reference internal" href="#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">fdb.create_database()</span></tt></a>
+without parameter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fb_library_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Path to Firebird Client Library.
+When it&#8217;s not specified, FDB does its best to locate appropriate client library.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.ibase.fbclient_API" title="fdb.ibase.fbclient_API"><tt class="xref py py-class docutils literal"><span class="pre">fdb.ibase.fbclient_API</span></tt></a> instance.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
@@ -414,12 +433,12 @@ but not both.</p>
 <h3>Connection<a class="headerlink" href="#connection" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="fdb.Connection">
-<em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">Connection</tt><big>(</big><em>db_handle</em>, <em>dpb=None</em>, <em>sql_dialect=3</em>, <em>charset=None</em><big>)</big><a class="headerlink" href="#fdb.Connection" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">Connection</tt><big>(</big><em>db_handle</em>, <em>dpb=None</em>, <em>sql_dialect=3</em>, <em>charset=None</em>, <em>isolation_level='x03tx06x0fx11'</em><big>)</big><a class="headerlink" href="#fdb.Connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a connection between the database client (the Python process)
 and the database server.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">DO NOT create instances of this class directly! Use only 
+<p class="last">DO NOT create instances of this class directly! Use only
 <a class="reference internal" href="#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">connect()</span></tt></a> or <a class="reference internal" href="#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">create_database()</span></tt></a> to get Connection instances.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -517,15 +536,15 @@ truncations while inserting, etc.</p>
 <dl class="method">
 <dt id="fdb.Connection.begin">
 <tt class="descclassname">Connection.</tt><tt class="descname">begin</tt><big>(</big><em>tpb=None</em><big>)</big><a class="headerlink" href="#fdb.Connection.begin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Starts a transaction explicitly. 
-Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>. 
+<dd><p>Starts a transaction explicitly.
+Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>.
 See <a class="reference internal" href="#fdb.Transaction.begin" title="fdb.Transaction.begin"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.begin()</span></tt></a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tpb</strong> (<a class="reference internal" href="#fdb.TPB" title="fdb.TPB"><tt class="xref py py-class docutils literal"><span class="pre">TPB</span></tt></a> instance, list/tuple of <cite>isc_tpb_*</cite> constants
-or <cite>bytestring</cite>) &#8211; (Optional) Transaction Parameter Buffer for newly started 
+or <cite>bytestring</cite>) &#8211; (Optional) Transaction Parameter Buffer for newly started
 transaction. If not specified, <a class="reference internal" href="#fdb.Connection.default_tpb" title="fdb.Connection.default_tpb"><tt class="xref py py-attr docutils literal"><span class="pre">default_tpb</span></tt></a> is used.</td>
 </tr>
 </tbody>
@@ -535,10 +554,10 @@ transaction. If not specified, <a class="reference internal" href="#fdb.Connecti
 <dl class="method">
 <dt id="fdb.Connection.close">
 <tt class="descclassname">Connection.</tt><tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Connection.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Close the connection now (rather than whenever <cite>__del__</cite> is called). 
-The connection will be unusable from this point forward; an <a class="reference internal" href="#fdb.Error" title="fdb.Error"><tt class="xref py py-exc docutils literal"><span class="pre">Error</span></tt></a> 
-(or subclass) exception will be raised if any operation is attempted 
-with the connection. The same applies to all cursor and transaction 
+<dd><p>Close the connection now (rather than whenever <cite>__del__</cite> is called).
+The connection will be unusable from this point forward; an <a class="reference internal" href="#fdb.Error" title="fdb.Error"><tt class="xref py py-exc docutils literal"><span class="pre">Error</span></tt></a>
+(or subclass) exception will be raised if any operation is attempted
+with the connection. The same applies to all cursor and transaction
 objects trying to use the connection.</p>
 <p>Also closes all <a class="reference internal" href="#fdb.EventConduit" title="fdb.EventConduit"><tt class="xref py py-class docutils literal"><span class="pre">EventConduit</span></tt></a>, <a class="reference internal" href="#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> and <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a>
 instances associated with this connection.</p>
@@ -557,14 +576,14 @@ instances associated with this connection.</p>
 <dt id="fdb.Connection.commit">
 <tt class="descclassname">Connection.</tt><tt class="descname">commit</tt><big>(</big><em>retaining=False</em><big>)</big><a class="headerlink" href="#fdb.Connection.commit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Commit pending transaction to the database.
-Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>. 
+Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>.
 See <a class="reference internal" href="#fdb.Transaction.commit" title="fdb.Transaction.commit"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.commit()</span></tt></a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; (Optional) Indicates whether the transactional 
-context of the transaction being resolved 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; (Optional) Indicates whether the transactional
+context of the transaction being resolved
 should be recycled.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
@@ -612,7 +631,7 @@ all possible isc_info_* items.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>info_code</strong> (<em>integer</em>) &#8211; One of the <cite>isc_info_*</cite> constants.</li>
-<li><strong>result_type</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Must be either ‘s’ if you expect a string result, 
+<li><strong>result_type</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Must be either ‘s’ if you expect a string result,
 or ‘i’ if you expect an integer result.</li>
 </ul>
 </td>
@@ -629,8 +648,8 @@ or ‘i’ if you expect an integer result.</li>
 </table>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last">Extracting data with the database_info function is rather 
-clumsy. See <a class="reference internal" href="#fdb.Connection.db_info" title="fdb.Connection.db_info"><tt class="xref py py-meth docutils literal"><span class="pre">db_info()</span></tt></a> for higher-level means of accessing the 
+<p class="last">Extracting data with the database_info function is rather
+clumsy. See <a class="reference internal" href="#fdb.Connection.db_info" title="fdb.Connection.db_info"><tt class="xref py py-meth docutils literal"><span class="pre">db_info()</span></tt></a> for higher-level means of accessing the
 same information.</p>
 </div>
 <div class="admonition note">
@@ -644,14 +663,14 @@ more easily retrieved with the Services API (see submodule
 <dl class="method">
 <dt id="fdb.Connection.db_info">
 <tt class="descclassname">Connection.</tt><tt class="descname">db_info</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#fdb.Connection.db_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Higher-level convenience wrapper around the <a class="reference internal" href="#fdb.Connection.database_info" title="fdb.Connection.database_info"><tt class="xref py py-meth docutils literal"><span class="pre">database_info()</span></tt></a> method 
-that parses the output of <cite>database_info</cite> into Python-friendly objects 
+<dd><p>Higher-level convenience wrapper around the <a class="reference internal" href="#fdb.Connection.database_info" title="fdb.Connection.database_info"><tt class="xref py py-meth docutils literal"><span class="pre">database_info()</span></tt></a> method
+that parses the output of <cite>database_info</cite> into Python-friendly objects
 instead of returning raw binary buffers in the case of complex result types.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>request</strong> &#8211; Single <cite>fdb.isc_info_*</cite> info request code or a sequence 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>request</strong> &#8211; Single <cite>fdb.isc_info_*</cite> info request code or a sequence
 of such codes.</p>
 </td>
 </tr>
@@ -691,7 +710,7 @@ it removes shadow files and other ancillary files for this database.</p>
 <dl class="method">
 <dt id="fdb.Connection.event_conduit">
 <tt class="descclassname">Connection.</tt><tt class="descname">event_conduit</tt><big>(</big><em>event_names</em><big>)</big><a class="headerlink" href="#fdb.Connection.event_conduit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a conduit through which database event notifications will 
+<dd><p>Creates a conduit through which database event notifications will
 flow into the Python program.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -708,7 +727,7 @@ flow into the Python program.</p>
 <dl class="method">
 <dt id="fdb.Connection.execute_immediate">
 <tt class="descclassname">Connection.</tt><tt class="descname">execute_immediate</tt><big>(</big><em>sql</em><big>)</big><a class="headerlink" href="#fdb.Connection.execute_immediate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a statement in context of <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a> without 
+<dd><p>Executes a statement in context of <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a> without
 caching its prepared form.</p>
 <p>Automatically starts transaction if it&#8217;s not already started.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -722,9 +741,9 @@ caching its prepared form.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
 <p class="last"><strong>The statement must not be of a type that returns a result set.</strong>
-In most cases (especially cases in which the same statement – perhaps 
-a parameterized statement – is executed repeatedly), it is better to 
-create a cursor using the connection’s cursor method, then execute 
+In most cases (especially cases in which the same statement – perhaps
+a parameterized statement – is executed repeatedly), it is better to
+create a cursor using the connection’s cursor method, then execute
 the statement using one of the cursor’s execute methods.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -748,18 +767,18 @@ the statement using one of the cursor’s execute methods.</p>
 <dt id="fdb.Connection.rollback">
 <tt class="descclassname">Connection.</tt><tt class="descname">rollback</tt><big>(</big><em>retaining=False</em>, <em>savepoint=None</em><big>)</big><a class="headerlink" href="#fdb.Connection.rollback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Causes the the database to roll back to the start of pending transaction.
-Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>. 
+Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>.
 See <a class="reference internal" href="#fdb.Transaction.rollback" title="fdb.Transaction.rollback"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.rollback()</span></tt></a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>retaining</strong> (<em>boolean</em>) &#8211; (Optional) Indicates whether the transactional 
-context of the transaction being resolved 
+<li><strong>retaining</strong> (<em>boolean</em>) &#8211; (Optional) Indicates whether the transactional
+context of the transaction being resolved
 should be recycled.</li>
-<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (Optional) Causes the transaction to roll back 
-only as far as the designated savepoint, rather 
+<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (Optional) Causes the transaction to roll back
+only as far as the designated savepoint, rather
 than rolling back entirely.</li>
 </ul>
 </td>
@@ -776,7 +795,7 @@ than rolling back entirely.</li>
 <dt id="fdb.Connection.savepoint">
 <tt class="descclassname">Connection.</tt><tt class="descname">savepoint</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#fdb.Connection.savepoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Establishes a named SAVEPOINT for current transaction.
-Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>. 
+Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>.
 See <a class="reference internal" href="#fdb.Transaction.savepoint" title="fdb.Transaction.savepoint"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.savepoint()</span></tt></a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -800,15 +819,15 @@ See <a class="reference internal" href="#fdb.Transaction.savepoint" title="fdb.T
 <dl class="method">
 <dt id="fdb.Connection.trans">
 <tt class="descclassname">Connection.</tt><tt class="descname">trans</tt><big>(</big><em>default_tpb=None</em><big>)</big><a class="headerlink" href="#fdb.Connection.trans" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> that operates within the context 
-of this connection. Cursors can be created within that Transaction via 
+<dd><p>Creates a new <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> that operates within the context
+of this connection. Cursors can be created within that Transaction via
 its <a class="reference internal" href="#fdb.Transaction.cursor" title="fdb.Transaction.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">cursor()</span></tt></a> method.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>default_tpb</strong> (<a class="reference internal" href="#fdb.TPB" title="fdb.TPB"><tt class="xref py py-class docutils literal"><span class="pre">TPB</span></tt></a> instance, list/tuple of <cite>isc_tpb_*</cite> constants
-or <cite>bytestring</cite>) &#8211; (optional) Transaction Parameter Block for newly created 
+or <cite>bytestring</cite>) &#8211; (optional) Transaction Parameter Block for newly created
 Transaction. If not specified, <a class="reference internal" href="#fdb.Connection.default_tpb" title="fdb.Connection.default_tpb"><tt class="xref py py-attr docutils literal"><span class="pre">default_tpb</span></tt></a> is used.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
@@ -822,25 +841,25 @@ Transaction. If not specified, <a class="reference internal" href="#fdb.Connecti
 <dt id="fdb.Connection.trans_info">
 <tt class="descclassname">Connection.</tt><tt class="descname">trans_info</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#fdb.Connection.trans_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pythonic wrapper around <a class="reference internal" href="#fdb.Connection.transaction_info" title="fdb.Connection.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a> call.
-Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>. 
+Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>.
 See <a class="reference internal" href="#fdb.Transaction.trans_info" title="fdb.Transaction.trans_info"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.trans_info()</span></tt></a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>request</strong> &#8211; One or more information request codes (see 
-<a class="reference internal" href="#fdb.Connection.transaction_info" title="fdb.Connection.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a> for details). Multiple codes 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>request</strong> &#8211; One or more information request codes (see
+<a class="reference internal" href="#fdb.Connection.transaction_info" title="fdb.Connection.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a> for details). Multiple codes
 must be passed as tuple.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Decoded response(s) for specified request code(s). When multiple 
-requests are passed, returns a dictionary where key is the 
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Decoded response(s) for specified request code(s). When multiple
+requests are passed, returns a dictionary where key is the
 request code and value is the response from server.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ProgrammingError</strong> &#8211; When transaction is not active.</li>
-<li><strong>OperationalError</strong> &#8211; When result is too large to fit into buffer of 
+<li><strong>OperationalError</strong> &#8211; When result is too large to fit into buffer of
 size SHRT_MAX.</li>
 <li><strong>InternalError</strong> &#8211; On unexpected processing condition.</li>
 </ul>
@@ -854,8 +873,8 @@ size SHRT_MAX.</li>
 <dt id="fdb.Connection.transaction_info">
 <tt class="descclassname">Connection.</tt><tt class="descname">transaction_info</tt><big>(</big><em>info_code</em>, <em>result_type</em><big>)</big><a class="headerlink" href="#fdb.Connection.transaction_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns information about active transaction.
-Thin wrapper around Firebird API <cite>isc_transaction_info</cite> call. 
-Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>. 
+Thin wrapper around Firebird API <cite>isc_transaction_info</cite> call.
+Operates on <a class="reference internal" href="#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>.
 See <a class="reference internal" href="#fdb.Transaction.transaction_info" title="fdb.Transaction.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.transaction_info()</span></tt></a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -883,14 +902,14 @@ See <a class="reference internal" href="#fdb.Transaction.transaction_info" title
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Decoded response(s) for specified request code(s). When multiple 
-requests are passed, returns a dictionary where key is the 
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Decoded response(s) for specified request code(s). When multiple
+requests are passed, returns a dictionary where key is the
 request code and value is the response from server.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ProgrammingError</strong> &#8211; When transaction is not active.</li>
-<li><strong>OperationalError</strong> &#8211; When result is too large to fit into buffer of 
+<li><strong>OperationalError</strong> &#8211; When result is too large to fit into buffer of
 size SHRT_MAX.</li>
 <li><strong>InternalError</strong> &#8211; On unexpected processing condition.</li>
 <li><strong>ValueError</strong> &#8211; On illegal result_type value.</li>
@@ -1009,8 +1028,8 @@ Uses Firebird version numbers in form: major.minor.subrelease.build</p>
 <dt id="fdb.ConnectionWithSchema">
 <em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">ConnectionWithSchema</tt><big>(</big><em>db_handle</em>, <em>dpb=None</em>, <em>sql_dialect=3</em>, <em>charset=None</em><big>)</big><a class="headerlink" href="#fdb.ConnectionWithSchema" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> descendant that exposes all attributes of encapsulated
-<a class="reference internal" href="#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> instance directly as connection attributes, except 
-<a class="reference internal" href="#fdb.schema.Schema.close" title="fdb.schema.Schema.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> and <a class="reference internal" href="#fdb.schema.Schema.bind" title="fdb.schema.Schema.bind"><tt class="xref py py-meth docutils literal"><span class="pre">bind()</span></tt></a>, and 
+<a class="reference internal" href="#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> instance directly as connection attributes, except
+<a class="reference internal" href="#fdb.schema.Schema.close" title="fdb.schema.Schema.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> and <a class="reference internal" href="#fdb.schema.Schema.bind" title="fdb.schema.Schema.bind"><tt class="xref py py-meth docutils literal"><span class="pre">bind()</span></tt></a>, and
 those attributes that are already defined by Connection class.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1362,24 +1381,24 @@ Items are <tt class="xref py py-class docutils literal"><span class="pre">View</
 <dl class="class">
 <dt id="fdb.Cursor">
 <em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">Cursor</tt><big>(</big><em>connection</em>, <em>transaction</em><big>)</big><a class="headerlink" href="#fdb.Cursor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a database cursor, which is used to execute SQL statement and 
+<dd><p>Represents a database cursor, which is used to execute SQL statement and
 manage the context of a fetch operation.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">DO NOT create instances of this class directly! Use only 
-<a class="reference internal" href="#fdb.Connection.cursor" title="fdb.Connection.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.cursor()</span></tt></a>, <a class="reference internal" href="#fdb.Transaction.cursor" title="fdb.Transaction.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.cursor()</span></tt></a> and 
+<p class="last">DO NOT create instances of this class directly! Use only
+<a class="reference internal" href="#fdb.Connection.cursor" title="fdb.Connection.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.cursor()</span></tt></a>, <a class="reference internal" href="#fdb.Transaction.cursor" title="fdb.Transaction.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.cursor()</span></tt></a> and
 <a class="reference internal" href="#fdb.ConnectionGroup.cursor" title="fdb.ConnectionGroup.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">ConnectionGroup.cursor()</span></tt></a> to get Cursor instances that operate in
 desired context.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Cursor is actually a high-level wrapper around <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> 
-instance(s) that handle the actual SQL statement execution and result 
+<p class="last">Cursor is actually a high-level wrapper around <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a>
+instance(s) that handle the actual SQL statement execution and result
 management. Cursor has an internal cache of PreparedStatements, so when
 the same SQL statement is executed repeatedly, related PreparedStatement
-is re-used, which enhances performance. This convenient enhancement has 
-a side effect: Cursor that was used to perform many different SQL statements 
-may hold very large cache of PerapedStatements. To clear the cache, you&#8217;ll 
+is re-used, which enhances performance. This convenient enhancement has
+a side effect: Cursor that was used to perform many different SQL statements
+may hold very large cache of PerapedStatements. To clear the cache, you&#8217;ll
 need to call <a class="reference internal" href="#fdb.Cursor.clear_cache" title="fdb.Cursor.clear_cache"><tt class="xref py py-meth docutils literal"><span class="pre">clear_cache()</span></tt></a>.</p>
 </div>
 <div class="admonition tip">
@@ -1389,8 +1408,8 @@ need to call <a class="reference internal" href="#fdb.Cursor.clear_cache" title=
 </div>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">The association between a Cursor and its <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> and 
-<a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> is set when the Cursor is created, and cannot be 
+<p class="last">The association between a Cursor and its <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a> and
+<a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> is set when the Cursor is created, and cannot be
 changed during the lifetime of that Cursor.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1416,7 +1435,7 @@ changed during the lifetime of that Cursor.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>procname</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Stored procedure name.</li>
-<li><strong>parameters</strong> (<em>List or Tuple</em>) &#8211; (Optional) Sequence of parameters. Must contain one 
+<li><strong>parameters</strong> (<em>List or Tuple</em>) &#8211; (Optional) Sequence of parameters. Must contain one
 entry for each argument that the procedure expects.</li>
 </ul>
 </td>
@@ -1443,8 +1462,8 @@ entry for each argument that the procedure expects.</li>
 and the cache is cleared.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Current prepared statement is still in its actual state, but  it&#8217;s 
-removed from cache, so when next statement (even the same SQL command) 
+<p class="last">Current prepared statement is still in its actual state, but  it&#8217;s
+removed from cache, so when next statement (even the same SQL command)
 is executed, this current <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance is disposed.</p>
 </div>
 </dd></dl>
@@ -1453,17 +1472,17 @@ is executed, this current <a class="reference internal" href="#fdb.PreparedState
 <dt id="fdb.Cursor.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Cursor.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the cursor now (rather than whenever <cite>__del__</cite> is called).</p>
-<p>Closes any currently open <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a>. However, the cursor 
-is still bound to <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> and <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a>, so it 
-could be still used to execute SQL statements. Also the cache with 
+<p>Closes any currently open <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a>. However, the cursor
+is still bound to <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> and <a class="reference internal" href="#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a>, so it
+could be still used to execute SQL statements. Also the cache with
 prepared statements is left intact.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p>FDB&#8217;s implementation of Cursor somewhat violates the Python DB API 2.0,
-which requires that cursor will be unusable after call to <cite>close</cite>; and 
-an Error (or subclass) exception should be raised if any operation is 
+which requires that cursor will be unusable after call to <cite>close</cite>; and
+an Error (or subclass) exception should be raised if any operation is
 attempted with the cursor.</p>
-<p class="last">If you’ll take advantage of this anomaly, your code would be less 
+<p class="last">If you’ll take advantage of this anomaly, your code would be less
 portable to other Python DB API 2.0 compliant drivers.</p>
 </div>
 </dd></dl>
@@ -1489,13 +1508,13 @@ used again.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>operation</strong> (string or <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance) &#8211; SQL command specification.</li>
-<li><strong>parameters</strong> (<em>List or Tuple</em>) &#8211; (Optional) Sequence of parameters. Must contain one 
+<li><strong>parameters</strong> (<em>List or Tuple</em>) &#8211; (Optional) Sequence of parameters. Must contain one
 entry for each argument that the operation expects.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ValueError</strong> &#8211; When operation PreparedStatement belongs to different 
+<li><strong>ValueError</strong> &#8211; When operation PreparedStatement belongs to different
 Cursor instance.</li>
 <li><strong>TypeError</strong> &#8211; When parameters is not List or Tuple.</li>
 <li><strong>ProgrammingError</strong> &#8211; When more parameters than expected are suplied.</li>
@@ -1510,15 +1529,15 @@ Cursor instance.</li>
 <dl class="method">
 <dt id="fdb.Cursor.executemany">
 <tt class="descname">executemany</tt><big>(</big><em>operation</em>, <em>seq_of_parameters</em><big>)</big><a class="headerlink" href="#fdb.Cursor.executemany" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepare a database operation (query or command) and then execute it 
-against all parameter sequences or mappings found in the sequence 
+<dd><p>Prepare a database operation (query or command) and then execute it
+against all parameter sequences or mappings found in the sequence
 <cite>seq_of_parameters</cite>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This function simply calls <a class="reference internal" href="#fdb.Cursor.execute" title="fdb.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in a loop, feeding it with
-parameters from <cite>seq_of_parameters</cite>. Because <cite>execute</cite> caches 
+parameters from <cite>seq_of_parameters</cite>. Because <cite>execute</cite> caches
 <cite>PreparedStatements</cite>, calling <cite>executemany</cite> is equally efective as
-direct use of prepared statement and calling <cite>execute</cite> in a loop 
+direct use of prepared statement and calling <cite>execute</cite> in a loop
 directly in application.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1530,18 +1549,18 @@ directly in application.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>operation</strong> (string or <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance) &#8211; SQL command specification.</li>
-<li><strong>seq_of_parameters</strong> (<em>List or Tuple</em>) &#8211; Sequence of sequences of parameters. Must contain 
+<li><strong>seq_of_parameters</strong> (<em>List or Tuple</em>) &#8211; Sequence of sequences of parameters. Must contain
 one sequence of parameters for each execution
-that has one entry for each argument that the 
+that has one entry for each argument that the
 operation expects.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ValueError</strong> &#8211; When operation PreparedStatement belongs to different 
+<li><strong>ValueError</strong> &#8211; When operation PreparedStatement belongs to different
 Cursor instance.</li>
 <li><strong>TypeError</strong> &#8211; When seq_of_parameters is not List or Tuple.</li>
-<li><strong>ProgrammingError</strong> &#8211; When there are more parameters in any sequence 
+<li><strong>ProgrammingError</strong> &#8211; When there are more parameters in any sequence
 than expected.</li>
 <li><strong>DatabaseError</strong> &#8211; When error is returned by server.</li>
 </ul>
@@ -1577,8 +1596,8 @@ unknown status is returned by fetch operation.</li>
 <dl class="method">
 <dt id="fdb.Cursor.fetchallmap">
 <tt class="descname">fetchallmap</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Cursor.fetchallmap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fetch all (remaining) rows of a query result like <a class="reference internal" href="#fdb.Cursor.fetchall" title="fdb.Cursor.fetchall"><tt class="xref py py-meth docutils literal"><span class="pre">fetchall()</span></tt></a>, 
-except that it returns a list of mappings of field name to field 
+<dd><p>Fetch all (remaining) rows of a query result like <a class="reference internal" href="#fdb.Cursor.fetchall" title="fdb.Cursor.fetchall"><tt class="xref py py-meth docutils literal"><span class="pre">fetchall()</span></tt></a>,
+except that it returns a list of mappings of field name to field
 value, rather than a list of tuples.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1603,13 +1622,13 @@ unknown status is returned by fetch operation.</li>
 <dl class="method">
 <dt id="fdb.Cursor.fetchmany">
 <tt class="descname">fetchmany</tt><big>(</big><em>size=1</em><big>)</big><a class="headerlink" href="#fdb.Cursor.fetchmany" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fetch the next set of rows of a query result, returning a sequence of 
-sequences (e.g. a list of tuples). An empty sequence is returned when no 
-more rows are available. The number of rows to fetch per call is specified 
-by the parameter. If it is not given, the cursor’s arraysize determines 
-the number of rows to be fetched. The method does try to fetch as many 
-rows as indicated by the size parameter. If this is not possible due to 
-the specified number of rows not being available, fewer rows may be 
+<dd><p>Fetch the next set of rows of a query result, returning a sequence of
+sequences (e.g. a list of tuples). An empty sequence is returned when no
+more rows are available. The number of rows to fetch per call is specified
+by the parameter. If it is not given, the cursor’s arraysize determines
+the number of rows to be fetched. The method does try to fetch as many
+rows as indicated by the size parameter. If this is not possible due to
+the specified number of rows not being available, fewer rows may be
 returned.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1636,8 +1655,8 @@ unknown status is returned by fetch operation.</li>
 <dl class="method">
 <dt id="fdb.Cursor.fetchmanymap">
 <tt class="descname">fetchmanymap</tt><big>(</big><em>size=1</em><big>)</big><a class="headerlink" href="#fdb.Cursor.fetchmanymap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fetch the next set of rows of a query result, like <a class="reference internal" href="#fdb.Cursor.fetchmany" title="fdb.Cursor.fetchmany"><tt class="xref py py-meth docutils literal"><span class="pre">fetchmany()</span></tt></a>, 
-except that it returns a list of mappings of field name to field 
+<dd><p>Fetch the next set of rows of a query result, like <a class="reference internal" href="#fdb.Cursor.fetchmany" title="fdb.Cursor.fetchmany"><tt class="xref py py-meth docutils literal"><span class="pre">fetchmany()</span></tt></a>,
+except that it returns a list of mappings of field name to field
 value, rather than a list of tuples.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1688,14 +1707,14 @@ unknown status is returned by fetch operation.</li>
 <dl class="method">
 <dt id="fdb.Cursor.fetchonemap">
 <tt class="descname">fetchonemap</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Cursor.fetchonemap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fetch the next row of a query result set like <a class="reference internal" href="#fdb.Cursor.fetchone" title="fdb.Cursor.fetchone"><tt class="xref py py-meth docutils literal"><span class="pre">fetchone()</span></tt></a>, 
-except that it returns a mapping of field name to field  value, rather 
+<dd><p>Fetch the next row of a query result set like <a class="reference internal" href="#fdb.Cursor.fetchone" title="fdb.Cursor.fetchone"><tt class="xref py py-meth docutils literal"><span class="pre">fetchone()</span></tt></a>,
+except that it returns a mapping of field name to field  value, rather
 than a tuple.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#fdb.fbcore._RowMapping" title="fdb.fbcore._RowMapping"><tt class="xref py py-class docutils literal"><span class="pre">fbcore._RowMapping</span></tt></a> of returned values, or None when 
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#fdb.fbcore._RowMapping" title="fdb.fbcore._RowMapping"><tt class="xref py py-class docutils literal"><span class="pre">fbcore._RowMapping</span></tt></a> of returned values, or None when
 no more data is available.</p>
 </td>
 </tr>
@@ -1714,7 +1733,7 @@ unknown status is returned by fetch operation.</li>
 <dl class="method">
 <dt id="fdb.Cursor.iter">
 <tt class="descname">iter</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Cursor.iter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Equivalent to the <a class="reference internal" href="#fdb.Cursor.fetchall" title="fdb.Cursor.fetchall"><tt class="xref py py-meth docutils literal"><span class="pre">fetchall()</span></tt></a>, except that it returns iterator 
+<dd><p>Equivalent to the <a class="reference internal" href="#fdb.Cursor.fetchall" title="fdb.Cursor.fetchall"><tt class="xref py py-meth docutils literal"><span class="pre">fetchall()</span></tt></a>, except that it returns iterator
 rather than materialized list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1729,13 +1748,13 @@ rather than materialized list.</p>
 <dl class="method">
 <dt id="fdb.Cursor.itermap">
 <tt class="descname">itermap</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Cursor.itermap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Equivalent to the <a class="reference internal" href="#fdb.Cursor.fetchallmap" title="fdb.Cursor.fetchallmap"><tt class="xref py py-meth docutils literal"><span class="pre">fetchallmap()</span></tt></a>, except that it returns iterator 
+<dd><p>Equivalent to the <a class="reference internal" href="#fdb.Cursor.fetchallmap" title="fdb.Cursor.fetchallmap"><tt class="xref py py-meth docutils literal"><span class="pre">fetchallmap()</span></tt></a>, except that it returns iterator
 rather than materialized list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Iterator that yields <a class="reference internal" href="#fdb.fbcore._RowMapping" title="fdb.fbcore._RowMapping"><tt class="xref py py-class docutils literal"><span class="pre">fbcore._RowMapping</span></tt></a> instance 
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Iterator that yields <a class="reference internal" href="#fdb.fbcore._RowMapping" title="fdb.fbcore._RowMapping"><tt class="xref py py-class docutils literal"><span class="pre">fbcore._RowMapping</span></tt></a> instance
 like <a class="reference internal" href="#fdb.Cursor.fetchonemap" title="fdb.Cursor.fetchonemap"><tt class="xref py py-meth docutils literal"><span class="pre">fetchonemap()</span></tt></a>.</td>
 </tr>
 </tbody>
@@ -1790,13 +1809,13 @@ internal cache of prepared statements.</p>
 <dl class="method">
 <dt id="fdb.Cursor.set_stream_blob">
 <tt class="descname">set_stream_blob</tt><big>(</big><em>blob_name</em><big>)</big><a class="headerlink" href="#fdb.Cursor.set_stream_blob" title="Permalink to this definition">¶</a></dt>
-<dd><p>Specify a BLOB column(s) to work in <cite>stream</cite> mode instead classic, 
+<dd><p>Specify a BLOB column(s) to work in <cite>stream</cite> mode instead classic,
 materialized mode for already executed statement.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<em>string or sequence</em>) &#8211; Single name or sequence of column names. Name must 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<em>string or sequence</em>) &#8211; Single name or sequence of column names. Name must
 be in format as it&#8217;s stored in database (refer
 to <a class="reference internal" href="#fdb.Cursor.description" title="fdb.Cursor.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a> for real value).</td>
 </tr>
@@ -1933,7 +1952,7 @@ use <a class="reference internal" href="#fdb.Connection.trans" title="fdb.Connec
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>connections</strong> (<em>iterable</em>) &#8211; Sequence of (up to 16) <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instances.</li>
 <li><strong>default_tpb</strong> (<a class="reference internal" href="#fdb.TPB" title="fdb.TPB"><tt class="xref py py-class docutils literal"><span class="pre">TPB</span></tt></a> instance, list/tuple of <cite>isc_tpb_*</cite> constants
-or <cite>bytestring</cite>) &#8211; Transaction Parameter Block for this transaction. 
+or <cite>bytestring</cite>) &#8211; Transaction Parameter Block for this transaction.
 If <cite>None</cite> is specified, uses <cite>ISOLATION_LEVEL_READ_COMMITED</cite>.</li>
 <li><strong>default_action</strong> (<em>string &#8216;commit&#8217; or &#8216;rollback&#8217;</em>) &#8211; Action taken when active transaction is ended
 automatically (during <a class="reference internal" href="#fdb.Transaction.close" title="fdb.Transaction.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> or <a class="reference internal" href="#fdb.Transaction.begin" title="fdb.Transaction.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a>).</li>
@@ -1955,19 +1974,19 @@ automatically (during <a class="reference internal" href="#fdb.Transaction.close
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tpb</strong> (<a class="reference internal" href="#fdb.TPB" title="fdb.TPB"><tt class="xref py py-class docutils literal"><span class="pre">TPB</span></tt></a> instance, list/tuple of <cite>isc_tpb_*</cite> constants
-or <cite>bytestring</cite>) &#8211; (optional) Transaction Parameter Block for newly created 
+or <cite>bytestring</cite>) &#8211; (optional) Transaction Parameter Block for newly created
 Transaction. If not specified, <a class="reference internal" href="#fdb.Transaction.default_tpb" title="fdb.Transaction.default_tpb"><tt class="xref py py-attr docutils literal"><span class="pre">default_tpb</span></tt></a> is used.</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Calling this method directly is never required; a transaction will be 
+<p class="last">Calling this method directly is never required; a transaction will be
 started implicitly if necessary.</p>
 </div>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">If the physical transaction is unresolved when this method is called, 
+<p class="last">If the physical transaction is unresolved when this method is called,
 a <a class="reference internal" href="#fdb.Transaction.commit" title="fdb.Transaction.commit"><tt class="xref py py-meth docutils literal"><span class="pre">commit()</span></tt></a> or <a class="reference internal" href="#fdb.Transaction.rollback" title="fdb.Transaction.rollback"><tt class="xref py py-meth docutils literal"><span class="pre">rollback()</span></tt></a> will be performed first, accordingly
 to <a class="reference internal" href="#fdb.Transaction.default_action" title="fdb.Transaction.default_action"><tt class="xref py py-attr docutils literal"><span class="pre">default_action</span></tt></a> value.</p>
 </div>
@@ -1989,11 +2008,11 @@ is permanently <a class="reference internal" href="#fdb.Transaction.closed" titl
 <dl class="method">
 <dt id="fdb.Transaction.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Transaction.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Permanently closes the Transaction object and severs its associations 
+<dd><p>Permanently closes the Transaction object and severs its associations
 with other objects (<a class="reference internal" href="#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> and <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instances).</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">If the physical transaction is unresolved when this method is called, 
+<p class="last">If the physical transaction is unresolved when this method is called,
 a <a class="reference internal" href="#fdb.Transaction.commit" title="fdb.Transaction.commit"><tt class="xref py py-meth docutils literal"><span class="pre">commit()</span></tt></a> or <a class="reference internal" href="#fdb.Transaction.rollback" title="fdb.Transaction.rollback"><tt class="xref py py-meth docutils literal"><span class="pre">rollback()</span></tt></a> will be performed first, accordingly
 to <a class="reference internal" href="#fdb.Transaction.default_action" title="fdb.Transaction.default_action"><tt class="xref py py-attr docutils literal"><span class="pre">default_action</span></tt></a> value.</p>
 </div>
@@ -2014,7 +2033,7 @@ or <cite>rollback()</cite> without an actual transaction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of
 the transaction being resolved should be recycled.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises DatabaseError:</th></tr>
@@ -2027,14 +2046,14 @@ the transaction being resolved should be recycled.</td>
 <dl class="method">
 <dt id="fdb.Transaction.cursor">
 <tt class="descname">cursor</tt><big>(</big><em>connection=None</em><big>)</big><a class="headerlink" href="#fdb.Transaction.cursor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new <a class="reference internal" href="#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> that will operate in the context of this 
+<dd><p>Creates a new <a class="reference internal" href="#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> that will operate in the context of this
 Transaction.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection</strong> (<a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance) &#8211; <strong>Required only when</strong> Transaction is bound to multiple 
-<cite>Connections</cite>, to specify to which <cite>Connection</cite> the 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection</strong> (<a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance) &#8211; <strong>Required only when</strong> Transaction is bound to multiple
+<cite>Connections</cite>, to specify to which <cite>Connection</cite> the
 returned Cursor should be bound.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
@@ -2050,7 +2069,7 @@ this Transaction is bound to.</td>
 <dl class="method">
 <dt id="fdb.Transaction.execute_immediate">
 <tt class="descname">execute_immediate</tt><big>(</big><em>sql</em><big>)</big><a class="headerlink" href="#fdb.Transaction.execute_immediate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a statement without caching its prepared form on 
+<dd><p>Executes a statement without caching its prepared form on
 <strong>all connections</strong> this transaction is bound to.</p>
 <p>Automatically starts transaction if it&#8217;s not already started.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2064,9 +2083,9 @@ this Transaction is bound to.</td>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
 <p class="last"><strong>The statement must not be of a type that returns a result set.</strong>
-In most cases (especially cases in which the same statement – perhaps 
-a parameterized statement – is executed repeatedly), it is better to 
-create a cursor using the connection’s cursor method, then execute 
+In most cases (especially cases in which the same statement – perhaps
+a parameterized statement – is executed repeatedly), it is better to
+create a cursor using the connection’s cursor method, then execute
 the statement using one of the cursor’s execute methods.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2088,7 +2107,7 @@ the statement using one of the cursor’s execute methods.</p>
 <dd><p>Manually triggers the first phase of a two-phase commit (2PC).</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Direct use of this method is optional; if preparation is not triggered 
+<p class="last">Direct use of this method is optional; if preparation is not triggered
 manually, it will be performed implicitly by <cite>commit()</cite> in a 2PC.</p>
 </div>
 </dd></dl>
@@ -2109,12 +2128,12 @@ or <cite>rollback()</cite> without an actual transaction.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of 
+<li><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of
 the transaction being resolved should be recycled.
 Mutually exclusive with &#8216;savepoint`.</li>
-<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Savepoint name. Causes the transaction to roll 
-back only as far as the designated savepoint, 
-rather than rolling back entirely. Mutually 
+<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Savepoint name. Causes the transaction to roll
+back only as far as the designated savepoint,
+rather than rolling back entirely. Mutually
 exclusive with &#8216;retaining`.</li>
 </ul>
 </td>
@@ -2162,12 +2181,12 @@ calling this method starts the transaction if it was not yet started.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> &#8211; One or more information request codes (see 
-<a class="reference internal" href="#fdb.Transaction.transaction_info" title="fdb.Transaction.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a> for details). Multiple codes 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> &#8211; One or more information request codes (see
+<a class="reference internal" href="#fdb.Transaction.transaction_info" title="fdb.Transaction.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a> for details). Multiple codes
 must be passed as tuple.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Decoded response(s) for specified request code(s). When 
-multiple requests are passed, returns a dictionary where key 
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Decoded response(s) for specified request code(s). When
+multiple requests are passed, returns a dictionary where key
 is the request code and value is the response from server.</td>
 </tr>
 </tbody>
@@ -2191,7 +2210,7 @@ is the request code and value is the response from server.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ProgrammingError</strong> &#8211; If transaction is not active.</li>
-<li><strong>OperationalError</strong> &#8211; When result is too large to fit into buffer of 
+<li><strong>OperationalError</strong> &#8211; When result is too large to fit into buffer of
 size SHRT_MAX.</li>
 <li><strong>InternalError</strong> &#8211; On unexpected processing condition.</li>
 <li><strong>ValueError</strong> &#8211; When illegal result type code is specified.</li>
@@ -2246,7 +2265,7 @@ taken when physical transaction has to be ended automatically.
 to manage the SQL statement execution and context of a fetch operation.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">DO NOT create instances of this class directly! Use only <a class="reference internal" href="#fdb.Cursor.prep" title="fdb.Cursor.prep"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.prep()</span></tt></a> 
+<p class="last">DO NOT create instances of this class directly! Use only <a class="reference internal" href="#fdb.Cursor.prep" title="fdb.Cursor.prep"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.prep()</span></tt></a>
 to get PreparedStatement instances.</p>
 </div>
 <div class="admonition note">
@@ -2264,13 +2283,13 @@ keeps it prepared for another execution.</p>
 <dl class="method">
 <dt id="fdb.PreparedStatement.set_stream_blob">
 <tt class="descname">set_stream_blob</tt><big>(</big><em>blob_name</em><big>)</big><a class="headerlink" href="#fdb.PreparedStatement.set_stream_blob" title="Permalink to this definition">¶</a></dt>
-<dd><p>Specify a BLOB column(s) to work in <cite>stream</cite> mode instead classic, 
+<dd><p>Specify a BLOB column(s) to work in <cite>stream</cite> mode instead classic,
 materialized mode.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<em>string or sequence</em>) &#8211; Single name or sequence of column names. Name must 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<em>string or sequence</em>) &#8211; Single name or sequence of column names. Name must
 be in format as it&#8217;s stored in database (refer
 to <a class="reference internal" href="#fdb.PreparedStatement.description" title="fdb.PreparedStatement.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a> for real value).</td>
 </tr>
@@ -2382,7 +2401,7 @@ type constants in the isc_info_sql_stmt_* series. Do not change!</p>
 <dl class="class">
 <dt id="fdb.ConnectionGroup">
 <em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">ConnectionGroup</tt><big>(</big><em>connections=()</em><big>)</big><a class="headerlink" href="#fdb.ConnectionGroup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manager for distributed transactions, i.e. transactions that span multiple 
+<dd><p>Manager for distributed transactions, i.e. transactions that span multiple
 databases.</p>
 <div class="admonition tip">
 <p class="first admonition-title">Tip</p>
@@ -2433,7 +2452,7 @@ contains 16 connections.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tpb</strong> (<a class="reference internal" href="#fdb.TPB" title="fdb.TPB"><tt class="xref py py-class docutils literal"><span class="pre">TPB</span></tt></a> instance, list/tuple of <cite>isc_tpb_*</cite> constants
-or <cite>bytestring</cite>) &#8211; (Optional) Transaction Parameter Buffer for newly started 
+or <cite>bytestring</cite>) &#8211; (Optional) Transaction Parameter Buffer for newly started
 transaction. If not specified, <a class="reference internal" href="#fdb.ConnectionGroup.default_tpb" title="fdb.ConnectionGroup.default_tpb"><tt class="xref py py-attr docutils literal"><span class="pre">default_tpb</span></tt></a> is used.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
@@ -2473,7 +2492,7 @@ or <cite>rollback()</cite> without an actual transaction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of
 the transaction being resolved should be recycled.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
@@ -2506,7 +2525,7 @@ the transaction being resolved should be recycled.</td>
 <dl class="method">
 <dt id="fdb.ConnectionGroup.cursor">
 <tt class="descname">cursor</tt><big>(</big><em>connection</em><big>)</big><a class="headerlink" href="#fdb.ConnectionGroup.cursor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new <a class="reference internal" href="#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> that will operate in the context of 
+<dd><p>Creates a new <a class="reference internal" href="#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> that will operate in the context of
 distributed transaction and specific <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> that belongs
 to this group.</p>
 <div class="admonition note">
@@ -2520,7 +2539,7 @@ to this group.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection</strong> &#8211; <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">When group is empty or specified <cite>connection</cite> 
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">When group is empty or specified <cite>connection</cite>
 doesn&#8217;t belong to this group.</td>
 </tr>
 </tbody>
@@ -2545,7 +2564,7 @@ process, however the exception catched is eventually reported.</p>
 <dl class="method">
 <dt id="fdb.ConnectionGroup.execute_immediate">
 <tt class="descname">execute_immediate</tt><big>(</big><em>sql</em><big>)</big><a class="headerlink" href="#fdb.ConnectionGroup.execute_immediate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a statement on all member connections without caching its 
+<dd><p>Executes a statement on all member connections without caching its
 prepared form.</p>
 <p>Automatically starts transaction if it&#8217;s not already started.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2559,9 +2578,9 @@ prepared form.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
 <p class="last"><strong>The statement must not be of a type that returns a result set.</strong>
-In most cases (especially cases in which the same statement – perhaps 
-a parameterized statement – is executed repeatedly), it is better to 
-create a cursor using the connection’s cursor method, then execute 
+In most cases (especially cases in which the same statement – perhaps
+a parameterized statement – is executed repeatedly), it is better to
+create a cursor using the connection’s cursor method, then execute
 the statement using one of the cursor’s execute methods.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2602,7 +2621,7 @@ it will be performed implicitly by commit() in a 2PC.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>con</strong> &#8211; A <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance to remove.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">When <cite>con</cite> doesn&#8217;t belong to this group or 
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">When <cite>con</cite> doesn&#8217;t belong to this group or
 transaction is active.</td>
 </tr>
 </tbody>
@@ -2624,7 +2643,7 @@ or <cite>rollback()</cite> without an actual transaction.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of
 the transaction being resolved should be recycled.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
@@ -2637,7 +2656,7 @@ the transaction being resolved should be recycled.</td>
 <dl class="method">
 <dt id="fdb.ConnectionGroup.savepoint">
 <tt class="descname">savepoint</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#fdb.ConnectionGroup.savepoint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Establishes a named SAVEPOINT on all member connections. 
+<dd><p>Establishes a named SAVEPOINT on all member connections.
 See <a class="reference internal" href="#fdb.Transaction.savepoint" title="fdb.Transaction.savepoint"><tt class="xref py py-meth docutils literal"><span class="pre">Transaction.savepoint()</span></tt></a> for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2698,16 +2717,16 @@ performs <cite>commit</cite> at the end of block.</p>
 <dl class="class">
 <dt id="fdb.EventConduit">
 <em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">EventConduit</tt><big>(</big><em>db_handle</em>, <em>event_names</em><big>)</big><a class="headerlink" href="#fdb.EventConduit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a conduit through which database event notifications will flow 
+<dd><p>Represents a conduit through which database event notifications will flow
 into the Python program.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">DO NOT create instances of this class directly! Use only 
+<p class="last">DO NOT create instances of this class directly! Use only
 <a class="reference internal" href="#fdb.Connection.event_conduit" title="fdb.Connection.event_conduit"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.event_conduit()</span></tt></a> to get EventConduit instances.</p>
 </div>
-<p>From the moment the conduit is created by the <a class="reference internal" href="#fdb.Connection.event_conduit" title="fdb.Connection.event_conduit"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.event_conduit()</span></tt></a> 
-method, notifications of any events that occur will accumulate asynchronously 
-within the conduit’s internal queue until the conduit is closed either 
+<p>From the moment the conduit is created by the <a class="reference internal" href="#fdb.Connection.event_conduit" title="fdb.Connection.event_conduit"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.event_conduit()</span></tt></a>
+method, notifications of any events that occur will accumulate asynchronously
+within the conduit’s internal queue until the conduit is closed either
 explicitly (via the <a class="reference internal" href="#fdb.EventConduit.close" title="fdb.EventConduit.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> method) or implicitly (via garbage collection).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2725,14 +2744,14 @@ explicitly (via the <a class="reference internal" href="#fdb.EventConduit.close"
 <dt id="fdb.EventConduit.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.EventConduit.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cancels the standing request for this conduit to be notified of events.</p>
-<p>After this method has been called, this EventConduit object is useless, 
+<p>After this method has been called, this EventConduit object is useless,
 and should be discarded.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="fdb.EventConduit.flush">
 <tt class="descname">flush</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.EventConduit.flush" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clear any event notifications that have accumulated in the conduit’s 
+<dd><p>Clear any event notifications that have accumulated in the conduit’s
 internal queue.</p>
 </dd></dl>
 
@@ -2740,18 +2759,18 @@ internal queue.</p>
 <dt id="fdb.EventConduit.wait">
 <tt class="descname">wait</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#fdb.EventConduit.wait" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wait for events.</p>
-<p>Blocks the calling thread until at least one of the events occurs, or 
+<p>Blocks the calling thread until at least one of the events occurs, or
 the specified timeout (if any) expires.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (<em>integer or float</em>) &#8211; Number of seconds (use a float to indicate fractions of 
-seconds). If not even one of the relevant events has 
-occurred after timeout seconds, this method will unblock 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (<em>integer or float</em>) &#8211; Number of seconds (use a float to indicate fractions of
+seconds). If not even one of the relevant events has
+occurred after timeout seconds, this method will unblock
 and return None. The default timeout is infinite.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><cite>None</cite> if the wait timed out, otherwise a dictionary that maps 
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><cite>None</cite> if the wait timed out, otherwise a dictionary that maps
 <cite>event_name -&gt; event_occurrence_count</cite>.</td>
 </tr>
 </tbody>
@@ -2765,7 +2784,7 @@ and return None. The default timeout is infinite.</td>
 <span class="go">}</span>
 </pre></div>
 </div>
-<p>In the example above <cite>event_a</cite> occurred once and <cite>event_b</cite> did not occur 
+<p>In the example above <cite>event_a</cite> occurred once and <cite>event_b</cite> did not occur
 at all.</p>
 </dd></dl>
 
@@ -2783,11 +2802,11 @@ at all.</p>
 <dl class="class">
 <dt id="fdb.BlobReader">
 <em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">BlobReader</tt><big>(</big><em>blobid</em>, <em>db_handle</em>, <em>tr_handle</em>, <em>is_text</em>, <em>charset</em><big>)</big><a class="headerlink" href="#fdb.BlobReader" title="Permalink to this definition">¶</a></dt>
-<dd><p>BlobReader is a “file-like” class, so it acts much like a file instance 
+<dd><p>BlobReader is a “file-like” class, so it acts much like a file instance
 opened in <cite>rb</cite> mode.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">DO NOT create instances of this class directly! BlobReader instances are 
+<p class="last">DO NOT create instances of this class directly! BlobReader instances are
 returned automatically in place of output BLOB values when <cite>stream</cite>
 BLOB access is requested via <a class="reference internal" href="#fdb.PreparedStatement.set_stream_blob" title="fdb.PreparedStatement.set_stream_blob"><tt class="xref py py-meth docutils literal"><span class="pre">PreparedStatement.set_stream_blob()</span></tt></a>.</p>
 </div>
@@ -2835,9 +2854,9 @@ it&#8217;s pointless for reader.</p>
 <dl class="method">
 <dt id="fdb.BlobReader.read">
 <tt class="descname">read</tt><big>(</big><em>size=-1</em><big>)</big><a class="headerlink" href="#fdb.BlobReader.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read at most size bytes from the file (less if the read hits EOF 
-before obtaining size bytes). If the size argument is negative or omitted, 
-read all data until EOF is reached. The bytes are returned as a string 
+<dd><p>Read at most size bytes from the file (less if the read hits EOF
+before obtaining size bytes). If the size argument is negative or omitted,
+read all data until EOF is reached. The bytes are returned as a string
 object. An empty string is returned when EOF is encountered immediately.
 Like <a class="reference external" href="http://docs.python.org/library/stdtypes.html#file.read" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">file.read()</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2851,7 +2870,7 @@ Like <a class="reference external" href="http://docs.python.org/library/stdtypes
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Performs automatic conversion to <cite>unicode</cite> for TEXT BLOBs, if used 
+<p class="last">Performs automatic conversion to <cite>unicode</cite> for TEXT BLOBs, if used
 Python is v3 or <cite>connection charset</cite> is defined.</p>
 </div>
 </dd></dl>
@@ -2859,8 +2878,8 @@ Python is v3 or <cite>connection charset</cite> is defined.</p>
 <dl class="method">
 <dt id="fdb.BlobReader.readline">
 <tt class="descname">readline</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.BlobReader.readline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read one entire line from the file. A trailing newline character is 
-kept in the string (but may be absent when a file ends with an incomplete 
+<dd><p>Read one entire line from the file. A trailing newline character is
+kept in the string (but may be absent when a file ends with an incomplete
 line). An empty string is returned when EOF is encountered immediately.
 Like <a class="reference external" href="http://docs.python.org/library/stdtypes.html#file.readline" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">file.readline()</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2874,7 +2893,7 @@ Like <a class="reference external" href="http://docs.python.org/library/stdtypes
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Performs automatic conversion to <cite>unicode</cite> for TEXT BLOBs, if used 
+<p class="last">Performs automatic conversion to <cite>unicode</cite> for TEXT BLOBs, if used
 Python is v3 or <cite>connection charset</cite> is defined.</p>
 </div>
 </dd></dl>
@@ -2882,12 +2901,12 @@ Python is v3 or <cite>connection charset</cite> is defined.</p>
 <dl class="method">
 <dt id="fdb.BlobReader.readlines">
 <tt class="descname">readlines</tt><big>(</big><em>sizehint=None</em><big>)</big><a class="headerlink" href="#fdb.BlobReader.readlines" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read until EOF using <a class="reference internal" href="#fdb.BlobReader.readline" title="fdb.BlobReader.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a> and return a list containing 
+<dd><p>Read until EOF using <a class="reference internal" href="#fdb.BlobReader.readline" title="fdb.BlobReader.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a> and return a list containing
 the lines thus read. The optional sizehint argument (if present) is ignored.
 Like <a class="reference external" href="http://docs.python.org/library/stdtypes.html#file.readlines" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">file.readlines()</span></tt></a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Performs automatic conversion to <cite>unicode</cite> for TEXT BLOBs, if used 
+<p class="last">Performs automatic conversion to <cite>unicode</cite> for TEXT BLOBs, if used
 Python is v3 or <cite>connection charset</cite> is defined.</p>
 </div>
 </dd></dl>
@@ -2895,7 +2914,7 @@ Python is v3 or <cite>connection charset</cite> is defined.</p>
 <dl class="method">
 <dt id="fdb.BlobReader.seek">
 <tt class="descname">seek</tt><big>(</big><em>offset</em>, <em>whence=0</em><big>)</big><a class="headerlink" href="#fdb.BlobReader.seek" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the file’s current position, like stdio‘s <cite>fseek()</cite>. 
+<dd><p>Set the file’s current position, like stdio‘s <cite>fseek()</cite>.
 See <a class="reference external" href="http://docs.python.org/library/stdtypes.html#file.seek" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">file.seek()</span></tt></a> details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2923,7 +2942,7 @@ See <a class="reference external" href="http://docs.python.org/library/stdtypes.
 <dl class="method">
 <dt id="fdb.BlobReader.tell">
 <tt class="descname">tell</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.BlobReader.tell" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return current position in BLOB, like stdio‘s <cite>ftell()</cite> 
+<dd><p>Return current position in BLOB, like stdio‘s <cite>ftell()</cite>
 and <a class="reference external" href="http://docs.python.org/library/stdtypes.html#file.tell" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">file.tell()</span></tt></a>.</p>
 </dd></dl>
 
@@ -2958,7 +2977,7 @@ Parameter Blocks.</p>
 <dl class="method">
 <dt id="fdb.TPB.render">
 <tt class="descname">render</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.TPB.render" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create valid <cite>transaction parameter block</cite> according to current 
+<dd><p>Create valid <cite>transaction parameter block</cite> according to current
 values of member attributes.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3026,7 +3045,7 @@ that mapped “TABLE_NAME”: (sharingMode, accessMode) For example:</p>
 <dl class="class">
 <dt id="fdb.TableReservation">
 <em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">TableReservation</tt><a class="headerlink" href="#fdb.TableReservation" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary-like helper class that maps 
+<dd><p>A dictionary-like helper class that maps
 “TABLE_NAME”: (sharingMode, accessMode). It performs validation of values
 assigned to keys.</p>
 <dl class="method">
@@ -3067,7 +3086,7 @@ assigned to keys.</p>
 <dl class="method">
 <dt id="fdb.TableReservation.render">
 <tt class="descname">render</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.TableReservation.render" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create valid <cite>table access parameter block</cite> according to current 
+<dd><p>Create valid <cite>table access parameter block</cite> according to current
 key/value pairs.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3095,7 +3114,7 @@ key/value pairs.</p>
 <dl class="class">
 <dt id="fdb.fbcore._RowMapping">
 <em class="property">class </em><tt class="descclassname">fdb.fbcore.</tt><tt class="descname">_RowMapping</tt><big>(</big><em>description</em>, <em>row</em><big>)</big><a class="headerlink" href="#fdb.fbcore._RowMapping" title="Permalink to this definition">¶</a></dt>
-<dd><p>An internal dictionary-like class that wraps a row of results in order to 
+<dd><p>An internal dictionary-like class that wraps a row of results in order to
 map field name to field value.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -4305,9 +4324,22 @@ including call to any <cite>trace_</cite> method will fail with exception.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.services.Connection.engine_version">
+<tt class="descname">engine_version</tt><a class="headerlink" href="#fdb.services.Connection.engine_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Read Only) (float) Firebird version number of connected server. Only major.minor version.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.services.Connection.fetching">
 <tt class="descname">fetching</tt><a class="headerlink" href="#fdb.services.Connection.fetching" title="Permalink to this definition">¶</a></dt>
 <dd><p>(Read Only) <cite>True</cite> if connection is fetching result.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.services.Connection.version">
+<tt class="descname">version</tt><a class="headerlink" href="#fdb.services.Connection.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Read Only) (string) Firebird version number string of connected server.
+Uses Firebird version numbers in form: major.minor.subrelease.build</p>
 </dd></dl>
 
 </dd></dl>
@@ -4382,12 +4414,7 @@ specified to add a user.</p>
 
 </dd></dl>
 
-<span class="target" id="module-fdb.ibase"></span><span class="target" id="module-fdb.blr"></span></div>
 </div>
-<div class="section" id="ctypes-interface-to-firebird-client-library">
-<h2>ctypes interface to Firebird client library<a class="headerlink" href="#ctypes-interface-to-firebird-client-library" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="http://docs.python.org/whatsnew/2.5.html#module-ctypes" title="(in Python v2.7)"><em class="xref std std-ref">ctypes</em></a> interface to <cite>fbclient.so/dll</cite> is defined in submodule <a class="reference internal" href="#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.ibase</span></tt></a>
-and <a class="reference internal" href="#module-fdb.blr" title="fdb.blr: Python ctypes interface to Firebird client library (BLR)"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.blr</span></tt></a>.</p>
 </div>
 <div class="section" id="module-fdb.schema">
 <span id="database-schema"></span><h2>Database schema<a class="headerlink" href="#module-fdb.schema" title="Permalink to this headline">¶</a></h2>
@@ -9940,7 +9967,19 @@ of parent object.</p>
 </table>
 </dd></dl>
 
+<span class="target" id="module-fdb.blr"></span><span class="target" id="module-fdb.ibase"></span></div>
 </div>
+<div class="section" id="ctypes-interface-to-firebird-client-library">
+<h2>ctypes interface to Firebird client library<a class="headerlink" href="#ctypes-interface-to-firebird-client-library" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://docs.python.org/whatsnew/2.5.html#module-ctypes" title="(in Python v2.7)"><em class="xref std std-ref">ctypes</em></a> interface to <cite>fbclient.so/dll</cite> is defined in submodule <a class="reference internal" href="#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.ibase</span></tt></a>
+and <a class="reference internal" href="#module-fdb.blr" title="fdb.blr: Python ctypes interface to Firebird client library (BLR)"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.blr</span></tt></a>.</p>
+<dl class="class">
+<dt id="fdb.ibase.fbclient_API">
+<em class="property">class </em><tt class="descclassname">fdb.ibase.</tt><tt class="descname">fbclient_API</tt><big>(</big><em>fb_library_name=None</em><big>)</big><a class="headerlink" href="#fdb.ibase.fbclient_API" title="Permalink to this definition">¶</a></dt>
+<dd><p>Firebird Client API interface object. Loads Firebird Client Library and exposes
+API functions as member methods. Uses <a class="reference external" href="http://docs.python.org/whatsnew/2.5.html#module-ctypes" title="(in Python v2.7)"><em class="xref std std-ref">ctypes</em></a> for bindings.</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -9981,7 +10020,6 @@ of parent object.</p>
 <li><a class="reference internal" href="#user">User</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#ctypes-interface-to-firebird-client-library">ctypes interface to Firebird client library</a></li>
 <li><a class="reference internal" href="#module-fdb.schema">Database schema</a><ul>
 <li><a class="reference internal" href="#id4">Functions</a></li>
 <li><a class="reference internal" href="#schema">Schema</a></li>
@@ -10031,6 +10069,7 @@ of parent object.</p>
 <li><a class="reference internal" href="#embeddedattribute">EmbeddedAttribute</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ctypes-interface-to-firebird-client-library">ctypes interface to Firebird client library</a></li>
 </ul>
 </li>
 </ul>
@@ -10073,7 +10112,7 @@ of parent object.</p>
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
