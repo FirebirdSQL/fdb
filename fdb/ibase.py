@@ -1135,6 +1135,9 @@ uintmax_t = c_ulong
 
 
 class fbclient_API(object):
+    """Firebird Client API interface object. Loads Firebird Client Library and exposes
+    API functions as member methods. Uses :ref:`ctypes <python:module-ctypes>` for bindings.
+    """
     def __init__(self,fb_library_name=None):
 
         if fb_library_name is None:
