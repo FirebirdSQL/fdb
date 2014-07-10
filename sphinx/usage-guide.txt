@@ -178,7 +178,7 @@ with it:
 
 * `Executing SQL Statements`_: methods :meth:`~Connection.execute_immediate` and :meth:`~Connection.cursor`.
 * Dropping database: method :meth:`~Connection.drop_database`.
-* `Trasanction management`_: methods :meth:`~Connection.begin`, :meth:`~Connection.commit`, 
+* `Transanction management`_: methods :meth:`~Connection.begin`, :meth:`~Connection.commit`, 
   :meth:`~Connection.rollback`, :meth:`~Connection.savepoint`, :meth:`~Connection.trans`,
   :meth:`~Connection.trans_info` and :meth:`~Connection.transaction_info`, and attributes 
   :attr:`~Connection.main_transaction`, :attr:`~Connection.transactions`, :attr:`~Connection.default_tpb`
@@ -1250,8 +1250,8 @@ Output::
 .. index::
    pair: Transaction; management
 
-Trasanction management
-======================
+Transanction management
+=======================
 
 For the sake of simplicity, FDB lets the Python programmer ignore transaction management to the greatest 
 extent allowed by the Python Database API Specification 2.0. The specification says, “if the database 
