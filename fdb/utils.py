@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#coding:utf-8
 #
 #   PROGRAM:     fdb
 #   MODULE:      utils.py
@@ -28,48 +28,48 @@ def update_meta (self, other):
 class LateBindingProperty (property):
     """Peroperty class that binds to getter/setter/deleter methods when **instance**
 of class that define the property is created. This allows you to override
-these methods in descendant classes (if they are not private) without 
+these methods in descendant classes (if they are not private) without
 necessity to redeclare the property itself in descendant class.
-    
+
 Recipe from Tim Delaney, 2005/03/31
 http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/408713
 
 ::
 
     class C(object):
-    
+
         def getx(self):
             print 'C.getx'
             return self._x
-    
+
         def setx(self, x):
             print 'C.setx'
             self._x = x
-    
+
         def delx(self):
             print 'C.delx'
             del self._x
-    
+
         x = LateBindingProperty(getx, setx, delx)
-    
+
     class D(C):
-    
+
         def setx(self, x):
             print 'D.setx'
             super(D, self).setx(x)
-    
+
         def delx(self):
             print 'D.delx'
             super(D, self).delx()
-    
+
     c = C()
     c.x = 1
     c.x
     c.x
     del c.x
-    
+
     print
-    
+
     d = D()
     d.x = 1
     d.x
@@ -113,7 +113,7 @@ class Iterator(object):
     def __init__(self, method, sentinel = None):
         """
         :param method: Callable without parameters that returns next item.
-        :param sentinel: Value that when returned by `method` indicates the end 
+        :param sentinel: Value that when returned by `method` indicates the end
                          of sequence.
         """
         self.getnext = method
@@ -147,7 +147,7 @@ properties from embedded object into class definition of parent object."""
         self.__doc__ = prop.__doc__
     def __get__(self,obj,objtype):
         if obj is None:
-            return self        
+            return self
         return self.prop.__get__(getattr(obj,self.obj))
     def __set__(self,obj,val):
         self.prop.__set__(getattr(obj,self.obj),val)
@@ -155,8 +155,8 @@ properties from embedded object into class definition of parent object."""
         self.prop.__delete__(getattr(obj,self.obj))
 
 class EmbeddedAttribute(property):
-    """Property class that gets/sets attribute of another object. This class 
-    allows you to "inject" attributes from embedded object into class definition 
+    """Property class that gets/sets attribute of another object. This class
+    allows you to "inject" attributes from embedded object into class definition
     of parent object."""
     def __init__(self,obj,attr):
         """
@@ -168,14 +168,14 @@ class EmbeddedAttribute(property):
         self.__doc__ = attr.__doc__
     def __get__(self,obj,objtype):
         if obj is None:
-            return self        
+            return self
         return getattr(getattr(obj,self.obj),self.attr)
     def __set__(self,obj,val):
         setattr(getattr(obj,self.obj),self.attr,val)
 
 def iter_class_properties(cls):
     """Iterator that yields `name, property` pairs for all properties in class.
-    
+
     :param class cls: Class object."""
     for varname in vars(cls):
         value = getattr(cls, varname)
@@ -184,7 +184,7 @@ def iter_class_properties(cls):
 
 def iter_class_variables(cls):
     """Iterator that yields names of all non-callable attributes in class.
-    
+
     :param class cls: Class object."""
     for varname in vars(cls):
         value = getattr(cls, varname)

@@ -2,7 +2,9 @@
 Changelog
 #########
 
-* `Version 1.4`_ (?.?.2013)
+* `Version 1.4.2`_ (13.11.2014)
+* `Version 1.4.1`_ (25.6.2014)
+* `Version 1.4`_ (24.6.2013)
 * `Version 1.3`_ (7.6.2013)
 * `Version 1.2`_ (31.5.2013)
 * `Version 1.1.1`_ (14.5.2013)
@@ -16,6 +18,31 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.4.2
+=============
+
+Improvements
+------------
+
+- In relation to PYFB-43 I had to make a **backward incompatible change** to event processing API. Starting from this version
+  `EventConduit` does not automatically starts collection of events upon creation, but it's now necessary to call 
+  :meth:`~fdb.EventConduit.begin` method. To mitigate the inconvenience, EventConduit now supports context manager
+  protocol that ensures calls to begin() and close() via `with` statement.
+- In relation to PYFB-39 I have decided to drop support for implicitly cached and reused prepared statements. I never
+  liked this feature as I think it's a sneaky method how to put some performance to badly written applications that 
+  in worst case may lead to significant resource consumption on server side when developers are not only lazy but also stupid.
+  It was implemented for the sake of compatibility with KInterbasDB. 
+
+  **This change has no impact on API, but may affect performance of your applications.**
+
+Bugs Fixed
+----------
+
+- PYFB-44 - Inserting a datetime.date into a TIMESTAMP column does not work
+- PYFB-42 - Python 3.4 and FDB - backup throws an exception
+- Unregistered - Fixes in monitor.TransactionInfo
+
 
 Version 1.4.1
 =============

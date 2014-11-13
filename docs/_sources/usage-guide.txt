@@ -178,7 +178,7 @@ with it:
 
 * `Executing SQL Statements`_: methods :meth:`~Connection.execute_immediate` and :meth:`~Connection.cursor`.
 * Dropping database: method :meth:`~Connection.drop_database`.
-* `Trasanction management`_: methods :meth:`~Connection.begin`, :meth:`~Connection.commit`, 
+* `Transanction management`_: methods :meth:`~Connection.begin`, :meth:`~Connection.commit`, 
   :meth:`~Connection.rollback`, :meth:`~Connection.savepoint`, :meth:`~Connection.trans`,
   :meth:`~Connection.trans_info` and :meth:`~Connection.transaction_info`, and attributes 
   :attr:`~Connection.main_transaction`, :attr:`~Connection.transactions`, :attr:`~Connection.default_tpb`
@@ -627,32 +627,20 @@ statement for repeated execution. This may save significant amount of server pro
 in better overall performance.
 
 FDB builds on this by encapsulating all statement-related code into separate :class:`PreparedStatement` 
-class, and implementing :class:`Cursor` class as a wrapper around it. Once executed statement has to
-be disposed in favour of new one, the `PreparedStatement` instance is stored into `Cursor's` internal cache.
-Whenever SQL statement execution is requested, `Cursor` checks whether appropriate `PreparedStatement` 
-isn't in this cache, and if it is, uses it instead creating new one. Because `identity` of SQL statement
-is defined by its `command string`, this mechanism works best for SQL commands that either are `static`
-or `parametrized <Parametrized statements>`_.
+class, and implementing :class:`Cursor` class as a wrapper around it. 
 
-**Example:**
+.. warning::
 
-.. code-block:: python
+   FDB's implementation of Cursor somewhat violates the Python DB API 2.0, which requires that cursor 
+   will be unusable after call to `close`; and an Error (or subclass) exception should be raised if 
+   any operation is attempted with the cursor.
 
-   insertStatement = "insert into the_table (a,b,c) values (?,?,?)"
+   If you'll take advantage of this `anomaly`, your code would be less portable to other Python DB
+   API 2.0 compliant drivers.
 
-   # First execution initializes the PreparedStatement
-   cur.execute(insertStatement, ('aardvark', 1, 0.1))
-
-   # This execution reuses PreparedStatement from cache
-   cur.execute(insertStatement, ('zymurgy', 2147483647, 99999.999))
-
-   # And this one too
-   cur.execute("insert into the_table (a,b,c) values (?,?,?)", ('foobar', 2000, 9.9))
-
-Additionally to automatic, implicit reuse of prepared statements, `Cursor` also allows to aquire and use
-`PreparedStatement` instances explicitly. `PreparedStatement` aquired by calling :meth:`~Cursor.prep`
-method could be then passed to :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` instead `command
-string`.
+Beside SQL command string, `Cursor` also allows to aquire and use `PreparedStatement` instances explicitly. 
+`PreparedStatement` are aquired by calling :meth:`~Cursor.prep` method could be then passed to :meth:`~Cursor.execute` 
+or :meth:`~Cursor.executemany` instead `command string`.
 
 **Example:**
 
@@ -673,43 +661,15 @@ string`.
    #
    cur.executemany(insertStatement, inputRows)
 
-While both implicit and explicit prepared statements could be used to the same effect, there are
-significant differences between both methods:
-
-* **Implicit** prepared statements remain in the cache until `Cursor` instance is disposed,
-  preventing server-side resources allocated for the statement to be fully released. If it may
-  become a problem, it's necessary to release the `Cursor` instance, or call its :meth:`~Cursor.clear_cache`
-  method. 
-
-  .. note::
-     
-     Because `Cursor` is just a wrapper around :class:`PreparedStatement` instance(s), calling 
-     :meth:`~Cursor.close` doesn't render the `Cursor` instance unusable (unlike other objects like 
-     :class:`Connection` or :class:`Transaction`). It just closes the current prepared statement, but
-     all prepared statements (current and all in internal cache) are still available for use, and `Cursor` 
-     itself is still bound to :class:`Connection` and :class:`Transaction`, and could be still used 
-     to execute SQL statements.
-
-  .. warning::
-
-     FDB's implementation of Cursor somewhat violates the Python DB API 2.0, which requires that cursor 
-     will be unusable after call to `close`; and an Error (or subclass) exception should be raised if 
-     any operation is attempted with the cursor.
-
-     If you'll take advantage of this `anomaly`, your code would be less portable to other Python DB
-     API 2.0 compliant drivers.
-
-* **Explicit** prepared statements are never stored in `Cursor's` cache, but they are still bound to 
-  `Cursor` instance that created them, and can't be used with any other `Cursor` instance. Beside
-  repeated execution they are also useful to get information about statement (like its output
-  :attr:`~PreparedStatement.description`, execution :attr:`~PreparedStatement.plan` or 
-  :attr:`~PreparedStatement.statement_type`) before its execution.
+Prepared statements are bound to `Cursor` instance that created them, and can't be used with any other 
+`Cursor` instance. Beside repeated execution they are also useful to get information about statement (like 
+its output :attr:`~PreparedStatement.description`, execution :attr:`~PreparedStatement.plan` or 
+:attr:`~PreparedStatement.statement_type`) before its execution.
 
 **Example Program:**
 
 The following program demonstrates the explicit use of `PreparedStatements`. It also benchmarks explicit 
-`PreparedStatement` reuse against FDB’s automatic `PreparedStatement` reuse, and against an input strategy 
-that prevents `PreparedStatement` reuse.
+`PreparedStatement` reuse against normal execution that prepares statements on each execution.
 
 .. code-block:: python
 
@@ -755,20 +715,7 @@ that prevents `PreparedStatement` reuse.
 
    iStart += N
 
-   # FDB automatically uses a PreparedStatement "under the hood":
-   startTime = time.time()
-   for i in xrange(iStart, iStart + N):
-       cur.execute("insert into t (a,b) values (?,?)", (i, str(i)))
-   print (
-       'With implicit prepared statement, performed'
-       '\n  %0.2f insertions per second.' % (N / (time.time() - startTime))
-     )
-   con.commit()
-
-   iStart += N
-
-   # A new SQL string containing the inputs is submitted every time, so
-   # FDB is not able to implicitly reuse a PreparedStatement.  Also, in a
+   # A new SQL string containing the inputs is submitted every time.  Also, in a
    # more complicated scenario where the end user supplied the string input
    # values, the program would risk SQL injection attacks:
    startTime = time.time()
@@ -809,8 +756,6 @@ Sample output::
 
    With explicit prepared statement, performed
      4276.00 insertions per second.
-   With implicit prepared statement, performed
-     4185.09 insertions per second.
    When unable to reuse prepared statement, performed
      2037.70 insertions per second.
 
@@ -831,12 +776,6 @@ Sample output::
 As you can see, the version that prevents the reuse of prepared statements is about two times slower 
 – *for a trivial statement*. In a real application, SQL statements are likely to be far more complicated, 
 so the speed advantage of using prepared statements would only increase.
-
-As the timings indicate, FDB does a good job of reusing prepared statements even if the client program 
-is written in a style strictly compatible with the Python DB API 2.0 (which accepts only `strings` – 
-not :class:`PreparedStatement` objects – to the :meth:`Cursor.execute` method). The performance loss 
-in this case is about one percent.
-
 
 .. index::
    pair: Cursor; named
@@ -1250,8 +1189,8 @@ Output::
 .. index::
    pair: Transaction; management
 
-Trasanction management
-======================
+Transanction management
+=======================
 
 For the sake of simplicity, FDB lets the Python programmer ignore transaction management to the greatest 
 extent allowed by the Python Database API Specification 2.0. The specification says, “if the database 
@@ -2094,24 +2033,33 @@ engine deals with events in the context of a particular database (after all, `PO
 by a stored procedure or a trigger).
 
 :meth:`Connection.event_conduit` takes a sequence of string event names as parameter, and returns
-:class:`EventConduit` instance that immediately starts to accumulate notifications of any events that occur 
-within the conduit’s internal queue until the conduit is closed either explicitly (via the 
+:class:`EventConduit` instance. 
+
+.. important::
+
+   To start listening for events it's necessary (starting from FDB version 1.4.2) to call :meth:`EventConduit.begin`
+   method or use EventConduit's context manager interface.
+
+Immediately when :meth:`~EventConduit.begin` method is called, EventConduit starts to accumulate notifications 
+of any events that occur within the conduit’s internal queue until the conduit is closed either explicitly (via the 
 :meth:`~EventConduit.close` method) or implicitly (via garbage collection).
 
-Notifications about events are aquired through call to :meth:`EventConduit.wait` method, that blocks 
+Notifications about events are aquired through call to :meth:`~EventConduit.wait` method, that blocks 
 the calling thread until at least one of the events occurs, or the specified `timeout` (if any) expires,
 and returns `None` if the wait timed out, or a dictionary that maps `event_name -> event_occurrence_count`.
+
+.. important::
+
+   `EventConduit` can act as context manager that ensures execution of :meth:`~EventConduit.begin` and :meth:`~EventConduit.close` methods.
+   It's strongly advised to use the `EventConduit` with the `with` statement.
 
 **Example:**
 
 .. code-block:: python
 
-   >>> conduit = connection.event_conduit( ('event_a', 'event_b') )
-   >>> conduit.wait()
-   {
-    'event_a': 1,
-    'event_b': 0
-   }
+   with connection.event_conduit( ('event_a', 'event_b') ) as conduit:
+       events = conduit.wait()
+       process_events(events)
 
 If you want to drop notifications accumulated so far by conduit, call :meth:`EventConduit.flush` method.
 
@@ -2159,6 +2107,7 @@ If you want to drop notifications accumulated so far by conduit, call :meth:`Eve
    #      =========
    timed_event = threading.Timer(3.0,send_events,args=[["insert into T (PK,C1) values (1,1)",]])
    events = con.event_conduit(['insert_1'])
+   events.begin()
    timed_event.start()
    e = events.wait()
    events.close()
@@ -2173,6 +2122,7 @@ If you want to drop notifications accumulated so far by conduit, call :meth:`Eve
            "insert into T (PK,C1) values (1,2)",]
    timed_event = threading.Timer(3.0,send_events,args=[cmds])
    events = self.con.event_conduit(['insert_1','insert_3'])
+   events.begin()
    timed_event.start()
    e = events.wait()
    events.close()
@@ -2189,6 +2139,7 @@ If you want to drop notifications accumulated so far by conduit, call :meth:`Eve
    events = con.event_conduit(['insert_1','A','B','C','D',
                                'E','F','G','H','I','J','K','L','M',
                                'N','O','P','Q','R','insert_3'])
+   events.begin()
    timed_event.start()
    time.sleep(3)
    e = events.wait()
@@ -2199,6 +2150,7 @@ If you want to drop notifications accumulated so far by conduit, call :meth:`Eve
    #      ============
    timed_event = threading.Timer(3.0,send_events,args=[["insert into T (PK,C1) values (1,1)",]])
    events = con.event_conduit(['insert_1'])
+   events.begin()
    send_events(["insert into T (PK,C1) values (1,1)",
                 "insert into T (PK,C1) values (1,1)"])
    time.sleep(2)

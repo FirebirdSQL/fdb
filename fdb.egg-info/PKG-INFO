@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: fdb
-Version: 1.4.1
+Version: 1.4.2
 Summary: Firebird RDBMS bindings for Python.
 Home-page: http://www.firebirdsql.org/en/python-devel-status/
 Author: Pavel Cisar

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -7,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Usage Guide &mdash; FDB 1.4.1 documentation</title>
+    <title>Usage Guide &mdash; FDB 1.4.2 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '1.4.1',
+        URL_ROOT:    './',
+        VERSION:     '1.4.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4.1 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4.2 documentation" href="index.html" />
     <link rel="next" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
     <link rel="prev" title="Getting Started with FDB" href="getting-started.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +50,7 @@
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -198,7 +197,7 @@ with it:</p>
 <ul class="simple">
 <li><a class="reference internal" href="#executing-sql-statements">Executing SQL Statements</a>: methods <a class="reference internal" href="reference.html#fdb.Connection.execute_immediate" title="fdb.Connection.execute_immediate"><tt class="xref py py-meth docutils literal"><span class="pre">execute_immediate()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Connection.cursor" title="fdb.Connection.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">cursor()</span></tt></a>.</li>
 <li>Dropping database: method <a class="reference internal" href="reference.html#fdb.Connection.drop_database" title="fdb.Connection.drop_database"><tt class="xref py py-meth docutils literal"><span class="pre">drop_database()</span></tt></a>.</li>
-<li><a class="reference internal" href="#trasanction-management">Trasanction management</a>: methods <a class="reference internal" href="reference.html#fdb.Connection.begin" title="fdb.Connection.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.commit" title="fdb.Connection.commit"><tt class="xref py py-meth docutils literal"><span class="pre">commit()</span></tt></a>,
+<li><a class="reference internal" href="#transanction-management">Transanction management</a>: methods <a class="reference internal" href="reference.html#fdb.Connection.begin" title="fdb.Connection.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.commit" title="fdb.Connection.commit"><tt class="xref py py-meth docutils literal"><span class="pre">commit()</span></tt></a>,
 <a class="reference internal" href="reference.html#fdb.Connection.rollback" title="fdb.Connection.rollback"><tt class="xref py py-meth docutils literal"><span class="pre">rollback()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.savepoint" title="fdb.Connection.savepoint"><tt class="xref py py-meth docutils literal"><span class="pre">savepoint()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.trans" title="fdb.Connection.trans"><tt class="xref py py-meth docutils literal"><span class="pre">trans()</span></tt></a>,
 <a class="reference internal" href="reference.html#fdb.Connection.trans_info" title="fdb.Connection.trans_info"><tt class="xref py py-meth docutils literal"><span class="pre">trans_info()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Connection.transaction_info" title="fdb.Connection.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a>, and attributes
 <a class="reference internal" href="reference.html#fdb.Connection.main_transaction" title="fdb.Connection.main_transaction"><tt class="xref py py-attr docutils literal"><span class="pre">main_transaction</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.transactions" title="fdb.Connection.transactions"><tt class="xref py py-attr docutils literal"><span class="pre">transactions</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.default_tpb" title="fdb.Connection.default_tpb"><tt class="xref py py-attr docutils literal"><span class="pre">default_tpb</span></tt></a>
@@ -249,8 +248,9 @@ property.</p>
 <span class="k">print</span> <span class="s">&#39;ODS version:&#39;</span><span class="p">,</span><span class="n">con</span><span class="o">.</span><span class="n">ods</span>
 </pre></div>
 </div>
-<div class="highlight-python"><pre>Firebird version: 2.5.2.26540
-ODS version: 11.1</pre>
+<div class="highlight-python"><div class="highlight"><pre>Firebird version: 2.5.2.26540
+ODS version: 11.1
+</pre></div>
 </div>
 <p>In abover example although connected Firebird engine is version 2.5, connected database has ODS 11.1 which
 came with Firebird 2.1, and some Firebird 2.5 features will not be available on this database.</p>
@@ -306,8 +306,9 @@ or an integer. For example, requesting <cite>isc_info_user_names</cite> with the
 </pre></div>
 </div>
 <p>Sample output:</p>
-<div class="highlight-python"><pre>The server is currently using 8931328 bytes of memory.
-We are connected to the database at C:\TEMP\TEST.DB on host WEASEL.</pre>
+<div class="highlight-python"><div class="highlight"><pre>The server is currently using 8931328 bytes of memory.
+We are connected to the database at C:\TEMP\TEST.DB on host WEASEL.
+</pre></div>
 </div>
 <p>A more convenient way to access the same functionality is via the <a class="reference internal" href="reference.html#fdb.Connection.db_info" title="fdb.Connection.db_info"><tt class="xref py py-meth docutils literal"><span class="pre">db_info()</span></tt></a> method,
 which is high-level convenience wrapper around the <cite>database_info()</cite> method that parses the output of
@@ -319,7 +320,8 @@ result types. For example, requesting <cite>isc_info_user_names</cite> with the 
 <p>returns a dictionary that maps (username -&gt; number of open connections). If SYSDBA has one open connection
 to the database to which <cite>con</cite> is connected, and TEST_USER_1 has three open connections to that same database,
 the return value would be:</p>
-<div class="highlight-python"><pre>{‘SYSDBA’: 1, ‘TEST_USER_1’: 3}</pre>
+<div class="highlight-python"><div class="highlight"><pre>{‘SYSDBA’: 1, ‘TEST_USER_1’: 3}
+</pre></div>
 </div>
 <p><strong>Example program:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">fdb</span>
@@ -361,11 +363,12 @@ the return value would be:</p>
 </pre></div>
 </div>
 <p>Sample output:</p>
-<div class="highlight-python"><pre>Open connections to this database:
-{'SYSDBA': 1, 'TEST_USER_1': 3}
+<div class="highlight-python"><div class="highlight"><pre>Open connections to this database:
+{&#39;SYSDBA&#39;: 1, &#39;TEST_USER_1&#39;: 3}
 
 db_info indicates database size is 20684800 bytes
-os.path.getsize indicates size is  20684800 bytes</pre>
+os.path.getsize indicates size is  20684800 bytes
+</pre></div>
 </div>
 </div>
 </div>
@@ -466,8 +469,8 @@ it will be executed more efficiently (see section about <a class="reference inte
 </ul>
 <p>Parametrized statemets also have some limitations. Currently:</p>
 <ul class="simple">
-<li><cite>DATE</cite>, <cite>TIME</cite> and <cite>DATETIME</cite> values must be relevant <a class="reference external" href="http://docs.python.org/library/datetime.html#datetime" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">datetime</span></tt></a> objects.</li>
-<li><cite>NUMERIC</cite> and <cite>DECIMAL</cite> values must be <a class="reference external" href="http://docs.python.org/library/decimal.html#decimal" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">decimal</span></tt></a> objects.</li>
+<li><cite>DATE</cite>, <cite>TIME</cite> and <cite>DATETIME</cite> values must be relevant <a class="reference external" href="http://docs.python.org/library/datetime.html#module-datetime" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">datetime</span></tt></a> objects.</li>
+<li><cite>NUMERIC</cite> and <cite>DECIMAL</cite> values must be <a class="reference external" href="http://docs.python.org/library/decimal.html#module-decimal" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">decimal</span></tt></a> objects.</li>
 </ul>
 </div>
 <div class="section" id="fetching-data-from-server">
@@ -592,29 +595,18 @@ subsequent execution if particular statement should be executed repeatedly - by 
 statement for repeated execution. This may save significant amount of server processing time, and result
 in better overall performance.</p>
 <p>FDB builds on this by encapsulating all statement-related code into separate <a class="reference internal" href="reference.html#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a>
-class, and implementing <a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> class as a wrapper around it. Once executed statement has to
-be disposed in favour of new one, the <cite>PreparedStatement</cite> instance is stored into <cite>Cursor&#8217;s</cite> internal cache.
-Whenever SQL statement execution is requested, <cite>Cursor</cite> checks whether appropriate <cite>PreparedStatement</cite>
-isn&#8217;t in this cache, and if it is, uses it instead creating new one. Because <cite>identity</cite> of SQL statement
-is defined by its <cite>command string</cite>, this mechanism works best for SQL commands that either are <cite>static</cite>
-or <a class="reference external" href="Parametrizedstatements">parametrized</a>.</p>
-<p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">insertStatement</span> <span class="o">=</span> <span class="s">&quot;insert into the_table (a,b,c) values (?,?,?)&quot;</span>
-
-<span class="c"># First execution initializes the PreparedStatement</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">insertStatement</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;aardvark&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
-
-<span class="c"># This execution reuses PreparedStatement from cache</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">insertStatement</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;zymurgy&#39;</span><span class="p">,</span> <span class="mi">2147483647</span><span class="p">,</span> <span class="mf">99999.999</span><span class="p">))</span>
-
-<span class="c"># And this one too</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into the_table (a,b,c) values (?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;foobar&#39;</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mf">9.9</span><span class="p">))</span>
-</pre></div>
+class, and implementing <a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> class as a wrapper around it.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>FDB&#8217;s implementation of Cursor somewhat violates the Python DB API 2.0, which requires that cursor
+will be unusable after call to <cite>close</cite>; and an Error (or subclass) exception should be raised if
+any operation is attempted with the cursor.</p>
+<p class="last">If you&#8217;ll take advantage of this <cite>anomaly</cite>, your code would be less portable to other Python DB
+API 2.0 compliant drivers.</p>
 </div>
-<p>Additionally to automatic, implicit reuse of prepared statements, <cite>Cursor</cite> also allows to aquire and use
-<cite>PreparedStatement</cite> instances explicitly. <cite>PreparedStatement</cite> aquired by calling <a class="reference internal" href="reference.html#fdb.Cursor.prep" title="fdb.Cursor.prep"><tt class="xref py py-meth docutils literal"><span class="pre">prep()</span></tt></a>
-method could be then passed to <a class="reference internal" href="reference.html#fdb.Cursor.execute" title="fdb.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> or <a class="reference internal" href="reference.html#fdb.Cursor.executemany" title="fdb.Cursor.executemany"><tt class="xref py py-meth docutils literal"><span class="pre">executemany()</span></tt></a> instead <cite>command
-string</cite>.</p>
+<p>Beside SQL command string, <cite>Cursor</cite> also allows to aquire and use <cite>PreparedStatement</cite> instances explicitly.
+<cite>PreparedStatement</cite> are aquired by calling <a class="reference internal" href="reference.html#fdb.Cursor.prep" title="fdb.Cursor.prep"><tt class="xref py py-meth docutils literal"><span class="pre">prep()</span></tt></a> method could be then passed to <a class="reference internal" href="reference.html#fdb.Cursor.execute" title="fdb.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a>
+or <a class="reference internal" href="reference.html#fdb.Cursor.executemany" title="fdb.Cursor.executemany"><tt class="xref py py-meth docutils literal"><span class="pre">executemany()</span></tt></a> instead <cite>command string</cite>.</p>
 <p><strong>Example:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">insertStatement</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">prep</span><span class="p">(</span><span class="s">&quot;insert into the_table (a,b,c) values (?,?,?)&quot;</span><span class="p">)</span>
 
@@ -632,42 +624,13 @@ string</cite>.</p>
 <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">insertStatement</span><span class="p">,</span> <span class="n">inputRows</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>While both implicit and explicit prepared statements could be used to the same effect, there are
-significant differences between both methods:</p>
-<ul>
-<li><p class="first"><strong>Implicit</strong> prepared statements remain in the cache until <cite>Cursor</cite> instance is disposed,
-preventing server-side resources allocated for the statement to be fully released. If it may
-become a problem, it&#8217;s necessary to release the <cite>Cursor</cite> instance, or call its <a class="reference internal" href="reference.html#fdb.Cursor.clear_cache" title="fdb.Cursor.clear_cache"><tt class="xref py py-meth docutils literal"><span class="pre">clear_cache()</span></tt></a>
-method.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Because <cite>Cursor</cite> is just a wrapper around <a class="reference internal" href="reference.html#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance(s), calling
-<a class="reference internal" href="reference.html#fdb.Cursor.close" title="fdb.Cursor.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> doesn&#8217;t render the <cite>Cursor</cite> instance unusable (unlike other objects like
-<a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> or <a class="reference internal" href="reference.html#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a>). It just closes the current prepared statement, but
-all prepared statements (current and all in internal cache) are still available for use, and <cite>Cursor</cite>
-itself is still bound to <a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Transaction" title="fdb.Transaction"><tt class="xref py py-class docutils literal"><span class="pre">Transaction</span></tt></a>, and could be still used
-to execute SQL statements.</p>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>FDB&#8217;s implementation of Cursor somewhat violates the Python DB API 2.0, which requires that cursor
-will be unusable after call to <cite>close</cite>; and an Error (or subclass) exception should be raised if
-any operation is attempted with the cursor.</p>
-<p class="last">If you&#8217;ll take advantage of this <cite>anomaly</cite>, your code would be less portable to other Python DB
-API 2.0 compliant drivers.</p>
-</div>
-</li>
-<li><p class="first"><strong>Explicit</strong> prepared statements are never stored in <cite>Cursor&#8217;s</cite> cache, but they are still bound to
-<cite>Cursor</cite> instance that created them, and can&#8217;t be used with any other <cite>Cursor</cite> instance. Beside
-repeated execution they are also useful to get information about statement (like its output
-<a class="reference internal" href="reference.html#fdb.PreparedStatement.description" title="fdb.PreparedStatement.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a>, execution <a class="reference internal" href="reference.html#fdb.PreparedStatement.plan" title="fdb.PreparedStatement.plan"><tt class="xref py py-attr docutils literal"><span class="pre">plan</span></tt></a> or
+<p>Prepared statements are bound to <cite>Cursor</cite> instance that created them, and can&#8217;t be used with any other
+<cite>Cursor</cite> instance. Beside repeated execution they are also useful to get information about statement (like
+its output <a class="reference internal" href="reference.html#fdb.PreparedStatement.description" title="fdb.PreparedStatement.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a>, execution <a class="reference internal" href="reference.html#fdb.PreparedStatement.plan" title="fdb.PreparedStatement.plan"><tt class="xref py py-attr docutils literal"><span class="pre">plan</span></tt></a> or
 <a class="reference internal" href="reference.html#fdb.PreparedStatement.statement_type" title="fdb.PreparedStatement.statement_type"><tt class="xref py py-attr docutils literal"><span class="pre">statement_type</span></tt></a>) before its execution.</p>
-</li>
-</ul>
 <p><strong>Example Program:</strong></p>
 <p>The following program demonstrates the explicit use of <cite>PreparedStatements</cite>. It also benchmarks explicit
-<cite>PreparedStatement</cite> reuse against FDB’s automatic <cite>PreparedStatement</cite> reuse, and against an input strategy
-that prevents <cite>PreparedStatement</cite> reuse.</p>
+<cite>PreparedStatement</cite> reuse against normal execution that prepares statements on each execution.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">fdb</span>
 
@@ -710,20 +673,7 @@ that prevents <cite>PreparedStatement</cite> reuse.</p>
 
 <span class="n">iStart</span> <span class="o">+=</span> <span class="n">N</span>
 
-<span class="c"># FDB automatically uses a PreparedStatement &quot;under the hood&quot;:</span>
-<span class="n">startTime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">iStart</span><span class="p">,</span> <span class="n">iStart</span> <span class="o">+</span> <span class="n">N</span><span class="p">):</span>
-    <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into t (a,b) values (?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
-<span class="k">print</span> <span class="p">(</span>
-    <span class="s">&#39;With implicit prepared statement, performed&#39;</span>
-    <span class="s">&#39;</span><span class="se">\n</span><span class="s">  </span><span class="si">%0.2f</span><span class="s"> insertions per second.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">N</span> <span class="o">/</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">startTime</span><span class="p">))</span>
-  <span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-
-<span class="n">iStart</span> <span class="o">+=</span> <span class="n">N</span>
-
-<span class="c"># A new SQL string containing the inputs is submitted every time, so</span>
-<span class="c"># FDB is not able to implicitly reuse a PreparedStatement.  Also, in a</span>
+<span class="c"># A new SQL string containing the inputs is submitted every time.  Also, in a</span>
 <span class="c"># more complicated scenario where the end user supplied the string input</span>
 <span class="c"># values, the program would risk SQL injection attacks:</span>
 <span class="n">startTime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -756,7 +706,7 @@ that prevents <cite>PreparedStatement</cite> reuse.</p>
 </pre></div>
 </div>
 <p>Sample output:</p>
-<div class="highlight-python"><pre>psIns.sql: "insert into t (a,b) values (?,?)"
+<div class="highlight-python"><div class="highlight"><pre>psIns.sql: &quot;insert into t (a,b) values (?,?)&quot;
 psIns.statement_type == fdb.isc_info_sql_stmt_insert: True
 psIns.n_input_params: 2
 psIns.n_output_params: 0
@@ -764,12 +714,10 @@ psIns.plan: None
 
 With explicit prepared statement, performed
   4276.00 insertions per second.
-With implicit prepared statement, performed
-  4185.09 insertions per second.
 When unable to reuse prepared statement, performed
   2037.70 insertions per second.
 
-psSel.sql: "select * from t where a = ?"
+psSel.sql: &quot;select * from t where a = ?&quot;
 psSel.statement_type == fdb.isc_info_sql_stmt_select: True
 psSel.n_input_params: 1
 psSel.n_output_params: 2
@@ -777,19 +725,16 @@ psSel.plan: PLAN (T INDEX (UNIQUE_T_A))
 
 Note that PreparedStatements are not transferrable from one cursor to another:
 Traceback (most recent call last):
-  File "pstest.py", line 85, in &lt;module&gt;
+  File &quot;pstest.py&quot;, line 85, in &lt;module&gt;
     cur2.execute(psSel)
-     File "/home/job/python/envs/pyfirebird/fdb/fdb/fbcore.py", line 2623, in execute
-    raise ValueError("PreparedStatement was created by different Cursor.")
-ValueError: PreparedStatement was created by different Cursor.</pre>
+     File &quot;/home/job/python/envs/pyfirebird/fdb/fdb/fbcore.py&quot;, line 2623, in execute
+    raise ValueError(&quot;PreparedStatement was created by different Cursor.&quot;)
+ValueError: PreparedStatement was created by different Cursor.
+</pre></div>
 </div>
 <p>As you can see, the version that prevents the reuse of prepared statements is about two times slower
 – <em>for a trivial statement</em>. In a real application, SQL statements are likely to be far more complicated,
 so the speed advantage of using prepared statements would only increase.</p>
-<p>As the timings indicate, FDB does a good job of reusing prepared statements even if the client program
-is written in a style strictly compatible with the Python DB API 2.0 (which accepts only <cite>strings</cite> –
-not <a class="reference internal" href="reference.html#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> objects – to the <a class="reference internal" href="reference.html#fdb.Cursor.execute" title="fdb.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> method). The performance loss
-in this case is about one percent.</p>
 </div>
 <div class="section" id="named-cursors">
 <span id="index-13"></span><h3>Named Cursors<a class="headerlink" href="#named-cursors" title="Permalink to this headline">¶</a></h3>
@@ -1057,19 +1002,20 @@ instance is created for each value fetched.</p>
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-python"><pre>Materialized retrieval (as str):
-[('abcdef',), ('ghijklmnop',)]
+<div class="highlight-python"><div class="highlight"><pre>Materialized retrieval (as str):
+[(&#39;abcdef&#39;,), (&#39;ghijklmnop&#39;,)]
 
 Streaming retrieval (via fdb.BlobReader):
-readerA.mode:    "rb"
+readerA.mode:    &quot;rb&quot;
 readerA.closed:   False
 readerA.tell():   0
-readerA.read(2): "ab"
+readerA.read(2): &quot;ab&quot;
 readerA.tell():   2
-readerA.read():  "cdef"
+readerA.read():  &quot;cdef&quot;
 readerA.tell():   6
-readerA.read():  ""
-readerA.closed:   True</pre>
+readerA.read():  &quot;&quot;
+readerA.closed:   True
+</pre></div>
 </div>
 </div>
 <div class="section" id="firebird-array-type">
@@ -1128,13 +1074,14 @@ arrays.</p>
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-python"><pre>arrayIn:  [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
-arrayOut: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]</pre>
+<div class="highlight-python"><div class="highlight"><pre>arrayIn:  [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+arrayOut: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+</pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="trasanction-management">
-<span id="index-20"></span><h2>Trasanction management<a class="headerlink" href="#trasanction-management" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="transanction-management">
+<span id="index-20"></span><h2>Transanction management<a class="headerlink" href="#transanction-management" title="Permalink to this headline">¶</a></h2>
 <p>For the sake of simplicity, FDB lets the Python programmer ignore transaction management to the greatest
 extent allowed by the Python Database API Specification 2.0. The specification says, “if the database
 supports an auto-commit feature, this must be initially off”. At a minimum, therefore, it is necessary to
@@ -1175,7 +1122,7 @@ uses one <cite>Transaction</cite> instance as <a class="reference internal" href
 <a class="reference internal" href="reference.html#fdb.Connection.begin" title="fdb.Connection.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.savepoint" title="fdb.Connection.savepoint"><tt class="xref py py-meth docutils literal"><span class="pre">savepoint()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.commit" title="fdb.Connection.commit"><tt class="xref py py-meth docutils literal"><span class="pre">commit()</span></tt></a>,
 <a class="reference internal" href="reference.html#fdb.Connection.rollback" title="fdb.Connection.rollback"><tt class="xref py py-meth docutils literal"><span class="pre">rollback()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.Connection.trans_info" title="fdb.Connection.trans_info"><tt class="xref py py-meth docutils literal"><span class="pre">trans_info()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.Connection.transaction_info" title="fdb.Connection.transaction_info"><tt class="xref py py-meth docutils literal"><span class="pre">transaction_info()</span></tt></a>
 calls to it.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last">More about using multiple transactions with the same connection in separate
 <a class="reference internal" href="#multiple-transactions"><em>section</em></a>.</p>
@@ -1428,14 +1375,15 @@ of complex result types.</p>
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-python"><pre>{4: 459, 5: 430, 6: 459, 7: 459, 8: (3, 1), 9: 1, 10: -1}
+<div class="highlight-python"><div class="highlight"><pre>{4: 459, 5: 430, 6: 459, 7: 459, 8: (3, 1), 9: 1, 10: -1}
 TransactionID: 459
 Oldest Interesting (OIT): 430
 Oldest Snapshot: 459
 Oldest Active (OAT): 459
 Isolation Level: (3, 1)
 Access Mode: 1
-Lock Timeout: -1</pre>
+Lock Timeout: -1
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1520,7 +1468,7 @@ Specification.</p>
 </pre></div>
 </div>
 <p>The output of the example program is shown below:</p>
-<div class="highlight-python"><pre>Before the first savepoint, the contents of the table are:
+<div class="highlight-python"><div class="highlight"><pre>Before the first savepoint, the contents of the table are:
   []
 After savepoint A, the contents of the table are:
   [(1,)]
@@ -1531,7 +1479,8 @@ After savepoint C, the contents of the table are:
 After rolling back to savepoint A, the contents of the table are:
   [(1,)]
 After rolling back entirely, the contents of the table are:
-  []</pre>
+  []
+</pre></div>
 </div>
 </div>
 <div class="section" id="using-multiple-transactions-with-the-same-connection">
@@ -1708,7 +1657,7 @@ method has manadory parameter <cite>connection</cite>, to specify to which membe
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-python"><pre>Distributed transaction: COMMIT
+<div class="highlight-python"><div class="highlight"><pre>Distributed transaction: COMMIT
 db1: [(1, None)]
 db2: [(1, None)]
 Distributed transaction: PREPARE + COMMIT
@@ -1722,7 +1671,8 @@ db1: [(1, None), (2, None)]
 db2: [(1, None), (2, None)]
 Distributed transaction: EXECUTE_IMMEDIATE
 db1: [(1, None), (2, None), (3, None)]
-db2: [(1, None), (2, None), (3, None)]</pre>
+db2: [(1, None), (2, None), (3, None)]
+</pre></div>
 </div>
 </div>
 <div class="section" id="transaction-context-manager">
@@ -1893,19 +1843,27 @@ a method of <cite>Connection</cite> rather than a module-level function or a cla
 engine deals with events in the context of a particular database (after all, <cite>POST_EVENT</cite> must be issued
 by a stored procedure or a trigger).</p>
 <p><a class="reference internal" href="reference.html#fdb.Connection.event_conduit" title="fdb.Connection.event_conduit"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.event_conduit()</span></tt></a> takes a sequence of string event names as parameter, and returns
-<a class="reference internal" href="reference.html#fdb.EventConduit" title="fdb.EventConduit"><tt class="xref py py-class docutils literal"><span class="pre">EventConduit</span></tt></a> instance that immediately starts to accumulate notifications of any events that occur
-within the conduit’s internal queue until the conduit is closed either explicitly (via the
+<a class="reference internal" href="reference.html#fdb.EventConduit" title="fdb.EventConduit"><tt class="xref py py-class docutils literal"><span class="pre">EventConduit</span></tt></a> instance.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">To start listening for events it&#8217;s necessary (starting from FDB version 1.4.2) to call <a class="reference internal" href="reference.html#fdb.EventConduit.begin" title="fdb.EventConduit.begin"><tt class="xref py py-meth docutils literal"><span class="pre">EventConduit.begin()</span></tt></a>
+method or use EventConduit&#8217;s context manager interface.</p>
+</div>
+<p>Immediately when <a class="reference internal" href="reference.html#fdb.EventConduit.begin" title="fdb.EventConduit.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a> method is called, EventConduit starts to accumulate notifications
+of any events that occur within the conduit’s internal queue until the conduit is closed either explicitly (via the
 <a class="reference internal" href="reference.html#fdb.EventConduit.close" title="fdb.EventConduit.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> method) or implicitly (via garbage collection).</p>
-<p>Notifications about events are aquired through call to <a class="reference internal" href="reference.html#fdb.EventConduit.wait" title="fdb.EventConduit.wait"><tt class="xref py py-meth docutils literal"><span class="pre">EventConduit.wait()</span></tt></a> method, that blocks
+<p>Notifications about events are aquired through call to <a class="reference internal" href="reference.html#fdb.EventConduit.wait" title="fdb.EventConduit.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a> method, that blocks
 the calling thread until at least one of the events occurs, or the specified <cite>timeout</cite> (if any) expires,
 and returns <cite>None</cite> if the wait timed out, or a dictionary that maps <cite>event_name -&gt; event_occurrence_count</cite>.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last"><cite>EventConduit</cite> can act as context manager that ensures execution of <a class="reference internal" href="reference.html#fdb.EventConduit.begin" title="fdb.EventConduit.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.EventConduit.close" title="fdb.EventConduit.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> methods.
+It&#8217;s strongly advised to use the <cite>EventConduit</cite> with the <cite>with</cite> statement.</p>
+</div>
 <p><strong>Example:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">conduit</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">event_conduit</span><span class="p">(</span> <span class="p">(</span><span class="s">&#39;event_a&#39;</span><span class="p">,</span> <span class="s">&#39;event_b&#39;</span><span class="p">)</span> <span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">conduit</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-<span class="go">{</span>
-<span class="go"> &#39;event_a&#39;: 1,</span>
-<span class="go"> &#39;event_b&#39;: 0</span>
-<span class="go">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">event_conduit</span><span class="p">(</span> <span class="p">(</span><span class="s">&#39;event_a&#39;</span><span class="p">,</span> <span class="s">&#39;event_b&#39;</span><span class="p">)</span> <span class="p">)</span> <span class="k">as</span> <span class="n">conduit</span><span class="p">:</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">conduit</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+    <span class="n">process_events</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If you want to drop notifications accumulated so far by conduit, call <a class="reference internal" href="reference.html#fdb.EventConduit.flush" title="fdb.EventConduit.flush"><tt class="xref py py-meth docutils literal"><span class="pre">EventConduit.flush()</span></tt></a> method.</p>
@@ -1950,6 +1908,7 @@ and returns <cite>None</cite> if the wait timed out, or a dictionary that maps <
 <span class="c">#      =========</span>
 <span class="n">timed_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span><span class="n">send_events</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">[[</span><span class="s">&quot;insert into T (PK,C1) values (1,1)&quot;</span><span class="p">,]])</span>
 <span class="n">events</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">event_conduit</span><span class="p">([</span><span class="s">&#39;insert_1&#39;</span><span class="p">])</span>
+<span class="n">events</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span>
 <span class="n">timed_event</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="n">e</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 <span class="n">events</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1964,6 +1923,7 @@ and returns <cite>None</cite> if the wait timed out, or a dictionary that maps <
         <span class="s">&quot;insert into T (PK,C1) values (1,2)&quot;</span><span class="p">,]</span>
 <span class="n">timed_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span><span class="n">send_events</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">cmds</span><span class="p">])</span>
 <span class="n">events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">con</span><span class="o">.</span><span class="n">event_conduit</span><span class="p">([</span><span class="s">&#39;insert_1&#39;</span><span class="p">,</span><span class="s">&#39;insert_3&#39;</span><span class="p">])</span>
+<span class="n">events</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span>
 <span class="n">timed_event</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="n">e</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 <span class="n">events</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1980,6 +1940,7 @@ and returns <cite>None</cite> if the wait timed out, or a dictionary that maps <
 <span class="n">events</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">event_conduit</span><span class="p">([</span><span class="s">&#39;insert_1&#39;</span><span class="p">,</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="s">&#39;B&#39;</span><span class="p">,</span><span class="s">&#39;C&#39;</span><span class="p">,</span><span class="s">&#39;D&#39;</span><span class="p">,</span>
                             <span class="s">&#39;E&#39;</span><span class="p">,</span><span class="s">&#39;F&#39;</span><span class="p">,</span><span class="s">&#39;G&#39;</span><span class="p">,</span><span class="s">&#39;H&#39;</span><span class="p">,</span><span class="s">&#39;I&#39;</span><span class="p">,</span><span class="s">&#39;J&#39;</span><span class="p">,</span><span class="s">&#39;K&#39;</span><span class="p">,</span><span class="s">&#39;L&#39;</span><span class="p">,</span><span class="s">&#39;M&#39;</span><span class="p">,</span>
                             <span class="s">&#39;N&#39;</span><span class="p">,</span><span class="s">&#39;O&#39;</span><span class="p">,</span><span class="s">&#39;P&#39;</span><span class="p">,</span><span class="s">&#39;Q&#39;</span><span class="p">,</span><span class="s">&#39;R&#39;</span><span class="p">,</span><span class="s">&#39;insert_3&#39;</span><span class="p">])</span>
+<span class="n">events</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span>
 <span class="n">timed_event</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">e</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
@@ -1990,6 +1951,7 @@ and returns <cite>None</cite> if the wait timed out, or a dictionary that maps <
 <span class="c">#      ============</span>
 <span class="n">timed_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span><span class="n">send_events</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">[[</span><span class="s">&quot;insert into T (PK,C1) values (1,1)&quot;</span><span class="p">,]])</span>
 <span class="n">events</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">event_conduit</span><span class="p">([</span><span class="s">&#39;insert_1&#39;</span><span class="p">])</span>
+<span class="n">events</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span>
 <span class="n">send_events</span><span class="p">([</span><span class="s">&quot;insert into T (PK,C1) values (1,1)&quot;</span><span class="p">,</span>
              <span class="s">&quot;insert into T (PK,C1) values (1,1)&quot;</span><span class="p">])</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
@@ -2005,15 +1967,16 @@ and returns <cite>None</cite> if the wait timed out, or a dictionary that maps <
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-python"><pre>One event
-{'insert_1': 1}
+<div class="highlight-python"><div class="highlight"><pre>One event
+{&#39;insert_1&#39;: 1}
 Multiple events
-{'insert_3': 1, 'insert_1': 2}
+{&#39;insert_3&#39;: 1, &#39;insert_1&#39;: 2}
 20 events
-{'A': 0, 'C': 0, 'B': 0, 'E': 0, 'D': 0, 'G': 0, 'insert_1': 2, 'I': 0, 'H': 0, 'K': 0, 'J': 0, 'M': 0,
- 'L': 0, 'O': 0, 'N': 0, 'Q': 0, 'P': 0, 'R': 0, 'insert_3': 1, 'F': 0}
+{&#39;A&#39;: 0, &#39;C&#39;: 0, &#39;B&#39;: 0, &#39;E&#39;: 0, &#39;D&#39;: 0, &#39;G&#39;: 0, &#39;insert_1&#39;: 2, &#39;I&#39;: 0, &#39;H&#39;: 0, &#39;K&#39;: 0, &#39;J&#39;: 0, &#39;M&#39;: 0,
+ &#39;L&#39;: 0, &#39;O&#39;: 0, &#39;N&#39;: 0, &#39;Q&#39;: 0, &#39;P&#39;: 0, &#39;R&#39;: 0, &#39;insert_3&#39;: 1, &#39;F&#39;: 0}
 Flush events
-{'insert_1': 1}</pre>
+{&#39;insert_1&#39;: 1}
+</pre></div>
 </div>
 </div>
 </div>
@@ -2123,8 +2086,9 @@ number, whereas the Services API returns the true Firebird version, as shown:</p
 </pre></div>
 </div>
 <p>Output (on Firebird 2.5.1/Linux64):</p>
-<div class="highlight-python"><pre>Interbase-compatible version string: LI-V6.3.1.26351 Firebird 2.5
-Actual Firebird version string:      LI-V2.5.1.26351 Firebird 2.5</pre>
+<div class="highlight-python"><div class="highlight"><pre>Interbase-compatible version string: LI-V6.3.1.26351 Firebird 2.5
+Actual Firebird version string:      LI-V2.5.1.26351 Firebird 2.5
+</pre></div>
 </div>
 </div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.services.Connection.get_architecture" title="fdb.services.Connection.get_architecture"><tt class="xref py py-meth docutils literal"><span class="pre">get_architecture()</span></tt></a></p>
@@ -2737,7 +2701,7 @@ wait for service to complete.</p>
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-python"><pre>Fetch materialized
+<div class="highlight-python"><div class="highlight"><pre>Fetch materialized
 ==================
 Start backup
 svc.fetching is True
@@ -2770,7 +2734,8 @@ gbak:writing referential constraints
 gbak:writing check constraints
 gbak:writing SQL roles
 gbak:writing names mapping
-gbak:closing file, committing, and finishing. 74752 bytes written</pre>
+gbak:closing file, committing, and finishing. 74752 bytes written
+</pre></div>
 </div>
 </div>
 </div>
@@ -2965,9 +2930,10 @@ before it could be dropped.</p>
 </pre></div>
 </div>
 <p>Will produce next result:</p>
-<div class="highlight-python"><pre>DROP PROCEDURE ALL_LANGS
+<div class="highlight-python"><div class="highlight"><pre>DROP PROCEDURE ALL_LANGS
 DROP PROCEDURE SHOW_LANGS
-DROP TABLE JOB</pre>
+DROP TABLE JOB
+</pre></div>
 </div>
 </div>
 <div class="section" id="object-dependencies">
@@ -3640,7 +3606,7 @@ when it&#8217;s no longer needed to conserve memory.</p>
 <li><a class="reference internal" href="#firebird-array-type">Firebird ARRAY type</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#trasanction-management">Trasanction management</a><ul>
+<li><a class="reference internal" href="#transanction-management">Transanction management</a><ul>
 <li><a class="reference internal" href="#basics">Basics</a></li>
 <li><a class="reference internal" href="#auto-commit">Auto-commit</a></li>
 <li><a class="reference internal" href="#transaction-parameters">Transaction parameters</a></li>
@@ -3725,12 +3691,12 @@ when it&#8217;s no longer needed to conserve memory.</p>
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2013, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

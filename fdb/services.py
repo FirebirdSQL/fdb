@@ -165,12 +165,12 @@ def connect(host='service_mgr',
     :param string host: (optional) Host machine specification. Local by default.
     :param string user: (optional) Administrative user name. Defaults to content
        of environment variable `'ISC_USER'` or `'SYSDBA'`.
-    :param string password: Administrative user password. Default is content 
+    :param string password: Administrative user password. Default is content
        of environment variable `'ISC_PASSWORD'`.
 
-    
+
     .. note::
-    
+
        By definition, a Services Manager connection is bound to a particular
        host.  Therefore, the database specified as a parameter to methods such as
        `getStatistics` MUST NOT include the host name of the database server.
@@ -217,12 +217,12 @@ class Connection(object):
     and the database server.
 
     .. important::
-    
-       DO NOT create instances of this class directly! Use only :func:`connect` 
+
+       DO NOT create instances of this class directly! Use only :func:`connect`
        to get Connection instances.
 
     .. tip::
-    
+
        Connection supports the iterator protocol, yielding lines of result like
        :meth:`readline`.
     """
@@ -241,7 +241,7 @@ class Connection(object):
         self.host = ibase.b(host)
         self.user = ibase.b(user)
         self.password = ibase.b(password)
-        
+
         if len(self.host) + len(self.user) + len(self.password) > 118:
             raise fdb.ProgrammingError("The combined length of host, user and"
                                        " password can't exceed 118 bytes.")
@@ -271,10 +271,10 @@ class Connection(object):
     def __del__(self):
         self.close()
     def next(self):
-        """Return the next result line from service manager. Part of *iterator 
+        """Return the next result line from service manager. Part of *iterator
         protocol*.
-        
-        :raises StopIteration: If there are no further lines. 
+
+        :raises StopIteration: If there are no further lines.
         """
         line = self.readline()
         if line is not None:
@@ -309,7 +309,7 @@ class Connection(object):
         if init:
             result = init + result
         self._line_buffer = result.split('\n')
-        
+
     def __fetchline(self):
         if self._line_buffer:
             if len(self._line_buffer) == 1 and not self.__eof:
@@ -479,7 +479,7 @@ class Connection(object):
         # with the action).
         return self._collect_unformatted_results(line_separator=line_separator)
     def _validate_companion_string_numeric_sequences(self,strings, numbers,
-                                                     string_caption, 
+                                                     string_caption,
                                                      number_caption):
         # The core constraint here is that len(numbers) must equal len(strings) - 1
         stringsCount = len(strings)
@@ -490,10 +490,10 @@ class Connection(object):
         if numbersCount != requiredNumbersCount:
             raise ValueError(
                 'Since you passed %d %s, you must %s corresponding %s.'
-                % (stringsCount, string_caption, 
-                   ('pass %d' % requiredNumbersCount 
-                    if requiredNumbersCount > 0 
-                    else 'not pass any'), 
+                % (stringsCount, string_caption,
+                   ('pass %d' % requiredNumbersCount
+                    if requiredNumbersCount > 0
+                    else 'not pass any'),
                    number_caption)
             )
     def _exclude_elements_of_types(self, seq, types_to_exclude):
@@ -527,15 +527,15 @@ class Connection(object):
         # Return the results to the caller synchronously
         # because it blocks until there's been some resolution of the action.
         return self._collect_unformatted_results()
-    def _property_action_with_one_num_code(self, database, code, num, 
+    def _property_action_with_one_num_code(self, database, code, num,
                                                   num_ctype = 'I'):
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.add_numeric(code, num, numCType=num_ctype)
         return self._property_action(database, reqBuf)
     def close(self):
-        """Close the connection now (rather than whenever `__del__` is called). 
-        The connection will be unusable from this point forward; an :exc:`Error` 
-        (or subclass) exception will be raised if any operation is attempted 
+        """Close the connection now (rather than whenever `__del__` is called).
+        The connection will be unusable from this point forward; an :exc:`Error`
+        (or subclass) exception will be raised if any operation is attempted
         with the connection.
         """
         if self._svc_handle:
@@ -547,7 +547,7 @@ class Connection(object):
             self.__fetching = False
     def readline(self):
         """Get next line of textual output from last service query.
-        
+
         :returns string: Output line.
         """
         if self.__fetching:
@@ -556,16 +556,16 @@ class Connection(object):
             return None
     def readlines(self):
         """Get list of remaining output lines from last service query.
-        
+
         :returns list: Service output.
         :raises ProgrammingError: When service is not in :attr:`fetching` mode.
         """
         return [line for line in self]
     def isrunning(self):
         """Returns True if service is running.
-        
+
         .. note::
-        
+
            Some services like :meth:`backup` or :meth:`sweep` may take time to
            comlete, so they're called asynchronously. Until they're finished,
            no other async service could be started.
@@ -581,54 +581,54 @@ class Connection(object):
             self.__fetching = False
     def get_service_manager_version(self):
         """Get Firebird Service Manager version number.
-        
+
         :returns integer: Version number.
         """
         self.__check_active()
         return self._QI(ibase.isc_info_svc_version)
     def get_server_version(self):
         """Get Firebird version.
-        
+
         :returns string: Firebird version (example: 'LI-V2.5.2.26536 Firebird 2.5').
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_server_version)
     def get_architecture(self):
         """Get Firebird Server architecture.
-        
+
         :returns string: Architecture (example: 'Firebird/linux AMD64').
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_implementation)
     def get_home_directory(self):
         """Get Firebird Home (installation) Directory.
-        
+
         :returns string: Directory path.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_get_env)
     def get_security_database_path(self):
         """Get full path to Firebird security database.
-        
+
         :returns string: Path (path+filename) to security database.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_user_dbpath)
     def get_lock_file_directory(self):
         """Get directory location for Firebird lock files.
-        
+
         :returns string: Directory path.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_get_env_lock)
     def get_server_capabilities(self):
         """Get list of Firebird capabilities.
-        
+
         :returns tuple: Capability info codes for each capability reported by
            server.
-        
+
         Next fdb.services constants define possible info codes returned::
-        
+
             CAPABILITY_MULTI_CLIENT
             CAPABILITY_REMOTE_HOP
             CAPABILITY_SERVER_CONFIG
@@ -636,7 +636,7 @@ class Connection(object):
             CAPABILITY_NO_SERVER_SHUTDOWN
 
         Example::
-        
+
             >>>fdb.services.CAPABILITY_REMOTE_HOP in svc.get_server_capabilities()
             True
         """
@@ -650,39 +650,39 @@ class Connection(object):
                       if capabilities & x])
     def get_message_file_directory(self):
         """Get directory with Firebird message file.
-        
+
         :returns string: Directory path.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_get_env_msg)
     def get_connection_count(self):
         """Get number of attachments to server.
-        
+
         :returns integer: Directory path.
         """
         self.__check_active()
         return self._get_isc_info_svc_svr_db_info()[0]
     def get_attached_database_names(self):
         """Get list of attached databases.
-        
+
         :returns list: Filenames of attached databases.
         """
         self.__check_active()
         return self._get_isc_info_svc_svr_db_info()[1]
     def get_log(self, callback=None):
         """Request content of Firebird Server log. **(ASYNC service)**
-        
+
         :param function callback: Function to call back with each output line.
           Function must accept only one parameter: line of output.
-        
-        If `callback` is not specified, log content could be retrieved through 
+
+        If `callback` is not specified, log content could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
         ignored via call to :meth:`wait`.
-        
+
         .. note::
-        
-           Until log content is not fully fetched from service (or ignored via 
-           :meth:`wait`), any attempt to start another asynchronous service will 
+
+           Until log content is not fully fetched from service (or ignored via
+           :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
         """
         self.__check_active()
@@ -694,14 +694,13 @@ class Connection(object):
                 callback(line)
     def get_limbo_transaction_ids(self, database):
         """Get list of transactions in limbo.
-        
+
         :param string database: Database filename or alias.
         :returns list: Transaction IDs.
         :raises InternalError: When can't process the result buffer.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
 
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.add_option_mask(ibase.isc_spb_rpr_list_limbo_trans)
@@ -726,32 +725,29 @@ class Connection(object):
         return transIDs
     def _resolve_limbo_transaction(self, resolution, database, transaction_id):
         _checkString(database)
-        database = ibase.b(database)
 
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.add_numeric(resolution, transaction_id)
         self._repair_action(database, reqBuf)
     def commit_limbo_transaction(self, database, transaction_id):
         """Resolve limbo transaction with commit.
-        
+
         :param string database: Database filename or alias.
         :param integer transaction_id: ID of Transaction to resolve.
         """
         self.__check_active()
-        database = ibase.b(database)
         self._resolve_limbo_transaction(ibase.isc_spb_rpr_commit_trans,
                                         database, transaction_id)
     def rollback_limbo_transaction(self, database, transaction_id):
         """Resolve limbo transaction with rollback.
-        
+
         :param string database: Database filename or alias.
         :param integer transaction_id: ID of Transaction to resolve.
         """
         self.__check_active()
-        database = ibase.b(database)
         self._resolve_limbo_transaction(ibase.isc_spb_rpr_rollback_trans,
                                         database, transaction_id)
-    def get_statistics(self, database, 
+    def get_statistics(self, database,
                        show_only_db_log_pages=0,
                        show_only_db_header_pages=0,
                        show_user_data_pages=1,
@@ -765,32 +761,31 @@ class Connection(object):
 
         :param string database: Database specification.
         :param integer show_only_db_log_pages: `1` to analyze only log pages.
-        :param integer show_only_db_header_pages: `1` to analyze only database 
+        :param integer show_only_db_header_pages: `1` to analyze only database
            header. When set, all other parameters are ignored.
         :param integer show_user_data_pages: `0` to skip user data analysis.
         :param integer show_user_index_pages: `0` to skip user index analysis.
-        :param integer show_system_tables_and_indexes: `1` to analyze system 
+        :param integer show_system_tables_and_indexes: `1` to analyze system
            tables and indices.
         :param integer show_record_versions: `1` to analyze record versions.
         :param function callback: Function to call back with each output line.
           Function must accept only one parameter: line of output.
-        
-        If `callback` is not specified, statistical report could be retrieved 
-        through :meth:`readline`, :meth:`readlines`, iteration over `Connection` 
+
+        If `callback` is not specified, statistical report could be retrieved
+        through :meth:`readline`, :meth:`readlines`, iteration over `Connection`
         or ignored via call to :meth:`wait`.
-        
+
         .. note::
-        
-           Until report is not fully fetched from service (or ignored via 
-           :meth:`wait`), any attempt to start another asynchronous service will 
+
+           Until report is not fully fetched from service (or ignored via
+           :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
 
         reqBuf = _ServiceActionRequestBuilder(ibase.isc_action_svc_db_stats)
-        
+
         # Request for header negates all other options
         if show_only_db_header_pages:
             show_only_db_log_pages = show_user_data_pages = 0
@@ -831,12 +826,12 @@ class Connection(object):
                collect_garbage=1,
                transportable=1,
                convert_external_tables_to_internal=0,
-               compressed=1,  
+               compressed=1,
                no_db_triggers=0,
                callback=None
                ):
         """Request logical (GBAK) database backup. **(ASYNC service)**
-        
+
         :param string source_database: Source database specification.
         :param dest_filenames: Backup file(s) specification.
         :type dest_filenames: string or tuple of strings
@@ -853,21 +848,20 @@ class Connection(object):
         :param integer no_db_triggers: `1` to disable database triggers temporarily.
         :param function callback: Function to call back with each output line.
           Function must accept only one parameter: line of output.
-        
-        If `callback` is not specified, backup log could be retrieved through 
+
+        If `callback` is not specified, backup log could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
         ignored via call to :meth:`wait`.
-        
+
         .. note::
-        
-           Until backup report is not fully fetched from service (or ignored via 
-           :meth:`wait`), any attempt to start another asynchronous service will 
+
+           Until backup report is not fully fetched from service (or ignored via
+           :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
         """
         self.__check_active()
         # Begin parameter validation section.
         _checkString(source_database)
-        source_database = ibase.b(source_database)
         dest_filenames = self._require_str_or_tuple_of_str(dest_filenames)
 
         destFilenamesCount = len(dest_filenames)
@@ -964,16 +958,16 @@ class Connection(object):
                 metadata_only=0,
                 callback=None):
         """Request database restore from logical (GBAK) backup. **(ASYNC service)**
-        
+
         :param source_filenames: Backup file(s) specification.
         :type source_filenames: string or tuple of strings
         :param dest_filenames: Database file(s) specification.
         :type dest_filenames: string or tuple of strings
-        :param dest_file_pages: (optional) specification of database file max. 
+        :param dest_file_pages: (optional) specification of database file max.
            # of pages.
         :type dest_file_pages: tuple of integers
         :param integer page_size: (optional) Page size.
-        :param integer cache_buffers: (optional) Size of page-cache for this 
+        :param integer cache_buffers: (optional) Size of page-cache for this
            database.
         :param integer access_mode_read_only: `1` to create R/O database.
         :param integer replace: `1` to replace existing database.
@@ -988,15 +982,15 @@ class Connection(object):
         :param integer metadata_only: `1` to restore only database metadata.
         :param function callback: Function to call back with each output line.
           Function must accept only one parameter: line of output.
-        
-        If `callback` is not specified, restore log could be retrieved through 
+
+        If `callback` is not specified, restore log could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
         ignored via call to :meth:`wait`.
-        
+
         .. note::
-        
-           Until restore report is not fully fetched from service (or ignored via 
-           :meth:`wait`), any attempt to start another asynchronous service will 
+
+           Until restore report is not fully fetched from service (or ignored via
+           :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
         """
         self.__check_active()
@@ -1077,12 +1071,12 @@ class Connection(object):
             for line in self:
                 callback(line)
     # nbackup methods:
-    def nbackup(self, source_database, 
-                dest_filename, 
+    def nbackup(self, source_database,
+                dest_filename,
                 nbackup_level=0,
                 no_db_triggers=0):
         """Perform physical (NBACKUP) database backup.
-        
+
         :param string source_database: Source database specification.
         :param dest_filename: Backup file specification.
         :param integer nbackup_level: Incremental backup level.
@@ -1093,7 +1087,6 @@ class Connection(object):
         self.__check_active()
         # Begin parameter validation section.
         _checkString(source_database)
-        source_database = ibase.b(source_database)
         _checkString(dest_filename)
         dest_filename = ibase.b(dest_filename)
 
@@ -1121,11 +1114,11 @@ class Connection(object):
         # Done constructing the request buffer.
         self._act(request)
         self.wait()
-    def nrestore(self, source_filenames, 
-                 dest_filename, 
+    def nrestore(self, source_filenames,
+                 dest_filename,
                  no_db_triggers=0):
         """Perform restore from physical (NBACKUP) database backup.
-        
+
         :param source_filenames: Backup file(s) specification.
         :type source_filenames: string or tuple of strings
         :param dest_filename: Database file specification.
@@ -1163,20 +1156,20 @@ class Connection(object):
     # Trace
     def trace_start(self, config, name=None):
         """Start new trace session. **(ASYNC service)**
-        
+
         :param string config: Trace session configuration.
         :param string name: (optional) Trace session name.
         :returns integer: Trace session ID.
         :raises DatabaseError: When session ID is not returned on start.
 
-        Trace session output could be retrieved through :meth:`readline`, 
-        :meth:`readlines`, iteration over `Connection` or ignored via call to 
+        Trace session output could be retrieved through :meth:`readline`,
+        :meth:`readlines`, iteration over `Connection` or ignored via call to
         :meth:`wait`.
-        
+
         .. note::
-        
-           Until session output is not fully fetched from service (or ignored 
-           via :meth:`wait`), any attempt to start another asynchronous service 
+
+           Until session output is not fully fetched from service (or ignored
+           via :meth:`wait`), any attempt to start another asynchronous service
            including call to any `trace_` method will fail with exception.
         """
         self.__check_active()
@@ -1201,7 +1194,7 @@ class Connection(object):
             raise fdb.DatabaseError(response)
     def trace_stop(self, trace_id):
         """Stop trace session.
-        
+
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was stopped.
         :raises DatabaseError: When trace session is not stopped.
@@ -1219,7 +1212,7 @@ class Connection(object):
         return response
     def trace_suspend(self, trace_id):
         """Suspend trace session.
-        
+
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was paused.
         :raises DatabaseError: When trace session is not paused.
@@ -1238,7 +1231,7 @@ class Connection(object):
         return response
     def trace_resume(self, trace_id):
         """Resume trace session.
-        
+
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was resumed.
         :raises DatabaseError: When trace session is not resumed.
@@ -1257,16 +1250,16 @@ class Connection(object):
         return response
     def trace_list(self):
         """Get information about existing trace sessions.
-        
+
         :returns dictionary: Mapping `SESSION_ID -> SESSION_PARAMS`
-        
+
           Session parameters is another dictionary with next keys:
-          
+
           :name:  (string) (optional) Session name if specified.
           :date:  (datetime.datetime) Session start date and time.
           :user:  (string) Trace user name.
           :flags: (list of strings) Session flags.
-        
+
         :raises OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
@@ -1298,129 +1291,121 @@ class Connection(object):
     # Database property alteration methods:
     def set_default_page_buffers(self, database, n):
         """Set individual page cache size for Database.
-        
+
         :param string database: Database filename or alias.
         :param integer n: Number of pages.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
-        self._property_action_with_one_num_code(database, 
-                                                ibase.isc_spb_prp_page_buffers, 
+        self._property_action_with_one_num_code(database,
+                                                ibase.isc_spb_prp_page_buffers,
                                                 n)
     def set_sweep_interval(self, database, n):
         """Set treshold for automatic sweep.
-        
+
         :param string database: Database filename or alias.
         :param integer n: Sweep treshold, or `0` to disable automatic sweep.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         self._property_action_with_one_num_code(database,
-                                                ibase.isc_spb_prp_sweep_interval, 
+                                                ibase.isc_spb_prp_sweep_interval,
                                                 n)
     def set_reserve_page_space(self, database, reserve_space):
         """Set data page space reservation policy.
-        
+
         :param string database: Database filename or alias.
         :param boolean reserve_space: `True` to reserve space, `False` to do not.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         if reserve_space:
             reserveCode = ibase.isc_spb_prp_res
         else:
             reserveCode = ibase.isc_spb_prp_res_use_full
         self._property_action_with_one_num_code(database,
-                                                ibase.isc_spb_prp_reserve_space, 
+                                                ibase.isc_spb_prp_reserve_space,
                                                 reserveCode, num_ctype='b')
     def set_write_mode(self, database, mode):
         """Set Disk Write Mode: Sync (forced writes) or Async (buffered).
-        
+
         :param string database: Database filename or alias.
         :param integer mode: One from following constants:
-           :data:`~fdb.services.WRITE_FORCED` or 
+           :data:`~fdb.services.WRITE_FORCED` or
            :data:`~fdb.services.WRITE_BUFFERED`
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         if mode not in (WRITE_FORCED, WRITE_BUFFERED):
             raise ValueError('mode must be one of the following constants:'
                 '  fdb.services.WRITE_FORCED, fdb.services.WRITE_BUFFERED.')
         self._property_action_with_one_num_code(database,
-                                                ibase.isc_spb_prp_write_mode, 
+                                                ibase.isc_spb_prp_write_mode,
                                                 mode, num_ctype='b')
     def set_access_mode(self, database, mode):
         """Set Database Access mode: Read Only or Read/Write
-        
+
         :param string database: Database filename or alias.
         :param integer mode: One from following constants:
-           :data:`~fdb.services.ACCESS_READ_WRITE` or 
+           :data:`~fdb.services.ACCESS_READ_WRITE` or
            :data:`~fdb.services.ACCESS_READ_ONLY`
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         if mode not in (ACCESS_READ_WRITE, ACCESS_READ_ONLY):
             raise ValueError('mode must be one of the following constants:'
                 ' fdb.services.ACCESS_READ_WRITE, fdb.services.ACCESS_READ_ONLY.')
         self._property_action_with_one_num_code(database,
-                                                ibase.isc_spb_prp_access_mode, 
+                                                ibase.isc_spb_prp_access_mode,
                                                 mode, num_ctype='b')
     def set_sql_dialect(self, database, dialect):
         """Set SQL Dialect for Database.
-        
+
         :param string database: Database filename or alias.
         :param integer dialect: `1` or `3`.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         # The IB 6 API Guide says that dialect "must be 1 or 3", but other
         # dialects may become valid in future versions, so don't require
         #   dialect in (1, 3)
         self._property_action_with_one_num_code(database,
-                                                ibase.isc_spb_prp_set_sql_dialect, 
+                                                ibase.isc_spb_prp_set_sql_dialect,
                                                 dialect)
     def activate_shadow(self, database):
         """Activate Database Shadow(s).
-        
+
         :param string database: Database filename or alias.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.add_option_mask(ibase.isc_spb_prp_activate)
         self._property_action(database, reqBuf)
     # Database repair/maintenance methods:
     def shutdown(self, database, shutdown_mode, shutdown_method, timeout):
         """Database shutdown.
-        
+
         :param string database: Database filename or alias.
         :param integer shutdown_mode: One from following constants:
-           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`, 
+           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`,
            :data:`~fdb.services.SHUT_MULTI` or :data:`~fdb.services.SHUT_FULL`.
         :param integer shutdown_method: One from following constants:
-           :data:`~fdb.services.SHUT_FORCE`, 
+           :data:`~fdb.services.SHUT_FORCE`,
            :data:`~fdb.services.SHUT_DENY_NEW_TRANSACTIONS`
            or :data:`~fdb.services.SHUT_DENY_NEW_ATTACHMENTS`.
         :param integer timeout: Time in seconds, that the shutdown must complete in.
-           
+
         .. seealso:: See also :meth:`~Connection.bring_online` method.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         if shutdown_mode not in (SHUT_LEGACY, SHUT_SINGLE, SHUT_MULTI, SHUT_FULL):
             raise ValueError('shutdown_mode must be one of the following'
                 ' constants:  fdb.services.SHUT_LEGACY, fdb.services.SHUT_SINGLE,'
                 ' fdbfdb.services.SHUT_MULTI,'
                 ' fdb.services.SHUT_FULL.')
-        if shutdown_method not in (SHUT_FORCE, SHUT_DENY_NEW_TRANSACTIONS, 
+        if shutdown_method not in (SHUT_FORCE, SHUT_DENY_NEW_TRANSACTIONS,
                                    SHUT_DENY_NEW_ATTACHMENTS):
             raise ValueError('shutdown_method must be one of the following'
                 ' constants:  fdb.services.SHUT_FORCE,'
@@ -1428,23 +1413,22 @@ class Connection(object):
                 ' fdb.services.SHUT_DENY_NEW_ATTACHMENTS.')
         reqBuf = _ServiceActionRequestBuilder()
         if shutdown_mode != SHUT_LEGACY:
-            reqBuf.add_numeric(ibase.isc_spb_prp_shutdown_mode, 
+            reqBuf.add_numeric(ibase.isc_spb_prp_shutdown_mode,
                                shutdown_mode, numCType='B')
         reqBuf.add_numeric(shutdown_method, timeout, numCType='I')
         self._property_action(database, reqBuf)
     def bring_online(self, database, online_mode=SHUT_NORMAL):
         """Bring previously shut down database back online.
-        
+
         :param string database: Database filename or alias.
         :param integer online_mode: (Optional) One from following constants:
-           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`, 
+           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`,
            :data:`~fdb.services.SHUT_MULTI` or :data:`~fdb.services.SHUT_NORMAL` (**Default**).
-           
+
         .. seealso:: See also :meth:`~Connection.shutdown` method.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         if online_mode not in (SHUT_LEGACY, SHUT_NORMAL,SHUT_SINGLE, SHUT_MULTI):
             raise ValueError('online_mode must be one of the following'
                 ' constants:  fdb.services.SHUT_LEGACY, fdb.services.SHUT_NORMAL,'
@@ -1454,19 +1438,18 @@ class Connection(object):
         if online_mode == SHUT_LEGACY:
             reqBuf.add_option_mask(ibase.isc_spb_prp_db_online)
         else:
-            reqBuf.add_numeric(ibase.isc_spb_prp_online_mode, 
+            reqBuf.add_numeric(ibase.isc_spb_prp_online_mode,
                                online_mode, numCType='B')
         self._property_action(database, reqBuf)
     def sweep(self, database):
         """Perform Database Sweep.
-        
+
         .. note:: Method call will not return until sweep is finished.
-        
+
         :param string database: Database filename or alias.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         reqBuf = _ServiceActionRequestBuilder()
         optionMask = ibase.isc_spb_rpr_sweep_db
         reqBuf.add_option_mask(optionMask)
@@ -1479,21 +1462,20 @@ class Connection(object):
                validate_database=1,
                validate_record_fragments=1):
         """Database Validation and Repair.
-        
+
         :param string database: Database filename or alias.
         :param integer read_only_validation: `1` to prevent any database changes.
         :param integer ignore_checksums: `1` to ignore page checksum errors.
         :param integer kill_unavailable_shadows: `1` to kill unavailable shadows.
         :param integer mend_database: `1` to fix database for backup.
         :param integer validate_database: `0` to skip database validation.
-        :param integer validate_record_fragments: `0` to skip validation of 
+        :param integer validate_record_fragments: `0` to skip validation of
            record fragments.
 
         .. note:: Method call will not return until action is finished.
         """
         self.__check_active()
         _checkString(database)
-        database = ibase.b(database)
         # YYY: With certain option combinations, this method raises errors
         # that may not be very comprehensible to a Python programmer who's not
         # well versed with IB/FB.  Should option combination filtering be
@@ -1529,8 +1511,8 @@ class Connection(object):
     # User management methods:
     def get_users(self, user_name=None):
         """Get information about user(s).
-        
-        :param string user_name: (Optional) When specified, returns information 
+
+        :param string user_name: (Optional) When specified, returns information
            only about user with specified user name.
         :returns list: :class:`User` instances.
         """
@@ -1585,15 +1567,15 @@ class Connection(object):
         return users
     def add_user(self, user):
         """Add new user.
-        
-        :param user: Instance of :class:`User` with **at least** its 
-           :attr:`~User.name` and :attr:`~User.password` attributes specified 
+
+        :param user: Instance of :class:`User` with **at least** its
+           :attr:`~User.name` and :attr:`~User.password` attributes specified
            as non-empty values. All other attributes are optional.
         :type user: :class:`User`
-        
+
         .. note::
-        
-           This method ignores the :attr:`~User.user_id` and :attr:`~User.group_id` 
+
+           This method ignores the :attr:`~User.user_id` and :attr:`~User.group_id`
            attributes of :class:`~User` regardless of their values.
         """
         self.__check_active()
@@ -1627,17 +1609,17 @@ class Connection(object):
         self._act_and_return_textual_results(reqBuf)
     def modify_user(self, user):
         """Modify user information.
-        
-        :param user: Instance of :class:`User` with **at least** its 
+
+        :param user: Instance of :class:`User` with **at least** its
            :attr:`~User.name` attribute specified as non-empty value.
         :type user: :class:`User`
-        
+
         .. note::
-        
+
            This method sets :attr:`~User.first_name`, :attr:`~User.middle_name`
            and :attr:`~User.last_name` to their actual values, and ignores
-           the :attr:`~User.user_id` and :attr:`~User.group_id` attributes 
-           regardless of their values. :attr:`~User.password` is set **only** 
+           the :attr:`~User.user_id` and :attr:`~User.group_id` attributes
+           regardless of their values. :attr:`~User.password` is set **only**
            when it has value.
         """
         self.__check_active()
@@ -1664,7 +1646,7 @@ class Connection(object):
     def remove_user(self, user):
         """Remove user.
 
-        :param user: User name or Instance of :class:`User` with **at least** its 
+        :param user: User name or Instance of :class:`User` with **at least** its
            :attr:`~User.name` attribute specified as non-empty value.
         :type user: string or :class:`User`
         """
@@ -1682,7 +1664,7 @@ class Connection(object):
     def user_exists(self, user):
         """Check for user's existence.
 
-        :param user: User name or Instance of :class:`User` with **at least** its 
+        :param user: User name or Instance of :class:`User` with **at least** its
            :attr:`~User.name` attribute specified as non-empty value.
         :type user: string or :class:`User`
         :returns boolean: `True` when the specified user exists.
@@ -1737,11 +1719,11 @@ class User(object):
             or 'named "%s"' % self.name)
     def load_information(self,svc):
         """Load information about user from server.
-        
+
         :param svc: Open service connection.
         :type svc: :class:`Connection`
         :returns: True if information was successfuly retrieved, False otherwise.
-        
+
         :raises ProgrammingError: If user name is not defined.
         """
         if self.name is None:
@@ -1809,6 +1791,7 @@ class _ServiceActionRequestBuilder(object):
         # message with Firebird 1.5 (though it would not have raised an error
         # at all with Firebird 1.0 and earlier).
         ### Todo: verify handling of P version differences, refactor
+        databaseName = ibase.b(databaseName,fdb.fbcore._FS_ENCODING)
         if ibase.PYTHON_MAJOR_VER == 3:
             colonIndex = (databaseName.decode(fdb.fbcore._FS_ENCODING)).find(':')
         else:
@@ -1823,7 +1806,7 @@ class _ServiceActionRequestBuilder(object):
                 #
                 # Files that don't exist might still be valid if the connection
                 # is to a server other than the local machine.
-                not os.path.exists(databaseName)
+                not os.path.exists(ibase.nativestr(databaseName,fdb.fbcore._FS_ENCODING))
                 # "Guess" that if the colon falls within the first two
                 # characters of the string, the pre-colon portion refers to a
                 # Windows drive letter rather than to a remote host.

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#coding:utf-8
 #
 #   PROGRAM:     fdb
 #   MODULE:      monitor.py
@@ -38,6 +38,10 @@ BACKUP_STATE_MERGE = 2
 # State
 STATE_IDLE = 0
 STATE_ACTIVE = 1
+
+# Flags
+FLAG_NOT_SET = 0
+FLAG_SET = 1
 
 # Transaction solation mode
 ISOLATION_CONSISTENCY = 0
@@ -588,13 +592,16 @@ class TransactionInfo(BaseInfoItem):
         return self.state == STATE_IDLE
     def isreadonly(self):
         "Returns True if transaction is Read Only."
-        return bool(self._attributes['MON$READ_ONLY'])
+        return self._attributes['MON$READ_ONLY'] == FLAG_SET
+        #return bool(self._attributes['MON$READ_ONLY'])
     def isautocommit(self):
         "Returns True for autocommited transaction."
-        return bool(self._attributes['MON$AUTO_COMMIT'])
+        return self._attributes['MON$AUTO_COMMIT'] == FLAG_SET
+        #return bool(self._attributes['MON$AUTO_COMMIT'])
     def isautoundo(self):
         "Returns True for transaction with automatic undo."
-        return bool(self._attributes['MON$AUTO_UNDO'])
+        return self._attributes['MON$AUTO_UNDO'] == FLAG_SET
+        #return bool(self._attributes['MON$AUTO_UNDO'])
 
 class StatementInfo(BaseInfoItem):
     "Information about executed SQL statement."

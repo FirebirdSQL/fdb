@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.1'
+__version__ = '1.4.2'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -930,6 +930,10 @@ class Connection(object):
             raise ProgrammingError("Connection object is detached from database")
     def __close(self, detach=True):
         if self._db_handle != None:
+            if self.__schema:
+                self.__schema._close()
+            if self.__monitor:
+                self.__monitor._close()
             self.__ic.close()
             del self.__ic
             try:
@@ -1667,8 +1671,10 @@ class ConnectionWithSchema(Connection):
        Use `connection_class` parametr of :func:`connect` or :func:`create_database`
        to create connections with direct schema interface.
     """
-    def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None):
-        super(ConnectionWithSchema,self).__init__(db_handle,dpb,sql_dialect,charset)
+    def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None,
+                 isolation_level=ISOLATION_LEVEL_READ_COMMITED):
+        super(ConnectionWithSchema,self).__init__(db_handle,dpb,sql_dialect,charset,
+                                                  isolation_level)
         self.__schema = schema.Schema()
         self.__schema.bind(self)
         self.__schema._set_as_internal()
@@ -1734,7 +1740,7 @@ class EventBlock(object):
             raise exception_from_status(DatabaseError, self._isc_status,
                                         "Error while waiting for events:")
     def count_and_reregister(self):
-        "Count event occurences and reregister interest in fut=rther notifications."
+        "Count event occurences and reregister interest in futrther notifications."
         result = {}
         api.isc_event_counts(self.__results, self.buf_length,
                                self.event_buf, self.result_buf)
@@ -1773,16 +1779,49 @@ class EventConduit(object):
        DO NOT create instances of this class directly! Use only
        :meth:`Connection.event_conduit` to get EventConduit instances.
 
-    From the moment the conduit is created by the :meth:`Connection.event_conduit`
-    method, notifications of any events that occur will accumulate asynchronously
-    within the conduit’s internal queue until the conduit is closed either
-    explicitly (via the :meth:`close` method) or implicitly (via garbage collection).
+    Notifications of any events are not accumulated until :meth:`begin` method is called.
+
+    From the moment the :meth:`begin` method is called, notifications of any events that
+    occur will accumulate asynchronously within the conduit’s internal queue until the conduit
+    is closed either explicitly (via the :meth:`close` method) or implicitly
+    (via garbage collection).
+
+    `EventConduit` implements context manager protocol to call method :meth:`begin` and
+    :meth:`close` automatically.
+
+    Example:
+
+    .. code-block:: python
+
+       with connection.event_conduit( ('event_a', 'event_b') ) as conduit:
+           events = conduit.wait()
+           process_events(events)
     """
     def __init__(self,db_handle,event_names):
         """
         :param db_handle: Database handle.
         :param event_names: List of strings that represent event names.
         """
+        self._db_handle = db_handle
+        self._isc_status = ISC_STATUS_ARRAY(0)
+        self.__event_names = list(event_names)
+        self.__events = {}.fromkeys(self.__event_names,0)
+        self.__event_blocks = []
+        self.__closed = False
+        self.__queue = ibase.PriorityQueue()
+        self.__events_ready = threading.Event()
+        self.__blocks = [[x for x in y if x] for y in izip_longest(*[iter(event_names)]*15)]
+        self.__initialized = False
+
+    def __enter__(self):
+        self.begin()
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+    def begin(self):
+        """Starts listening for events.
+
+        Must be called directly or through context manager interface."""
         def event_process(queue):
             while True:
                 operation, data = queue.get()
@@ -1795,20 +1834,13 @@ class EventConduit(object):
                 elif operation == ibase.OP_DIE:
                     return
 
-        self._db_handle = db_handle
-        self._isc_status = ISC_STATUS_ARRAY(0)
-        self.__event_names = list(event_names)
-        self.__events = {}.fromkeys(self.__event_names,0)
-        self.__event_blocks = []
-        self.__closed = False
-        self.__queue = ibase.PriorityQueue()
-        self.__events_ready = threading.Event()
-        self.__process_thread = threading.Thread(target=event_process,args=(self.__queue,))
+        self.__initialized = True
+        self.__process_thread = threading.Thread(target=event_process, args=(self.__queue,))
         self.__process_thread.start()
 
-        blocks = [[x for x in y if x] for y in izip_longest(*[iter(event_names)]*15)]
-        for block_events in blocks:
-            self.__event_blocks.append(EventBlock(self.__queue,db_handle,block_events))
+
+        for block_events in self.__blocks:
+            self.__event_blocks.append(EventBlock(self.__queue, self._db_handle, block_events))
 
     def wait(self,timeout=None):
         """Wait for events.
@@ -1829,6 +1861,7 @@ class EventConduit(object):
         .. code-block:: python
 
            >>>conduit = connection.event_conduit( ('event_a', 'event_b') )
+           >>>conduit.begin()
            >>>conduit.wait()
            {
             'event_a': 1,
@@ -1838,6 +1871,8 @@ class EventConduit(object):
         In the example above `event_a` occurred once and `event_b` did not occur
         at all.
         """
+        if not self.__initialized:
+            raise ProgrammingError("Event collection not initialized. It's necessary to call begin().")
         if not self.closed:
             self.__events_ready.wait(timeout)
             return self.__events.copy()
@@ -2265,9 +2300,14 @@ class PreparedStatement(object):
         t = ((v.hour * 3600 + v.minute * 60 + v.second) * 10000
              + v.microsecond // 100)
         return int_to_bytes(t, 4)
-    def _convert_timestamp(self, v):   # Convert datetime.datetime
+    def _convert_timestamp(self, v):   # Convert datetime.datetime or datetime.date
                                         # to BLR format timestamp
-        return self._convert_date(v.date()) + self._convert_time(v.time())
+        if isinstance(v, datetime.datetime):
+            return self._convert_date(v.date()) + self._convert_time(v.time())
+        elif isinstance(v, datetime.date):
+            return self._convert_date(v) + self._convert_time(datetime.time())
+        else:
+            raise ValueError("datetime.datetime or datetime.date expected")
     def _check_integer_range(self, value, dialect, data_type, subtype, scale):
         if data_type == SQL_SHORT:
             vmin = SHRT_MIN
@@ -3152,12 +3192,7 @@ class Cursor(object):
 
        Cursor is actually a high-level wrapper around :class:`PreparedStatement`
        instance(s) that handle the actual SQL statement execution and result
-       management. Cursor has an internal cache of PreparedStatements, so when
-       the same SQL statement is executed repeatedly, related PreparedStatement
-       is re-used, which enhances performance. This convenient enhancement has
-       a side effect: Cursor that was used to perform many different SQL statements
-       may hold very large cache of PerapedStatements. To clear the cache, you'll
-       need to call :meth:`clear_cache`.
+       management.
 
     .. tip::
 
@@ -3182,7 +3217,6 @@ class Cursor(object):
         :param connection: :class:`Connection` instance this cursor should be bound to.
         :param transaction: :class:`Transaction` instance this cursor should be bound to.
         """
-        self._prepared_statements = {}
         self._connection = connection
         self._transaction = transaction
         self._ps = None  # current prepared statement
@@ -3261,23 +3295,6 @@ class Cursor(object):
                + ','.join('?' * len(params)))
         self.execute(sql, params)
         return parameters
-    def clear_cache(self):
-        """Clear the internal cache with :class:`PreparedStatement` instances.
-
-        All prepared statements except current one are **permanently** closed,
-        and the cache is cleared.
-
-        .. note::
-
-           Current prepared statement is still in its actual state, but  it's
-           removed from cache, so when next statement (even the same SQL command)
-           is executed, this current :class:`PreparedStatement` instance is disposed.
-        """
-        for ps in self._prepared_statements.values():
-            ps._close()
-            if ps == self._ps:
-                self._ps = None
-        self._prepared_statements.clear()
     def close(self):
         """Close the cursor now (rather than whenever `__del__` is called).
 
@@ -3331,10 +3348,7 @@ class Cursor(object):
                 raise ValueError("PreparedStatement was created by different Cursor.")
             self._ps = operation
         else:
-            self._ps = self._prepared_statements.get(operation)
-            if not self._ps:
-                self._ps = self._prepared_statements.setdefault(operation,
-                                    PreparedStatement(operation, self, True))
+            self._ps = PreparedStatement(operation, self, True)
         self._ps._execute(parameters)
         # return self so `execute` call could be used as iterable
         return self
@@ -3536,7 +3550,6 @@ class Cursor(object):
         else:
             raise ProgrammingError
     def __del__(self):
-        self.clear_cache()
         self.close()
     #: (Read Only) Sequence of 7-item sequences.
     #: Each of these sequences contains information describing one result column:
@@ -3841,8 +3854,6 @@ class Transaction(object):
             self._finish()
         except Exception as e:
             exc = e
-        for cur in self._cursors:
-            cur().clear_cache()
         del self._cursors[:]
         del self._connections[:]
         self.__closed = True

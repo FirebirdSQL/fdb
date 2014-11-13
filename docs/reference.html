@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -7,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.4.1 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.4.2 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '1.4.1',
+        URL_ROOT:    './',
+        VERSION:     '1.4.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4.1 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4.2 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -51,7 +50,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -200,7 +199,7 @@ formatting expected by the interface.</p>
 <dl class="exception">
 <dt id="fdb.Warning">
 <em class="property">exception </em><tt class="descclassname">fdb.</tt><tt class="descname">Warning</tt><a class="headerlink" href="#fdb.Warning" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></a></p>
 <p>Exception raised for important warnings like data
 truncations while inserting, etc.</p>
 </dd></dl>
@@ -208,7 +207,7 @@ truncations while inserting, etc.</p>
 <dl class="exception">
 <dt id="fdb.Error">
 <em class="property">exception </em><tt class="descclassname">fdb.</tt><tt class="descname">Error</tt><a class="headerlink" href="#fdb.Error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></a></p>
 <p>Exception that is the base class of all other error
 exceptions. You can use this to catch all errors with one
 single &#8216;except&#8217; statement. Warnings are not considered
@@ -292,7 +291,7 @@ which is not supported by the database</p>
 </dd></dl>
 
 <p>This is the exception inheritance layout:</p>
-<div class="highlight-python"><pre>StandardError
+<div class="highlight-python"><div class="highlight"><pre>StandardError
 |__Warning
 |__Error
    |__InterfaceError
@@ -302,7 +301,8 @@ which is not supported by the database</p>
       |__IntegrityError
       |__InternalError
       |__ProgrammingError
-      |__NotSupportedError</pre>
+      |__NotSupportedError
+</pre></div>
 </div>
 </div>
 <div class="section" id="functions">
@@ -317,14 +317,14 @@ which is not supported by the database</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>dsn</strong> &#8211; Connection string in format [host[/port]]:database</li>
-<li><strong>user</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User name. If not specified, fdb attempts to use ISC_USER envar.</li>
-<li><strong>password</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User password. If not specified, fdb attempts to use ISC_PASSWORD envar.</li>
-<li><strong>host</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Server host machine specification.</li>
+<li><strong>user</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User name. If not specified, fdb attempts to use ISC_USER envar.</li>
+<li><strong>password</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User password. If not specified, fdb attempts to use ISC_PASSWORD envar.</li>
+<li><strong>host</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Server host machine specification.</li>
 <li><strong>port</strong> (<em>integer</em>) &#8211; Port used by Firebird server <strong>(not used)</strong>.</li>
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database specification (file spec. or alias)</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database specification (file spec. or alias)</li>
 <li><strong>sql_dialect</strong> &#8211; SQL Dialect for connection.</li>
-<li><strong>role</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User role.</li>
-<li><strong>charset</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set for connection.</li>
+<li><strong>role</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User role.</li>
+<li><strong>charset</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set for connection.</li>
 <li><strong>buffers</strong> (<em>integer</em>) &#8211; Page case size override for connection.</li>
 <li><strong>force_writes</strong> (<em>integer</em>) &#8211; Forced writes override for connection.</li>
 <li><strong>no_reserve</strong> (<em>integer</em>) &#8211; Page space reservation override for connection.</li>
@@ -373,15 +373,15 @@ but not both.</p>
 <li><strong>sql</strong> &#8211; &#8220;CREATE DATABASE&#8221; statement.</li>
 <li><strong>sql_dialect</strong> (<em>1 or 3</em>) &#8211; SQL Dialect for newly created database.</li>
 <li><strong>dsn</strong> &#8211; Connection string in format [host[/port]]:database</li>
-<li><strong>user</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User name. If not specified, fdb attempts to use ISC_USER envar.</li>
-<li><strong>password</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User password. If not specified, fdb attempts to use ISC_PASSWORD envar.</li>
-<li><strong>host</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Server host machine specification.</li>
+<li><strong>user</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User name. If not specified, fdb attempts to use ISC_USER envar.</li>
+<li><strong>password</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; User password. If not specified, fdb attempts to use ISC_PASSWORD envar.</li>
+<li><strong>host</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Server host machine specification.</li>
 <li><strong>port</strong> (<em>integer</em>) &#8211; Port used by Firebird server <strong>(not used)</strong>.</li>
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database specification (file spec. or alias)</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database specification (file spec. or alias)</li>
 <li><strong>page_size</strong> (<em>integer</em>) &#8211; Database page size.</li>
 <li><strong>length</strong> (<em>integer</em>) &#8211; Database size in pages.</li>
-<li><strong>charset</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set for connection.</li>
-<li><strong>files</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Specification of secondary database files.</li>
+<li><strong>charset</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set for connection.</li>
+<li><strong>files</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Specification of secondary database files.</li>
 <li><strong>connection_class</strong> (subclass of <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a>) &#8211; Custom connection class</li>
 </ul>
 </td>
@@ -417,7 +417,7 @@ without parameter.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fb_library_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Path to Firebird Client Library.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fb_library_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Path to Firebird Client Library.
 When it&#8217;s not specified, FDB does its best to locate appropriate client library.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.ibase.fbclient_API" title="fdb.ibase.fbclient_API"><tt class="xref py py-class docutils literal"><span class="pre">fdb.ibase.fbclient_API</span></tt></a> instance.</td>
@@ -449,7 +449,7 @@ and the database server.</p>
 <li><strong>db_handle</strong> &#8211; Database handle provided by factory function.</li>
 <li><strong>dpb</strong> &#8211; Database Parameter Block associated with database handle.</li>
 <li><strong>sql_dialect</strong> (<em>integer</em>) &#8211; SQL Dialect associated with database handle.</li>
-<li><strong>charset</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set associated with database handle.</li>
+<li><strong>charset</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set associated with database handle.</li>
 </ul>
 </td>
 </tr>
@@ -631,7 +631,7 @@ all possible isc_info_* items.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>info_code</strong> (<em>integer</em>) &#8211; One of the <cite>isc_info_*</cite> constants.</li>
-<li><strong>result_type</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Must be either ‘s’ if you expect a string result,
+<li><strong>result_type</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Must be either ‘s’ if you expect a string result,
 or ‘i’ if you expect an integer result.</li>
 </ul>
 </td>
@@ -646,7 +646,7 @@ or ‘i’ if you expect an integer result.</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last">Extracting data with the database_info function is rather
 clumsy. See <a class="reference internal" href="#fdb.Connection.db_info" title="fdb.Connection.db_info"><tt class="xref py py-meth docutils literal"><span class="pre">db_info()</span></tt></a> for higher-level means of accessing the
@@ -734,7 +734,7 @@ caching its prepared form.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
 </tr>
 </tbody>
 </table>
@@ -750,7 +750,7 @@ the statement using one of the cursor’s execute methods.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
@@ -777,7 +777,7 @@ See <a class="reference internal" href="#fdb.Transaction.rollback" title="fdb.Tr
 <li><strong>retaining</strong> (<em>boolean</em>) &#8211; (Optional) Indicates whether the transactional
 context of the transaction being resolved
 should be recycled.</li>
-<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (Optional) Causes the transaction to roll back
+<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (Optional) Causes the transaction to roll back
 only as far as the designated savepoint, rather
 than rolling back entirely.</li>
 </ul>
@@ -801,7 +801,7 @@ See <a class="reference internal" href="#fdb.Transaction.savepoint" title="fdb.T
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name for savepoint.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name for savepoint.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body">If Connection is <a class="reference internal" href="#fdb.Connection.closed" title="fdb.Connection.closed"><tt class="xref py py-attr docutils literal"><span class="pre">closed</span></tt></a>.</td>
@@ -893,7 +893,7 @@ See <a class="reference internal" href="#fdb.Transaction.transaction_info" title
 </ul>
 <p>See Firebird API Guide for details.</p>
 </li>
-<li><strong>result_type</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; <p>String code for result type:</p>
+<li><strong>result_type</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; <p>String code for result type:</p>
 <ul>
 <li>‘i’ for Integer</li>
 <li>‘s’ fro String</li>
@@ -1026,7 +1026,7 @@ Uses Firebird version numbers in form: major.minor.subrelease.build</p>
 
 <dl class="class">
 <dt id="fdb.ConnectionWithSchema">
-<em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">ConnectionWithSchema</tt><big>(</big><em>db_handle</em>, <em>dpb=None</em>, <em>sql_dialect=3</em>, <em>charset=None</em><big>)</big><a class="headerlink" href="#fdb.ConnectionWithSchema" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">fdb.</tt><tt class="descname">ConnectionWithSchema</tt><big>(</big><em>db_handle</em>, <em>dpb=None</em>, <em>sql_dialect=3</em>, <em>charset=None</em>, <em>isolation_level='x03tx06x0fx11'</em><big>)</big><a class="headerlink" href="#fdb.ConnectionWithSchema" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> descendant that exposes all attributes of encapsulated
 <a class="reference internal" href="#fdb.schema.Schema" title="fdb.schema.Schema"><tt class="xref py py-class docutils literal"><span class="pre">Schema</span></tt></a> instance directly as connection attributes, except
 <a class="reference internal" href="#fdb.schema.Schema.close" title="fdb.schema.Schema.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> and <a class="reference internal" href="#fdb.schema.Schema.bind" title="fdb.schema.Schema.bind"><tt class="xref py py-meth docutils literal"><span class="pre">bind()</span></tt></a>, and
@@ -1086,7 +1086,7 @@ Items are <tt class="xref py py-class docutils literal"><span class="pre">Domain
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_character_set_names">
 <tt class="descname">enum_character_set_names</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_character_set_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1094,7 +1094,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_field_subtypes">
 <tt class="descname">enum_field_subtypes</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_field_subtypes" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1102,7 +1102,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_field_types">
 <tt class="descname">enum_field_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_field_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1110,7 +1110,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_function_types">
 <tt class="descname">enum_function_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_function_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1118,7 +1118,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_mechanism_types">
 <tt class="descname">enum_mechanism_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_mechanism_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1126,7 +1126,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_object_type_codes">
 <tt class="descname">enum_object_type_codes</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_object_type_codes" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1134,7 +1134,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_object_types">
 <tt class="descname">enum_object_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_object_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1142,7 +1142,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_param_type_from">
 <tt class="descname">enum_param_type_from</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_param_type_from" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1150,7 +1150,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_parameter_mechanism_types">
 <tt class="descname">enum_parameter_mechanism_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_parameter_mechanism_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1158,7 +1158,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_procedure_types">
 <tt class="descname">enum_procedure_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_procedure_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1166,7 +1166,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_relation_types">
 <tt class="descname">enum_relation_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_relation_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1174,7 +1174,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_system_flag_types">
 <tt class="descname">enum_system_flag_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_system_flag_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1182,7 +1182,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_transaction_state_types">
 <tt class="descname">enum_transaction_state_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_transaction_state_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1190,7 +1190,7 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_trigger_types">
 <tt class="descname">enum_trigger_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_trigger_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1233,7 +1233,7 @@ Items are <tt class="xref py py-class docutils literal"><span class="pre">Index<
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.opt_always_quote">
 <tt class="descname">opt_always_quote</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.opt_always_quote" title="Permalink to this definition">¶</a></dt>
-<dd><p>str(object) -&gt; string</p>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
 </dd></dl>
@@ -1394,12 +1394,7 @@ desired context.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">Cursor is actually a high-level wrapper around <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a>
 instance(s) that handle the actual SQL statement execution and result
-management. Cursor has an internal cache of PreparedStatements, so when
-the same SQL statement is executed repeatedly, related PreparedStatement
-is re-used, which enhances performance. This convenient enhancement has
-a side effect: Cursor that was used to perform many different SQL statements
-may hold very large cache of PerapedStatements. To clear the cache, you&#8217;ll
-need to call <a class="reference internal" href="#fdb.Cursor.clear_cache" title="fdb.Cursor.clear_cache"><tt class="xref py py-meth docutils literal"><span class="pre">clear_cache()</span></tt></a>.</p>
+management.</p>
 </div>
 <div class="admonition tip">
 <p class="first admonition-title">Tip</p>
@@ -1434,7 +1429,7 @@ changed during the lifetime of that Cursor.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>procname</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Stored procedure name.</li>
+<li><strong>procname</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Stored procedure name.</li>
 <li><strong>parameters</strong> (<em>List or Tuple</em>) &#8211; (Optional) Sequence of parameters. Must contain one
 entry for each argument that the procedure expects.</li>
 </ul>
@@ -1452,20 +1447,6 @@ entry for each argument that the procedure expects.</li>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="fdb.Cursor.clear_cache">
-<tt class="descname">clear_cache</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.Cursor.clear_cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clear the internal cache with <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instances.</p>
-<p>All prepared statements except current one are <strong>permanently</strong> closed,
-and the cache is cleared.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Current prepared statement is still in its actual state, but  it&#8217;s
-removed from cache, so when next statement (even the same SQL command)
-is executed, this current <a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance is disposed.</p>
-</div>
 </dd></dl>
 
 <dl class="method">
@@ -1790,7 +1771,7 @@ internal cache of prepared statements.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>operation</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL command</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>operation</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL command</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><a class="reference internal" href="#fdb.PreparedStatement" title="fdb.PreparedStatement"><tt class="xref py py-class docutils literal"><span class="pre">PreparedStatement</span></tt></a> instance.</p>
@@ -1832,7 +1813,7 @@ the same command executed repeatedly will retain this setting.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of BLOB column.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of BLOB column.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"></td>
@@ -2069,14 +2050,16 @@ this Transaction is bound to.</td>
 <dl class="method">
 <dt id="fdb.Transaction.execute_immediate">
 <tt class="descname">execute_immediate</tt><big>(</big><em>sql</em><big>)</big><a class="headerlink" href="#fdb.Transaction.execute_immediate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a statement without caching its prepared form on
-<strong>all connections</strong> this transaction is bound to.</p>
+<dd><dl class="docutils">
+<dt>Executes a statement without caching its prepared form on</dt>
+<dd><strong>all connections</strong> this transaction is bound to.</dd>
+</dl>
 <p>Automatically starts transaction if it&#8217;s not already started.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
 </tr>
 </tbody>
 </table>
@@ -2092,7 +2075,7 @@ the statement using one of the cursor’s execute methods.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises DatabaseError:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body">When error is returned from server.</td>
@@ -2131,7 +2114,7 @@ or <cite>rollback()</cite> without an actual transaction.</p>
 <li><strong>retaining</strong> (<em>boolean</em>) &#8211; Indicates whether the transactional context of
 the transaction being resolved should be recycled.
 Mutually exclusive with &#8216;savepoint`.</li>
-<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Savepoint name. Causes the transaction to roll
+<li><strong>savepoint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Savepoint name. Causes the transaction to roll
 back only as far as the designated savepoint,
 rather than rolling back entirely. Mutually
 exclusive with &#8216;retaining`.</li>
@@ -2167,7 +2150,7 @@ calling this method starts the transaction if it was not yet started.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Savepoint name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Savepoint name.</td>
 </tr>
 </tbody>
 </table>
@@ -2304,7 +2287,7 @@ as <cite>stream</cite> BLOBs by this instance.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of BLOB column.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of BLOB column.</td>
 </tr>
 </tbody>
 </table>
@@ -2415,7 +2398,7 @@ databases.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last">See <a class="reference internal" href="#fdb.ConnectionGroup.add" title="fdb.ConnectionGroup.add"><tt class="xref py py-meth docutils literal"><span class="pre">add()</span></tt></a> for list of exceptions the constructor may throw.</p>
 </div>
@@ -2571,7 +2554,7 @@ prepared form.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
 </tr>
 </tbody>
 </table>
@@ -2587,7 +2570,7 @@ the statement using one of the cursor’s execute methods.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sql</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; SQL statement to execute.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises DatabaseError:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body">When error is returned from server.</td>
@@ -2605,8 +2588,9 @@ the statement using one of the cursor’s execute methods.</p>
 <dl class="method">
 <dt id="fdb.ConnectionGroup.prepare">
 <tt class="descname">prepare</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.ConnectionGroup.prepare" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manually triggers the first phase of a two-phase commit (2PC).  Use
-of this method is optional; if preparation is not triggered manually,
+<dd><blockquote>
+<div>Manually triggers the first phase of a two-phase commit (2PC).  Use</div></blockquote>
+<p>of this method is optional; if preparation is not triggered manually,
 it will be performed implicitly by commit() in a 2PC.</p>
 </dd></dl>
 
@@ -2662,7 +2646,7 @@ See <a class="reference internal" href="#fdb.Transaction.savepoint" title="fdb.T
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name for savepoint.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name for savepoint.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body">When group is empty.</td>
@@ -2698,11 +2682,11 @@ performs <cite>commit</cite> at the end of block.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transaction</strong> &#8211; Any object that supports <cite>begin()</cite>, <cite>commit()</cite> and
-<cite>rollback()</cite>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transaction</strong> &#8211; Any object that supports <cite>begin()</cite>, <cite>commit()</cite> and</td>
 </tr>
 </tbody>
 </table>
+<p><cite>rollback()</cite>.</p>
 <dl class="attribute">
 <dt id="fdb.TransactionContext.transaction">
 <tt class="descname">transaction</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.TransactionContext.transaction" title="Permalink to this definition">¶</a></dt>
@@ -2724,10 +2708,19 @@ into the Python program.</p>
 <p class="last">DO NOT create instances of this class directly! Use only
 <a class="reference internal" href="#fdb.Connection.event_conduit" title="fdb.Connection.event_conduit"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.event_conduit()</span></tt></a> to get EventConduit instances.</p>
 </div>
-<p>From the moment the conduit is created by the <a class="reference internal" href="#fdb.Connection.event_conduit" title="fdb.Connection.event_conduit"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.event_conduit()</span></tt></a>
-method, notifications of any events that occur will accumulate asynchronously
-within the conduit’s internal queue until the conduit is closed either
-explicitly (via the <a class="reference internal" href="#fdb.EventConduit.close" title="fdb.EventConduit.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> method) or implicitly (via garbage collection).</p>
+<p>Notifications of any events are not accumulated until <a class="reference internal" href="#fdb.EventConduit.begin" title="fdb.EventConduit.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a> method is called.</p>
+<p>From the moment the <a class="reference internal" href="#fdb.EventConduit.begin" title="fdb.EventConduit.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a> method is called, notifications of any events that
+occur will accumulate asynchronously within the conduit’s internal queue until the conduit
+is closed either explicitly (via the <a class="reference internal" href="#fdb.EventConduit.close" title="fdb.EventConduit.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> method) or implicitly
+(via garbage collection).</p>
+<p><cite>EventConduit</cite> implements context manager protocol to call method <a class="reference internal" href="#fdb.EventConduit.begin" title="fdb.EventConduit.begin"><tt class="xref py py-meth docutils literal"><span class="pre">begin()</span></tt></a> and
+<a class="reference internal" href="#fdb.EventConduit.close" title="fdb.EventConduit.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> automatically.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">event_conduit</span><span class="p">(</span> <span class="p">(</span><span class="s">&#39;event_a&#39;</span><span class="p">,</span> <span class="s">&#39;event_b&#39;</span><span class="p">)</span> <span class="p">)</span> <span class="k">as</span> <span class="n">conduit</span><span class="p">:</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">conduit</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+    <span class="n">process_events</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2740,6 +2733,13 @@ explicitly (via the <a class="reference internal" href="#fdb.EventConduit.close"
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="fdb.EventConduit.begin">
+<tt class="descname">begin</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.EventConduit.begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts listening for events.</p>
+<p>Must be called directly or through context manager interface.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="fdb.EventConduit.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.EventConduit.close" title="Permalink to this definition">¶</a></dt>
@@ -2777,6 +2777,7 @@ and return None. The default timeout is infinite.</td>
 </table>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="go">&gt;&gt;&gt;conduit = connection.event_conduit( (&#39;event_a&#39;, &#39;event_b&#39;) )</span>
+<span class="go">&gt;&gt;&gt;conduit.begin()</span>
 <span class="go">&gt;&gt;&gt;conduit.wait()</span>
 <span class="go">{</span>
 <span class="go"> &#39;event_a&#39;: 1,</span>
@@ -3179,7 +3180,7 @@ an instance of a particular class or type.</p>
 <dl class="method">
 <dt id="fdb.fbcore.EventBlock.count_and_reregister">
 <tt class="descname">count_and_reregister</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.fbcore.EventBlock.count_and_reregister" title="Permalink to this definition">¶</a></dt>
-<dd><p>Count event occurences and reregister interest in fut=rther notifications.</p>
+<dd><p>Count event occurences and reregister interest in futrther notifications.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -3329,10 +3330,10 @@ and <a class="reference internal" href="#fdb.services.Connection.bring_online" t
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>host</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Host machine specification. Local by default.</li>
-<li><strong>user</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Administrative user name. Defaults to content
+<li><strong>host</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Host machine specification. Local by default.</li>
+<li><strong>user</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Administrative user name. Defaults to content
 of environment variable <cite>&#8216;ISC_USER&#8217;</cite> or <cite>&#8216;SYSDBA&#8217;</cite>.</li>
-<li><strong>password</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Administrative user password. Default is content 
+<li><strong>password</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Administrative user password. Default is content
 of environment variable <cite>&#8216;ISC_PASSWORD&#8217;</cite>.</li>
 </ul>
 </td>
@@ -3357,7 +3358,7 @@ host.  Therefore, the database specified as a parameter to methods such as
 and the database server.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
-<p class="last">DO NOT create instances of this class directly! Use only <a class="reference internal" href="#fdb.services.connect" title="fdb.services.connect"><tt class="xref py py-func docutils literal"><span class="pre">connect()</span></tt></a> 
+<p class="last">DO NOT create instances of this class directly! Use only <a class="reference internal" href="#fdb.services.connect" title="fdb.services.connect"><tt class="xref py py-func docutils literal"><span class="pre">connect()</span></tt></a>
 to get Connection instances.</p>
 </div>
 <div class="admonition tip">
@@ -3373,7 +3374,7 @@ to get Connection instances.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</td>
 </tr>
 </tbody>
 </table>
@@ -3387,15 +3388,15 @@ to get Connection instances.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its 
-<a class="reference internal" href="#fdb.services.User.name" title="fdb.services.User.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> and <a class="reference internal" href="#fdb.services.User.password" title="fdb.services.User.password"><tt class="xref py py-attr docutils literal"><span class="pre">password</span></tt></a> attributes specified 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its
+<a class="reference internal" href="#fdb.services.User.name" title="fdb.services.User.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> and <a class="reference internal" href="#fdb.services.User.password" title="fdb.services.User.password"><tt class="xref py py-attr docutils literal"><span class="pre">password</span></tt></a> attributes specified
 as non-empty values. All other attributes are optional.</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This method ignores the <a class="reference internal" href="#fdb.services.User.user_id" title="fdb.services.User.user_id"><tt class="xref py py-attr docutils literal"><span class="pre">user_id</span></tt></a> and <a class="reference internal" href="#fdb.services.User.group_id" title="fdb.services.User.group_id"><tt class="xref py py-attr docutils literal"><span class="pre">group_id</span></tt></a> 
+<p class="last">This method ignores the <a class="reference internal" href="#fdb.services.User.user_id" title="fdb.services.User.user_id"><tt class="xref py py-attr docutils literal"><span class="pre">user_id</span></tt></a> and <a class="reference internal" href="#fdb.services.User.group_id" title="fdb.services.User.group_id"><tt class="xref py py-attr docutils literal"><span class="pre">group_id</span></tt></a>
 attributes of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> regardless of their values.</p>
 </div>
 </dd></dl>
@@ -3409,7 +3410,7 @@ attributes of <a class="reference internal" href="#fdb.services.User" title="fdb
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>source_database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Source database specification.</li>
+<li><strong>source_database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Source database specification.</li>
 <li><strong>dest_filenames</strong> (<em>string or tuple of strings</em>) &#8211; Backup file(s) specification.</li>
 <li><strong>dest_file_sizes</strong> (<em>tuple of integers</em>) &#8211; (optional) specification of backup file max. sizes.</li>
 <li><strong>ignore_checksums</strong> (<em>integer</em>) &#8211; <cite>1</cite> to ignore checksums.</li>
@@ -3428,13 +3429,13 @@ Function must accept only one parameter: line of output.</li>
 </tr>
 </tbody>
 </table>
-<p>If <cite>callback</cite> is not specified, backup log could be retrieved through 
+<p>If <cite>callback</cite> is not specified, backup log could be retrieved through
 <a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>, <a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite> or
 ignored via call to <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Until backup report is not fully fetched from service (or ignored via 
-<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will 
+<p class="last">Until backup report is not fully fetched from service (or ignored via
+<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will
 fail with exception.</p>
 </div>
 </dd></dl>
@@ -3448,16 +3449,16 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>online_mode</strong> (<em>integer</em>) &#8211; (Optional) One from following constants:
-<a class="reference internal" href="#fdb.services.SHUT_LEGACY" title="fdb.services.SHUT_LEGACY"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_LEGACY</span></tt></a>, <a class="reference internal" href="#fdb.services.SHUT_SINGLE" title="fdb.services.SHUT_SINGLE"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_SINGLE</span></tt></a>, 
+<a class="reference internal" href="#fdb.services.SHUT_LEGACY" title="fdb.services.SHUT_LEGACY"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_LEGACY</span></tt></a>, <a class="reference internal" href="#fdb.services.SHUT_SINGLE" title="fdb.services.SHUT_SINGLE"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_SINGLE</span></tt></a>,
 <a class="reference internal" href="#fdb.services.SHUT_MULTI" title="fdb.services.SHUT_MULTI"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_MULTI</span></tt></a> or <a class="reference internal" href="#fdb.services.SHUT_NORMAL" title="fdb.services.SHUT_NORMAL"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_NORMAL</span></tt></a> (<strong>Default</strong>).</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last">See also <a class="reference internal" href="#fdb.services.Connection.shutdown" title="fdb.services.Connection.shutdown"><tt class="xref py py-meth docutils literal"><span class="pre">shutdown()</span></tt></a> method.</p>
 </div>
@@ -3466,9 +3467,9 @@ fail with exception.</p>
 <dl class="method">
 <dt id="fdb.services.Connection.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.services.Connection.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Close the connection now (rather than whenever <cite>__del__</cite> is called). 
-The connection will be unusable from this point forward; an <tt class="xref py py-exc docutils literal"><span class="pre">Error</span></tt> 
-(or subclass) exception will be raised if any operation is attempted 
+<dd><p>Close the connection now (rather than whenever <cite>__del__</cite> is called).
+The connection will be unusable from this point forward; an <tt class="xref py py-exc docutils literal"><span class="pre">Error</span></tt>
+(or subclass) exception will be raised if any operation is attempted
 with the connection.</p>
 </dd></dl>
 
@@ -3481,7 +3482,7 @@ with the connection.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>transaction_id</strong> (<em>integer</em>) &#8211; ID of Transaction to resolve.</li>
 </ul>
 </td>
@@ -3555,7 +3556,7 @@ with the connection.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns list:</th><td class="field-body">Transaction IDs.</td>
 </tr>
@@ -3593,13 +3594,13 @@ Function must accept only one parameter: line of output.</td>
 </tr>
 </tbody>
 </table>
-<p>If <cite>callback</cite> is not specified, log content could be retrieved through 
+<p>If <cite>callback</cite> is not specified, log content could be retrieved through
 <a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>, <a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite> or
 ignored via call to <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Until log content is not fully fetched from service (or ignored via 
-<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will 
+<p class="last">Until log content is not fully fetched from service (or ignored via
+<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will
 fail with exception.</p>
 </div>
 </dd></dl>
@@ -3698,13 +3699,13 @@ server.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database specification.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database specification.</li>
 <li><strong>show_only_db_log_pages</strong> (<em>integer</em>) &#8211; <cite>1</cite> to analyze only log pages.</li>
-<li><strong>show_only_db_header_pages</strong> (<em>integer</em>) &#8211; <cite>1</cite> to analyze only database 
+<li><strong>show_only_db_header_pages</strong> (<em>integer</em>) &#8211; <cite>1</cite> to analyze only database
 header. When set, all other parameters are ignored.</li>
 <li><strong>show_user_data_pages</strong> (<em>integer</em>) &#8211; <cite>0</cite> to skip user data analysis.</li>
 <li><strong>show_user_index_pages</strong> (<em>integer</em>) &#8211; <cite>0</cite> to skip user index analysis.</li>
-<li><strong>show_system_tables_and_indexes</strong> (<em>integer</em>) &#8211; <cite>1</cite> to analyze system 
+<li><strong>show_system_tables_and_indexes</strong> (<em>integer</em>) &#8211; <cite>1</cite> to analyze system
 tables and indices.</li>
 <li><strong>show_record_versions</strong> (<em>integer</em>) &#8211; <cite>1</cite> to analyze record versions.</li>
 <li><strong>callback</strong> (<em>function</em>) &#8211; Function to call back with each output line.
@@ -3714,13 +3715,13 @@ Function must accept only one parameter: line of output.</li>
 </tr>
 </tbody>
 </table>
-<p>If <cite>callback</cite> is not specified, statistical report could be retrieved 
-through <a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>, <a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite> 
+<p>If <cite>callback</cite> is not specified, statistical report could be retrieved
+through <a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>, <a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite>
 or ignored via call to <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Until report is not fully fetched from service (or ignored via 
-<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will 
+<p class="last">Until report is not fully fetched from service (or ignored via
+<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will
 fail with exception.</p>
 </div>
 </dd></dl>
@@ -3733,7 +3734,7 @@ fail with exception.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (Optional) When specified, returns information 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (Optional) When specified, returns information
 only about user with specified user name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns list:</th><td class="field-body"><a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> instances.</td>
@@ -3762,7 +3763,7 @@ no other async service could be started.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its
 <a class="reference internal" href="#fdb.services.User.name" title="fdb.services.User.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> attribute specified as non-empty value.</td>
 </tr>
 </tbody>
@@ -3771,8 +3772,8 @@ no other async service could be started.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">This method sets <a class="reference internal" href="#fdb.services.User.first_name" title="fdb.services.User.first_name"><tt class="xref py py-attr docutils literal"><span class="pre">first_name</span></tt></a>, <a class="reference internal" href="#fdb.services.User.middle_name" title="fdb.services.User.middle_name"><tt class="xref py py-attr docutils literal"><span class="pre">middle_name</span></tt></a>
 and <a class="reference internal" href="#fdb.services.User.last_name" title="fdb.services.User.last_name"><tt class="xref py py-attr docutils literal"><span class="pre">last_name</span></tt></a> to their actual values, and ignores
-the <a class="reference internal" href="#fdb.services.User.user_id" title="fdb.services.User.user_id"><tt class="xref py py-attr docutils literal"><span class="pre">user_id</span></tt></a> and <a class="reference internal" href="#fdb.services.User.group_id" title="fdb.services.User.group_id"><tt class="xref py py-attr docutils literal"><span class="pre">group_id</span></tt></a> attributes 
-regardless of their values. <a class="reference internal" href="#fdb.services.User.password" title="fdb.services.User.password"><tt class="xref py py-attr docutils literal"><span class="pre">password</span></tt></a> is set <strong>only</strong> 
+the <a class="reference internal" href="#fdb.services.User.user_id" title="fdb.services.User.user_id"><tt class="xref py py-attr docutils literal"><span class="pre">user_id</span></tt></a> and <a class="reference internal" href="#fdb.services.User.group_id" title="fdb.services.User.group_id"><tt class="xref py py-attr docutils literal"><span class="pre">group_id</span></tt></a> attributes
+regardless of their values. <a class="reference internal" href="#fdb.services.User.password" title="fdb.services.User.password"><tt class="xref py py-attr docutils literal"><span class="pre">password</span></tt></a> is set <strong>only</strong>
 when it has value.</p>
 </div>
 </dd></dl>
@@ -3786,7 +3787,7 @@ when it has value.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>source_database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Source database specification.</li>
+<li><strong>source_database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Source database specification.</li>
 <li><strong>dest_filename</strong> &#8211; Backup file specification.</li>
 <li><strong>nbackup_level</strong> (<em>integer</em>) &#8211; Incremental backup level.</li>
 <li><strong>no_db_triggers</strong> (<em>integer</em>) &#8211; <cite>1</cite> to disable database triggers temporarily.</li>
@@ -3804,7 +3805,7 @@ when it has value.</p>
 <dl class="method">
 <dt id="fdb.services.Connection.next">
 <tt class="descname">next</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.services.Connection.next" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the next result line from service manager. Part of <em>iterator 
+<dd><p>Return the next result line from service manager. Part of <em>iterator
 protocol</em>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3879,7 +3880,7 @@ protocol</em>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (string or <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; User name or Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (string or <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; User name or Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its
 <a class="reference internal" href="#fdb.services.User.name" title="fdb.services.User.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> attribute specified as non-empty value.</td>
 </tr>
 </tbody>
@@ -3895,13 +3896,13 @@ protocol</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>read_only_validation</strong> (<em>integer</em>) &#8211; <cite>1</cite> to prevent any database changes.</li>
 <li><strong>ignore_checksums</strong> (<em>integer</em>) &#8211; <cite>1</cite> to ignore page checksum errors.</li>
 <li><strong>kill_unavailable_shadows</strong> (<em>integer</em>) &#8211; <cite>1</cite> to kill unavailable shadows.</li>
 <li><strong>mend_database</strong> (<em>integer</em>) &#8211; <cite>1</cite> to fix database for backup.</li>
 <li><strong>validate_database</strong> (<em>integer</em>) &#8211; <cite>0</cite> to skip database validation.</li>
-<li><strong>validate_record_fragments</strong> (<em>integer</em>) &#8211; <cite>0</cite> to skip validation of 
+<li><strong>validate_record_fragments</strong> (<em>integer</em>) &#8211; <cite>0</cite> to skip validation of
 record fragments.</li>
 </ul>
 </td>
@@ -3925,10 +3926,10 @@ record fragments.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>source_filenames</strong> (<em>string or tuple of strings</em>) &#8211; Backup file(s) specification.</li>
 <li><strong>dest_filenames</strong> (<em>string or tuple of strings</em>) &#8211; Database file(s) specification.</li>
-<li><strong>dest_file_pages</strong> (<em>tuple of integers</em>) &#8211; (optional) specification of database file max. 
+<li><strong>dest_file_pages</strong> (<em>tuple of integers</em>) &#8211; (optional) specification of database file max.
 # of pages.</li>
 <li><strong>page_size</strong> (<em>integer</em>) &#8211; (optional) Page size.</li>
-<li><strong>cache_buffers</strong> (<em>integer</em>) &#8211; (optional) Size of page-cache for this 
+<li><strong>cache_buffers</strong> (<em>integer</em>) &#8211; (optional) Size of page-cache for this
 database.</li>
 <li><strong>access_mode_read_only</strong> (<em>integer</em>) &#8211; <cite>1</cite> to create R/O database.</li>
 <li><strong>replace</strong> (<em>integer</em>) &#8211; <cite>1</cite> to replace existing database.</li>
@@ -3948,13 +3949,13 @@ Function must accept only one parameter: line of output.</li>
 </tr>
 </tbody>
 </table>
-<p>If <cite>callback</cite> is not specified, restore log could be retrieved through 
+<p>If <cite>callback</cite> is not specified, restore log could be retrieved through
 <a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>, <a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite> or
 ignored via call to <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Until restore report is not fully fetched from service (or ignored via 
-<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will 
+<p class="last">Until restore report is not fully fetched from service (or ignored via
+<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will
 fail with exception.</p>
 </div>
 </dd></dl>
@@ -3968,7 +3969,7 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>transaction_id</strong> (<em>integer</em>) &#8211; ID of Transaction to resolve.</li>
 </ul>
 </td>
@@ -3986,9 +3987,9 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>mode</strong> (<em>integer</em>) &#8211; One from following constants:
-<a class="reference internal" href="#fdb.services.ACCESS_READ_WRITE" title="fdb.services.ACCESS_READ_WRITE"><tt class="xref py py-data docutils literal"><span class="pre">ACCESS_READ_WRITE</span></tt></a> or 
+<a class="reference internal" href="#fdb.services.ACCESS_READ_WRITE" title="fdb.services.ACCESS_READ_WRITE"><tt class="xref py py-data docutils literal"><span class="pre">ACCESS_READ_WRITE</span></tt></a> or
 <a class="reference internal" href="#fdb.services.ACCESS_READ_ONLY" title="fdb.services.ACCESS_READ_ONLY"><tt class="xref py py-data docutils literal"><span class="pre">ACCESS_READ_ONLY</span></tt></a></li>
 </ul>
 </td>
@@ -4006,7 +4007,7 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>n</strong> (<em>integer</em>) &#8211; Number of pages.</li>
 </ul>
 </td>
@@ -4024,7 +4025,7 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>reserve_space</strong> (<em>boolean</em>) &#8211; <cite>True</cite> to reserve space, <cite>False</cite> to do not.</li>
 </ul>
 </td>
@@ -4042,7 +4043,7 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>dialect</strong> (<em>integer</em>) &#8211; <cite>1</cite> or <cite>3</cite>.</li>
 </ul>
 </td>
@@ -4060,7 +4061,7 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>n</strong> (<em>integer</em>) &#8211; Sweep treshold, or <cite>0</cite> to disable automatic sweep.</li>
 </ul>
 </td>
@@ -4078,9 +4079,9 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>mode</strong> (<em>integer</em>) &#8211; One from following constants:
-<a class="reference internal" href="#fdb.services.WRITE_FORCED" title="fdb.services.WRITE_FORCED"><tt class="xref py py-data docutils literal"><span class="pre">WRITE_FORCED</span></tt></a> or 
+<a class="reference internal" href="#fdb.services.WRITE_FORCED" title="fdb.services.WRITE_FORCED"><tt class="xref py py-data docutils literal"><span class="pre">WRITE_FORCED</span></tt></a> or
 <a class="reference internal" href="#fdb.services.WRITE_BUFFERED" title="fdb.services.WRITE_BUFFERED"><tt class="xref py py-data docutils literal"><span class="pre">WRITE_BUFFERED</span></tt></a></li>
 </ul>
 </td>
@@ -4098,12 +4099,12 @@ fail with exception.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
 <li><strong>shutdown_mode</strong> (<em>integer</em>) &#8211; One from following constants:
-<a class="reference internal" href="#fdb.services.SHUT_LEGACY" title="fdb.services.SHUT_LEGACY"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_LEGACY</span></tt></a>, <a class="reference internal" href="#fdb.services.SHUT_SINGLE" title="fdb.services.SHUT_SINGLE"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_SINGLE</span></tt></a>, 
+<a class="reference internal" href="#fdb.services.SHUT_LEGACY" title="fdb.services.SHUT_LEGACY"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_LEGACY</span></tt></a>, <a class="reference internal" href="#fdb.services.SHUT_SINGLE" title="fdb.services.SHUT_SINGLE"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_SINGLE</span></tt></a>,
 <a class="reference internal" href="#fdb.services.SHUT_MULTI" title="fdb.services.SHUT_MULTI"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_MULTI</span></tt></a> or <a class="reference internal" href="#fdb.services.SHUT_FULL" title="fdb.services.SHUT_FULL"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_FULL</span></tt></a>.</li>
 <li><strong>shutdown_method</strong> (<em>integer</em>) &#8211; One from following constants:
-<a class="reference internal" href="#fdb.services.SHUT_FORCE" title="fdb.services.SHUT_FORCE"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_FORCE</span></tt></a>, 
+<a class="reference internal" href="#fdb.services.SHUT_FORCE" title="fdb.services.SHUT_FORCE"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_FORCE</span></tt></a>,
 <a class="reference internal" href="#fdb.services.SHUT_DENY_NEW_TRANSACTIONS" title="fdb.services.SHUT_DENY_NEW_TRANSACTIONS"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_DENY_NEW_TRANSACTIONS</span></tt></a>
 or <a class="reference internal" href="#fdb.services.SHUT_DENY_NEW_ATTACHMENTS" title="fdb.services.SHUT_DENY_NEW_ATTACHMENTS"><tt class="xref py py-data docutils literal"><span class="pre">SHUT_DENY_NEW_ATTACHMENTS</span></tt></a>.</li>
 <li><strong>timeout</strong> (<em>integer</em>) &#8211; Time in seconds, that the shutdown must complete in.</li>
@@ -4112,7 +4113,7 @@ or <a class="reference internal" href="#fdb.services.SHUT_DENY_NEW_ATTACHMENTS" 
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last">See also <a class="reference internal" href="#fdb.services.Connection.bring_online" title="fdb.services.Connection.bring_online"><tt class="xref py py-meth docutils literal"><span class="pre">bring_online()</span></tt></a> method.</p>
 </div>
@@ -4130,7 +4131,7 @@ or <a class="reference internal" href="#fdb.services.SHUT_DENY_NEW_ATTACHMENTS" 
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</td>
 </tr>
 </tbody>
 </table>
@@ -4204,8 +4205,8 @@ or <a class="reference internal" href="#fdb.services.SHUT_DENY_NEW_ATTACHMENTS" 
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Trace session configuration.</li>
-<li><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Trace session name.</li>
+<li><strong>config</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Trace session configuration.</li>
+<li><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; (optional) Trace session name.</li>
 </ul>
 </td>
 </tr>
@@ -4219,13 +4220,13 @@ or <a class="reference internal" href="#fdb.services.SHUT_DENY_NEW_ATTACHMENTS" 
 </tr>
 </tbody>
 </table>
-<p>Trace session output could be retrieved through <a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>, 
-<a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite> or ignored via call to 
+<p>Trace session output could be retrieved through <a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>,
+<a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite> or ignored via call to
 <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Until session output is not fully fetched from service (or ignored 
-via <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service 
+<p class="last">Until session output is not fully fetched from service (or ignored
+via <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service
 including call to any <cite>trace_</cite> method will fail with exception.</p>
 </div>
 </dd></dl>
@@ -4286,7 +4287,7 @@ including call to any <cite>trace_</cite> method will fail with exception.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (string or <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; User name or Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (string or <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; User name or Instance of <a class="reference internal" href="#fdb.services.User" title="fdb.services.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a> with <strong>at least</strong> its
 <a class="reference internal" href="#fdb.services.User.name" title="fdb.services.User.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> attribute specified as non-empty value.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Returns boolean:</th></tr>
@@ -4515,7 +4516,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.CharacterSet" title="fdb.schema.CharacterSet"><tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4547,7 +4548,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Collation name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Collation name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Collation" title="fdb.schema.Collation"><tt class="xref py py-class docutils literal"><span class="pre">Collation</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4584,7 +4585,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Constraint name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Constraint name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Constraint" title="fdb.schema.Constraint"><tt class="xref py py-class docutils literal"><span class="pre">Constraint</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4600,7 +4601,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Domain name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Domain name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Domain" title="fdb.schema.Domain"><tt class="xref py py-class docutils literal"><span class="pre">Domain</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4616,7 +4617,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Exception name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Exception name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.DatabaseException" title="fdb.schema.DatabaseException"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseException</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4632,7 +4633,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Function name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Function name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Function" title="fdb.schema.Function"><tt class="xref py py-class docutils literal"><span class="pre">Function</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4648,7 +4649,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Sequence name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Sequence name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Sequence" title="fdb.schema.Sequence"><tt class="xref py py-class docutils literal"><span class="pre">Sequence</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4664,7 +4665,7 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Index name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Index name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Index" title="fdb.schema.Index"><tt class="xref py py-class docutils literal"><span class="pre">Index</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4708,7 +4709,7 @@ Numeric code for user type, see <a class="reference internal" href="#fdb.schema.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Procedure name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Procedure name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Procedure" title="fdb.schema.Procedure"><tt class="xref py py-class docutils literal"><span class="pre">Procedure</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4724,7 +4725,7 @@ Numeric code for user type, see <a class="reference internal" href="#fdb.schema.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Role name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Role name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Role" title="fdb.schema.Role"><tt class="xref py py-class docutils literal"><span class="pre">Role</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4740,7 +4741,7 @@ Numeric code for user type, see <a class="reference internal" href="#fdb.schema.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Sequence name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Sequence name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Sequence" title="fdb.schema.Sequence"><tt class="xref py py-class docutils literal"><span class="pre">Sequence</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4756,7 +4757,7 @@ Numeric code for user type, see <a class="reference internal" href="#fdb.schema.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Table name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Table name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Table" title="fdb.schema.Table"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4772,7 +4773,7 @@ Numeric code for user type, see <a class="reference internal" href="#fdb.schema.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Trigger name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Trigger name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.Trigger" title="fdb.schema.Trigger"><tt class="xref py py-class docutils literal"><span class="pre">Trigger</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4788,7 +4789,7 @@ Numeric code for user type, see <a class="reference internal" href="#fdb.schema.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; View name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; View name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#fdb.schema.View" title="fdb.schema.View"><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt></a> with specified name or <cite>None</cite>.</td>
 </tr>
@@ -4811,7 +4812,7 @@ reloaded from database on next reference.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; <cite>None</cite> or name of metadata category.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; <cite>None</cite> or name of metadata category.</td>
 </tr>
 </tbody>
 </table>
@@ -9816,19 +9817,21 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <tt class="descclassname">fdb.utils.</tt><tt class="descname">embed_attributes</tt><big>(</big><em>from_class</em>, <em>attr</em><big>)</big><a class="headerlink" href="#fdb.utils.embed_attributes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class decorator that injects properties and non-callable attributes
 from another class instance embedded in class instances.</p>
-<table class="docutils field-list" frame="void" rules="none">
+<blockquote>
+<div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>from_class</strong> (<em>class</em>) &#8211; Class that should extend decorated class.</li>
-<li><strong>attr</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Attribute name that holds instance of embedded class
-within decorated class instance.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name" colspan="2">param class from_class:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Class that should extend decorated class.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param string attr:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">Attribute name that holds instance of embedded class
+within decorated class instance.</td>
 </tr>
 </tbody>
 </table>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -9839,7 +9842,7 @@ within decorated class instance.</li>
 <em class="property">class </em><tt class="descclassname">fdb.utils.</tt><tt class="descname">LateBindingProperty</tt><a class="headerlink" href="#fdb.utils.LateBindingProperty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Peroperty class that binds to getter/setter/deleter methods when <strong>instance</strong>
 of class that define the property is created. This allows you to override
-these methods in descendant classes (if they are not private) without 
+these methods in descendant classes (if they are not private) without
 necessity to redeclare the property itself in descendant class.</p>
 <p>Recipe from Tim Delaney, 2005/03/31
 <a class="reference external" href="http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/408713">http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/408713</a></p>
@@ -9907,7 +9910,7 @@ necessity to redeclare the property itself in descendant class.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>method</strong> &#8211; Callable without parameters that returns next item.</li>
-<li><strong>sentinel</strong> &#8211; Value that when returned by <cite>method</cite> indicates the end 
+<li><strong>sentinel</strong> &#8211; Value that when returned by <cite>method</cite> indicates the end
 of sequence.</li>
 </ul>
 </td>
@@ -9935,7 +9938,7 @@ properties from embedded object into class definition of parent object.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>obj</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Attribute name with embedded object.</li>
+<li><strong>obj</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Attribute name with embedded object.</li>
 <li><strong>prop</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#property" title="(in Python v2.7)"><em>property</em></a>) &#8211; Property instance from embedded object.</li>
 </ul>
 </td>
@@ -9950,16 +9953,16 @@ properties from embedded object into class definition of parent object.</p>
 <dl class="class">
 <dt id="fdb.utils.EmbeddedAttribute">
 <em class="property">class </em><tt class="descclassname">fdb.utils.</tt><tt class="descname">EmbeddedAttribute</tt><big>(</big><em>obj</em>, <em>attr</em><big>)</big><a class="headerlink" href="#fdb.utils.EmbeddedAttribute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Property class that gets/sets attribute of another object. This class 
-allows you to &#8220;inject&#8221; attributes from embedded object into class definition 
+<dd><p>Property class that gets/sets attribute of another object. This class
+allows you to &#8220;inject&#8221; attributes from embedded object into class definition
 of parent object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>obj</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Attribute name with embedded object.</li>
-<li><strong>attr</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Attribute name from embedded object.</li>
+<li><strong>obj</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Attribute name with embedded object.</li>
+<li><strong>attr</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Attribute name from embedded object.</li>
 </ul>
 </td>
 </tr>
@@ -10112,12 +10115,12 @@ API functions as member methods. Uses <a class="reference external" href="http:/
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2013, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

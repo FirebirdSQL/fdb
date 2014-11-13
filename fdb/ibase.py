@@ -36,6 +36,13 @@ PYTHON_MAJOR_VER = sys.version_info[0]
 
 if PYTHON_MAJOR_VER == 3:
     from queue import PriorityQueue
+    def nativestr(st,charset="latin-1"):
+        if st == None:
+            return st
+        elif isinstance(st, bytes):
+            return st.decode(charset)
+        else:
+            return st
     def b(st,charset="latin-1"):
         if st == None:
             return st
@@ -76,6 +83,13 @@ if PYTHON_MAJOR_VER == 3:
 
 else:
     from Queue import PriorityQueue
+    def nativestr(st,charset="latin-1"):
+        if st == None:
+            return st
+        elif isinstance(st, unicode):
+            return st.encode(charset)
+        else:
+            return st
     def b(st,charset="latin-1"):
         if st == None:
             return st
