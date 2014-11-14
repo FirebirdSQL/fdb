@@ -1759,6 +1759,7 @@ class EventBlock(object):
         if not self.closed:
             api.isc_cancel_events(self._isc_status,self._db_handle,self.event_id)
             self.__closed = True
+            del self.__callback
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                                             "Error while canceling events:")
