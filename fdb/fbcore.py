@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.2'
+__version__ = '1.4.3'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -1708,11 +1708,11 @@ class EventBlock(object):
     def __init__(self,queue,db_handle,event_names):
         self.__first = True
         def callback(result, length, updated):
-            ctypes.memmove(result,updated,length)
-            self.__queue.put((ibase.OP_RECORD_AND_REREGISTER,self))
+            ctypes.memmove(result, updated, length)
+            self.__queue.put((ibase.OP_RECORD_AND_REREGISTER, self))
             return 0
 
-        self.__queue = queue
+        self.__queue = weakref.proxy(queue)
         self._db_handle = db_handle
         self._isc_status = ISC_STATUS_ARRAY(0)
         self.event_names = list(event_names)

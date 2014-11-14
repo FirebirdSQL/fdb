@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.4.3`_ (14.11.2014)
 * `Version 1.4.2`_ (13.11.2014)
 * `Version 1.4.1`_ (25.6.2014)
 * `Version 1.4`_ (24.6.2013)
@@ -18,6 +19,15 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.4.3
+=============
+
+Bugs Fixed
+----------
+
+- Previous fix for PYFB-43 was incomplete, corrected.
+
 
 Version 1.4.2
 =============
