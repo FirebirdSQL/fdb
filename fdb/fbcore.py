@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.3'
+__version__ = '1.4.4'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -609,7 +609,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
             sql_dialect=3, role=None, charset=None, buffers=None,
             force_write=None, no_reserve=None, db_key_scope=None,
             isolation_level=ISOLATION_LEVEL_READ_COMMITED,
-            connection_class=None):
+            connection_class=None, fb_library_name=None):
     """
     Establish a connection to database.
 
@@ -650,7 +650,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
        con = fdb.connect(dsn='host:/path/database.fdb', user='sysdba', password='pass', charset='UTF8')
        con = fdb.connect(host='myhost', database='/path/database.fdb', user='sysdba', password='pass', charset='UTF8')
     """
-    load_api()
+    load_api(fb_library_name)
     if connection_class == None:
         connection_class = Connection
     if not issubclass(connection_class,Connection):
@@ -705,7 +705,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
 def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
                     host=None, port=3050, database=None,
                     page_size=None, length=None, charset=None, files=None,
-                    connection_class=None):
+                    connection_class=None, fb_library_name=None):
     """
     Creates a new database. Parameters could be specified either by supplied
     "CREATE DATABASE" statement, or set of database parameters.
@@ -739,7 +739,7 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
        con = fdb.create_database("create database '/temp/db.fdb' user 'sysdba' password 'pass'")
        con = fdb.create_database(dsn='/temp/db.fdb',user='sysdba',password='pass',page_size=8192)
     """
-    load_api()
+    load_api(fb_library_name)
     if connection_class == None:
         connection_class = Connection
     if not issubclass(connection_class,Connection):
