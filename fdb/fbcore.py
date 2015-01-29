@@ -1737,6 +1737,7 @@ class EventBlock(object):
                              self.buf_length,self.event_buf,
                              self.__callback,self.result_buf)
         if db_api_error(self._isc_status):
+            self.close()
             raise exception_from_status(DatabaseError, self._isc_status,
                                         "Error while waiting for events:")
     def count_and_reregister(self):
