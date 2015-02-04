@@ -631,6 +631,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
     :type isolation_level: 0, 1, 2 or 3
     :param connection_class: Custom connection class
     :type connection_class: subclass of :class:`Connection`
+    :param string fb_library_name: Full path to Firebird client library
 
     :returns: Connection to database.
     :rtype: :class:`Connection` instance.
@@ -725,6 +726,7 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
     :param string files: Specification of secondary database files.
     :param connection_class: Custom connection class
     :type connection_class: subclass of :class:`Connection`
+    :param string fb_library_name: Full path to Firebird client library
 
     :returns: Connection to the newly created database.
     :rtype: :class:`Connection` instance.
@@ -1729,6 +1731,8 @@ class EventBlock(object):
         self.buf_length = api.isc_event_block(ctypes.pointer(self.event_buf),
                                                   ctypes.pointer(self.result_buf),
                                                   *[b(x) for x in event_names])
+
+    def _begin(self):
         self.__wait_for_events()
     def __lt__(self,other):
         return self.event_id.value < other.event_id.value
@@ -1842,7 +1846,9 @@ class EventConduit(object):
 
 
         for block_events in self.__blocks:
-            self.__event_blocks.append(EventBlock(self.__queue, self._db_handle, block_events))
+            event_block = EventBlock(self.__queue, self._db_handle, block_events)
+            self.__event_blocks.append(event_block)
+            event_block._begin()
 
     def wait(self,timeout=None):
         """Wait for events.
@@ -3348,7 +3354,7 @@ class Cursor(object):
         if isinstance(operation, PreparedStatement):
             if operation.cursor is not self:
                 raise ValueError("PreparedStatement was created by different Cursor.")
-            self._ps = operation
+            self._ps = weakref.proxy(operation)
         else:
             self._ps = PreparedStatement(operation, self, True)
         self._ps._execute(parameters)
