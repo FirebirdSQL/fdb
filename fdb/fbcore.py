@@ -3276,6 +3276,8 @@ class Cursor(object):
         return self._transaction
     def __connection_deleted(self,obj):
         self._connection = None
+    def __ps_deleted(self,obj):
+        self._ps = None
     def _set_as_internal(self):
         self._connection = weakref.proxy(self._connection,self.__connection_deleted)
     def callproc(self, procname, parameters=None):
@@ -3354,7 +3356,7 @@ class Cursor(object):
         if isinstance(operation, PreparedStatement):
             if operation.cursor is not self:
                 raise ValueError("PreparedStatement was created by different Cursor.")
-            self._ps = weakref.proxy(operation)
+            self._ps = weakref.proxy(operation,self.__ps_deleted)
         else:
             self._ps = PreparedStatement(operation, self, True)
         self._ps._execute(parameters)
