@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.4.4`_ (27.2.2015)
 * `Version 1.4.3`_ (14.11.2014)
 * `Version 1.4.2`_ (13.11.2014)
 * `Version 1.4.1`_ (25.6.2014)
@@ -19,6 +20,21 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.4.4
+=============
+
+Improvements
+------------
+
+- (PYFB-47) Firebird client library path added as optinal parameter to :func:`fdb.connect` and :func:`fdb.create_database`.
+
+Bugs Fixed
+----------
+
+- Additional fix related to PYFB-43
+- Additional correction for unregistered problem with circular ref. between PS and Cursor when explicit PS is executed.
+
 
 Version 1.4.3
 =============

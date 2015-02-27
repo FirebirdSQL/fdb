@@ -171,8 +171,7 @@ paramstyle = 'qmark'
 
 def load_api(fb_library_name=None):
     """Initializes bindings to Firebird Client Library unless they are already initialized.
-    Called automatically by :func:`fdb.connect` and :func:`fdb.create_database`
-    without parameter.
+    Called automatically by :func:`fdb.connect` and :func:`fdb.create_database`.
 
     :param string fb_library_name: (optional) Path to Firebird Client Library.
        When it's not specified, FDB does its best to locate appropriate client library.
@@ -631,7 +630,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
     :type isolation_level: 0, 1, 2 or 3
     :param connection_class: Custom connection class
     :type connection_class: subclass of :class:`Connection`
-    :param string fb_library_name: Full path to Firebird client library
+    :param string fb_library_name: Full path to Firebird client library. See :func:`~fdb.load_api` for details.
 
     :returns: Connection to database.
     :rtype: :class:`Connection` instance.
@@ -726,7 +725,7 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
     :param string files: Specification of secondary database files.
     :param connection_class: Custom connection class
     :type connection_class: subclass of :class:`Connection`
-    :param string fb_library_name: Full path to Firebird client library
+    :param string fb_library_name: Full path to Firebird client library. See :func:`~fdb.load_api` for details.
 
     :returns: Connection to the newly created database.
     :rtype: :class:`Connection` instance.

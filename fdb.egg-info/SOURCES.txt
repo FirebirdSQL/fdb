@@ -11,6 +11,7 @@ docs/genindex.html
 docs/getting-started.html
 docs/index.html
 docs/license.html
+docs/listinv.py
 docs/objects.inv
 docs/py-modindex.html
 docs/python-db-api-compliance.html

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.4.3 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.4.4 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.3',
+        VERSION:     '1.4.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4.3 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4.4 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -309,7 +309,7 @@ which is not supported by the database</p>
 <h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="fdb.connect">
-<tt class="descclassname">fdb.</tt><tt class="descname">connect</tt><big>(</big><em>dsn=''</em>, <em>user=None</em>, <em>password=None</em>, <em>host=None</em>, <em>port=3050</em>, <em>database=None</em>, <em>sql_dialect=3</em>, <em>role=None</em>, <em>charset=None</em>, <em>buffers=None</em>, <em>force_write=None</em>, <em>no_reserve=None</em>, <em>db_key_scope=None</em>, <em>isolation_level='\x03\t\x06\x0f\x11'</em>, <em>connection_class=None</em><big>)</big><a class="headerlink" href="#fdb.connect" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">fdb.</tt><tt class="descname">connect</tt><big>(</big><em>dsn=''</em>, <em>user=None</em>, <em>password=None</em>, <em>host=None</em>, <em>port=3050</em>, <em>database=None</em>, <em>sql_dialect=3</em>, <em>role=None</em>, <em>charset=None</em>, <em>buffers=None</em>, <em>force_write=None</em>, <em>no_reserve=None</em>, <em>db_key_scope=None</em>, <em>isolation_level='\x03\t\x06\x0f\x11'</em>, <em>connection_class=None</em>, <em>fb_library_name=None</em><big>)</big><a class="headerlink" href="#fdb.connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Establish a connection to database.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -331,6 +331,7 @@ which is not supported by the database</p>
 <li><strong>db_key_scope</strong> (<em>integer</em>) &#8211; DBKEY scope override for connection.</li>
 <li><strong>isolation_level</strong> (<em>0, 1, 2 or 3</em>) &#8211; Default transaction isolation level for connection <strong>(not used)</strong>.</li>
 <li><strong>connection_class</strong> (subclass of <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a>) &#8211; Custom connection class</li>
+<li><strong>fb_library_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Full path to Firebird client library. See <a class="reference internal" href="#fdb.load_api" title="fdb.load_api"><tt class="xref py py-func docutils literal"><span class="pre">load_api()</span></tt></a> for details.</li>
 </ul>
 </td>
 </tr>
@@ -362,7 +363,7 @@ but not both.</p>
 
 <dl class="function">
 <dt id="fdb.create_database">
-<tt class="descclassname">fdb.</tt><tt class="descname">create_database</tt><big>(</big><em>sql=''</em>, <em>sql_dialect=3</em>, <em>dsn=''</em>, <em>user=None</em>, <em>password=None</em>, <em>host=None</em>, <em>port=3050</em>, <em>database=None</em>, <em>page_size=None</em>, <em>length=None</em>, <em>charset=None</em>, <em>files=None</em>, <em>connection_class=None</em><big>)</big><a class="headerlink" href="#fdb.create_database" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">fdb.</tt><tt class="descname">create_database</tt><big>(</big><em>sql=''</em>, <em>sql_dialect=3</em>, <em>dsn=''</em>, <em>user=None</em>, <em>password=None</em>, <em>host=None</em>, <em>port=3050</em>, <em>database=None</em>, <em>page_size=None</em>, <em>length=None</em>, <em>charset=None</em>, <em>files=None</em>, <em>connection_class=None</em>, <em>fb_library_name=None</em><big>)</big><a class="headerlink" href="#fdb.create_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new database. Parameters could be specified either by supplied
 &#8220;CREATE DATABASE&#8221; statement, or set of database parameters.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -383,6 +384,7 @@ but not both.</p>
 <li><strong>charset</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Character set for connection.</li>
 <li><strong>files</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Specification of secondary database files.</li>
 <li><strong>connection_class</strong> (subclass of <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a>) &#8211; Custom connection class</li>
+<li><strong>fb_library_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Full path to Firebird client library. See <a class="reference internal" href="#fdb.load_api" title="fdb.load_api"><tt class="xref py py-func docutils literal"><span class="pre">load_api()</span></tt></a> for details.</li>
 </ul>
 </td>
 </tr>
@@ -411,8 +413,7 @@ but not both.</p>
 <dt id="fdb.load_api">
 <tt class="descclassname">fdb.</tt><tt class="descname">load_api</tt><big>(</big><em>fb_library_name=None</em><big>)</big><a class="headerlink" href="#fdb.load_api" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initializes bindings to Firebird Client Library unless they are already initialized.
-Called automatically by <a class="reference internal" href="#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></tt></a> and <a class="reference internal" href="#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">fdb.create_database()</span></tt></a>
-without parameter.</p>
+Called automatically by <a class="reference internal" href="#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></tt></a> and <a class="reference internal" href="#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">fdb.create_database()</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -10115,7 +10116,7 @@ API functions as member methods. Uses <a class="reference external" href="http:/
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
