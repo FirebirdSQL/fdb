@@ -40,7 +40,7 @@ else:
 
 # Change next definition to test FDB on databases with various ODS
 # Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb, fbtest30.fdb
-FBTEST_DB = 'fbtest20.fdb'
+FBTEST_DB = 'fbtest30.fdb'
 # Default server host
 #FBTEST_HOST = ''
 FBTEST_HOST = 'localhost'
@@ -3265,7 +3265,7 @@ END""")
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$20')
         elif self.con.ods >= fdb.ODS_FB_30:
-            self.assertEqual(c.security_class,'SQL$497')
+            self.assertEqual(c.security_class,'SQL$510')
         self.assertEqual(c.owner_name,'SYSDBA')
         self.assertListEqual([x.name for x in c.input_params],['EMP_NO'])
         self.assertListEqual([x.name for x in c.output_params],['PROJ_ID'])
@@ -3914,6 +3914,8 @@ MODULE_NAME 'fbudf'""")
         p = self.con.schema.get_privileges_of(u)
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(len(p),66)
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(len(p),201)
         else:
             self.assertEqual(len(p),68)
         with self.assertRaises(fdb.ProgrammingError) as cm:
@@ -4790,7 +4792,7 @@ class TestMonitor(FDBTestBase):
             self.assertIsNone(s.remote_pid)
             self.assertIsNone(s.remote_process)
         else:
-            self.assertIn(s.remote_protocol,['XNET','TCPv4'])
+            self.assertIn(s.remote_protocol,['XNET','TCPv4','TCPv6'])
             self.assertIsInstance(s.remote_address,str)
             self.assertIsInstance(s.remote_pid,int)
             self.assertIsInstance(s.remote_process,str)
@@ -5185,6 +5187,7 @@ class TestBugs(FDBTestBase):
         cur.execute("insert into table1 (ID,C1) values (1,1) returning ID")
         row = cur.fetchall()
         self.assertListEqual(row,[(1,)])
+
     def test_pyfb_44(self):
         self.con2 = fdb.connect(host=FBTEST_HOST,database=os.path.join(self.dbpath,FBTEST_DB),
                                 user=FBTEST_USER,password=FBTEST_PASSWORD)
