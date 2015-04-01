@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.4'
+__version__ = '1.4.5'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -809,6 +809,17 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
                                     "Error while creating database:")
 
     return connection_class(db_handle)
+
+class _weakref_callback(object):
+    """Wraps callback function used in weakrefs so it's called only if still exists.
+    """
+    def __init__(self, func):
+        self.__funcref = weakref.ref(func)
+    def __call__(self, *args, **kwargs):
+        func = self.__funcref()
+        if func:
+            func(*args, **kwargs)
+
 
 class TransactionContext(object):
     """Context Manager that manages transaction for object passed to constructor.
@@ -1614,7 +1625,7 @@ class Connection(object):
         # management functionality to bypass the conceptually read-only nature
         # of the Connection.group property.
         if group:
-            self.__group = weakref.ref(group,self.__remove_group)
+            self.__group = weakref.ref(group, _weakref_callback(self.__remove_group))
         else:
             self.__group = None
     #: (Read Only) :class:`ConnectionGroup` this Connection belongs to, or None.
@@ -1941,7 +1952,7 @@ class PreparedStatement(object):
         self.__sql = operation
         self.__internal = internal
         if internal:
-            self.cursor = weakref.proxy(cursor,self.__cursor_deleted)
+            self.cursor = weakref.proxy(cursor, _weakref_callback(self.__cursor_deleted))
         else:
             self.cursor = cursor
         self._stmt_handle = None
@@ -3278,7 +3289,7 @@ class Cursor(object):
     def __ps_deleted(self,obj):
         self._ps = None
     def _set_as_internal(self):
-        self._connection = weakref.proxy(self._connection,self.__connection_deleted)
+        self._connection = weakref.proxy(self._connection, _weakref_callback(self.__connection_deleted))
     def callproc(self, procname, parameters=None):
         """Call a stored database procedure with the given name.
 
@@ -3355,7 +3366,7 @@ class Cursor(object):
         if isinstance(operation, PreparedStatement):
             if operation.cursor is not self:
                 raise ValueError("PreparedStatement was created by different Cursor.")
-            self._ps = weakref.proxy(operation,self.__ps_deleted)
+            self._ps = weakref.proxy(operation, _weakref_callback(self.__ps_deleted))
         else:
             self._ps = PreparedStatement(operation, self, True)
         self._ps._execute(parameters)
@@ -3662,7 +3673,9 @@ class Transaction(object):
             raise ProgrammingError("Transaction object is not active")
     def __close_cursors(self):
         for cursor in self._cursors:
-            cursor().close()
+            c = cursor()
+            if c:
+                c.close()
     def __con_in_list(self,connection):
         for con in self._connections:
             if con() == connection:
@@ -3910,7 +3923,7 @@ class Transaction(object):
         else:
             con = self._connections[0]()
         c = Cursor(con, self)
-        self._cursors.append(weakref.ref(c, self.__remove_cursor))
+        self._cursors.append(weakref.ref(c, _weakref_callback(self.__remove_cursor)))
         return c
     def trans_info(self, request):
         """Pythonic wrapper around :meth:`transaction_info` call.

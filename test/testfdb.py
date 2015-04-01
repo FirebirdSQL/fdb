@@ -40,7 +40,7 @@ else:
 
 # Change next definition to test FDB on databases with various ODS
 # Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb, fbtest30.fdb
-FBTEST_DB = 'fbtest30.fdb'
+FBTEST_DB = 'fbtest25.fdb'
 # Default server host
 #FBTEST_HOST = ''
 FBTEST_HOST = 'localhost'
