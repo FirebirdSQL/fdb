@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changelog &mdash; FDB 1.4.5 documentation</title>
+    <title>Changelog &mdash; FDB 1.4.6 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.5',
+        VERSION:     '1.4.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4.5 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.4.6 documentation" href="index.html" />
     <link rel="next" title="LICENSE" href="license.html" />
     <link rel="prev" title="FDB Reference" href="reference.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.6 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -62,6 +62,7 @@
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
+<li><a class="reference internal" href="#version-1-4-6">Version 1.4.6</a> (29.5.2015)</li>
 <li><a class="reference internal" href="#version-1-4-5">Version 1.4.5</a> (31.3.2015)</li>
 <li><a class="reference internal" href="#version-1-4-4">Version 1.4.4</a> (27.2.2015)</li>
 <li><a class="reference internal" href="#version-1-4-3">Version 1.4.3</a> (14.11.2014)</li>
@@ -82,10 +83,19 @@
 <li><a class="reference internal" href="#version-0-7-1">Version 0.7.1</a> (31. 1. 2012)</li>
 <li><a class="reference internal" href="#version-0-7">Version 0.7</a> (21. 12. 2011)</li>
 </ul>
-<div class="section" id="version-1-4-5">
-<h2>Version 1.4.5<a class="headerlink" href="#version-1-4-5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="version-1-4-6">
+<h2>Version 1.4.6<a class="headerlink" href="#version-1-4-6" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="bugs-fixed">
 <h3>Bugs Fixed<a class="headerlink" href="#bugs-fixed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>(PYFB-50) Exception ReferenceError: &#8216;weakly-referenced object no longer exists&#8217; in PreparedStatement and Cursor</li>
+</ul>
+</div>
+</div>
+<div class="section" id="version-1-4-5">
+<h2>Version 1.4.5<a class="headerlink" href="#version-1-4-5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Bugs Fixed<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>(PYFB-49) Memory and DB resource leak due to circular references.</li>
 </ul>
@@ -99,8 +109,8 @@
 <li>(PYFB-47) Firebird client library path added as optinal parameter to <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">fdb.create_database()</span></tt></a>.</li>
 </ul>
 </div>
-<div class="section" id="id1">
-<h3>Bugs Fixed<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Bugs Fixed<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Additional fix related to PYFB-43</li>
 <li>Additional correction for unregistered problem with circular ref. between PS and Cursor when explicit PS is executed.</li>
@@ -109,8 +119,8 @@
 </div>
 <div class="section" id="version-1-4-3">
 <h2>Version 1.4.3<a class="headerlink" href="#version-1-4-3" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>Bugs Fixed<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Bugs Fixed<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Previous fix for PYFB-43 was incomplete, corrected.</li>
 </ul>
@@ -118,8 +128,8 @@
 </div>
 <div class="section" id="version-1-4-2">
 <h2>Version 1.4.2<a class="headerlink" href="#version-1-4-2" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id3">
-<h3>Improvements<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Improvements<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first">In relation to PYFB-43 I had to make a <strong>backward incompatible change</strong> to event processing API. Starting from this version
 <cite>EventConduit</cite> does not automatically starts collection of events upon creation, but it&#8217;s now necessary to call
@@ -134,8 +144,8 @@ It was implemented for the sake of compatibility with KInterbasDB.</p>
 </li>
 </ul>
 </div>
-<div class="section" id="id4">
-<h3>Bugs Fixed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Bugs Fixed<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>PYFB-44 - Inserting a datetime.date into a TIMESTAMP column does not work</li>
 <li>PYFB-42 - Python 3.4 and FDB - backup throws an exception</li>
@@ -145,8 +155,8 @@ It was implemented for the sake of compatibility with KInterbasDB.</p>
 </div>
 <div class="section" id="version-1-4-1">
 <h2>Version 1.4.1<a class="headerlink" href="#version-1-4-1" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id5">
-<h3>Improvements<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>Improvements<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>PYFB-40 - fbclient.dll is not found if not in path.
 Aside from registry lookup, client library isn&#8217;t loaded until first call to <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></tt></a>, <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><tt class="xref py py-func docutils literal"><span class="pre">fdb.create_database()</span></tt></a>
@@ -155,8 +165,8 @@ or <a class="reference internal" href="reference.html#fdb.load_api" title="fdb.l
 <li>Properties <a class="reference internal" href="reference.html#fdb.services.Connection.version" title="fdb.services.Connection.version"><tt class="xref py py-attr docutils literal"><span class="pre">version</span></tt></a> and <a class="reference internal" href="reference.html#fdb.services.Connection.engine_version" title="fdb.services.Connection.engine_version"><tt class="xref py py-attr docutils literal"><span class="pre">engine_version</span></tt></a> added to <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><tt class="xref py py-class docutils literal"><span class="pre">fdb.services.Connection</span></tt></a></li>
 </ul>
 </div>
-<div class="section" id="id6">
-<h3>Bugs Fixed<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>Bugs Fixed<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Unregistered - isolation_level parameter for fdb.connection has no effect.</li>
 <li>Unregistered - Information gathered from monitoring tables is not properly dropped upon refresh request.</li>
@@ -171,16 +181,16 @@ or <a class="reference internal" href="reference.html#fdb.load_api" title="fdb.l
 <li><a class="reference internal" href="reference.html#module-fdb.schema" title="fdb.schema: Submodule for work with database metadata (schema)"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.schema</span></tt></a> submodule extended with support for user privileges.</li>
 </ul>
 </div>
-<div class="section" id="id7">
-<h3>Improvements<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Improvements<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference internal" href="reference.html#fdb.services.User.load_information" title="fdb.services.User.load_information"><tt class="xref py py-meth docutils literal"><span class="pre">fdb.services.User.load_information()</span></tt></a> method to load information about user from server.</li>
 <li><a class="reference internal" href="reference.html#module-fdb.ibase" title="fdb.ibase: Python ctypes interface to Firebird client library"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.ibase</span></tt></a> content cleanup and additions.</li>
 <li><a class="reference internal" href="reference.html#module-fdb.blr" title="fdb.blr: Python ctypes interface to Firebird client library (BLR)"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.blr</span></tt></a> submodule with BLR definitions.</li>
 </ul>
 </div>
-<div class="section" id="id8">
-<h3>Bugs Fixed<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Bugs Fixed<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>PYFB-37 - Unicode Strings incorrect not allowed for insertion into BLOB SubType 1.</li>
 </ul>
@@ -188,22 +198,22 @@ or <a class="reference internal" href="reference.html#fdb.load_api" title="fdb.l
 </div>
 <div class="section" id="version-1-3">
 <h2>Version 1.3<a class="headerlink" href="#version-1-3" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id9">
-<h3>New Features<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id10">
+<h3>New Features<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference internal" href="reference.html#module-fdb.monitor" title="fdb.monitor: Submodule for work with database monitoring tables"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.monitor</span></tt></a> submodule for access to / work with monitoring tables.</li>
 <li>New <a class="reference internal" href="reference.html#fdb.Connection.monitor" title="fdb.Connection.monitor"><tt class="xref py py-attr docutils literal"><span class="pre">fdb.Connection.monitor</span></tt></a> property for access to monitoring tables.</li>
 </ul>
 </div>
-<div class="section" id="id10">
-<h3>Improvements<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id11">
+<h3>Improvements<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference internal" href="reference.html#fdb.schema.Schema.closed" title="fdb.schema.Schema.closed"><tt class="xref py py-attr docutils literal"><span class="pre">closed</span></tt></a> property and <a class="reference internal" href="reference.html#fdb.schema.Schema.clear" title="fdb.schema.Schema.clear"><tt class="xref py py-meth docutils literal"><span class="pre">clear()</span></tt></a> method for Schema.</li>
 <li>Unit tests reworked.</li>
 </ul>
 </div>
-<div class="section" id="id11">
-<h3>Bugs Fixed<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id12">
+<h3>Bugs Fixed<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Unregistered: Bug in <a class="reference internal" href="reference.html#fdb.schema.Schema.close" title="fdb.schema.Schema.close"><tt class="xref py py-meth docutils literal"><span class="pre">fdb.schema.Schema.close()</span></tt></a> and <a class="reference internal" href="reference.html#fdb.schema.Schema.bind" title="fdb.schema.Schema.bind"><tt class="xref py py-meth docutils literal"><span class="pre">fdb.schema.Schema.bind()</span></tt></a>.</li>
 </ul>
@@ -211,8 +221,8 @@ or <a class="reference internal" href="reference.html#fdb.load_api" title="fdb.l
 </div>
 <div class="section" id="version-1-2">
 <h2>Version 1.2<a class="headerlink" href="#version-1-2" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id12">
-<h3>New Features<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h3>New Features<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference internal" href="reference.html#module-fdb.schema" title="fdb.schema: Submodule for work with database metadata (schema)"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.schema</span></tt></a> submodule for access to / work with database metadata.</li>
 <li><a class="reference internal" href="reference.html#module-fdb.utils" title="fdb.utils: Submodule with various classes and functions"><tt class="xref py py-mod docutils literal"><span class="pre">fdb.utils</span></tt></a> submodule with various helper classes and functions.</li>
@@ -228,8 +238,8 @@ that could be active indefinitely without blocking garbage collection. It’s us
 metadata, but it’s generally useful.</li>
 </ul>
 </div>
-<div class="section" id="id13">
-<h3>Improvements<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id14">
+<h3>Improvements<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first">Optional PEP 249 (Python DB API 2.0) Extensions</p>
 <ul>
@@ -261,8 +271,8 @@ obtain instances of different class instead <cite>Connection</cite>.</p>
 </li>
 </ul>
 </div>
-<div class="section" id="id14">
-<h3>Bugs Fixed<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id15">
+<h3>Bugs Fixed<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Unregistered: <cite>buffers</cite> parameter of <cite>fdb.connection</cite> doesn&#8217;t support values greater than 255.</li>
 <li>Unregistered: Lowercase character set name passed to <cite>fdb.connect</cite> may result in wrong funcion of automatic
@@ -272,8 +282,8 @@ data conversions and other failures (exceptions raised).</li>
 </div>
 <div class="section" id="version-1-1-1">
 <h2>Version 1.1.1<a class="headerlink" href="#version-1-1-1" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id15">
-<h3>Bugs Fixed<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id16">
+<h3>Bugs Fixed<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>PYFB-35 - Call to fetch after a sql statement without a result should raise exception</li>
 <li>PYFB-34 - Server resources not released on PreparedStatement destruction</li>
@@ -282,14 +292,14 @@ data conversions and other failures (exceptions raised).</li>
 </div>
 <div class="section" id="version-1-1">
 <h2>Version 1.1<a class="headerlink" href="#version-1-1" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id16">
-<h3>New Features<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id17">
+<h3>New Features<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference internal" href="usage-guide.html#transaction-context-manager"><em>Context Manager</em></a> for transactions.</li>
 </ul>
 </div>
-<div class="section" id="id17">
-<h3>Bugs Fixed<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id18">
+<h3>Bugs Fixed<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>PYFB-30 - BLOBs are truncated at first zero byte</li>
 </ul>
@@ -297,14 +307,14 @@ data conversions and other failures (exceptions raised).</li>
 </div>
 <div class="section" id="version-1-0">
 <h2>Version 1.0<a class="headerlink" href="#version-1-0" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id18">
-<h3>Improvements<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h3>Improvements<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Removed dependency on fbclient library to be present at import time (PYFB-24)</li>
 </ul>
 </div>
-<div class="section" id="id19">
-<h3>Bugs Fixed<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Bugs Fixed<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>PYFB-25 - Truncate long text from VARCHAR(5000)</li>
 </ul>
@@ -312,8 +322,8 @@ data conversions and other failures (exceptions raised).</li>
 </div>
 <div class="section" id="version-0-9-9">
 <h2>Version 0.9.9<a class="headerlink" href="#version-0-9-9" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id20">
-<h3>New Features<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h3>New Features<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Firebird ARRAY support.</li>
 </ul>
@@ -326,8 +336,8 @@ data conversions and other failures (exceptions raised).</li>
 from server.</li>
 </ul>
 </div>
-<div class="section" id="id21">
-<h3>Bugs Fixed<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id22">
+<h3>Bugs Fixed<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix: precision_cache in Connection works as intended.</li>
 </ul>
@@ -339,15 +349,15 @@ from server.</li>
 </div>
 <div class="section" id="version-0-9">
 <h2>Version 0.9<a class="headerlink" href="#version-0-9" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id22">
-<h3>New Features<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id23">
+<h3>New Features<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Documentation; both in-source (in Sphinx autodoc format) and Sphinx (html)</li>
 <li>Services API completely reworked</li>
 </ul>
 </div>
-<div class="section" id="id23">
-<h3>Other changes<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id24">
+<h3>Other changes<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Unregistered bugs fixed.</li>
 <li>Various optimizations and cleanup</li>
@@ -358,15 +368,15 @@ from server.</li>
 </div>
 <div class="section" id="version-0-8-5">
 <h2>Version 0.8.5<a class="headerlink" href="#version-0-8-5" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id24">
-<h3>New Features<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id25">
+<h3>New Features<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Support for Firebird stream BLOBs (see ReleaseNotes for details)</li>
 <li>Documentation (stub, from KInterbasDB 3.3.0)</li>
 </ul>
 </div>
-<div class="section" id="id25">
-<h3>Bugs Fixed<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id26">
+<h3>Bugs Fixed<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Fix for PYFB-17 and PYFB-18 (see our JIRA tracker for details)</li>
 <li>Fixes for automatic unicode conversions + refactoring</li>
@@ -376,8 +386,8 @@ from server.</li>
 </div>
 <div class="section" id="version-0-8">
 <h2>Version 0.8<a class="headerlink" href="#version-0-8" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id26">
-<h3>New Features<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id27">
+<h3>New Features<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Support for Firebird Event Notifications - <cite>JIRA entry &lt;http://tracker.firebirdsql.org/browse/PYFB-8&gt;</cite></li>
 </ul>
@@ -392,8 +402,8 @@ from server.</li>
 </div>
 <div class="section" id="version-0-7-2">
 <h2>Version 0.7.2<a class="headerlink" href="#version-0-7-2" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id27">
-<h3>New Features<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id28">
+<h3>New Features<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>Python 3 Support (thanks to Philippe Makowski)</li>
 <li>Support for Distributed Transactions</li>
@@ -434,85 +444,89 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
-<li><a class="reference internal" href="#version-1-4-5">Version 1.4.5</a><ul>
+<li><a class="reference internal" href="#version-1-4-6">Version 1.4.6</a><ul>
 <li><a class="reference internal" href="#bugs-fixed">Bugs Fixed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-1-4-5">Version 1.4.5</a><ul>
+<li><a class="reference internal" href="#id1">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-1-4-4">Version 1.4.4</a><ul>
 <li><a class="reference internal" href="#improvements">Improvements</a></li>
-<li><a class="reference internal" href="#id1">Bugs Fixed</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#version-1-4-3">Version 1.4.3</a><ul>
 <li><a class="reference internal" href="#id2">Bugs Fixed</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#version-1-4-3">Version 1.4.3</a><ul>
+<li><a class="reference internal" href="#id3">Bugs Fixed</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#version-1-4-2">Version 1.4.2</a><ul>
-<li><a class="reference internal" href="#id3">Improvements</a></li>
-<li><a class="reference internal" href="#id4">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id4">Improvements</a></li>
+<li><a class="reference internal" href="#id5">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-1-4-1">Version 1.4.1</a><ul>
-<li><a class="reference internal" href="#id5">Improvements</a></li>
-<li><a class="reference internal" href="#id6">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id6">Improvements</a></li>
+<li><a class="reference internal" href="#id7">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-1-4">Version 1.4</a><ul>
 <li><a class="reference internal" href="#new-features">New Features</a></li>
-<li><a class="reference internal" href="#id7">Improvements</a></li>
-<li><a class="reference internal" href="#id8">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id8">Improvements</a></li>
+<li><a class="reference internal" href="#id9">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-1-3">Version 1.3</a><ul>
-<li><a class="reference internal" href="#id9">New Features</a></li>
-<li><a class="reference internal" href="#id10">Improvements</a></li>
-<li><a class="reference internal" href="#id11">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id10">New Features</a></li>
+<li><a class="reference internal" href="#id11">Improvements</a></li>
+<li><a class="reference internal" href="#id12">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-1-2">Version 1.2</a><ul>
-<li><a class="reference internal" href="#id12">New Features</a></li>
-<li><a class="reference internal" href="#id13">Improvements</a></li>
-<li><a class="reference internal" href="#id14">Bugs Fixed</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#version-1-1-1">Version 1.1.1</a><ul>
+<li><a class="reference internal" href="#id13">New Features</a></li>
+<li><a class="reference internal" href="#id14">Improvements</a></li>
 <li><a class="reference internal" href="#id15">Bugs Fixed</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#version-1-1-1">Version 1.1.1</a><ul>
+<li><a class="reference internal" href="#id16">Bugs Fixed</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#version-1-1">Version 1.1</a><ul>
-<li><a class="reference internal" href="#id16">New Features</a></li>
-<li><a class="reference internal" href="#id17">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id17">New Features</a></li>
+<li><a class="reference internal" href="#id18">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-1-0">Version 1.0</a><ul>
-<li><a class="reference internal" href="#id18">Improvements</a></li>
-<li><a class="reference internal" href="#id19">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id19">Improvements</a></li>
+<li><a class="reference internal" href="#id20">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-9-9">Version 0.9.9</a><ul>
-<li><a class="reference internal" href="#id20">New Features</a></li>
+<li><a class="reference internal" href="#id21">New Features</a></li>
 <li><a class="reference internal" href="#other-changes">Other changes</a></li>
-<li><a class="reference internal" href="#id21">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id22">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-9-1">Version 0.9.1</a></li>
 <li><a class="reference internal" href="#version-0-9">Version 0.9</a><ul>
-<li><a class="reference internal" href="#id22">New Features</a></li>
-<li><a class="reference internal" href="#id23">Other changes</a></li>
+<li><a class="reference internal" href="#id23">New Features</a></li>
+<li><a class="reference internal" href="#id24">Other changes</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-8-5">Version 0.8.5</a><ul>
-<li><a class="reference internal" href="#id24">New Features</a></li>
-<li><a class="reference internal" href="#id25">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id25">New Features</a></li>
+<li><a class="reference internal" href="#id26">Bugs Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-8">Version 0.8</a><ul>
-<li><a class="reference internal" href="#id26">New Features</a></li>
+<li><a class="reference internal" href="#id27">New Features</a></li>
 <li><a class="reference internal" href="#bugs-fixes">Bugs Fixes</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-7-2">Version 0.7.2</a><ul>
-<li><a class="reference internal" href="#id27">New Features</a></li>
+<li><a class="reference internal" href="#id28">New Features</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#version-0-7-1">Version 0.7.1</a></li>
@@ -562,7 +576,7 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.4.6 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

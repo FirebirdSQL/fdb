@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.5'
+__version__ = '1.4.6'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -410,6 +410,9 @@ def tebarray_factory(size):
     return teb_array
 
 buf_pointer = ctypes.POINTER(ctypes.c_char)
+
+def is_dead_proxy(obj):
+    return isinstance(obj,weakref.ProxyType) and not dir(obj)
 
 def b2u(st, charset):
     "Decode to unicode if charset is defined. For conversion of result set data."
@@ -1697,7 +1700,6 @@ class ConnectionWithSchema(Connection):
                 val = getattr(self.__schema,attr)
                 if callable(val):
                     setattr(self,attr,val)
-                    #print 'injecting callable',attr
     def _get_schema(self):
         return self.__schema
 
@@ -2058,6 +2060,7 @@ class PreparedStatement(object):
         self.__prepared = True
         self._name = None
     def __cursor_deleted(self,obj):
+        print "__cursor_deleted"
         self.cursor = None
     def __get_name(self):
         return self._name
@@ -2723,7 +2726,6 @@ class PreparedStatement(object):
                             valuebuf.value = value[i]
                         else:
                             raise OperationalError("Unsupported type")
-                    #print 'value:',valuebuf.value
                     ctypes.memmove(ctypes.byref(buf,bufpos),
                                    ctypes.byref(valuebuf),
                                    esize)
@@ -3039,10 +3041,11 @@ class PreparedStatement(object):
             self.__description = None
             self.__output_cache = None
             self._name = None
+            if is_dead_proxy(self.cursor):
+                self.cursor = None
             connection = self.cursor._connection if self.cursor else None
             if (not connection) or (connection and not connection.closed):
-                api.isc_dsql_free_statement(self._isc_status, stmt_handle,
-                                              ibase.DSQL_drop)
+                api.isc_dsql_free_statement(self._isc_status, stmt_handle, ibase.DSQL_drop)
                 if (db_api_error(self._isc_status)
                     and (self._isc_status[1] not in [335544528,335544485])):
                     raise exception_from_status(DatabaseError, self._isc_status,
@@ -3333,6 +3336,8 @@ class Cursor(object):
            If you’ll take advantage of this anomaly, your code would be less
            portable to other Python DB API 2.0 compliant drivers.
         """
+        if is_dead_proxy(self._ps):
+            self._ps = None
         if self._ps != None:
             self._ps.close()
             self._ps = None
