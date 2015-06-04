@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.6'
+__version__ = '1.4.7'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -2060,7 +2060,6 @@ class PreparedStatement(object):
         self.__prepared = True
         self._name = None
     def __cursor_deleted(self,obj):
-        print "__cursor_deleted"
         self.cursor = None
     def __get_name(self):
         return self._name
