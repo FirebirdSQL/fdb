@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.4.8`_ (23.6.2015)
 * `Version 1.4.7`_ (4.6.2015)
 * `Version 1.4.6`_ (29.5.2015)
 * `Version 1.4.5`_ (31.3.2015)
@@ -23,6 +24,11 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.4.8
+=============
+
+- Enhancement to automatic client library location detection on POSIX. Now it also looks at LD_LIBRARY_PATH dir if specified.
 
 Version 1.4.7
 =============

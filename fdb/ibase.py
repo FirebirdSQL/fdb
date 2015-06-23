@@ -1175,6 +1175,12 @@ class fbclient_API(object):
                     fb_library_name = os.path.join(os.path.join(instFold[0], 'bin'), 'fbclient.dll')
             else:
                 fb_library_name = find_library('fbclient')
+                if not fb_library_name:
+                    try:
+                        x = CDLL('libfbclient.so')
+                        fb_library_name = 'libfbclient.so'
+                    except:
+                        pass
 
             if not fb_library_name:
                 raise Exception("The location of Firebird Client Library could not be determined.")

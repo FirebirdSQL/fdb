@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.7'
+__version__ = '1.4.8'
 
 apilevel = '2.0'
 threadsafety = 1
