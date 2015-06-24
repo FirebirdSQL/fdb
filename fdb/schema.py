@@ -99,7 +99,7 @@ PROCPAR_TYPE_OF_COLUMN = 3
 def get_grants(privileges,grantors=None):
     """Get list of minimal set of SQL GRANT statamenets necessary to grant
     specified privileges.
-    
+
     :param list privileges: List of :class:`Privilege` instances.
     :param list grantors: List of standard grantor names. Generates GRANTED BY
         clause for privileges granted by user that's not in list.
@@ -124,9 +124,9 @@ def get_grants(privileges,grantors=None):
         g = list(g)
         item = g[0]
         if item.has_grant():
-            admin_option = ' WITH %s OPTION' % ('ADMIN' if item.privilege == 'M' 
+            admin_option = ' WITH %s OPTION' % ('ADMIN' if item.privilege == 'M'
                                                 else 'GRANT')
-        else: 
+        else:
             admin_option = ''
         uname = item.user_name
         user = item.user
@@ -235,11 +235,11 @@ def escape_single_quotes(text):
 class Schema(object):
     """This class represents database schema.
     """
-    
+
     #: Datatype declaration methods for procedure parameters: key = numID, value = name
-    enum_param_type_from = {PROCPAR_DATATYPE: 'DATATYPE', 
-                            PROCPAR_DOMAIN: 'DOMAIN', 
-                            PROCPAR_TYPE_OF_DOMAIN: 'TYPE OF DOMAIN', 
+    enum_param_type_from = {PROCPAR_DATATYPE: 'DATATYPE',
+                            PROCPAR_DOMAIN: 'DOMAIN',
+                            PROCPAR_TYPE_OF_DOMAIN: 'TYPE OF DOMAIN',
                             PROCPAR_TYPE_OF_COLUMN: 'TYPE OF COLUMN'}
     #: Object types: key = numID, value = type_name
     enum_object_types = dict()
@@ -269,7 +269,7 @@ class Schema(object):
     enum_trigger_types = dict()
     #: option switch: Always quote db object names on output
     opt_always_quote = False
-    
+
     def __init__(self):
         self._con = None
         self._ic = None
@@ -287,7 +287,7 @@ class Schema(object):
         self._con = None
         self._ic = None
     def _set_as_internal(self):
-        """Mark this instance as `internal` (embedded). This blocks calls to 
+        """Mark this instance as `internal` (embedded). This blocks calls to
         :meth:`bind` and :meth:`close`."""
         self.__internal = True
         self._con = weakref.proxy(self._con)
@@ -360,7 +360,7 @@ class Schema(object):
             self._ic.execute(cmd)
         return self._ic.itermap()
     def _get_field_dimensions(self,field):
-        return [(r[0],r[1]) for r in 
+        return [(r[0],r[1]) for r in
                 self._ic.execute("""SELECT r.RDB$LOWER_BOUND, r.RDB$UPPER_BOUND
 FROM RDB$FIELD_DIMENSIONS r
 where r.RDB$FIELD_NAME = '%s'
@@ -426,11 +426,11 @@ order by r.RDB$DIMENSION""" % field.name)]
     def _get_all_domains(self):
         if self.__domains is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$FIELD_NAME, RDB$VALIDATION_SOURCE, 
-RDB$COMPUTED_SOURCE, RDB$DEFAULT_SOURCE, RDB$FIELD_LENGTH, RDB$FIELD_SCALE, 
-RDB$FIELD_TYPE, RDB$FIELD_SUB_TYPE, RDB$DESCRIPTION, RDB$SYSTEM_FLAG, 
-RDB$SEGMENT_LENGTH, RDB$EXTERNAL_LENGTH, RDB$EXTERNAL_SCALE, RDB$EXTERNAL_TYPE, 
-RDB$DIMENSIONS, RDB$NULL_FLAG, RDB$CHARACTER_LENGTH, RDB$COLLATION_ID, 
+            self._ic.execute("""select RDB$FIELD_NAME, RDB$VALIDATION_SOURCE,
+RDB$COMPUTED_SOURCE, RDB$DEFAULT_SOURCE, RDB$FIELD_LENGTH, RDB$FIELD_SCALE,
+RDB$FIELD_TYPE, RDB$FIELD_SUB_TYPE, RDB$DESCRIPTION, RDB$SYSTEM_FLAG,
+RDB$SEGMENT_LENGTH, RDB$EXTERNAL_LENGTH, RDB$EXTERNAL_SCALE, RDB$EXTERNAL_TYPE,
+RDB$DIMENSIONS, RDB$NULL_FLAG, RDB$CHARACTER_LENGTH, RDB$COLLATION_ID,
 RDB$CHARACTER_SET_ID, RDB$FIELD_PRECISION from RDB$FIELDS""")
             self.__domains = [Domain(self,row) for row in self._ic.itermap()]
         return self.__domains
@@ -461,20 +461,20 @@ RDB$CHARACTER_SET_ID, RDB$FIELD_PRECISION from RDB$FIELDS""")
     def _get_constraint_indices(self):
         if self.__constraint_indices is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$INDEX_NAME, RDB$CONSTRAINT_NAME 
+            self._ic.execute("""select RDB$INDEX_NAME, RDB$CONSTRAINT_NAME
 from RDB$RELATION_CONSTRAINTS where RDB$INDEX_NAME is not null""")
             self.__constraint_indices = dict([(key.strip(),value.strip()) for key, value in self._ic])
         return self.__constraint_indices
     def _get_all_indices(self):
         if self.__indices is None:
             self.__fail_if_closed()
-            # Dummy call to _get_constraint_indices() is necessary as 
-            # Index.issystemobject() that is called in Index.__init__() will 
+            # Dummy call to _get_constraint_indices() is necessary as
+            # Index.issystemobject() that is called in Index.__init__() will
             # drop result from internal cursor and we'll not load all indices.
             self._get_constraint_indices()
-            self._ic.execute("""select RDB$INDEX_NAME, RDB$RELATION_NAME, 
-RDB$INDEX_ID, RDB$UNIQUE_FLAG, RDB$DESCRIPTION, RDB$SEGMENT_COUNT, 
-RDB$INDEX_INACTIVE, RDB$INDEX_TYPE, RDB$FOREIGN_KEY, RDB$SYSTEM_FLAG, 
+            self._ic.execute("""select RDB$INDEX_NAME, RDB$RELATION_NAME,
+RDB$INDEX_ID, RDB$UNIQUE_FLAG, RDB$DESCRIPTION, RDB$SEGMENT_COUNT,
+RDB$INDEX_INACTIVE, RDB$INDEX_TYPE, RDB$FOREIGN_KEY, RDB$SYSTEM_FLAG,
 RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
             self.__indices = [Index(self,row) for row in self._ic.itermap()]
         return self.__indices
@@ -495,8 +495,8 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
     def _get_all_triggers(self):
         if self.__triggers is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$TRIGGER_NAME, RDB$RELATION_NAME, 
-RDB$TRIGGER_SEQUENCE, RDB$TRIGGER_TYPE, RDB$TRIGGER_SOURCE, RDB$DESCRIPTION, 
+            self._ic.execute("""select RDB$TRIGGER_NAME, RDB$RELATION_NAME,
+RDB$TRIGGER_SEQUENCE, RDB$TRIGGER_TYPE, RDB$TRIGGER_SOURCE, RDB$DESCRIPTION,
 RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
             self.__triggers = [Trigger(self,row) for row in self._ic.itermap()]
         return self.__triggers
@@ -507,8 +507,8 @@ RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
     def _get_all_procedures(self):
         if self.__procedures is None:
             self.__fail_if_closed()
-            cols = ['RDB$PROCEDURE_NAME', 'RDB$PROCEDURE_ID', 'RDB$PROCEDURE_INPUTS', 
-                    'RDB$PROCEDURE_OUTPUTS', 'RDB$DESCRIPTION', 'RDB$PROCEDURE_SOURCE', 
+            cols = ['RDB$PROCEDURE_NAME', 'RDB$PROCEDURE_ID', 'RDB$PROCEDURE_INPUTS',
+                    'RDB$PROCEDURE_OUTPUTS', 'RDB$DESCRIPTION', 'RDB$PROCEDURE_SOURCE',
                     'RDB$SECURITY_CLASS', 'RDB$OWNER_NAME', 'RDB$SYSTEM_FLAG']
             if self._con.ods >= fdb.ODS_FB_21:
                 cols.extend(['RDB$PROCEDURE_TYPE','RDB$VALID_BLR'])
@@ -522,8 +522,8 @@ RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
     def _get_constraints(self):
         if self.__constraints is None:
             self.__fail_if_closed()
-            # Dummy call to _get_all_tables() is necessary as 
-            # Constraint.issystemobject() that is called in Constraint.__init__() 
+            # Dummy call to _get_all_tables() is necessary as
+            # Constraint.issystemobject() that is called in Constraint.__init__()
             # will drop result from internal cursor and we'll not load all constraints.
             self._get_all_tables()
             self._ic.execute("""select * from rdb$relation_constraints C
@@ -558,8 +558,8 @@ left outer join rdb$check_constraints K on C.rdb$constraint_name = K.rdb$constra
     def _get_all_functions(self):
         if self.__functions is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$FUNCTION_NAME, RDB$FUNCTION_TYPE, 
-RDB$DESCRIPTION, RDB$MODULE_NAME, RDB$ENTRYPOINT, RDB$RETURN_ARGUMENT, 
+            self._ic.execute("""select RDB$FUNCTION_NAME, RDB$FUNCTION_TYPE,
+RDB$DESCRIPTION, RDB$MODULE_NAME, RDB$ENTRYPOINT, RDB$RETURN_ARGUMENT,
 RDB$SYSTEM_FLAG from rdb$functions""")
             self.__functions = [Function(self,row) for row in self._ic.itermap()]
         return self.__functions
@@ -570,7 +570,7 @@ RDB$SYSTEM_FLAG from rdb$functions""")
     def _get_files(self):
         if self.__files is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$FILE_NAME, RDB$FILE_SEQUENCE, 
+            self._ic.execute("""select RDB$FILE_NAME, RDB$FILE_SEQUENCE,
 RDB$FILE_START, RDB$FILE_LENGTH from RDB$FILES
 where RDB$SHADOW_NUMBER = 0
 order by RDB$FILE_SEQUENCE""")
@@ -588,7 +588,7 @@ order by RDB$SHADOW_NUMBER""")
     def _get_privileges(self):
         if self.__privileges is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$USER, RDB$GRANTOR, RDB$PRIVILEGE, 
+            self._ic.execute("""select RDB$USER, RDB$GRANTOR, RDB$PRIVILEGE,
 RDB$GRANT_OPTION, RDB$RELATION_NAME, RDB$FIELD_NAME, RDB$USER_TYPE, RDB$OBJECT_TYPE
 FROM RDB$USER_PRIVILEGES""")
             self.__privileges = [Privilege(self,row) for row in self._ic.itermap()]
@@ -671,10 +671,10 @@ FROM RDB$USER_PRIVILEGES""")
 
     def bind(self, connection):
         """Bind this instance to specified :class:`~fdb.Connection`.
-        
-        :param connection: :class:`~fdb.Connection` instance. 
-        
-        :raises ProgrammingError: If Schema object was set as internal (via 
+
+        :param connection: :class:`~fdb.Connection` instance.
+
+        :raises ProgrammingError: If Schema object was set as internal (via
             :meth:`_set_as_internal`).
         """
         if self.__internal:
@@ -685,7 +685,7 @@ FROM RDB$USER_PRIVILEGES""")
         self._ic = self._con.query_transaction.cursor()
 
         self.__clear()
-        
+
         self._ic.execute('select * from RDB$DATABASE')
         row = self._ic.fetchonemap()
         self.__description = row['RDB$DESCRIPTION']
@@ -697,12 +697,12 @@ FROM RDB$USER_PRIVILEGES""")
         # Load enumerate types defined in RDB$TYPES table
         enum_select = 'select RDB$TYPE, RDB$TYPE_NAME from RDB$TYPES where RDB$FIELD_NAME = ?'
         def enum_dict(enum_type):
-            return dict((key,value.strip()) for key, value 
+            return dict((key,value.strip()) for key, value
                         in self._ic.execute(enum_select,(enum_type,)))
         # Object types
         self.enum_object_types = enum_dict('RDB$OBJECT_TYPE')
         # Object type codes
-        self.enum_object_type_codes = dict(((value,key) for key,value 
+        self.enum_object_type_codes = dict(((value,key) for key,value
                                             in self.enum_object_types.items()))
         # Character set names
         self.enum_character_set_names = enum_dict('RDB$CHARACTER_SET_NAME')
@@ -728,11 +728,11 @@ FROM RDB$USER_PRIVILEGES""")
         self.enum_transaction_state_types = enum_dict('RDB$TRANSACTION_STATE')
         # Trigger Types
         self.enum_trigger_types = enum_dict('RDB$TRIGGER_TYPE')
-        
+
     def close(self):
         """Sever link to :class:`~fdb.Connection`.
-        
-        :raises ProgrammingError: If Schema object was set as internal (via 
+
+        :raises ProgrammingError: If Schema object was set as internal (via
             :meth:`_set_as_internal`).
         """
         if self.__internal:
@@ -741,24 +741,24 @@ FROM RDB$USER_PRIVILEGES""")
         self.__clear()
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitSchema(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitSchema(self)
-    
+
     #--- Basic Database manipulation routines
 
     def clear(self):
         "Drop all cached metadata objects."
         self.__clear()
     def reload(self,data=None):
-        """Drop all or specified category of cached metadata objects, so they're 
-        reloaded from database on next reference. 
-        
+        """Drop all or specified category of cached metadata objects, so they're
+        reloaded from database on next reference.
+
         :param string data: `None` or name of metadata category.
-        
+
         Recognized (case insensitive) names of metadata categories:
-        
+
         - tables
         - views
         - domain
@@ -778,9 +778,9 @@ FROM RDB$USER_PRIVILEGES""")
         - shadows
         - privileges
         - users
-        
+
         :raises ProgrammingError: For undefined metadata category.
-        
+
         .. note:: Also commits query transaction.
         """
         self.__clear(data)
@@ -793,115 +793,115 @@ FROM RDB$USER_PRIVILEGES""")
         return len(self.files) > 0
     def get_collation(self,name):
         """Get :class:`Collation` by name.
-        
+
         :param string name: Collation name.
-        
+
         :returns: :class:`Collation` with specified name or `None`.
         """
         return self.__object_by_name(self._get_collations(),name)
     def get_character_set(self,name):
         """Get :class:`CharacterSet` by name.
-        
+
         :param string name: Character set name.
-        
+
         :returns: :class:`CharacterSet` with specified name or `None`.
         """
         return self.__object_by_name(self._get_character_sets(),name)
     def get_exception(self,name):
         """Get :class:`DatabaseException` by name.
-        
+
         :param string name: Exception name.
-        
+
         :returns: :class:`DatabaseException` with specified name or `None`.
         """
         return self.__object_by_name(self._get_exceptions(),name)
     def get_generator(self,name):
         """Get :class:`Sequence` by name.
-        
+
         :param string name: Sequence name.
-        
+
         :returns: :class:`Sequence` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_generators(),name)
     get_sequence = get_generator
     def get_index(self,name):
         """Get :class:`Index` by name.
-        
+
         :param string name: Index name.
-        
+
         :returns: :class:`Index` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_indices(),name)
     def get_domain(self,name):
         """Get :class:`Domain` by name.
-        
+
         :param string name: Domain name.
-        
+
         :returns: :class:`Domain` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_domains(),name)
     def get_table(self,name):
         """Get :class:`Table` by name.
-        
+
         :param string name: Table name.
-        
+
         :returns: :class:`Table` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_tables(),name)
     def get_view(self,name):
         """Get :class:`View` by name.
-        
+
         :param string name: View name.
-        
+
         :returns: :class:`View` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_views(),name)
     def get_trigger(self,name):
         """Get :class:`Trigger` by name.
-        
+
         :param string name: Trigger name.
-        
+
         :returns: :class:`Trigger` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_triggers(),name)
     def get_procedure(self,name):
         """Get :class:`Procedure` by name.
-        
+
         :param string name: Procedure name.
-        
+
         :returns: :class:`Procedure` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_procedures(),name)
     def get_constraint(self,name):
         """Get :class:`Constraint` by name.
-        
+
         :param string name: Constraint name.
-        
+
         :returns: :class:`Constraint` with specified name or `None`.
         """
         return self.__object_by_name(self._get_constraints(),name)
     def get_role(self,name):
         """Get :class:`Role` by name.
-        
+
         :param string name: Role name.
-        
+
         :returns: :class:`Role` with specified name or `None`.
         """
         return self.__object_by_name(self._get_roles(),name)
     def get_function(self,name):
         """Get :class:`Function` by name.
-        
+
         :param string name: Function name.
-        
+
         :returns: :class:`Function` with specified name or `None`.
         """
         return self.__object_by_name(self._get_all_functions(),name)
     def get_collation_by_id(self,charset_id,collation_id):
         """Get :class:`Collation` by ID.
-        
+
         :param integer charset_id: Character set ID.
         :param integer collation_id: Collation ID.
-        
+
         :returns: :class:`Collation` with specified ID or `None`.
         """
         for collation in self._get_collations():
@@ -911,9 +911,9 @@ FROM RDB$USER_PRIVILEGES""")
             return None
     def get_character_set_by_id(self,id):
         """Get :class:`CharacterSet` by ID.
-        
+
         :param integer name: CharacterSet ID.
-        
+
         :returns: :class:`CharacterSet` with specified ID or `None`.
         """
         for charset in self._get_character_sets():
@@ -922,15 +922,15 @@ FROM RDB$USER_PRIVILEGES""")
         else:
             return None
     def get_privileges_of(self,user, user_type=None):
-        """Get list of all privileges granted to user/database object. 
-        
+        """Get list of all privileges granted to user/database object.
+
         :param user: User name or instance of class that represents possible user.
-            Allowed classes are :class:`~fdb.services.User`, :class:`Table`, 
+            Allowed classes are :class:`~fdb.services.User`, :class:`Table`,
             :class:`View`, :class:`Procedure`, :class:`Trigger` or :class:`Role`.
         :param int user_type: **Required if** `user` is provided as string name.
             Numeric code for user type, see :attr:`Schema.enum_object_types`.
         :returns: List of :class:`Privilege` objects.
-        
+
         :raises ProgrammingError: For unknown `user_type` code.
         """
         if isinstance(user,(fdb.StringType,fdb.UnicodeType)):
@@ -941,7 +941,7 @@ FROM RDB$USER_PRIVILEGES""")
                 utype = [user_type]
         elif isinstance(user,(Table,View,Procedure,Trigger,Role)):
             uname = user.name
-            utype = user._type_code 
+            utype = user._type_code
         elif isinstance(user,fdb.services.User):
             uname = user.name
             utype = [8]
@@ -968,7 +968,7 @@ class BaseSchemaItem(object):
         p = set(params.keys())
         n = set(param_names)
         if not p.issubset(n):
-            raise fdb.ProgrammingError("Unsupported parameter(s) '%s'" % 
+            raise fdb.ProgrammingError("Unsupported parameter(s) '%s'" %
                                        ','.join(p.difference(n)))
     def _needs_quoting(self,ident):
         if not ident:
@@ -1007,15 +1007,15 @@ class BaseSchemaItem(object):
         "List of supported SQL operations on metadata object instance.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitMetadatItem(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitMetadataItem(self)
     def issystemobject(self):
-        "Returns True if this database object is system object." 
+        "Returns True if this database object is system object."
         return True if self._attributes.get('RDB$SYSTEM_FLAG',False) else False
     def get_quoted_name(self):
         "Returns quoted (if necessary) name."
@@ -1025,20 +1025,20 @@ class BaseSchemaItem(object):
             return self.name
     def get_dependents(self):
         "Returns list of all database objects that depend on this one."
-        return [d for d in self.schema.dependencies if d.depended_on_name == self.name and 
+        return [d for d in self.schema.dependencies if d.depended_on_name == self.name and
             d.depended_on_type in self._type_code]
     def get_dependencies(self):
         "Returns list of database objects that this object depend on."
-        return [d for d in self.schema.dependencies if d.dependent_name == self.name and 
+        return [d for d in self.schema.dependencies if d.dependent_name == self.name and
             d.dependent_type in self._type_code]
     def get_sql_for(self,action,**params):
         """Returns SQL command for specified action on metadata object.
-        
+
         Supported actions are defined by :attr:`actions` list.
-        
+
         :raises ProgrammingError: For unsupported action or wrong parameters passed.
         """
-        _action = action.lower() 
+        _action = action.lower()
         if _action in self._actions:
             _call = getattr(self,'_get_%s_sql' % _action)
             return _call(**params)
@@ -1047,9 +1047,9 @@ class BaseSchemaItem(object):
 
 class Collation(BaseSchemaItem):
     """Represents collation.
-    
-    Supported SQL actions: 
-    
+
+    Supported SQL actions:
+
     - User collation: create, drop
     - System collation: none
     """
@@ -1059,7 +1059,7 @@ class Collation(BaseSchemaItem):
         self._strip_attribute('RDB$COLLATION_NAME')
         self._strip_attribute('RDB$BASE_COLLATION_NAME')
         self._strip_attribute('RDB$FUNCTION_NAME')
-        
+
         if not self.issystemobject():
             self._actions = ['create','drop']
 
@@ -1078,8 +1078,8 @@ class Collation(BaseSchemaItem):
    %s
    %s""" % (self.get_quoted_name(),
             self.character_set.get_quoted_name(),
-            ("FROM EXTERNAL ('%s')" % self._attributes['RDB$BASE_COLLATION_NAME'] 
-             if self.isbasedonexternal() 
+            ("FROM EXTERNAL ('%s')" % self._attributes['RDB$BASE_COLLATION_NAME']
+             if self.isbasedonexternal()
              else "FROM %s" % self.base_collation.get_quoted_name()),
             'PAD SPACE' if self.ispadded() else 'NO PAD',
             'CASE INSENSITIVE' if self.iscaseinsensitive() else 'CASE SENSITIVE',
@@ -1103,9 +1103,9 @@ class Collation(BaseSchemaItem):
         return self._attributes['RDB$SPECIFIC_ATTRIBUTES']
     def _get_function_name(self):
         return self._attributes['RDB$FUNCTION_NAME']
-    
+
     #--- Properties
-    
+
     id = LateBindingProperty(_get_id,None,None,"Collation ID.")
     character_set = LateBindingProperty(_get_character_set,None,None,
         "Character set object associated with collation.")
@@ -1117,12 +1117,12 @@ class Collation(BaseSchemaItem):
         "Collation specific attributes.")
     function_name = LateBindingProperty(_get_function_name,None,None,
         "Not currently used.")
-    
+
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitCollation(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitCollation(self)
@@ -1149,7 +1149,7 @@ class CharacterSet(BaseSchemaItem):
 
         self._strip_attribute('RDB$CHARACTER_SET_NAME')
         self._strip_attribute('RDB$DEFAULT_COLLATE_NAME')
-        
+
         self._actions = ['alter']
 
     #--- protected
@@ -1171,7 +1171,7 @@ class CharacterSet(BaseSchemaItem):
     def _get_default_collate(self):
         return self.get_collation(self._attributes['RDB$DEFAULT_COLLATE_NAME'])
     def _get_collations(self):
-        r = [c for c in self.schema.collations 
+        r = [c for c in self.schema.collations
              if c._attributes['RDB$CHARACTER_SET_ID'] == self.id]
         return r
 
@@ -1186,10 +1186,10 @@ class CharacterSet(BaseSchemaItem):
                             "List of Collations associated with character set.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitCharacterSet(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitCharacterSet(self)
@@ -1213,8 +1213,8 @@ this character set.
 class DatabaseException(BaseSchemaItem):
     """Represents database exception.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - User exception: create, recreate, alter(message=string), create_or_alter, drop
     - System exception: none
     """
@@ -1223,7 +1223,7 @@ class DatabaseException(BaseSchemaItem):
         self._type_code = [7,]
 
         self._strip_attribute('RDB$EXCEPTION_NAME')
-        
+
         if not self.issystemobject():
             self._actions = ['create','recreate','alter','create_or_alter','drop']
 
@@ -1250,7 +1250,7 @@ class DatabaseException(BaseSchemaItem):
         return self._attributes['RDB$EXCEPTION_NUMBER']
     def _get_message(self):
         return self._attributes['RDB$MESSAGE']
-    
+
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,
@@ -1258,10 +1258,10 @@ class DatabaseException(BaseSchemaItem):
     message = LateBindingProperty(_get_message,None,None,"Custom message text.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitException(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitException(self)
@@ -1269,8 +1269,8 @@ class DatabaseException(BaseSchemaItem):
 class Sequence(BaseSchemaItem):
     """Represents database generator/sequence.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - User sequence: create, alter(value=number), drop
     - System sequence: none
     """
@@ -1279,7 +1279,7 @@ class Sequence(BaseSchemaItem):
         self._type_code = [14,]
 
         self._strip_attribute('RDB$GENERATOR_NAME')
-        
+
         if not self.issystemobject():
             self._actions = ['create','alter','drop']
 
@@ -1311,10 +1311,10 @@ class Sequence(BaseSchemaItem):
     value = LateBindingProperty(_get_value,None,None,"Current sequence value.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitGenerator(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitGenerator(self)
@@ -1322,8 +1322,8 @@ class Sequence(BaseSchemaItem):
 class TableColumn(BaseSchemaItem):
     """Represents table column.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - User column: alter(name=string,datatype=string_SQLTypeDef,position=number,
                          expression=computed_by_expr), drop
     - System column: none
@@ -1331,18 +1331,18 @@ class TableColumn(BaseSchemaItem):
     def __init__(self,schema,table,attributes):
         super(TableColumn,self).__init__(schema,attributes)
         self._type_code = [3,9]
-        
+
         self.__table = weakref.proxy(table)
         self._strip_attribute('RDB$FIELD_NAME')
         self._strip_attribute('RDB$RELATION_NAME')
         self._strip_attribute('RDB$FIELD_SOURCE')
         self._strip_attribute('RDB$SECURITY_CLASS')
-        
+
         if not self.issystemobject():
             self._actions = ['alter','drop']
 
     #--- Protected
-    
+
     def _get_alter_sql(self,**params):
         self._check_params(params,['expression','datatype','name','position'])
         new_expr = params.get('expression')
@@ -1397,8 +1397,8 @@ class TableColumn(BaseSchemaItem):
         return self.domain.datatype
     def _get_privileges(self):
         return [p for p in self.schema.privileges
-                if (p.subject_name == self.table.name and 
-                    p.field_name == self.name and 
+                if (p.subject_name == self.table.name and
+                    p.field_name == self.name and
                     p.subject_type in self.table._type_code)]
 
     #--- Properties
@@ -1419,24 +1419,24 @@ class TableColumn(BaseSchemaItem):
                                 "Comlete SQL datatype definition.")
     privileges = LateBindingProperty(_get_privileges,None,None,
         "List of :class:`Privilege` objects granted to this object.")
-    
+
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitTableColumn(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitTableColumn(self)
     def get_dependents(self):
         "Return list of all database objects that depend on this one."
-        return [d for d in self.schema.dependencies 
-                if d.depended_on_name == self._attributes['RDB$RELATION_NAME'] 
+        return [d for d in self.schema.dependencies
+                if d.depended_on_name == self._attributes['RDB$RELATION_NAME']
                 and d.depended_on_type == 0 and d.field_name == self.name]
     def get_dependencies(self):
         "Return list of database objects that this object depend on."
-        return [d for d in self.schema.dependencies 
-                if d.dependent_name == self._attributes['RDB$RELATION_NAME'] 
+        return [d for d in self.schema.dependencies
+                if d.dependent_name == self._attributes['RDB$RELATION_NAME']
                 and d.dependent_type == 0 and d.field_name == self.name]
     def get_computedby(self):
         "Returns (string) extression for column computation or None."
@@ -1459,9 +1459,9 @@ class TableColumn(BaseSchemaItem):
 
 class Index(BaseSchemaItem):
     """Represents database index.
-    
-    Supported SQL actions: 
-    
+
+    Supported SQL actions:
+
     - User index: create, activate, deactivate, recompute, drop
     - System index: recompute
     """
@@ -1474,7 +1474,7 @@ class Index(BaseSchemaItem):
         self._strip_attribute('RDB$INDEX_NAME')
         self._strip_attribute('RDB$RELATION_NAME')
         self._strip_attribute('RDB$FOREIGN_KEY')
-        
+
         if self.issystemobject():
             self._actions = ['recompute']
         else:
@@ -1487,7 +1487,7 @@ class Index(BaseSchemaItem):
         return """CREATE %s%s INDEX %s
    ON %s %s""" % ('UNIQUE ' if self.isunique() else '',
                   self.index_type, self.get_quoted_name(),self.table.name,
-                  'COMPUTED BY %s' % self.expression if self.isexpression() 
+                  'COMPUTED BY %s' % self.expression if self.isexpression()
                   else '(%s)' % ','.join(self.segment_names))
     def _get_activate_sql(self,**params):
         self._check_params(params,[])
@@ -1508,7 +1508,7 @@ class Index(BaseSchemaItem):
     def _get_id(self):
         return self._attributes['RDB$INDEX_ID']
     def _get_index_type(self):
-        return (INDEX_TYPE_DESCENDING if self._attributes['RDB$INDEX_TYPE'] == 1 
+        return (INDEX_TYPE_DESCENDING if self._attributes['RDB$INDEX_TYPE'] == 1
                 else INDEX_TYPE_ASCENDING)
     def _get_partner_index(self):
         pname = self._attributes['RDB$FOREIGN_KEY']
@@ -1523,7 +1523,7 @@ class Index(BaseSchemaItem):
         if self.__segment_names is None:
             if self._attributes['RDB$SEGMENT_COUNT'] > 0:
                 self.__segment_names = [r['RDB$FIELD_NAME'].strip() for r
-                                        in self.schema._select("""select rdb$field_name 
+                                        in self.schema._select("""select rdb$field_name
 from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",(self.name,))]
             else:
                 self.__segment_names = []
@@ -1533,7 +1533,7 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
             if self._attributes['RDB$SEGMENT_COUNT'] > 0:
                 if self.schema._con.ods >= fdb.ODS_FB_21:
                     self.__segment_statistics = [r['RDB$STATISTICS'] for r
-                                            in self.schema._select("""select RDB$STATISTICS 
+                                            in self.schema._select("""select RDB$STATISTICS
 from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",(self.name,))]
                 else:
                     self.__segment_statistics = [None for x in range(self._attributes['RDB$SEGMENT_COUNT'])]
@@ -1569,18 +1569,18 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
                 "List of index segments as :class:`TableColumn` instances.")
     constraint = LateBindingProperty(_get_constraint,None,None,
                 ":class:`Constraint` instance that uses this index or None.")
-    
+
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitIndex(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitIndex(self)
     def issystemobject(self):
         "Returns True if this database object is system object."
-        return bool(self._attributes['RDB$SYSTEM_FLAG'] 
+        return bool(self._attributes['RDB$SYSTEM_FLAG']
                     or (self.isenforcer() and self.name.startswith('RDB$')))
     def isexpression(self):
         "Returns True if index is expression index."
@@ -1603,7 +1603,7 @@ class ViewColumn(BaseSchemaItem):
     def __init__(self,schema,view,attributes):
         super(ViewColumn,self).__init__(schema,attributes)
         self._type_code = [3,9]
-        
+
         self.__view = weakref.proxy(view)
         self._strip_attribute('RDB$FIELD_NAME')
         self._strip_attribute('RDB$BASE_FIELD')
@@ -1611,9 +1611,9 @@ class ViewColumn(BaseSchemaItem):
         self._strip_attribute('RDB$FIELD_SOURCE')
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('BASE_RELATION')
-        
+
     #--- Protected
-    
+
     def _get_name(self):
         return self._attributes['RDB$FIELD_NAME']
     def _get_base_field(self):
@@ -1646,8 +1646,8 @@ class ViewColumn(BaseSchemaItem):
         return self.domain.datatype
     def _get_privileges(self):
         return [p for p in self.schema.privileges
-                if (p.subject_name == self.view.name and 
-                    p.field_name == self.name and 
+                if (p.subject_name == self.view.name and
+                    p.field_name == self.name and
                     p.subject_type == 0)] # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
@@ -1670,24 +1670,24 @@ class ViewColumn(BaseSchemaItem):
                                 "Comlete SQL datatype definition.")
     privileges = LateBindingProperty(_get_privileges,None,None,
         "List of :class:`Privilege` objects granted to this object.")
-    
+
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitViewColumn(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitViewColumn(self)
     def get_dependents(self):
         "Return list of all database objects that depend on this one."
-        return [d for d in self.schema.dependencies 
-                if d.depended_on_name == self._attributes['RDB$RELATION_NAME'] 
+        return [d for d in self.schema.dependencies
+                if d.depended_on_name == self._attributes['RDB$RELATION_NAME']
                 and d.depended_on_type == 1 and d.field_name == self.name]
     def get_dependencies(self):
         "Return list of database objects that this object depend on."
-        return [d for d in self.schema.dependencies 
-                if d.dependent_name == self._attributes['RDB$RELATION_NAME'] 
+        return [d for d in self.schema.dependencies
+                if d.dependent_name == self._attributes['RDB$RELATION_NAME']
                 and d.dependent_type == 1 and d.field_name == self.name]
     def isnullable(self):
         "Returns True if column is NULLABLE."
@@ -1698,9 +1698,9 @@ class ViewColumn(BaseSchemaItem):
 
 class Domain(BaseSchemaItem):
     """Represents SQl Domain.
-    
-    Supported SQL actions: 
-    
+
+    Supported SQL actions:
+
     - User domain: create, alter(name=string,default=string_definition_or_None,
       check=string_definition_or_None,datatype=string_SQLTypeDef), drop
     - System domain: none
@@ -1710,7 +1710,7 @@ class Domain(BaseSchemaItem):
         self._type_code = [9]
 
         self._strip_attribute('RDB$FIELD_NAME')
-        
+
         if not self.issystemobject():
             self._actions = ['create','alter','drop']
 
@@ -1738,7 +1738,7 @@ class Domain(BaseSchemaItem):
         if new_name:
             return '%s TO %s' % (sql,self._get_quoted_ident(new_name))
         elif new_default != '':
-            return ('%s SET DEFAULT %s' % (sql,new_default) if new_default 
+            return ('%s SET DEFAULT %s' % (sql,new_default) if new_default
                     else '%s DROP DEFAULT' % sql)
         elif new_constraint != '':
             return ('%s ADD CHECK (%s)' % (sql,new_constraint) if new_constraint
@@ -1813,8 +1813,8 @@ class Domain(BaseSchemaItem):
         if self.field_type in (FBT_CHAR,FBT_VARCHAR):
             l.append('(%d)' % (self.length if self.character_length == None else self.character_length))
         if self._attributes['RDB$DIMENSIONS'] != None:
-            l.append('[%s]' % ', '.join('%d' % u if l == 1 
-                                        else '%d:%d' % (l,u) 
+            l.append('[%s]' % ', '.join('%d' % u if l == 1
+                                        else '%d:%d' % (l,u)
                                         for l,u in self.dimensions))
         if self.field_type == FBT_BLOB:
             if self.sub_type >= 0 and self.sub_type <= MAX_BLOBSUBTYPES:
@@ -1871,10 +1871,10 @@ class Domain(BaseSchemaItem):
         "Comlete SQL datatype definition.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitDomain(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitDomain(self)
@@ -1904,13 +1904,13 @@ class Dependency(BaseSchemaItem):
     """
     def __init__(self,schema,attributes):
         super(Dependency,self).__init__(schema,attributes)
-        
+
         self._strip_attribute('RDB$DEPENDENT_NAME')
         self._strip_attribute('RDB$DEPENDED_ON_NAME')
         self._strip_attribute('RDB$FIELD_NAME')
 
     #--- Protected
-    
+
     def _get_dependent_name(self):
         return self._attributes['RDB$DEPENDENT_NAME']
     def _get_dependent_type(self):
@@ -1930,7 +1930,7 @@ class Dependency(BaseSchemaItem):
             return self.schema.get_trigger(self.dependent_name)
         elif self.dependent_type == 3: # COMPUTED FIELD (i.e. DOMAIN)
             return self.schema.get_domain(self.dependent_name)
-        elif self.dependent_type == 4: 
+        elif self.dependent_type == 4:
             ## ToDo: Implement handler for VALIDATION if necessary
             return None
         elif self.dependent_type == 5: #PROCEDURE
@@ -2007,9 +2007,9 @@ class Dependency(BaseSchemaItem):
             ## ToDo: Implement handler for BLOB_FILTER
             return None
         return None
-    
+
     #--- Properties
-    
+
     dependent = LateBindingProperty(_get_dependent,None,None,
                                     "Dependent database object.")
     dependent_name = LateBindingProperty(_get_dependent_name,None,None,
@@ -2024,17 +2024,17 @@ class Dependency(BaseSchemaItem):
                                     "Name of db object on which dependent depends.")
     depended_on_type = LateBindingProperty(_get_depended_on_type,None,None,
                                     "Type of db object on which dependent depends.")
-    
+
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitDependency(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitDependency(self)
     def issystemobject(self):
-        "Returns True as dependency entries are considered as system objects." 
+        "Returns True as dependency entries are considered as system objects."
         return True
     def get_dependents(self):
         "Returns empty list because Dependency object never has dependents."
@@ -2042,12 +2042,12 @@ class Dependency(BaseSchemaItem):
     def get_dependencies(self):
         "Returns empty list because Dependency object never has dependencies."
         return []
-    
+
 class Constraint(BaseSchemaItem):
     """Represents table or column constraint.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - Constraint on user table except NOT NULL constraint: create, drop
     - Constraint on system table: none
     """
@@ -2156,10 +2156,10 @@ class Constraint(BaseSchemaItem):
         "For a FOREIGN KEY constraint, this is the action applicable to when primary key is deleted.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitConstraint(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitConstraint(self)
@@ -2191,8 +2191,8 @@ class Constraint(BaseSchemaItem):
 class Table(BaseSchemaItem):
     """Represents Table in database.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - User table: create, recreate, drop
     - System table: none
     """
@@ -2209,7 +2209,7 @@ class Table(BaseSchemaItem):
 
         if not self.issystemobject():
             self._actions = ['create','recreate','drop']
-            
+
     #--- Protected
 
     def _get_create_sql(self,**params):
@@ -2291,20 +2291,20 @@ class Table(BaseSchemaItem):
     def _get_flags(self):
         return self._attributes['RDB$FLAGS']
     def _get_indices(self):
-        return [i for i in self.schema._get_all_indices() 
+        return [i for i in self.schema._get_all_indices()
                 if i._attributes['RDB$RELATION_NAME'] == self.name]
     def _get_triggers(self):
-        return [t for t in self.schema.triggers 
+        return [t for t in self.schema.triggers
                 if t._attributes['RDB$RELATION_NAME'] == self.name]
     def _get_constraints(self):
-        return [c for c in self.schema.constraints 
+        return [c for c in self.schema.constraints
                 if c._attributes['RDB$RELATION_NAME'] == self.name]
     def _get_columns(self):
         if self.__columns is None:
-            self.__columns = [TableColumn(self.schema,self,row) for row in 
+            self.__columns = [TableColumn(self.schema,self,row) for row in
                 self.schema._select("""select RDB$FIELD_NAME, RDB$RELATION_NAME,
-RDB$FIELD_SOURCE, RDB$FIELD_POSITION, RDB$UPDATE_FLAG, RDB$FIELD_ID, RDB$DESCRIPTION, 
-RDB$SYSTEM_FLAG, RDB$SECURITY_CLASS, RDB$NULL_FLAG, RDB$DEFAULT_SOURCE, RDB$COLLATION_ID 
+RDB$FIELD_SOURCE, RDB$FIELD_POSITION, RDB$UPDATE_FLAG, RDB$FIELD_ID, RDB$DESCRIPTION,
+RDB$SYSTEM_FLAG, RDB$SECURITY_CLASS, RDB$NULL_FLAG, RDB$DEFAULT_SOURCE, RDB$COLLATION_ID
 from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""",(self.name,))]
         return self.__columns
     def _get_primary_key(self):
@@ -2316,7 +2316,7 @@ from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION
         return [c for c in self.constraints if c.isfkey()]
     def _get_privileges(self):
         return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and 
+                if ((p.subject_name == self.name) and
                     (p.subject_type in self._type_code))]
 
     #--- Properties
@@ -2353,10 +2353,10 @@ from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION
         "List of :class:`Privilege` objects granted to this object.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitTable(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitTable(self)
@@ -2387,13 +2387,13 @@ from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION
             if const.isfkey():
                 return True
         return False
-    
+
 class View(BaseSchemaItem):
     """Represents database View.
 
-    Supported SQL actions: 
-    
-    - User views: create, recreate, alter(columns=string_or_list,query=string,check=bool), 
+    Supported SQL actions:
+
+    - User views: create, recreate, alter(columns=string_or_list,query=string,check=bool),
       create_or_alter, drop
     - System views: none
     """
@@ -2411,7 +2411,7 @@ class View(BaseSchemaItem):
 
         if not self.issystemobject():
             self._actions = ['create','recreate','alter','create_or_alter','drop']
-            
+
     #--- Protected
 
     def _get_create_sql(self,**params):
@@ -2453,24 +2453,24 @@ class View(BaseSchemaItem):
     def _get_flags(self):
         return self._attributes['RDB$FLAGS']
     def _get_triggers(self):
-        return [t for t in self.schema.triggers 
+        return [t for t in self.schema.triggers
                 if t._attributes['RDB$RELATION_NAME'] == self.name]
     def _get_columns(self):
         if self.__columns is None:
-            self.__columns = [ViewColumn(self.schema,self,row) for row in 
-                self.schema._select("""select r.RDB$FIELD_NAME, r.RDB$RELATION_NAME, 
-r.RDB$FIELD_SOURCE, r.RDB$FIELD_POSITION, r.RDB$UPDATE_FLAG, r.RDB$FIELD_ID, 
-r.RDB$DESCRIPTION, r.RDB$SYSTEM_FLAG, r.RDB$SECURITY_CLASS, r.RDB$NULL_FLAG, 
-r.RDB$DEFAULT_SOURCE, r.RDB$COLLATION_ID, r.RDB$BASE_FIELD, 
-v.RDB$RELATION_NAME as BASE_RELATION 
+            self.__columns = [ViewColumn(self.schema,self,row) for row in
+                self.schema._select("""select r.RDB$FIELD_NAME, r.RDB$RELATION_NAME,
+r.RDB$FIELD_SOURCE, r.RDB$FIELD_POSITION, r.RDB$UPDATE_FLAG, r.RDB$FIELD_ID,
+r.RDB$DESCRIPTION, r.RDB$SYSTEM_FLAG, r.RDB$SECURITY_CLASS, r.RDB$NULL_FLAG,
+r.RDB$DEFAULT_SOURCE, r.RDB$COLLATION_ID, r.RDB$BASE_FIELD,
+v.RDB$RELATION_NAME as BASE_RELATION
     from RDB$RELATION_FIELDS r
     left join RDB$VIEW_RELATIONS v on r.RDB$VIEW_CONTEXT = v.RDB$VIEW_CONTEXT
-    where r.RDB$RELATION_NAME = ? 
+    where r.RDB$RELATION_NAME = ?
     order by RDB$FIELD_POSITION""",(self.name,))]
         return self.__columns
     def _get_privileges(self):
         return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and 
+                if ((p.subject_name == self.name) and
                     (p.subject_type == 0))] # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
@@ -2494,10 +2494,10 @@ v.RDB$RELATION_NAME as BASE_RELATION
         "List of :class:`Privilege` objects granted to this object.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitView(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitView(self)
@@ -2516,12 +2516,12 @@ v.RDB$RELATION_NAME as BASE_RELATION
     def has_checkoption(self):
         "Returns True if View has WITH CHECK OPTION defined."
         return "WITH CHECK OPTION" in self.sql.upper()
-    
+
 class Trigger(BaseSchemaItem):
     """Represents trigger.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - User trigger: create, recreate, create_or_alter, drop,
       alter(fire_on=string,active=bool,sequence=int,declare=string_or_list,
       code=string_or_list)
@@ -2561,7 +2561,7 @@ class Trigger(BaseSchemaItem):
             header += ' ACTIVE' if active else ' INACTIVE'
         if action is not None:
             dbaction = action.upper().startswith('ON ')
-            if ((dbaction and not self.isdbtrigger()) 
+            if ((dbaction and not self.isdbtrigger())
                 or (not dbaction and self.isdbtrigger())):
                 raise fdb.ProgrammingError("Trigger type change is not allowed.")
             header += '\n  %s' % action
@@ -2637,10 +2637,10 @@ class Trigger(BaseSchemaItem):
     flags = LateBindingProperty(_get_flags,None,None,"Internal flags.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitTrigger(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitTrigger(self)
@@ -2733,13 +2733,13 @@ class ProcedureParameter(BaseSchemaItem):
         return result
     def _get_collation(self):
         cid = self._attributes.get('RDB$COLLATION_ID')
-        return (None if cid is None 
+        return (None if cid is None
                 else self.schema.get_collation_by_id(self.domain._attributes['RDB$CHARACTER_SET_ID'],cid))
     def _get_mechanism(self):
         return self._attributes.get('RDB$PARAMETER_MECHANISM')
     def _get_column(self):
         rname = self._attributes.get('RDB$RELATION_NAME')
-        return (None if rname is None 
+        return (None if rname is None
                 else self.schema.get_table(rname).get_column(self._attributes['RDB$FIELD_NAME']))
 
     #--- Properties
@@ -2754,7 +2754,7 @@ class ProcedureParameter(BaseSchemaItem):
                                 "Comlete SQL datatype definition.")
     type_from = LateBindingProperty(_get_type_from,None,None,
                                 "Numeric code. See :attr:`Schema.enum_param_type_from`.`")
-    
+
     # FB 2.1
     default = LateBindingProperty(_get_default,None,None,"Default value.")
     collation = LateBindingProperty(_get_collation,None,None,
@@ -2766,10 +2766,10 @@ class ProcedureParameter(BaseSchemaItem):
                                 ":class:`TableColumn` for this parameter.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitProcedureParameter(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitProcedureParameter(self)
@@ -2800,13 +2800,13 @@ class ProcedureParameter(BaseSchemaItem):
     def has_default(self):
         "Returns True if parameter has default value."
         return bool(self._attributes.get('RDB$DEFAULT_SOURCE'))
-    
+
 class Procedure(BaseSchemaItem):
     """Represents stored procedure.
 
-    Supported SQL actions: 
-    
-    - User procedure: create(no_code=bool), recreate(no_code=bool), 
+    Supported SQL actions:
+
+    - User procedure: create(no_code=bool), recreate(no_code=bool),
       create_or_alter(no_code=bool), drop,
       alter(input=string_or_list,output=string_or_list,declare=string_or_list,
       code=string_or_list)
@@ -2817,7 +2817,7 @@ class Procedure(BaseSchemaItem):
         self._type_code = [5,]
 
         self.__inputParams = self.__outputParams = None
-        
+
         self._strip_attribute('RDB$PROCEDURE_NAME')
         self._strip_attribute('RDB$OWNER_NAME')
         self._strip_attribute('RDB$SECURITY_CLASS')
@@ -2849,7 +2849,7 @@ class Procedure(BaseSchemaItem):
                 result += 'RETURNS (%s)\n' % self.output_params[0].get_sql_definition()
             else:
                 result += 'RETURNS (\n'
-                for p in self.input_params:
+                for p in self.output_params:
                     result += '  %s%s\n' % (p.get_sql_definition(),
                                             '' if p.sequence+1 == self._attributes['RDB$PROCEDURE_OUTPUTS']
                                             else ',')
@@ -2922,7 +2922,7 @@ class Procedure(BaseSchemaItem):
         return 'DROP PROCEDURE %s' % self.get_quoted_name()
     def __param_columns(self):
         cols = ['RDB$PARAMETER_NAME','RDB$PROCEDURE_NAME','RDB$PARAMETER_NUMBER',
-                'RDB$PARAMETER_TYPE','RDB$FIELD_SOURCE','RDB$DESCRIPTION', 
+                'RDB$PARAMETER_TYPE','RDB$FIELD_SOURCE','RDB$DESCRIPTION',
                 'RDB$SYSTEM_FLAG']
         if self.__ods >= fdb.ODS_FB_21:
             cols.extend(['RDB$DEFAULT_SOURCE','RDB$COLLATION_ID','RDB$NULL_FLAG',
@@ -2943,10 +2943,10 @@ class Procedure(BaseSchemaItem):
     def _get_input_params(self):
         if self.__inputParams is None:
             if self.has_input():
-                self.__inputParams = [ProcedureParameter(self.schema,self,row) for row in 
-                    self.schema._select("""select %s from rdb$procedure_parameters 
-where rdb$procedure_name = ? 
-and rdb$parameter_type = 0 
+                self.__inputParams = [ProcedureParameter(self.schema,self,row) for row in
+                    self.schema._select("""select %s from rdb$procedure_parameters
+where rdb$procedure_name = ?
+and rdb$parameter_type = 0
 order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
             else:
                 self.__inputParams = []
@@ -2954,10 +2954,10 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
     def _get_output_params(self):
         if self.__outputParams is None:
             if self.has_output():
-                self.__outputParams = [ProcedureParameter(self.schema,self,row) for row in 
-                    self.schema._select("""select %s from rdb$procedure_parameters 
-where rdb$procedure_name = ? 
-and rdb$parameter_type = 1 
+                self.__outputParams = [ProcedureParameter(self.schema,self,row) for row in
+                    self.schema._select("""select %s from rdb$procedure_parameters
+where rdb$procedure_name = ?
+and rdb$parameter_type = 1
 order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
             else:
                 self.__outputParams = []
@@ -2969,9 +2969,9 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
         return bool(result) if result is not None else None
     def _get_privileges(self):
         return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and 
+                if ((p.subject_name == self.name) and
                     (p.subject_type in self._type_code))]
-    
+
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,"Internal unique ID number.")
@@ -2991,13 +2991,13 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
         "Procedure type code. See :attr:`fdb.Connection.enum_procedure_types`.")
     valid_blr = LateBindingProperty(_get_valid_blr,None,None,
         "Procedure BLR invalidation flag. Coul be True/False or None.")
-    
+
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitProcedure(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitProcedure(self)
@@ -3020,8 +3020,8 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
 class Role(BaseSchemaItem):
     """Represents user role.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - User role: create, drop
     - System role: none
     """
@@ -3049,7 +3049,7 @@ class Role(BaseSchemaItem):
         return self._attributes['RDB$OWNER_NAME']
     def _get_privileges(self):
         return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and 
+                if ((p.subject_name == self.name) and
                     (p.subject_type in self._type_code))]
 
     #--- Properties
@@ -3059,10 +3059,10 @@ class Role(BaseSchemaItem):
         "List of :class:`Privilege` objects granted to this object.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitRole(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitRole(self)
@@ -3123,7 +3123,7 @@ class FunctionArgument(BaseSchemaItem):
             else:
                 l.append(COLUMN_TYPES[self.field_type])
         if self.field_type in (FBT_CHAR,FBT_VARCHAR,FBT_CSTRING):
-            l.append('(%d)' % (self.length if (self.character_length is None) 
+            l.append('(%d)' % (self.length if (self.character_length is None)
                                else self.character_length))
         if self.field_type == FBT_BLOB:
             if self.sub_type >= 0 and self.sub_type <= MAX_BLOBSUBTYPES:
@@ -3160,10 +3160,10 @@ class FunctionArgument(BaseSchemaItem):
         "Comlete SQL datatype definition.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitFunctionArgument(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitFunctionArgument(self)
@@ -3181,7 +3181,7 @@ class FunctionArgument(BaseSchemaItem):
         return self.mechanism in [1,5]
     def isbydescriptor(self,any=False):
         """Returns True if argument is passed by descriptor.
-        
+
         :param bool any: If True, method returns True if any kind of descriptor
           is used (including BLOB and ARRAY descriptors).
         """
@@ -3200,8 +3200,8 @@ class FunctionArgument(BaseSchemaItem):
 class Function(BaseSchemaItem):
     """Represents user defined function.
 
-    Supported SQL actions: 
-    
+    Supported SQL actions:
+
     - User UDF: declare, drop
     - System UDF: none
     """
@@ -3228,7 +3228,7 @@ class Function(BaseSchemaItem):
                                   '' if p.position == len(self.arguments) else ',')
         if self.has_return():
             fdef += 'RETURNS %s%s\n' % ('PARAMETER %d' % self._attributes['RDB$RETURN_ARGUMENT']
-                                    if self.has_return_argument() 
+                                    if self.has_return_argument()
                                     else self.returns.get_sql_definition(),
                                     ' FREE_IT' if self.returns.isfreeit() else '')
         return "%sENTRY_POINT '%s'\nMODULE_NAME '%s'" % (fdef,self.entrypoint,
@@ -3237,9 +3237,9 @@ class Function(BaseSchemaItem):
         self._check_params(params,[])
         return 'DROP EXTERNAL FUNCTION %s' % self.get_quoted_name()
     def _load_arguments(self,mock=None):
-        self.__arguments = [FunctionArgument(self.schema,self,row) for row in 
+        self.__arguments = [FunctionArgument(self.schema,self,row) for row in
                             (mock if mock else
-                            self.schema._select("""select * from rdb$function_arguments 
+                            self.schema._select("""select * from rdb$function_arguments
 where rdb$function_name = ? order by rdb$argument_position""",(self.name,)))]
         rarg = self._attributes['RDB$RETURN_ARGUMENT']
         if rarg is not None:
@@ -3272,10 +3272,10 @@ where rdb$function_name = ? order by rdb$argument_position""",(self.name,)))]
         "List of function arguments. Items are :class:`FunctionArgument` instances.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitFunction(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitFunction(self)
@@ -3321,10 +3321,10 @@ class DatabaseFile(BaseSchemaItem):
     length = LateBindingProperty(_get_length,None,None,"File length in pages.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitDatabaseFile(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitDatabaseFile(self)
@@ -3344,14 +3344,14 @@ class Shadow(BaseSchemaItem):
     def __init__(self,schema,attributes):
         super(Shadow,self).__init__(schema,attributes)
         self._type_code = []
-        
+
         self.__files = None
         self._actions = ['create','drop']
 
     def _get_create_sql(self,**params):
         self._check_params(params,[])
         result = 'CREATE SHADOW %d %s%s' % (self.id,'MANUAL' if self.ismanual()
-                                          else 'AUTO', 
+                                          else 'AUTO',
                                           ' CONDITIONAL' if self.isconditional()
                                           else '')
         if len(self.files) == 1:
@@ -3378,9 +3378,9 @@ class Shadow(BaseSchemaItem):
         return self._attributes['RDB$FILE_FLAGS']
     def _get_files(self):
         if self.__files is None:
-            self.__files = [DatabaseFile(self,row) for row 
+            self.__files = [DatabaseFile(self,row) for row
                             in self.schema._select("""
-select RDB$FILE_NAME, RDB$FILE_SEQUENCE, 
+select RDB$FILE_NAME, RDB$FILE_SEQUENCE,
 RDB$FILE_START, RDB$FILE_LENGTH from RDB$FILES
 where RDB$SHADOW_NUMBER = ?
 order by RDB$FILE_SEQUENCE""",(self._attributes['RDB$SHADOW_NUMBER'],))]
@@ -3394,10 +3394,10 @@ order by RDB$FILE_SEQUENCE""",(self._attributes['RDB$SHADOW_NUMBER'],))]
         "List of shadow files. Items are :class:`DatabaseFile` instances.")
 
     #--- Public
-    
+
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitShadow(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitShadow(self)
@@ -3422,7 +3422,7 @@ class Privilege(BaseSchemaItem):
     def __init__(self,schema,attributes):
         super(Privilege,self).__init__(schema,attributes)
         self._type_code = []
-        
+
         self._actions = ['grant','revoke']
 
         self._strip_attribute('RDB$USER')
@@ -3541,7 +3541,7 @@ class Privilege(BaseSchemaItem):
 
     def accept_visitor(self,visitor):
         """Visitor Pattern support. Calls `visitPrivilege(self)` on parameter object.
-        
+
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitPrivilege(self)
@@ -3572,11 +3572,11 @@ class Privilege(BaseSchemaItem):
     def ismembership(self):
         "Returns True if this is ROLE membership privilege."
         return self.privilege == 'M'
-        
-    
+
+
 class SchemaVisitor(object):
     """Helper class for implementation of schema Visitor.
-    
+
     Implements all `visit*` methods supported by schema classes as calls to
     :meth:`default_action`.
     """
@@ -3627,4 +3627,4 @@ class SchemaVisitor(object):
         self.default_action(dbfile)
     def visitShadow(self,shadow):
         self.default_action(shadow)
-    
+
