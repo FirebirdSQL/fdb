@@ -1254,7 +1254,7 @@ class Connection(object):
             uShortSize = struct.calcsize('<H')
             intSize = struct.calcsize('<i')
             pairSize = uShortSize + intSize
-            pairCount = len(buf) / pairSize
+            pairCount = int(len(buf) / pairSize)
 
             counts = {}
             for i in range(pairCount):
