@@ -1154,6 +1154,12 @@ class fbclient_API(object):
     """
     def __init__(self,fb_library_name=None):
 
+        def get_key(key, sub_key):
+            try:
+                return winreg.OpenKey(key, sub_key)
+            except:
+                return None
+
         if fb_library_name is None:
             if sys.platform == 'darwin':
                 fb_library_name = find_library('Firebird')
@@ -1169,10 +1175,14 @@ class fbclient_API(object):
                         import _winreg as winreg
 
                     # try find via installed Firebird server
-                    baseKey = 'SOFTWARE\Firebird Project\Firebird Server\Instances'
-                    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, baseKey)
-                    instFold = winreg.QueryValueEx(key,'DefaultInstance')
-                    fb_library_name = os.path.join(os.path.join(instFold[0], 'bin'), 'fbclient.dll')
+                    key = get_key(winreg.HKEY_LOCAL_MACHINE,
+                                  'SOFTWARE\Firebird Project\Firebird Server\Instances')
+                    if not key:
+                        key = get_key(winreg.HKEY_LOCAL_MACHINE,
+                                      'SOFTWARE\Wow6432Node\Firebird Project\Firebird Server\Instances')
+                    if key:
+                        instFold = winreg.QueryValueEx(key,'DefaultInstance')
+                        fb_library_name = os.path.join(os.path.join(instFold[0], 'bin'), 'fbclient.dll')
             else:
                 fb_library_name = find_library('fbclient')
                 if not fb_library_name:

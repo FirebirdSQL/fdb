@@ -301,7 +301,7 @@ class Schema(object):
     def __clear(self,data=None):
         if data:
             data = data.lower()
-            if data not in ['tables','view','domains','indices','dependencies',
+            if data not in ['tables','views','domains','indices','dependencies',
                             'generators','sequences','triggers','procedures',
                             'constraints','collations','character sets',
                             'exceptions','roles','functions','files','shadows',
@@ -2464,9 +2464,9 @@ r.RDB$DESCRIPTION, r.RDB$SYSTEM_FLAG, r.RDB$SECURITY_CLASS, r.RDB$NULL_FLAG,
 r.RDB$DEFAULT_SOURCE, r.RDB$COLLATION_ID, r.RDB$BASE_FIELD,
 v.RDB$RELATION_NAME as BASE_RELATION
     from RDB$RELATION_FIELDS r
-    left join RDB$VIEW_RELATIONS v on r.RDB$VIEW_CONTEXT = v.RDB$VIEW_CONTEXT
+    left join RDB$VIEW_RELATIONS v on r.RDB$VIEW_CONTEXT = v.RDB$VIEW_CONTEXT and v.rdb$view_name = ?
     where r.RDB$RELATION_NAME = ?
-    order by RDB$FIELD_POSITION""",(self.name,))]
+    order by RDB$FIELD_POSITION""",(self.name,self.name))]
         return self.__columns
     def _get_privileges(self):
         return [p for p in self.schema.privileges
@@ -3049,8 +3049,8 @@ class Role(BaseSchemaItem):
         return self._attributes['RDB$OWNER_NAME']
     def _get_privileges(self):
         return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and
-                    (p.subject_type in self._type_code))]
+                if ((p.user_name == self.name) and
+                    (p.user_type in self._type_code))]
 
     #--- Properties
 
