@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.4.10`_ (31.8.2015)
 * `Version 1.4.9`_ (30.6.2015)
 * `Version 1.4.8`_ (23.6.2015)
 * `Version 1.4.7`_ (4.6.2015)
@@ -25,6 +26,15 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.4.10
+==============
+
+- (PYFB-54) Windows 7x64 and FB2.5.2x32 Python2.7: Error in Registry Path. FDB driver does not find the library fbclient.dll
+- (PYFB-55) get_sql_for incorrect generate sql query for Views
+- (PYFB-56) schema.reload typing mistake for views
+- (PYFB-57) role.privileges does not return correct privilege list
+
 
 Version 1.4.9
 =============
