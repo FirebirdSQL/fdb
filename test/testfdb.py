@@ -1932,6 +1932,7 @@ class TestSchema(FDBTestBase):
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        #self.dbfile = 'employee.fdb'
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
@@ -4558,9 +4559,9 @@ MODULE_NAME 'fbudf'""")
         p = self.con.schema.get_role('TEST_ROLE')
         self.assertEqual(len(p.privileges),1)
         x = p.privileges[0]
-        self.assertIsInstance(x.subject,sm.Role)
-        self.assertEqual(x.subject.name,p.name)
-        self.assertTrue(x.ismembership())
+        self.assertIsInstance(x.user,sm.Role)
+        self.assertEqual(x.user.name,p.name)
+        self.assertTrue(x.isexecute())
         # Trigger as grantee
         p = self.con.schema.get_table('SALARY_HISTORY')
         x = p.privileges[0]
@@ -4585,7 +4586,7 @@ MODULE_NAME 'fbudf'""")
              'GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON COUNTRY TO SYSDBA WITH GRANT OPTION',
              'GRANT DELETE, INSERT, REFERENCES(COUNTRY,CURRENCY), SELECT, UPDATE(COUNTRY,CURRENCY) ON COUNTRY TO T_USER'])
         p = self.con.schema.get_role('TEST_ROLE')
-        self.assertListEqual(sm.get_grants(p.privileges),['GRANT TEST_ROLE TO T_USER'])
+        self.assertListEqual(sm.get_grants(p.privileges),['GRANT EXECUTE ON PROCEDURE ALL_LANGS TO TEST_ROLE WITH GRANT OPTION'])
         p = self.con.schema.get_table('SALARY_HISTORY')
         self.assertListEqual(sm.get_grants(p.privileges),
             ['GRANT INSERT ON SALARY_HISTORY TO TRIGGER SAVE_SALARY_CHANGE'])
