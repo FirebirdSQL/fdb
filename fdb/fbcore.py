@@ -813,6 +813,15 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
 
     return connection_class(db_handle)
 
+
+class _cursor_weakref_callback(object):
+    """Wraps callback function used in weakrefs so it's called only if still exists.
+    """
+    def __init__(self, obj):
+        self.__obj = weakref.ref(obj)
+    def __call__(self, *args, **kwargs):
+        self.__obj()._cursors.remove(*args, **kwargs)
+
 class _weakref_callback(object):
     """Wraps callback function used in weakrefs so it's called only if still exists.
     """
@@ -991,7 +1000,10 @@ class Connection(object):
             )
     def __get_group(self):
         if self.__group:
-            return self.__group()
+            try:
+                return self.__group()
+            except:
+                return None
         else:
             return None
     def __get_ods(self):
@@ -3663,8 +3675,6 @@ class Transaction(object):
         self._isc_status = ISC_STATUS_ARRAY()
         self._tr_handle = None
         self.__closed = False
-    def __remove_cursor(self, cursor_ref):
-        self._cursors.remove(cursor_ref)
     def __get_closed(self):
         return self.__closed
         #return self._tr_handle == None
@@ -3927,7 +3937,7 @@ class Transaction(object):
         else:
             con = self._connections[0]()
         c = Cursor(con, self)
-        self._cursors.append(weakref.ref(c, _weakref_callback(self.__remove_cursor)))
+        self._cursors.append(weakref.ref(c, _cursor_weakref_callback(self)))
         return c
     def trans_info(self, request):
         """Pythonic wrapper around :meth:`transaction_info` call.
