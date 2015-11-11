@@ -14,10 +14,10 @@ classifiers = [
     'Topic :: Database',
 ]
 
-setup(name='fdb', 
+setup(name='fdb',
         version=__version__,
-        description = 'Firebird RDBMS bindings for Python.', 
-        url='http://www.firebirdsql.org/en/python-devel-status/',
+        description = 'Firebird RDBMS bindings for Python.',
+        url='http://www.firebirdsql.org/en/devel-python-driver/',
         classifiers=classifiers,
         keywords=['Firebird'],
         license='BSD',
