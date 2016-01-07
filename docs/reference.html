@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.4.11 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.5 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.11',
+        VERSION:     '1.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4.11 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.5 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.5 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -1093,6 +1093,14 @@ If the argument is a string, the return value is the same object.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_determinism_flags">
+<tt class="descname">enum_determinism_flags</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_determinism_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_field_subtypes">
 <tt class="descname">enum_field_subtypes</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_field_subtypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
@@ -1111,6 +1119,38 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_function_types">
 <tt class="descname">enum_function_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_function_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_grant_options">
+<tt class="descname">enum_grant_options</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_grant_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_index_activity_flags">
+<tt class="descname">enum_index_activity_flags</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_index_activity_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_index_unique_flags">
+<tt class="descname">enum_index_unique_flags</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_index_unique_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_legacy_flags">
+<tt class="descname">enum_legacy_flags</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_legacy_flags" title="Permalink to this definition">¶</a></dt>
 <dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
@@ -1141,6 +1181,14 @@ If the argument is a string, the return value is the same object.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_page_types">
+<tt class="descname">enum_page_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_page_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_param_type_from">
 <tt class="descname">enum_param_type_from</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_param_type_from" title="Permalink to this definition">¶</a></dt>
 <dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
@@ -1151,6 +1199,22 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_parameter_mechanism_types">
 <tt class="descname">enum_parameter_mechanism_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_parameter_mechanism_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_parameter_types">
+<tt class="descname">enum_parameter_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_parameter_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_privacy_flags">
+<tt class="descname">enum_privacy_flags</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_privacy_flags" title="Permalink to this definition">¶</a></dt>
 <dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
@@ -1183,6 +1247,14 @@ If the argument is a string, the return value is the same object.</p>
 <dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.enum_transaction_state_types">
 <tt class="descname">enum_transaction_state_types</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_transaction_state_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
+<p>Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.enum_trigger_activity_flags">
+<tt class="descname">enum_trigger_activity_flags</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.enum_trigger_activity_flags" title="Permalink to this definition">¶</a></dt>
 <dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
 <p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
@@ -1232,6 +1304,12 @@ Items are <tt class="xref py py-class docutils literal"><span class="pre">Index<
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.linger">
+<tt class="descname">linger</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.linger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database linger value.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.ConnectionWithSchema.opt_always_quote">
 <tt class="descname">opt_always_quote</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.opt_always_quote" title="Permalink to this definition">¶</a></dt>
 <dd><p>str(object=&#8217;&#8216;) -&gt; string</p>
@@ -1243,6 +1321,13 @@ If the argument is a string, the return value is the same object.</p>
 <dt id="fdb.ConnectionWithSchema.owner_name">
 <tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.owner_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database owner name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.ConnectionWithSchema.packages">
+<tt class="descname">packages</tt><a class="headerlink" href="#fdb.ConnectionWithSchema.packages" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all packages defined for database.
+Items are <tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -2589,9 +2674,8 @@ the statement using one of the cursor’s execute methods.</p>
 <dl class="method">
 <dt id="fdb.ConnectionGroup.prepare">
 <tt class="descname">prepare</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.ConnectionGroup.prepare" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>Manually triggers the first phase of a two-phase commit (2PC).  Use</div></blockquote>
-<p>of this method is optional; if preparation is not triggered manually,
+<dd><p>Manually triggers the first phase of a two-phase commit (2PC). Use
+of this method is optional; if preparation is not triggered manually,
 it will be performed implicitly by commit() in a 2PC.</p>
 </dd></dl>
 
@@ -2683,11 +2767,10 @@ performs <cite>commit</cite> at the end of block.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transaction</strong> &#8211; Any object that supports <cite>begin()</cite>, <cite>commit()</cite> and</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transaction</strong> &#8211; Any object that supports <cite>begin()</cite>, <cite>commit()</cite> and <cite>rollback()</cite>.</td>
 </tr>
 </tbody>
 </table>
-<p><cite>rollback()</cite>.</p>
 <dl class="attribute">
 <dt id="fdb.TransactionContext.transaction">
 <tt class="descname">transaction</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.TransactionContext.transaction" title="Permalink to this definition">¶</a></dt>
@@ -3319,6 +3402,27 @@ and <a class="reference internal" href="#fdb.services.Connection.bring_online" t
 <dd><p>These constants are return values of <a class="reference internal" href="#fdb.services.Connection.get_server_capabilities" title="fdb.services.Connection.get_server_capabilities"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.get_server_capabilities()</span></tt></a></p>
 </dd></dl>
 
+<dl class="data">
+<dt id="fdb.services.STATS_TOTAL_TIME">
+<tt class="descclassname">fdb.services.</tt><tt class="descname">STATS_TOTAL_TIME</tt><a class="headerlink" href="#fdb.services.STATS_TOTAL_TIME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.services.STATS_TIME_DELTA">
+<tt class="descclassname">fdb.services.</tt><tt class="descname">STATS_TIME_DELTA</tt><a class="headerlink" href="#fdb.services.STATS_TIME_DELTA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.services.STATS_PAGE_READS">
+<tt class="descclassname">fdb.services.</tt><tt class="descname">STATS_PAGE_READS</tt><a class="headerlink" href="#fdb.services.STATS_PAGE_READS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="fdb.services.STATS_PAGE_WRITES">
+<tt class="descclassname">fdb.services.</tt><tt class="descname">STATS_PAGE_WRITES</tt><a class="headerlink" href="#fdb.services.STATS_PAGE_WRITES" title="Permalink to this definition">¶</a></dt>
+<dd><p>These constants are options for <a class="reference internal" href="#fdb.services.Connection.backup" title="fdb.services.Connection.backup"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.backup()</span></tt></a>/<a class="reference internal" href="#fdb.services.Connection.restore" title="fdb.services.Connection.restore"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.restore()</span></tt></a> &#8216;stats&#8217; parameter.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="id2">
 <h3>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
@@ -3404,7 +3508,7 @@ attributes of <a class="reference internal" href="#fdb.services.User" title="fdb
 
 <dl class="method">
 <dt id="fdb.services.Connection.backup">
-<tt class="descname">backup</tt><big>(</big><em>source_database</em>, <em>dest_filenames</em>, <em>dest_file_sizes=()</em>, <em>ignore_checksums=0</em>, <em>ignore_limbo_transactions=0</em>, <em>metadata_only=0</em>, <em>collect_garbage=1</em>, <em>transportable=1</em>, <em>convert_external_tables_to_internal=0</em>, <em>compressed=1</em>, <em>no_db_triggers=0</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.backup" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">backup</tt><big>(</big><em>source_database</em>, <em>dest_filenames</em>, <em>dest_file_sizes=()</em>, <em>ignore_checksums=0</em>, <em>ignore_limbo_transactions=0</em>, <em>metadata_only=0</em>, <em>collect_garbage=1</em>, <em>transportable=1</em>, <em>convert_external_tables_to_internal=0</em>, <em>compressed=1</em>, <em>no_db_triggers=0</em>, <em>callback=None</em>, <em>stats=None</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.backup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request logical (GBAK) database backup. <strong>(ASYNC service)</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3425,6 +3529,7 @@ external table to internal ones.</li>
 <li><strong>no_db_triggers</strong> (<em>integer</em>) &#8211; <cite>1</cite> to disable database triggers temporarily.</li>
 <li><strong>callback</strong> (<em>function</em>) &#8211; Function to call back with each output line.
 Function must accept only one parameter: line of output.</li>
+<li><strong>stats</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of arguments for run-time statistics, see STATS_* constants.</li>
 </ul>
 </td>
 </tr>
@@ -3820,6 +3925,20 @@ protocol</em>.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.services.Connection.no_linger">
+<tt class="descname">no_linger</tt><big>(</big><em>database</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.no_linger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set one-off override for database linger.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.services.Connection.nrestore">
 <tt class="descname">nrestore</tt><big>(</big><em>source_filenames</em>, <em>dest_filename</em>, <em>no_db_triggers=0</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.nrestore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform restore from physical (NBACKUP) database backup.</p>
@@ -3918,7 +4037,7 @@ record fragments.</li>
 
 <dl class="method">
 <dt id="fdb.services.Connection.restore">
-<tt class="descname">restore</tt><big>(</big><em>source_filenames</em>, <em>dest_filenames</em>, <em>dest_file_pages=()</em>, <em>page_size=None</em>, <em>cache_buffers=None</em>, <em>access_mode_read_only=0</em>, <em>replace=0</em>, <em>deactivate_indexes=0</em>, <em>do_not_restore_shadows=0</em>, <em>do_not_enforce_constraints=0</em>, <em>commit_after_each_table=0</em>, <em>use_all_page_space=0</em>, <em>no_db_triggers=0</em>, <em>metadata_only=0</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.restore" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">restore</tt><big>(</big><em>source_filenames</em>, <em>dest_filenames</em>, <em>dest_file_pages=()</em>, <em>page_size=None</em>, <em>cache_buffers=None</em>, <em>access_mode_read_only=0</em>, <em>replace=0</em>, <em>deactivate_indexes=0</em>, <em>do_not_restore_shadows=0</em>, <em>do_not_enforce_constraints=0</em>, <em>commit_after_each_table=0</em>, <em>use_all_page_space=0</em>, <em>no_db_triggers=0</em>, <em>metadata_only=0</em>, <em>callback=None</em>, <em>stats=None</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.restore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request database restore from logical (GBAK) backup. <strong>(ASYNC service)</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3945,6 +4064,7 @@ is restored.</li>
 <li><strong>metadata_only</strong> (<em>integer</em>) &#8211; <cite>1</cite> to restore only database metadata.</li>
 <li><strong>callback</strong> (<em>function</em>) &#8211; Function to call back with each output line.
 Function must accept only one parameter: line of output.</li>
+<li><strong>stats</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of arguments for run-time statistics, see STATS_* constants.</li>
 </ul>
 </td>
 </tr>
@@ -4296,6 +4416,48 @@ including call to any <cite>trace_</cite> method will fail with exception.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.services.Connection.validate">
+<tt class="descname">validate</tt><big>(</big><em>database</em>, <em>include_tables=None</em>, <em>exclude_tables=None</em>, <em>include_indices=None</em>, <em>exclude_indices=None</em>, <em>lock_timeout=None</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#fdb.services.Connection.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>On-line database validation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Database filename or alias.</li>
+<li><strong>include_tables</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Pattern for table names to include in validation run.</li>
+<li><strong>exclude_tables</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Pattern for table names to exclude from validation run.</li>
+<li><strong>include_indices</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Pattern for index names to include in validation run.</li>
+<li><strong>exclude_indices</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Pattern for index names to exclude from validation run.</li>
+<li><strong>lock_timeout</strong> (<em>integer</em>) &#8211; lock timeout, used to acquire locks for table to validate,
+in seconds, default is 10 secs. 0 is no-wait, -1 is infinite wait.</li>
+<li><strong>callback</strong> (<em>function</em>) &#8211; Function to call back with each output line.
+Function must accept only one parameter: line of output.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Patterns are regular expressions, processed by the same rules as SIMILAR TO
+expressions. All patterns are case-sensitive, regardless of database dialect. If the
+pattern for tables is omitted then all user tables will be validated. If the pattern
+for indexes is omitted then all indexes of the appointed tables will be validated.
+System tables are not validated.</p>
+</div>
+<p>If <cite>callback</cite> is not specified, validation log could be retrieved through
+<a class="reference internal" href="#fdb.services.Connection.readline" title="fdb.services.Connection.readline"><tt class="xref py py-meth docutils literal"><span class="pre">readline()</span></tt></a>, <a class="reference internal" href="#fdb.services.Connection.readlines" title="fdb.services.Connection.readlines"><tt class="xref py py-meth docutils literal"><span class="pre">readlines()</span></tt></a>, iteration over <cite>Connection</cite> or
+ignored via call to <a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Until validate report is not fully fetched from service (or ignored via
+<a class="reference internal" href="#fdb.services.Connection.wait" title="fdb.services.Connection.wait"><tt class="xref py py-meth docutils literal"><span class="pre">wait()</span></tt></a>), any attempt to start another asynchronous service will
+fail with exception.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -4675,6 +4837,22 @@ clause for privileges granted by user that&#8217;s not in list.</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Schema.get_package">
+<tt class="descname">get_package</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#fdb.schema.Schema.get_package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get <tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> by name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Package name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> with specified name or <cite>None</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Schema.get_privileges_of">
 <tt class="descname">get_privileges_of</tt><big>(</big><em>user</em>, <em>user_type=None</em><big>)</big><a class="headerlink" href="#fdb.schema.Schema.get_privileges_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get list of all privileges granted to user/database object.</p>
@@ -4838,6 +5016,7 @@ reloaded from database on next reference.</p>
 <li>shadows</li>
 <li>privileges</li>
 <li>users</li>
+<li>packages</li>
 </ul>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -4914,6 +5093,12 @@ Items are <a class="reference internal" href="#fdb.schema.Domain" title="fdb.sch
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Schema.enum_determinism_flags">
+<tt class="descname">enum_determinism_flags</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_determinism_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determinism flags: numID, value = flag_name</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Schema.enum_field_subtypes">
 <tt class="descname">enum_field_subtypes</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_field_subtypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Field sub types: key = numID, value = type_name</p>
@@ -4929,6 +5114,30 @@ Items are <a class="reference internal" href="#fdb.schema.Domain" title="fdb.sch
 <dt id="fdb.schema.Schema.enum_function_types">
 <tt class="descname">enum_function_types</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_function_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function types: key = numID, value = type_name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.enum_grant_options">
+<tt class="descname">enum_grant_options</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_grant_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grant option: key = numID, value = option_name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.enum_index_activity_flags">
+<tt class="descname">enum_index_activity_flags</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_index_activity_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index activity status: key = numID, value = flag_name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.enum_index_unique_flags">
+<tt class="descname">enum_index_unique_flags</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_index_unique_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index uniqueness: key = numID, value = flag_name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.enum_legacy_flags">
+<tt class="descname">enum_legacy_flags</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_legacy_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Legacy flags: numID, value = flag_name</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4950,6 +5159,12 @@ Items are <a class="reference internal" href="#fdb.schema.Domain" title="fdb.sch
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Schema.enum_page_types">
+<tt class="descname">enum_page_types</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_page_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Page type: key = numID, value = type_name</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Schema.enum_param_type_from">
 <tt class="descname">enum_param_type_from</tt><em class="property"> = {0: 'DATATYPE', 1: 'DOMAIN', 2: 'TYPE OF DOMAIN', 3: 'TYPE OF COLUMN'}</em><a class="headerlink" href="#fdb.schema.Schema.enum_param_type_from" title="Permalink to this definition">¶</a></dt>
 <dd><p>Datatype declaration methods for procedure parameters: key = numID, value = name</p>
@@ -4959,6 +5174,18 @@ Items are <a class="reference internal" href="#fdb.schema.Domain" title="fdb.sch
 <dt id="fdb.schema.Schema.enum_parameter_mechanism_types">
 <tt class="descname">enum_parameter_mechanism_types</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_parameter_mechanism_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parameter Mechanism Types: key = numID, value = type_name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.enum_parameter_types">
+<tt class="descname">enum_parameter_types</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_parameter_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter Types: key = numID, value = type_name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.enum_privacy_flags">
+<tt class="descname">enum_privacy_flags</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_privacy_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Privacy flags: numID, value = flag_name</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4983,6 +5210,12 @@ Items are <a class="reference internal" href="#fdb.schema.Domain" title="fdb.sch
 <dt id="fdb.schema.Schema.enum_transaction_state_types">
 <tt class="descname">enum_transaction_state_types</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_transaction_state_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transaction State Types: key = numID, value = type_name</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.enum_trigger_activity_flags">
+<tt class="descname">enum_trigger_activity_flags</tt><em class="property"> = {}</em><a class="headerlink" href="#fdb.schema.Schema.enum_trigger_activity_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger activity status: key = numID, value = flag_name_name</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -5027,6 +5260,12 @@ Items are <a class="reference internal" href="#fdb.schema.Index" title="fdb.sche
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Schema.linger">
+<tt class="descname">linger</tt><a class="headerlink" href="#fdb.schema.Schema.linger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database linger value.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Schema.opt_always_quote">
 <tt class="descname">opt_always_quote</tt><em class="property"> = False</em><a class="headerlink" href="#fdb.schema.Schema.opt_always_quote" title="Permalink to this definition">¶</a></dt>
 <dd><p>option switch: Always quote db object names on output</p>
@@ -5036,6 +5275,13 @@ Items are <a class="reference internal" href="#fdb.schema.Index" title="fdb.sche
 <dt id="fdb.schema.Schema.owner_name">
 <tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Schema.owner_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database owner name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Schema.packages">
+<tt class="descname">packages</tt><a class="headerlink" href="#fdb.schema.Schema.packages" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all packages defined for database.
+Items are <tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> objects.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -5391,9 +5637,21 @@ Items are <a class="reference internal" href="#fdb.schema.View" title="fdb.schem
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Collation.owner_name">
+<tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Collation.owner_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creator user name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Collation.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Collation.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Collation.security_class">
+<tt class="descname">security_class</tt><a class="headerlink" href="#fdb.schema.Collation.security_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security class name or None.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="fdb.schema.Collation.specific_attributes">
@@ -5522,9 +5780,21 @@ this character set.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.CharacterSet.owner_name">
+<tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.CharacterSet.owner_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creator user name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.CharacterSet.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.CharacterSet.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.CharacterSet.security_class">
+<tt class="descname">security_class</tt><a class="headerlink" href="#fdb.schema.CharacterSet.security_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security class name or None.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -5625,9 +5895,21 @@ this character set.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.DatabaseException.owner_name">
+<tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.DatabaseException.owner_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creator user name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.DatabaseException.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.DatabaseException.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.DatabaseException.security_class">
+<tt class="descname">security_class</tt><a class="headerlink" href="#fdb.schema.DatabaseException.security_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security class name or None.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -5692,6 +5974,12 @@ this character set.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Sequence.isidentity">
+<tt class="descname">isidentity</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Sequence.isidentity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True for system generators created for IDENTITY columns.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Sequence.issystemobject">
 <tt class="descname">issystemobject</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Sequence.issystemobject" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if this database object is system object.</p>
@@ -5716,15 +6004,39 @@ this character set.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Sequence.increment">
+<tt class="descname">increment</tt><a class="headerlink" href="#fdb.schema.Sequence.increment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sequence increment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Sequence.inital_value">
+<tt class="descname">inital_value</tt><a class="headerlink" href="#fdb.schema.Sequence.inital_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial sequence value.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Sequence.name">
 <tt class="descname">name</tt><a class="headerlink" href="#fdb.schema.Sequence.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database object name or None if object doesn&#8217;t have a name.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Sequence.owner_name">
+<tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Sequence.owner_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creator user name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Sequence.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Sequence.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Sequence.security_class">
+<tt class="descname">security_class</tt><a class="headerlink" href="#fdb.schema.Sequence.security_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security class name or None.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="fdb.schema.Sequence.value">
@@ -5920,7 +6232,7 @@ this character set.</p>
 <ul>
 <li><dl class="first docutils">
 <dt>User column: alter(name=string,datatype=string_SQLTypeDef,position=number,</dt>
-<dd><p class="first last">expression=computed_by_expr), drop</p>
+<dd><p class="first last">expression=computed_by_expr,restart=None_or_init_value), drop</p>
 </dd>
 </dl>
 </li>
@@ -6000,6 +6312,12 @@ this character set.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.TableColumn.isidentity">
+<tt class="descname">isidentity</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.TableColumn.isidentity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True for identity type column.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.TableColumn.isnullable">
 <tt class="descname">isnullable</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.TableColumn.isnullable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if column can accept NULL values.</p>
@@ -6051,6 +6369,18 @@ this character set.</p>
 <dt id="fdb.schema.TableColumn.domain">
 <tt class="descname">domain</tt><a class="headerlink" href="#fdb.schema.TableColumn.domain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Domain object this column is based on.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.TableColumn.generator">
+<tt class="descname">generator</tt><a class="headerlink" href="#fdb.schema.TableColumn.generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal flags.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.TableColumn.identity_type">
+<tt class="descname">identity_type</tt><a class="headerlink" href="#fdb.schema.TableColumn.identity_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal flags.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -6425,6 +6755,12 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Domain.owner_name">
+<tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Domain.owner_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creator user name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Domain.precision">
 <tt class="descname">precision</tt><a class="headerlink" href="#fdb.schema.Domain.precision" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicates the number of digits of precision available to the data type of the column.</p>
@@ -6440,6 +6776,12 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <dt id="fdb.schema.Domain.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Domain.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Domain.security_class">
+<tt class="descname">security_class</tt><a class="headerlink" href="#fdb.schema.Domain.security_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security class name or None.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="fdb.schema.Domain.segment_length">
@@ -6518,6 +6860,12 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Dependency.ispackaged">
+<tt class="descname">ispackaged</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Dependency.ispackaged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if dependency is defined in package.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Dependency.issystemobject">
 <tt class="descname">issystemobject</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Dependency.issystemobject" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True as dependency entries are considered as system objects.</p>
@@ -6581,6 +6929,12 @@ check=string_definition_or_None,datatype=string_SQLTypeDef), drop</li>
 <dt id="fdb.schema.Dependency.name">
 <tt class="descname">name</tt><a class="headerlink" href="#fdb.schema.Dependency.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database object name or None if object doesn&#8217;t have a name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Dependency.package">
+<tt class="descname">package</tt><a class="headerlink" href="#fdb.schema.Dependency.package" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> instance if dependent depends on object in package or None.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -7282,6 +7636,12 @@ code=string_or_list)</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Trigger.isddltrigger">
+<tt class="descname">isddltrigger</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Trigger.isddltrigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this trigger is DDL trigger.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Trigger.isdelete">
 <tt class="descname">isdelete</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Trigger.isdelete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if this trigger is set for DELETE operation.</p>
@@ -7315,6 +7675,18 @@ code=string_or_list)</li>
 <dt id="fdb.schema.Trigger.description">
 <tt class="descname">description</tt><a class="headerlink" href="#fdb.schema.Trigger.description" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database object description or None if object doesn&#8217;t have a description.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Trigger.engine_name">
+<tt class="descname">engine_name</tt><a class="headerlink" href="#fdb.schema.Trigger.engine_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Engine name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Trigger.entrypoint">
+<tt class="descname">entrypoint</tt><a class="headerlink" href="#fdb.schema.Trigger.entrypoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entrypoint.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -7356,6 +7728,12 @@ code=string_or_list)</li>
 <dt id="fdb.schema.Trigger.trigger_type">
 <tt class="descname">trigger_type</tt><a class="headerlink" href="#fdb.schema.Trigger.trigger_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Numeric code for trigger type that define what event and when are covered by trigger.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Trigger.valid_blr">
+<tt class="descname">valid_blr</tt><a class="headerlink" href="#fdb.schema.Trigger.valid_blr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger BLR invalidation flag. Coul be True/False or None.</p>
 </dd></dl>
 
 </dd></dl>
@@ -7441,6 +7819,12 @@ code=string_or_list)</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.ProcedureParameter.ispackaged">
+<tt class="descname">ispackaged</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.ProcedureParameter.ispackaged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if procedure parameter is defined in package.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.ProcedureParameter.issystemobject">
 <tt class="descname">issystemobject</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.ProcedureParameter.issystemobject" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if this database object is system object.</p>
@@ -7498,6 +7882,13 @@ code=string_or_list)</li>
 <dt id="fdb.schema.ProcedureParameter.name">
 <tt class="descname">name</tt><a class="headerlink" href="#fdb.schema.ProcedureParameter.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database object name or None if object doesn&#8217;t have a name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.ProcedureParameter.package">
+<tt class="descname">package</tt><a class="headerlink" href="#fdb.schema.ProcedureParameter.package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Package this procedure belongs to. 
+Object is <tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> instance or None.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -7607,6 +7998,12 @@ code=string_or_list)</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Procedure.ispackaged">
+<tt class="descname">ispackaged</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Procedure.ispackaged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if procedure is defined in package.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Procedure.issystemobject">
 <tt class="descname">issystemobject</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Procedure.issystemobject" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if this database object is system object.</p>
@@ -7622,6 +8019,18 @@ code=string_or_list)</li>
 <dt id="fdb.schema.Procedure.description">
 <tt class="descname">description</tt><a class="headerlink" href="#fdb.schema.Procedure.description" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database object description or None if object doesn&#8217;t have a description.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Procedure.engine_name">
+<tt class="descname">engine_name</tt><a class="headerlink" href="#fdb.schema.Procedure.engine_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Engine name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Procedure.entrypoint">
+<tt class="descname">entrypoint</tt><a class="headerlink" href="#fdb.schema.Procedure.entrypoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entrypoint.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -7654,6 +8063,19 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 <dt id="fdb.schema.Procedure.owner_name">
 <tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Procedure.owner_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>User name of procedure&#8217;s creator.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Procedure.package">
+<tt class="descname">package</tt><a class="headerlink" href="#fdb.schema.Procedure.package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Package this procedure belongs to. 
+Object is <tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> instance or None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Procedure.privacy">
+<tt class="descname">privacy</tt><a class="headerlink" href="#fdb.schema.Procedure.privacy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Privacy flag.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -7794,6 +8216,12 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Role.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="fdb.schema.Role.security_class">
+<tt class="descname">security_class</tt><a class="headerlink" href="#fdb.schema.Role.security_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security class name or None.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -7859,6 +8287,12 @@ Instances are <a class="reference internal" href="#fdb.schema.ProcedureParameter
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.FunctionArgument.has_default">
+<tt class="descname">has_default</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.FunctionArgument.has_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if parameter has default value.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.FunctionArgument.isbydescriptor">
 <tt class="descname">isbydescriptor</tt><big>(</big><em>any=False</em><big>)</big><a class="headerlink" href="#fdb.schema.FunctionArgument.isbydescriptor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if argument is passed by descriptor.</p>
@@ -7892,6 +8326,18 @@ is used (including BLOB and ARRAY descriptors).</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.FunctionArgument.isnullable">
+<tt class="descname">isnullable</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.FunctionArgument.isnullable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if parameter allows NULL.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.FunctionArgument.ispackaged">
+<tt class="descname">ispackaged</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.FunctionArgument.ispackaged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if function argument is defined in package.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.FunctionArgument.isreturning">
 <tt class="descname">isreturning</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.FunctionArgument.isreturning" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if argument represents return value for function.</p>
@@ -7916,6 +8362,18 @@ is used (including BLOB and ARRAY descriptors).</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.argument_mechanism">
+<tt class="descname">argument_mechanism</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.argument_mechanism" title="Permalink to this definition">¶</a></dt>
+<dd><p>Argiment mechanism.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.argument_name">
+<tt class="descname">argument_name</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.argument_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Argument name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.FunctionArgument.character_length">
 <tt class="descname">character_length</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.character_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Length of CHAR and VARCHAR column, in characters (not bytes).</p>
@@ -7928,15 +8386,39 @@ is used (including BLOB and ARRAY descriptors).</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.collation">
+<tt class="descname">collation</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.collation" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.schema.FunctionArgument.collation" title="fdb.schema.FunctionArgument.collation"><tt class="xref py py-class docutils literal"><span class="pre">collation</span></tt></a> for this parameter.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.column">
+<tt class="descname">column</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.column" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.schema.TableColumn" title="fdb.schema.TableColumn"><tt class="xref py py-class docutils literal"><span class="pre">TableColumn</span></tt></a> for this parameter.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.FunctionArgument.datatype">
 <tt class="descname">datatype</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.datatype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Comlete SQL datatype definition.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.default">
+<tt class="descname">default</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default value.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.FunctionArgument.description">
 <tt class="descname">description</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.description" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database object description or None if object doesn&#8217;t have a description.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.domain">
+<tt class="descname">domain</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.domain" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#fdb.schema.Domain" title="fdb.schema.Domain"><tt class="xref py py-class docutils literal"><span class="pre">Domain</span></tt></a> for this parameter.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -7970,6 +8452,13 @@ is used (including BLOB and ARRAY descriptors).</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.package">
+<tt class="descname">package</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Package this function belongs to. 
+Object is <tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> instance or None.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.FunctionArgument.position">
 <tt class="descname">position</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.position" title="Permalink to this definition">¶</a></dt>
 <dd><p>Argument position.</p>
@@ -7998,6 +8487,12 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dd><p>BLOB subtype.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="fdb.schema.FunctionArgument.type_from">
+<tt class="descname">type_from</tt><a class="headerlink" href="#fdb.schema.FunctionArgument.type_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Numeric code. See <a class="reference internal" href="#fdb.schema.Schema.enum_param_type_from" title="fdb.schema.Schema.enum_param_type_from"><tt class="xref py py-attr docutils literal"><span class="pre">Schema.enum_param_type_from</span></tt></a>.`</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -8008,9 +8503,18 @@ is used (including BLOB and ARRAY descriptors).</td>
 <em class="property">class </em><tt class="descclassname">fdb.schema.</tt><tt class="descname">Function</tt><big>(</big><em>schema</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.schema.Function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents user defined function.</p>
 <p>Supported SQL actions:</p>
-<ul class="simple">
-<li>User UDF: declare, drop</li>
-<li>System UDF: none</li>
+<ul>
+<li><p class="first">External UDF: declare, drop</p>
+</li>
+<li><dl class="first docutils">
+<dt>PSQL UDF (FB 3, not declared in package): create, recreate, create_or_alter, drop,</dt>
+<dd><p class="first last">alter(arguments=string_or_list,returns=string,declare=string_or_list,
+code=string_or_list)</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">System UDF: none</p>
+</li>
 </ul>
 <dl class="method">
 <dt id="fdb.schema.Function.accept_visitor">
@@ -8079,6 +8583,18 @@ is used (including BLOB and ARRAY descriptors).</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.Function.isexternal">
+<tt class="descname">isexternal</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Function.isexternal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if function is external UDF, False for PSQL functions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.schema.Function.ispackaged">
+<tt class="descname">ispackaged</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Function.ispackaged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if function is defined in package.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.Function.issystemobject">
 <tt class="descname">issystemobject</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.schema.Function.issystemobject" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if this database object is system object.</p>
@@ -8103,9 +8619,33 @@ is used (including BLOB and ARRAY descriptors).</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Function.deterministic_flag">
+<tt class="descname">deterministic_flag</tt><a class="headerlink" href="#fdb.schema.Function.deterministic_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deterministic flag.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.engine_mame">
+<tt class="descname">engine_mame</tt><a class="headerlink" href="#fdb.schema.Function.engine_mame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Engine name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Function.entrypoint">
 <tt class="descname">entrypoint</tt><a class="headerlink" href="#fdb.schema.Function.entrypoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entrypoint in module.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.id">
+<tt class="descname">id</tt><a class="headerlink" href="#fdb.schema.Function.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function ID.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.legacy_flag">
+<tt class="descname">legacy_flag</tt><a class="headerlink" href="#fdb.schema.Function.legacy_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Legacy flag.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -8121,6 +8661,25 @@ is used (including BLOB and ARRAY descriptors).</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.schema.Function.owner_name">
+<tt class="descname">owner_name</tt><a class="headerlink" href="#fdb.schema.Function.owner_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Owner name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.package">
+<tt class="descname">package</tt><a class="headerlink" href="#fdb.schema.Function.package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Package this function belongs to. 
+Object is <tt class="xref py py-class docutils literal"><span class="pre">Package</span></tt> instance or None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.private_flag">
+<tt class="descname">private_flag</tt><a class="headerlink" href="#fdb.schema.Function.private_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Private flag.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.schema.Function.returns">
 <tt class="descname">returns</tt><a class="headerlink" href="#fdb.schema.Function.returns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returning <a class="reference internal" href="#fdb.schema.FunctionArgument" title="fdb.schema.FunctionArgument"><tt class="xref py py-class docutils literal"><span class="pre">FunctionArgument</span></tt></a> or None.</p>
@@ -8130,6 +8689,24 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dt id="fdb.schema.Function.schema">
 <tt class="descname">schema</tt><em class="property"> = None</em><a class="headerlink" href="#fdb.schema.Function.schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.security_class">
+<tt class="descname">security_class</tt><a class="headerlink" href="#fdb.schema.Function.security_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Security class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.source">
+<tt class="descname">source</tt><a class="headerlink" href="#fdb.schema.Function.source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function source.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.Function.valid_blr">
+<tt class="descname">valid_blr</tt><a class="headerlink" href="#fdb.schema.Function.valid_blr" title="Permalink to this definition">¶</a></dt>
+<dd><p>BLR validity flag.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -8251,7 +8828,7 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dt id="fdb.schema.Shadow">
 <em class="property">class </em><tt class="descclassname">fdb.schema.</tt><tt class="descname">Shadow</tt><big>(</big><em>schema</em>, <em>attributes</em><big>)</big><a class="headerlink" href="#fdb.schema.Shadow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents database shadow.</p>
-<p>Supported SQL actions:  create, drop</p>
+<p>Supported SQL actions:  create, drop(preserve=bool)</p>
 <dl class="method">
 <dt id="fdb.schema.Shadow.accept_visitor">
 <tt class="descname">accept_visitor</tt><big>(</big><em>visitor</em><big>)</big><a class="headerlink" href="#fdb.schema.Shadow.accept_visitor" title="Permalink to this definition">¶</a></dt>
@@ -8653,6 +9230,11 @@ is used (including BLOB and ARRAY descriptors).</td>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="fdb.schema.SchemaVisitor.visitPackage">
+<tt class="descname">visitPackage</tt><big>(</big><em>package</em><big>)</big><a class="headerlink" href="#fdb.schema.SchemaVisitor.visitPackage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="fdb.schema.SchemaVisitor.visitProcedure">
 <tt class="descname">visitProcedure</tt><big>(</big><em>procedure</em><big>)</big><a class="headerlink" href="#fdb.schema.SchemaVisitor.visitProcedure" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -8835,7 +9417,7 @@ and <a class="reference internal" href="#fdb.monitor.StatementInfo.state" title=
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection</strong> &#8211; <a class="reference internal" href="#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> instance.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body">If Monitor object was set as internal (via 
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">If Monitor object was set as internal (via
 <tt class="xref py py-meth docutils literal"><span class="pre">_set_as_internal()</span></tt>) or database has ODS lower than 11.1.</td>
 </tr>
 </tbody>
@@ -8858,7 +9440,7 @@ information on next reference.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name" colspan="2">Raises ProgrammingError:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">If Monitor object was set as internal (via 
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">If Monitor object was set as internal (via
 <tt class="xref py py-meth docutils literal"><span class="pre">_set_as_internal()</span></tt>).</td>
 </tr>
 </tbody>
@@ -8976,6 +9558,13 @@ Items are <a class="reference internal" href="#fdb.monitor.StatementInfo" title=
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.Monitor.tablestats">
+<tt class="descname">tablestats</tt><a class="headerlink" href="#fdb.monitor.Monitor.tablestats" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all table record I/O statistics.
+Items are <tt class="xref py py-class docutils literal"><span class="pre">TableStatsInfo</span></tt> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.Monitor.this_attachment">
 <tt class="descname">this_attachment</tt><a class="headerlink" href="#fdb.monitor.Monitor.this_attachment" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a> object for current connection.</p>
@@ -9044,6 +9633,12 @@ Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" 
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.crypt_page">
+<tt class="descname">crypt_page</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.crypt_page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of page being encrypted.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.DatabaseInfo.forced_writes">
 <tt class="descname">forced_writes</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.forced_writes" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if database uses synchronous writes.</p>
@@ -9097,6 +9692,12 @@ Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" 
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.owner">
+<tt class="descname">owner</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>User name of database owner.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.DatabaseInfo.page_size">
 <tt class="descname">page_size</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.page_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Size of database page in bytes.</p>
@@ -9121,6 +9722,12 @@ Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" 
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.security_database">
+<tt class="descname">security_database</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.security_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>TYpe of security database (Default, Self or Other).</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.DatabaseInfo.shutdown_mode">
 <tt class="descname">shutdown_mode</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.shutdown_mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Current shutdown mode.</p>
@@ -9142,6 +9749,12 @@ Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" 
 <dt id="fdb.monitor.DatabaseInfo.sweep_interval">
 <tt class="descname">sweep_interval</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.sweep_interval" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sweep interval configured in the database header. Value 0 indicates that sweeping is disabled.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.DatabaseInfo.tablestats">
+<tt class="descname">tablestats</tt><a class="headerlink" href="#fdb.monitor.DatabaseInfo.tablestats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary of <tt class="xref py py-class docutils literal"><span class="pre">TableStatsInfo</span></tt> instances for this object.</p>
 </dd></dl>
 
 </dd></dl>
@@ -9172,6 +9785,12 @@ Items are <a class="reference internal" href="#fdb.monitor.ContextVariableInfo" 
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.monitor.AttachmentInfo.isinternal">
+<tt class="descname">isinternal</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.AttachmentInfo.isinternal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if attachment is internal system attachment.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.monitor.AttachmentInfo.terminate">
 <tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#fdb.monitor.AttachmentInfo.terminate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Terminates client session associated with this attachment.</p>
@@ -9188,9 +9807,21 @@ this attachement is current session.</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.auth_method">
+<tt class="descname">auth_method</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.auth_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authentication method.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.AttachmentInfo.character_set">
 <tt class="descname">character_set</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.character_set" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#fdb.schema.CharacterSet" title="fdb.schema.CharacterSet"><tt class="xref py py-class docutils literal"><span class="pre">CharacterSet</span></tt></a> for this attachment.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.client_version">
+<tt class="descname">client_version</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.client_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Client library version.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -9223,6 +9854,18 @@ this attachement is current session.</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.remote_host">
+<tt class="descname">remote_host</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of remote host.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.remote_os_user">
+<tt class="descname">remote_os_user</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_os_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>OS user name of client process.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.AttachmentInfo.remote_pid">
 <tt class="descname">remote_pid</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_pid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remote client process ID.</p>
@@ -9238,6 +9881,12 @@ this attachement is current session.</td>
 <dt id="fdb.monitor.AttachmentInfo.remote_protocol">
 <tt class="descname">remote_protocol</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_protocol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remote protocol name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.remote_version">
+<tt class="descname">remote_version</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.remote_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remote protocol version.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -9269,6 +9918,12 @@ this attachement is current session.</td>
 <tt class="descname">statements</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.statements" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of statements associated with attachment.
 Items are <a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> objects.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.AttachmentInfo.tablestats">
+<tt class="descname">tablestats</tt><a class="headerlink" href="#fdb.monitor.AttachmentInfo.tablestats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary of <tt class="xref py py-class docutils literal"><span class="pre">TableStatsInfo</span></tt> instances for this object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -9403,6 +10058,12 @@ Items are <a class="reference internal" href="#fdb.monitor.StatementInfo" title=
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.TransactionInfo.tablestats">
+<tt class="descname">tablestats</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.tablestats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary of <tt class="xref py py-class docutils literal"><span class="pre">TableStatsInfo</span></tt> instances for this object.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.TransactionInfo.timestamp">
 <tt class="descname">timestamp</tt><a class="headerlink" href="#fdb.monitor.TransactionInfo.timestamp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transaction start date/time.</p>
@@ -9488,6 +10149,12 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.plan">
+<tt class="descname">plan</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.plan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explained execution plan.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.StatementInfo.sql_text">
 <tt class="descname">sql_text</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.sql_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Statement text, if appropriate.</p>
@@ -9503,6 +10170,12 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <dt id="fdb.monitor.StatementInfo.state">
 <tt class="descname">state</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Statement state (idle/active).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.StatementInfo.tablestats">
+<tt class="descname">tablestats</tt><a class="headerlink" href="#fdb.monitor.StatementInfo.tablestats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary of <tt class="xref py py-class docutils literal"><span class="pre">TableStatsInfo</span></tt> instances for this object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -9568,6 +10241,12 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.CallStackInfo.package_name">
+<tt class="descname">package_name</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.package_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Package name.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.CallStackInfo.stat_id">
 <tt class="descname">stat_id</tt><a class="headerlink" href="#fdb.monitor.CallStackInfo.stat_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal ID.</p>
@@ -9601,6 +10280,18 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.backversion_reads">
+<tt class="descname">backversion_reads</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.backversion_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of record backversion reads.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.conflits">
+<tt class="descname">conflits</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.conflits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of record conflits.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.IOStatsInfo.deletes">
 <tt class="descname">deletes</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.deletes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of deleted records.</p>
@@ -9619,6 +10310,12 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 </dd></dl>
 
 <dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.fragment_reads">
+<tt class="descname">fragment_reads</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.fragment_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of record fragment reads.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="fdb.monitor.IOStatsInfo.group">
 <tt class="descname">group</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Object group code.</p>
@@ -9634,6 +10331,12 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <dt id="fdb.monitor.IOStatsInfo.inserts">
 <tt class="descname">inserts</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.inserts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of inserted records.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.locks">
+<tt class="descname">locks</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.locks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of record locks.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -9674,8 +10377,8 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <dl class="attribute">
 <dt id="fdb.monitor.IOStatsInfo.owner">
 <tt class="descname">owner</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.owner" title="Permalink to this definition">¶</a></dt>
-<dd><p>Object that owns this IOStats instance. Could be either 
-<a class="reference internal" href="#fdb.monitor.DatabaseInfo" title="fdb.monitor.DatabaseInfo"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseInfo</span></tt></a>, <a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a>, <a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a>, 
+<dd><p>Object that owns this IOStats instance. Could be either
+<a class="reference internal" href="#fdb.monitor.DatabaseInfo" title="fdb.monitor.DatabaseInfo"><tt class="xref py py-class docutils literal"><span class="pre">DatabaseInfo</span></tt></a>, <a class="reference internal" href="#fdb.monitor.AttachmentInfo" title="fdb.monitor.AttachmentInfo"><tt class="xref py py-class docutils literal"><span class="pre">AttachmentInfo</span></tt></a>, <a class="reference internal" href="#fdb.monitor.TransactionInfo" title="fdb.monitor.TransactionInfo"><tt class="xref py py-class docutils literal"><span class="pre">TransactionInfo</span></tt></a>,
 <a class="reference internal" href="#fdb.monitor.StatementInfo" title="fdb.monitor.StatementInfo"><tt class="xref py py-class docutils literal"><span class="pre">StatementInfo</span></tt></a> or <a class="reference internal" href="#fdb.monitor.CallStackInfo" title="fdb.monitor.CallStackInfo"><tt class="xref py py-class docutils literal"><span class="pre">CallStackInfo</span></tt></a> instance.</p>
 </dd></dl>
 
@@ -9689,6 +10392,12 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <dt id="fdb.monitor.IOStatsInfo.reads">
 <tt class="descname">reads</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.reads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of page reads.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.repeated_reads">
+<tt class="descname">repeated_reads</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.repeated_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of repeated record reads.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -9707,6 +10416,12 @@ Items are <a class="reference internal" href="#fdb.monitor.CallStackInfo" title=
 <dt id="fdb.monitor.IOStatsInfo.updates">
 <tt class="descname">updates</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.updates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of updated records.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.monitor.IOStatsInfo.waits">
+<tt class="descname">waits</tt><a class="headerlink" href="#fdb.monitor.IOStatsInfo.waits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of record waits.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -10116,7 +10831,7 @@ API functions as member methods. Uses <a class="reference external" href="http:/
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.5 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -233,6 +233,9 @@ SQL_QUAD = 550
 SQL_TYPE_TIME = 560
 SQL_TYPE_DATE = 570
 SQL_INT64 = 580
+# Firebird 3
+SQL_BOOLEAN = 32764
+SQL_NULL = 32766
 
 SUBTYPE_NUMERIC = 1
 SUBTYPE_DECIMAL = 2
@@ -265,6 +268,9 @@ blr_not_nullable = 20
 # Added in FB 2.5
 blr_column_name = 21
 blr_column_name2 = 22
+# Added in FB 3.0
+blr_bool = 23
+#
 blr_domain_type_of = 0
 blr_domain_full = 1
 # Rest of BLR is defined in fdb.blr
@@ -272,6 +278,7 @@ blr_domain_full = 1
 # Database parameter block stuff
 
 isc_dpb_version1 = 1
+isc_dpb_version2 = 2 # Firebird 3
 isc_dpb_cdd_pathname = 1
 isc_dpb_allocation = 2
 isc_dpb_journal = 3
@@ -340,7 +347,7 @@ isc_dpb_set_db_sql_dialect = 65
 isc_dpb_gfix_attach = 66
 isc_dpb_gstat_attach = 67
 isc_dpb_set_db_charset = 68
-isc_dpb_gsec_attach = 69
+isc_dpb_gsec_attach = 69 # Deprecated in FB3
 isc_dpb_address_path = 70
 # Added in FB 2.1
 isc_dpb_process_id = 71
@@ -352,6 +359,19 @@ isc_dpb_trusted_role = 75
 isc_dpb_org_filename = 76
 isc_dpb_utf8_filename = 77
 isc_dpb_ext_call_depth = 78
+# Added in FB 3.0
+isc_dpb_auth_block = 79
+isc_dpb_remote_protocol = 81
+isc_dpb_client_version = 80
+isc_dpb_host_name = 82
+isc_dpb_os_user = 83
+isc_dpb_specific_auth_data = 84
+isc_dpb_auth_plugin_list = 85
+isc_dpb_auth_plugin_name = 86
+isc_dpb_config = 87
+isc_dpb_nolinger = 88
+isc_dpb_reset_icu = 89
+isc_dpb_map_attach = 90
 
 # structural codes
 isc_info_end = 1
@@ -439,7 +459,17 @@ isc_info_active_tran_count = 110
 isc_info_creation_date = 111
 isc_info_db_file_size = 112 # added in FB 2.1
 fb_info_page_contents = 113 # added in FB 2.5
-isc_info_db_last_value = (fb_info_page_contents + 1)
+# Added in Firebird 3.0
+fb_info_page_warns = 115
+fb_info_record_warns = 116
+fb_info_bpage_warns = 117
+fb_info_dpage_warns = 118
+fb_info_ipage_warns = 119
+fb_info_ppage_warns = 120
+fb_info_tpage_warns = 121
+fb_info_pip_errors = 122
+fb_info_pip_warns = 123
+isc_info_db_last_value = (fb_info_pip_warns + 1)
 
 isc_info_version = isc_info_isc_version
 
@@ -458,6 +488,7 @@ isc_info_tra_oldest_active = 7
 isc_info_tra_isolation = 8
 isc_info_tra_access = 9
 isc_info_tra_lock_timeout = 10
+fb_info_tra_dbpath = 11 # Firebird 3.0
 
 # isc_info_tra_isolation responses
 isc_info_tra_consistency = 1
@@ -495,6 +526,9 @@ isc_info_sql_get_plan = 22
 isc_info_sql_records = 23
 isc_info_sql_batch_fetch = 24
 isc_info_sql_relation_alias = 25
+# Added in Firebird 3.0
+isc_info_sql_explain_plan = 26
+isc_info_sql_stmt_flags = 27
 
 # SQL information return values
 isc_info_sql_stmt_select = 1
@@ -564,6 +598,7 @@ isc_segstr_eof = 335544367
 # Service parameter block stuff
 isc_spb_current_version = 2
 isc_spb_version = isc_spb_current_version
+isc_spb_version3 = 3
 isc_spb_user_name = isc_dpb_user_name
 isc_spb_sys_user_name = isc_dpb_sys_user_name
 isc_spb_sys_user_name_enc = isc_dpb_sys_user_name_enc
@@ -580,6 +615,20 @@ isc_spb_trusted_auth = 111
 isc_spb_process_name = 112
 # Added in FB 2.5
 isc_spb_trusted_role = 113
+# Added in FB 3.0
+isc_spb_verbint  = 114
+isc_spb_auth_block = 115
+isc_spb_auth_plugin_name = 116
+isc_spb_auth_plugin_list = 117
+isc_spb_utf8_filename = 118
+isc_spb_client_version = 119
+isc_spb_remote_protocol = 120
+isc_spb_host_name = 121
+isc_spb_os_user = 122
+isc_spb_config = 123
+isc_spb_expected_db = 124
+isc_spb_specific_auth_data = isc_spb_trusted_auth
+
 
 # Service action items
 isc_action_svc_backup = 1           # Starts database backup process on the server
@@ -606,7 +655,8 @@ isc_action_svc_trace_list = 26
 isc_action_svc_set_mapping = 27
 isc_action_svc_drop_mapping = 28
 isc_action_svc_display_user_adm = 29
-isc_action_svc_last = 30
+isc_action_svc_validate = 30 # Firebird 3.0
+isc_action_svc_last = 31
 
 # Service information items
 isc_info_svc_svr_db_info = 50    # Retrieves the number of attachments and databases */
@@ -641,6 +691,8 @@ isc_spb_sec_admin = 13
 isc_spb_bkp_file = 5
 isc_spb_bkp_factor = 6
 isc_spb_bkp_length = 7
+isc_spb_bkp_skip_data = 8 # Firebird 3.0
+isc_spb_bkp_stat = 15 # Firebird 3.0
 isc_spb_bkp_ignore_checksums = 0x01
 isc_spb_bkp_ignore_limbo = 0x02
 isc_spb_bkp_metadata_only = 0x04
@@ -663,6 +715,7 @@ isc_spb_prp_access_mode = 13
 isc_spb_prp_set_sql_dialect = 14
 isc_spb_prp_activate = 0x0100
 isc_spb_prp_db_online = 0x0200
+isc_spb_prp_nolinger = 0x0400 # Firebird 3.0
 isc_spb_prp_force_shutdown = 41
 isc_spb_prp_attachments_shutdown = 42
 isc_spb_prp_transactions_shutdown = 43
@@ -682,6 +735,13 @@ isc_spb_prp_res = 36
 # Parameters for isc_spb_prp_write_mode
 isc_spb_prp_wm_async = 37
 isc_spb_prp_wm_sync = 38
+
+# Parameters for isc_action_svc_validate
+isc_spb_val_tab_incl = 1
+isc_spb_val_tab_excl = 2
+isc_spb_val_idx_incl = 3
+isc_spb_val_idx_excl = 4
+isc_spb_val_lock_timeout = 5
 
 # Parameters for isc_spb_prp_access_mode
 isc_spb_prp_am_readonly = 39
@@ -706,6 +766,10 @@ isc_spb_tra_advise = 29
 isc_spb_tra_advise_commit = 30
 isc_spb_tra_advise_rollback = 31
 isc_spb_tra_advise_unknown = 33
+# Added in Firebird 3.0
+isc_spb_tra_id_64 = 46
+isc_spb_single_tra_id_64 = 47
+isc_spb_multi_tra_id_64 = 48
 
 isc_spb_rpr_validate_db = 0x01
 isc_spb_rpr_sweep_db = 0x02
@@ -715,14 +779,17 @@ isc_spb_rpr_check_db = 0x10
 isc_spb_rpr_ignore_checksum = 0x20
 isc_spb_rpr_kill_shadows = 0x40
 isc_spb_rpr_full = 0x80
+isc_spb_rpr_icu = 0x0800 # Firebird 3.0
 
 # Parameters for isc_action_svc_restore
+isc_spb_res_skip_data = isc_spb_bkp_skip_data # Firebird 3.0
 isc_spb_res_buffers = 9
 isc_spb_res_page_size = 10
 isc_spb_res_length = 11
 isc_spb_res_access_mode = 12
 isc_spb_res_fix_fss_data = 13
 isc_spb_res_fix_fss_metadata = 14
+isc_spb_res_stat = 15 # Firebird 3.0
 isc_spb_res_metadata_only = 0x04
 isc_spb_res_deactivate_idx = 0x0100
 isc_spb_res_no_shadow = 0x0200
@@ -749,6 +816,7 @@ isc_spb_sts_sys_relations = 0x10
 isc_spb_sts_record_versions = 0x20
 isc_spb_sts_table = 0x40
 isc_spb_sts_nocreation = 0x80
+isc_spb_sts_encryption = 0x100 # Firebird 3.0
 
 # Parameters for isc_action_svc_nbak
 isc_spb_nbk_level = 5
@@ -841,7 +909,11 @@ isc_info_db_impl_linux_sheb = 81
 # Added in FB 2.5
 isc_info_db_impl_linux_hppa = 82
 isc_info_db_impl_linux_alpha = 83
-isc_info_db_impl_last_value = (isc_info_db_impl_linux_alpha + 1)
+isc_info_db_impl_linux_arm64 = 84
+isc_info_db_impl_linux_ppc64el = 85
+isc_info_db_impl_linux_ppc64 = 86 # Firebird 3.0
+
+isc_info_db_impl_last_value = (isc_info_db_impl_linux_ppc64 + 1)
 
 # Info DB provider
 isc_info_db_code_rdb_eln = 1
@@ -890,6 +962,8 @@ ISC_INT64 = c_longlong
 ISC_UINT64 = c_ulonglong
 ISC_DATE = c_int
 ISC_TIME = c_uint
+ISC_TRUE = 1
+ISC_FALSE = 0
 
 class ISC_TIMESTAMP(Structure):
     pass

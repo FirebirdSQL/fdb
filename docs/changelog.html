@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changelog &mdash; FDB 1.4.11 documentation</title>
+    <title>Changelog &mdash; FDB 1.5 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.11',
+        VERSION:     '1.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4.11 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.5 documentation" href="index.html" />
     <link rel="next" title="LICENSE" href="license.html" />
     <link rel="prev" title="FDB Reference" href="reference.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.5 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -62,6 +62,7 @@
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
+<li><a class="reference internal" href="#version-1-5">Version 1.5</a> (7.1.2016)</li>
 <li><a class="reference internal" href="#version-1-4-11">Version 1.4.11</a> (12.11.2015)</li>
 <li><a class="reference internal" href="#version-1-4-10">Version 1.4.10</a> (31.8.2015)</li>
 <li><a class="reference internal" href="#version-1-4-9">Version 1.4.9</a> (30.6.2015)</li>
@@ -88,6 +89,24 @@
 <li><a class="reference internal" href="#version-0-7-1">Version 0.7.1</a> (31. 1. 2012)</li>
 <li><a class="reference internal" href="#version-0-7">Version 0.7</a> (21. 12. 2011)</li>
 </ul>
+<div class="section" id="version-1-5">
+<h2>Version 1.5<a class="headerlink" href="#version-1-5" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Initial support for Firebird 3.0<ul>
+<li>BOOLEAN datatype</li>
+<li>IDENTITY datatype (in schema)</li>
+<li>Database linger</li>
+<li>Preserve SHADOW on DROP</li>
+<li>DDL triggers</li>
+<li>New and extended system tables</li>
+<li>New and extended monitoring tables</li>
+<li>GBAK statistics (service)</li>
+<li>On-line validation (service)</li>
+</ul>
+</li>
+<li>(PYFB-60) Cursor: executemany(operation, seq_of_parameters) does PREPARE of &lt;operation&gt; for each parameter from &lt;seq_of_parameters&gt;</li>
+</ul>
+</div>
 <div class="section" id="version-1-4-11">
 <h2>Version 1.4.11<a class="headerlink" href="#version-1-4-11" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -483,6 +502,7 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
+<li><a class="reference internal" href="#version-1-5">Version 1.5</a></li>
 <li><a class="reference internal" href="#version-1-4-11">Version 1.4.11</a></li>
 <li><a class="reference internal" href="#version-1-4-10">Version 1.4.10</a></li>
 <li><a class="reference internal" href="#version-1-4-9">Version 1.4.9</a></li>
@@ -620,7 +640,7 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.5 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

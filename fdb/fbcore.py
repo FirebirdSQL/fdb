@@ -139,7 +139,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
     SQL_TEXT, SQL_VARYING, SQL_SHORT, SQL_LONG, SQL_FLOAT, SQL_DOUBLE,
     SQL_D_FLOAT, SQL_TIMESTAMP, SQL_BLOB, SQL_ARRAY, SQL_QUAD, SQL_TYPE_TIME,
-    SQL_TYPE_DATE, SQL_INT64, SUBTYPE_NUMERIC, SUBTYPE_DECIMAL,
+    SQL_TYPE_DATE, SQL_INT64, SQL_BOOLEAN, SUBTYPE_NUMERIC, SUBTYPE_DECIMAL,
     MAX_BLOB_SEGMENT_SIZE, ISC_INT64,
 
     XSQLVAR, ISC_TEB, RESULT_VECTOR, ISC_STATUS, ISC_STATUS_ARRAY, ISC_STATUS_PTR,
@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.4.11'
+__version__ = '1.5'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -849,10 +849,7 @@ class TransactionContext(object):
     #: Transaction-like object this instance manages.
     transaction = None
     def __init__(self,transaction):
-        """
-        :param transaction: Any object that supports `begin()`, `commit()` and
-            `rollback()`.
-        """
+        ":param transaction: Any object that supports `begin()`, `commit()` and `rollback()`."
         self.transaction = transaction
     def __enter__(self):
         self.transaction.begin()
@@ -2155,6 +2152,8 @@ class PreparedStatement(object):
             return 'TIME'
         elif data_type == SQL_BLOB:
             return 'BLOB'
+        elif data_type == SQL_BOOLEAN:
+            return 'BOOLEAN'
         else:
             return 'UNKNOWN'
     def __get_internal_data_type_name(self, data_type):
@@ -2180,6 +2179,8 @@ class PreparedStatement(object):
             return 'SQL_TYPE_TIME'
         elif data_type == SQL_BLOB:
             return 'SQL_BLOB'
+        elif data_type == SQL_BOOLEAN:
+            return 'SQL_BOOLEAN'
         else:
             return 'UNKNOWN'
     def __get_description(self):
@@ -2243,6 +2244,9 @@ class PreparedStatement(object):
                     elif vartype == SQL_ARRAY:
                         vtype = ListType
                         dispsize = -1
+                    elif vartype == SQL_BOOLEAN:
+                        vtype = bool
+                        dispsize = 5
                     else:
                         vtype = None
                         dispsize = -1
@@ -2405,6 +2409,9 @@ class PreparedStatement(object):
             elif vartype == SQL_ARRAY:
                 sqlvar.sqldata = ctypes.cast(ctypes.create_string_buffer(
                     sqlvar.sqllen),buf_pointer)
+            elif vartype == SQL_BOOLEAN:
+                sqlvar.sqldata = ctypes.cast(ctypes.create_string_buffer(
+                    sqlvar.sqllen),buf_pointer)
             else:
                 pass
     def __XSQLDA2Tuple(self, xsqlda):
@@ -2445,6 +2452,8 @@ class PreparedStatement(object):
                 if ((self.__charset or PYTHON_MAJOR_VER == 3)
                     and sqlvar.sqlsubtype != 1):   # non OCTETS
                     value = b2u(value,self.__python_charset)
+            elif vartype == SQL_BOOLEAN:
+                value = bool(bytes_to_int(sqlvar.sqldata.contents.value))
             elif vartype in [SQL_SHORT, SQL_LONG, SQL_INT64]:
                 value = bytes_to_int(sqlvar.sqldata[:sqlvar.sqllen])
                 # It's scalled integer?
@@ -2889,6 +2898,10 @@ class PreparedStatement(object):
                     sqlvar.sqldata = ctypes.cast(
                         ctypes.pointer(ctypes.create_string_buffer(
                             struct.pack('d', value))), buf_pointer)
+                elif vartype == SQL_BOOLEAN:
+                    sqlvar.sqldata = ctypes.cast(ctypes.pointer(
+                        ctypes.create_string_buffer(
+                            int_to_bytes(value, sqlvar.sqllen))), buf_pointer)
                 elif vartype == SQL_BLOB:
                     blobid = ISC_QUAD(0, 0)
                     blob_handle = isc_blob_handle()
@@ -3433,6 +3446,8 @@ class Cursor(object):
                                   than expected.
         :raises DatabaseError: When error is returned by server.
         """
+        if not isinstance(operation,PreparedStatement):
+            operation = self.prep(operation)
         for parameters in seq_of_parameters:
             self.execute(operation, parameters)
         return self
@@ -4297,11 +4312,9 @@ class ConnectionGroup(object):
         self.__require_non_empty_group('savepoint')
         return self._transaction.savepoint(name)
     def prepare(self):
-        """
-          Manually triggers the first phase of a two-phase commit (2PC).  Use
+        """Manually triggers the first phase of a two-phase commit (2PC). Use
         of this method is optional; if preparation is not triggered manually,
-        it will be performed implicitly by commit() in a 2PC.
-        """
+        it will be performed implicitly by commit() in a 2PC."""
         self.__require_non_empty_group('prepare')
         self.__require_transaction_state(True,"This group has no transaction to prepare.")
         self._transaction.prepare()

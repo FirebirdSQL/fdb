@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.5`_ (7.1.2016)
 * `Version 1.4.11`_ (12.11.2015)
 * `Version 1.4.10`_ (31.8.2015)
 * `Version 1.4.9`_ (30.6.2015)
@@ -27,6 +28,23 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.5
+===========
+
+- Initial support for Firebird 3.0
+
+  - BOOLEAN datatype
+  - IDENTITY datatype (in schema)
+  - Database linger
+  - Preserve SHADOW on DROP
+  - DDL triggers
+  - New and extended system tables
+  - New and extended monitoring tables
+  - GBAK statistics (service)
+  - On-line validation (service)
+
+- (PYFB-60) Cursor: executemany(operation, seq_of_parameters) does PREPARE of <operation> for each parameter from <seq_of_parameters>
 
 Version 1.4.11
 ==============

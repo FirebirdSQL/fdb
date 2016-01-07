@@ -63,6 +63,11 @@ CAPABILITY_SERVER_CONFIG = 0x200
 CAPABILITY_QUOTED_FILENAME = 0x400
 CAPABILITY_NO_SERVER_SHUTDOWN = 0x100
 
+# The following STATS_* constants are options for backup/restore 'stats' parameter.
+STATS_TOTAL_TIME = 'T'
+STATS_TIME_DELTA = 'D'
+STATS_PAGE_READS = 'R'
+STATS_PAGE_WRITES = 'W'
 
 def _checkString(st):
     if ibase.PYTHON_MAJOR_VER == 3:
@@ -828,8 +833,8 @@ class Connection(object):
                convert_external_tables_to_internal=0,
                compressed=1,
                no_db_triggers=0,
-               callback=None
-               ):
+               callback=None,
+               stats=None):
         """Request logical (GBAK) database backup. **(ASYNC service)**
 
         :param string source_database: Source database specification.
@@ -848,6 +853,7 @@ class Connection(object):
         :param integer no_db_triggers: `1` to disable database triggers temporarily.
         :param function callback: Function to call back with each output line.
           Function must accept only one parameter: line of output.
+        :param list stats: List of arguments for run-time statistics, see STATS_* constants.
 
         If `callback` is not specified, backup log could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
@@ -935,6 +941,10 @@ class Connection(object):
         # Tell the service to make its output available to us.
         request.add_code(ibase.isc_spb_verbose)
 
+        # handle request for run-time statistics
+        if stats:
+            request.add_string(ibase.isc_spb_bkp_stat, ''.join(stats))
+
         # Done constructing the request buffer.
         self._act(request)
         self.__fetching = True
@@ -956,7 +966,8 @@ class Connection(object):
                 use_all_page_space=0,
                 no_db_triggers=0,
                 metadata_only=0,
-                callback=None):
+                callback=None,
+                stats=None):
         """Request database restore from logical (GBAK) backup. **(ASYNC service)**
 
         :param source_filenames: Backup file(s) specification.
@@ -982,6 +993,7 @@ class Connection(object):
         :param integer metadata_only: `1` to restore only database metadata.
         :param function callback: Function to call back with each output line.
           Function must accept only one parameter: line of output.
+        :param list stats: List of arguments for run-time statistics, see STATS_* constants.
 
         If `callback` is not specified, restore log could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
@@ -1062,6 +1074,10 @@ class Connection(object):
 
         # Tell the service to make its output available to us.
         request.add_code(ibase.isc_spb_verbose)
+
+        # handle request for run-time statistics
+        if stats:
+            request.add_string(ibase.isc_spb_res_stat, ''.join(stats))
 
         # Done constructing the request buffer.
         self._act(request)
@@ -1382,6 +1398,16 @@ class Connection(object):
         reqBuf = _ServiceActionRequestBuilder()
         reqBuf.add_option_mask(ibase.isc_spb_prp_activate)
         self._property_action(database, reqBuf)
+    def no_linger(self, database):
+        """Set one-off override for database linger.
+
+        :param string database: Database filename or alias.
+        """
+        self.__check_active()
+        _checkString(database)
+        reqBuf = _ServiceActionRequestBuilder()
+        reqBuf.add_option_mask(ibase.isc_spb_prp_nolinger)
+        self._property_action(database, reqBuf)
     # Database repair/maintenance methods:
     def shutdown(self, database, shutdown_mode, shutdown_method, timeout):
         """Database shutdown.
@@ -1507,6 +1533,62 @@ class Connection(object):
     # support that operation from kinterbasdb since transactions IDs are not
     # exposed at the Python level and I don't consider limbo transaction
     # resolution compelling enough to warrant exposing transaction IDs).
+
+    def validate(self, database,
+                 include_tables=None, exclude_tables=None,
+                 include_indices=None, exclude_indices=None,
+                 lock_timeout=None,callback=None):
+        """On-line database validation.
+
+        :param string database: Database filename or alias.
+        :param string include_tables: Pattern for table names to include in validation run.
+        :param string exclude_tables: Pattern for table names to exclude from validation run.
+        :param string include_indices: Pattern for index names to include in validation run.
+        :param string exclude_indices: Pattern for index names to exclude from validation run.
+        :param integer lock_timeout: lock timeout, used to acquire locks for table to validate,
+          in seconds, default is 10 secs. 0 is no-wait, -1 is infinite wait.
+        :param function callback: Function to call back with each output line.
+          Function must accept only one parameter: line of output.
+
+        .. note:: Patterns are regular expressions, processed by the same rules as SIMILAR TO
+           expressions. All patterns are case-sensitive, regardless of database dialect. If the
+           pattern for tables is omitted then all user tables will be validated. If the pattern
+           for indexes is omitted then all indexes of the appointed tables will be validated.
+           System tables are not validated.
+
+        If `callback` is not specified, validation log could be retrieved through
+        :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
+        ignored via call to :meth:`wait`.
+
+        .. note::
+
+           Until validate report is not fully fetched from service (or ignored via
+           :meth:`wait`), any attempt to start another asynchronous service will
+           fail with exception.
+
+        """
+        self.__check_active()
+        _checkString(database)
+        request = _ServiceActionRequestBuilder(ibase.isc_action_svc_validate)
+        request.add_database_name(database)
+        if include_tables is not None:
+            request.add_string(ibase.isc_spb_val_tab_incl, include_tables)
+        if exclude_tables is not None:
+            request.add_string(ibase.isc_spb_val_tab_excl, exclude_tables)
+        if include_indices is not None:
+            request.add_string(ibase.isc_spb_val_idx_incl, include_indices)
+        if exclude_indices is not None:
+            request.add_string(ibase.isc_spb_val_idx_excl, exclude_indices)
+        if lock_timeout is not None:
+            request.add_numeric(ibase.isc_spb_val_lock_timeout, lock_timeout, numCType='i')
+
+        # Done constructing the request buffer.
+        self._act(request)
+        self.__fetching = True
+        self.__eof = False
+        if callback:
+            for line in self:
+                callback(line)
 
     # User management methods:
     def get_users(self, user_name=None):

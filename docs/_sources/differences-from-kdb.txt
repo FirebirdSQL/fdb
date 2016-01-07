@@ -50,9 +50,8 @@ column. For example:
 On output, stream BLOBs are represented by BlobReader instances on request. To
 request streamed access to BLOB, you have to use prepared statement for your query
 and call its `set_stream_blob(column_name)` method. Stream access is not allowed
-for cursors because cursors cache prepared statements internally, which would
-lead to dangerous situations (BlobReader life-time management) and anomalies 
-(stream access when it's not required). Example:
+for cursors because it would lead to dangerous situations (BlobReader life-time 
+management) and anomalies (stream access when it's not required). Example:
 
 .. code-block:: python
 

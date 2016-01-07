@@ -44,6 +44,7 @@ FBT_SQL_DATE = 12
 FBT_SQL_TIME = 13
 FBT_SQL_TIMESTAMP = 35
 FBT_BIGINT = 16
+FBT_BOOLEAN = 23
 
 MAX_INTSUBTYPES = 2
 MAX_BLOBSUBTYPES = 8
@@ -52,8 +53,58 @@ TRIGGER_TYPE_SHIFT = 13
 TRIGGER_TYPE_MASK = (0x3 << TRIGGER_TYPE_SHIFT)
 TRIGGER_TYPE_DML = (0 << TRIGGER_TYPE_SHIFT)
 TRIGGER_TYPE_DB	= (1 << TRIGGER_TYPE_SHIFT)
+TRIGGER_TYPE_DDL = (2 << TRIGGER_TYPE_SHIFT)
 
-COLUMN_TYPES =  {FBT_SMALLINT: 'SMALLINT',
+DDL_TRIGGER_ANY = 4611686018427375615 # 9223372036854751229
+DDL_TRIGGER_CREATE_TABLE = 1
+DDL_TRIGGER_ALTER_TABLE = 2
+DDL_TRIGGER_DROP_TABLE = 3
+DDL_TRIGGER_CREATE_PROCEDURE = 4
+DDL_TRIGGER_ALTER_PROCEDURE = 5
+DDL_TRIGGER_DROP_PROCEDURE = 6
+DDL_TRIGGER_CREATE_FUNCTION = 7
+DDL_TRIGGER_ALTER_FUNCTION = 8
+DDL_TRIGGER_DROP_FUNCTION = 9
+DDL_TRIGGER_CREATE_TRIGGER = 10
+DDL_TRIGGER_ALTER_TRIGGER = 11
+DDL_TRIGGER_DROP_TRIGGER = 12
+# gap for TRIGGER_TYPE_MASK - 3 bits
+DDL_TRIGGER_CREATE_EXCEPTION = 16
+DDL_TRIGGER_ALTER_EXCEPTION = 17
+DDL_TRIGGER_DROP_EXCEPTION = 18
+DDL_TRIGGER_CREATE_VIEW = 19
+DDL_TRIGGER_ALTER_VIEW = 20
+DDL_TRIGGER_DROP_VIEW = 21
+DDL_TRIGGER_CREATE_DOMAIN = 22
+DDL_TRIGGER_ALTER_DOMAIN = 23
+DDL_TRIGGER_DROP_DOMAIN = 24
+DDL_TRIGGER_CREATE_ROLE = 25
+DDL_TRIGGER_ALTER_ROLE = 26
+DDL_TRIGGER_DROP_ROLE = 27
+DDL_TRIGGER_CREATE_INDEX = 28
+DDL_TRIGGER_ALTER_INDEX = 29
+DDL_TRIGGER_DROP_INDEX = 30
+DDL_TRIGGER_CREATE_SEQUENCE = 31
+DDL_TRIGGER_ALTER_SEQUENCE = 32
+DDL_TRIGGER_DROP_SEQUENCE = 33
+DDL_TRIGGER_CREATE_USER = 34
+DDL_TRIGGER_ALTER_USER = 35
+DDL_TRIGGER_DROP_USER = 36
+DDL_TRIGGER_CREATE_COLLATION = 37
+DDL_TRIGGER_DROP_COLLATION = 38
+DDL_TRIGGER_ALTER_CHARACTER_SET = 39
+DDL_TRIGGER_CREATE_PACKAGE = 40
+DDL_TRIGGER_ALTER_PACKAGE = 41
+DDL_TRIGGER_DROP_PACKAGE = 42
+DDL_TRIGGER_CREATE_PACKAGE_BODY = 43
+DDL_TRIGGER_DROP_PACKAGE_BODY = 44
+DDL_TRIGGER_CREATE_MAPPING = 45
+DDL_TRIGGER_ALTER_MAPPING = 46
+DDL_TRIGGER_DROP_MAPPING = 47
+
+
+COLUMN_TYPES =  {None: 'UNKNOWN',
+                 FBT_SMALLINT: 'SMALLINT',
                  FBT_INTEGER: 'INTEGER',
                  FBT_QUAD: 'QUAD',
                  FBT_FLOAT: 'FLOAT',
@@ -66,16 +117,34 @@ COLUMN_TYPES =  {FBT_SMALLINT: 'SMALLINT',
                  FBT_SQL_TIME: 'TIME',
                  FBT_SQL_DATE: 'DATE',
                  FBT_SQL_TIMESTAMP: 'TIMESTAMP',
-                 FBT_BIGINT: 'BIGINT'
+                 FBT_BIGINT: 'BIGINT',
+                 FBT_BOOLEAN: 'BOOLEAN',
                 }
 INTEGRAL_SUBTYPES = ('UNKNOWN','NUMERIC','DECIMAL')
 BLOB_SUBTYPES = ('BINARY','TEXT','BLR','ACL','RANGES','SUMMARY',
-                 'FORMAT','TRANSACTION_DESCRIPTION','EXTERNAL_FILE_DESCRIPTION')
+                 'FORMAT','TRANSACTION_DESCRIPTION','EXTERNAL_FILE_DESCRIPTION',
+                 'DEBUG_INFORMATION')
 
 TRIGGER_PREFIX_TYPES = ['BEFORE','AFTER']
 TRIGGER_SUFFIX_TYPES = ['','INSERT','UPDATE','DELETE']
 TRIGGER_DB_TYPES = ['CONNECT','DISCONNECT','TRANSACTION START',
                     'TRANSACTION COMMIT','TRANSACTION ROLLBACK']
+TRIGGER_DDL_TYPES = [None,"CREATE TABLE","ALTER TABLE","DROP TABLE",
+                     "CREATE PROCEDURE","ALTER PROCEDURE","DROP PROCEDURE",
+                     "CREATE FUNCTION","ALTER FUNCTION","DROP FUNCTION",
+                     "CREATE TRIGGER","ALTER TRIGGER","DROP TRIGGER",
+                     None,None,None,	# gap for TRIGGER_TYPE_MASK - 3 bits
+                     "CREATE EXCEPTION","ALTER EXCEPTION","DROP EXCEPTION",
+                     "CREATE VIEW","ALTER VIEW","DROP VIEW",
+                     "CREATE DOMAIN","ALTER DOMAIN","DROP DOMAIN",
+                     "CREATE ROLE","ALTER ROLE","DROP ROLE",
+                     "CREATE INDEX","ALTER INDEX","DROP INDEX",
+                     "CREATE SEQUENCE","ALTER SEQUENCE","DROP SEQUENCE",
+                     "CREATE USER","ALTER USER","DROP USER",
+                     "CREATE COLLATION","DROP COLLATION","ALTER CHARACTER SET",
+                     "CREATE PACKAGE","ALTER PACKAGE","DROP PACKAGE",
+                     "CREATE PACKAGE BODY","DROP PACKAGE BODY",
+                     "CREATE MAPPING","ALTER MAPPING","DROP MAPPING"]
 
 COLLATION_PAD_SPACE = 1
 COLLATION_CASE_INSENSITIVE = 2
@@ -89,11 +158,106 @@ RELATION_TYPE_TABLE = 0
 RELATION_TYPE_VIEW = 1
 RELATION_TYPE_GTT = 5
 RELATION_TYPE_GTT_PRESERVE = 4
+RELATION_TYPE_GTT_DELETE = 5
 
 PROCPAR_DATATYPE = 0
 PROCPAR_DOMAIN = 1
 PROCPAR_TYPE_OF_DOMAIN = 2
 PROCPAR_TYPE_OF_COLUMN = 3
+
+RESERVED = ['ACTIVE','ADD','ADMIN','AFTER','ALL','ALTER','AND',
+            'ANY','ARE','AS','ASC','ASCENDING','AT','AUTO','AUTODDL','AVG',
+            'BASED','BASE_NAME','BEFORE','BEGIN','BETWEEN','BIGINT','BIT_LENGTH',
+            'BLOB','BLOBEDIT','BOTH','BUFFER','BY','BOOLEAN',
+            'CASE','CAST','CHAR','CHARACTER','CHAR_LENGTH','CHARACTER_LENGTH',
+            'CHECK','CHECK_POINT_LENGTH','CLOSE','COALESCE','COLLATE','COLLATION',
+            'COLUMN','COMMIT','COMMITTED','COMPILETIME','COMPUTED','CONDITIONAL',
+            'CONNECT','CONSTRAINT','CONTAINING','CONTINUE','COUNT','CREATE','CROSS',
+            'CSTRING','CURRENT','CURRENT_CONNECTION','CURRENT_DATE','CURRENT_ROLE',
+            'CURRENT_TIME','CURRENT_TIMESTAMP','CURRENT_TRANSACTION','CURRENT_USER',
+            'CORR','COVAR_POP','COVAR_SAMP',
+            'DATABASE','DATE','DAY','DB_KEY','DEBUG','DEC','DECIMAL','DECLARE','DEFAULT',
+            'DELETE','DELETING','DESC','DESCENDING','DESCRIBE','DISCONNECT',
+            'DISPLAY','DISTINCT','DO','DOMAIN','DOUBLE','DROP','DETERMINISTIC',
+            'ECHO','EDIT','ELSE','END','ENTRY_POINT','ESCAPE','EVENT','EXCEPTION','EXECUTE',
+            'EXISTS','EXIT','EXTERN','EXTERNAL','EXTRACT',
+            'FETCH','FILE','FILTER','FLOAT','FOR','FOREIGN','FOUND','FROM','FULL','FUNCTION',
+            'FALSE',
+            'GDSCODE','GENERATOR','GEN_ID','GOTO','GRANT','GROUP','GROUP_COMMIT_WAIT_TIME',
+            'GLOBAL',
+            'HAVING','HEADING','HELP','HOUR',
+            'IF','IMMEDIATE','IN','INACTIVE','INDEX','INDICATOR','INIT','INNER','INPUT',
+            'INPUT_TYPE','INSERT','INSERTING','INT','INTEGER','INTO','IS','ISOLATION',
+            'INSENSITIVE',
+            'JOIN',
+            'KEY',
+            'LAST','LC_MESSAGES','LC_TYPE','LEADING','LEAVE','LEFT','LENGTH',
+            'LEVEL','LIKE','LOCK','LOG_BUFFER_SIZE','LONG','LOWER',
+            'MANUAL','MAX','MAXIMUM','MAXIMUM_SEGMENT','MAX_SEGMENT','MERGE','MESSAGE',
+            'MIN','MINIMUM','MINUTE','MODULE_NAME','MONTH',
+            'NAMES','NATIONAL','NATURAL','NCHAR','NO','NOAUTO','NOT','NULL','NULLIF',
+            'NULLS','NUM_LOG_BUFFERS','NUMERIC',
+            'OCTET_LENGTH','OF','ON','ONLY','OPEN','OPTION','OR','ORDER','OUTER','OUTPUT',
+            'OUTPUT_TYPE','OVERFLOW','OFFSET','OVER',
+            'PAGE','PAGELENGTH','PAGES','PAGE_SIZE','PARAMETER','PASSWORD','PERCENT',
+            'PLAN','POSITION','POST_EVENT','PRECISION','PREPARE','PRIMARY','PRIVILEGES',
+            'PROCEDURE','PUBLIC',
+            'QUIT',
+            'RDB$DB_KEY','READ','REAL','RECORD_VERSION','RECREATE','REFERENCES','RELEASE',
+            'RESERV','RESERVING','RETAIN','RETURN','RETURNING_VALUES','RETURNS','REVOKE',
+            'RIGHT','ROLLBACK','ROW_COUNT','ROWS','RUNTIME','RECURSIVE','RDB$RECORD_VERSION',
+            'REGR_AVGX','REGR_AVGY','REGR_COUNT','REGR_INTERCEPT','REGR_R2','REGR_SLOPE',
+            'REGR_SXX','REGR_SXY','REGR_SYY','ROW',
+            'SAVEPOINT','SCHEMA','SECOND','SELECT','SET','SHADOW','SHARED','SHELL',
+            'SHOW','SIMILAR','SINGULAR','SIZE','SMALLINT','SNAPSHOT','SOME','SORT','SQL',
+            'SQLCODE','SQLERROR','SQLWARNING','STABILITY','STARTING','STARTS','STATEMENT',
+            'STATIC','STATISTICS','SUB_TYPE','SUM','SUSPEND','SENSITIVE','START','SCROLL',
+            'SQLSTATE','STDDEV_POP','STDDEV_SAMP',
+            'TABLE','TERM','TERMINATOR','THEN','TIES','TIME','TIMESTAMP','TO','TRAILING',
+            'TRANSACTION','TRANSLATE','TRANSLATION','TRIGGER','TRIM','TRUE',
+            'UNCOMMITTED','UNION','UNIQUE','UNKNOWN','UPDATE','UPDATING','UPPER','USER',
+            'USING',
+            'VALUE','VALUES','VARCHAR','VARIABLE','VARYING','VERSION','VIEW','VAR_POP',
+            'VAR_SAMP',
+            'WAIT','WHEN','WHENEVER','WHERE','WHILE','WITH','WORK','WRITE',
+            'YEAR',
+            ]
+NON_RESERVED = ['ABS','ACCENT','ACOS','ALWAYS','ASCII_CHAR','ASCII_VAL','ASIN','ATAN','ATAN2',
+                'AUTONOMOUS','ACTION','ABSOLUTE','ACOSH','ASINH','ATANH',
+                'BIN_AND','BIN_OR','BIN_NOT','BIN_SHL','BIN_SHR','BIN_XOR',
+                'BLOCK','BACKUP','BREAK','BODY',
+                #removed 'BASENAME',
+                'CALLER','CEIL','CEILING','CHAR_TO_UUID','CASCADE','COMMENT','COMMON',
+                'COS','COSH','COT','CURSOR','CONTINUE',
+                #removed 'CACHE','CHECK_POINT_LEN',
+                'DATEADD','DATEDIFF','DECODE','DIFFERENCE','DATA','DESCRIPTOR','DDL','DECRYPT',
+                'DENSE_RANK',
+                'EXP','ENCRYPT','ENGINE',
+                'FIRSTNAME','FLOOR','FIRST','FREE_IT','FIRST_VALUE',
+                'GEN_UUID','GENERATED','GRANTED',
+                #removed 'GROUP_COMMIT_WAIT',
+                'HASH',
+                'IGNORE','IIF','IDENTITY','INCREMENT',
+                'LIMBO','LIST','LN','LOG','LOG10','LPAD','LASTNAME','LAST_VALUE','LAG','LEAD',
+                'LINGER',
+                #removed 'LOGFILE','LOG_BUF_SEZE',
+                'MAPPING','MATCHED','MATCHING','MAXVALUE','MIDDLENAME','MILLISECOND',
+                'MINVALUE','MOD',
+                'NEXT','NAME','NTH_VALUE',
+                #removed 'NUM_LOG_BUFS',
+                'OS_NAME','OVERLAY',
+                'PI','PLACING','POWER','PROTECTED','PAD','PRESERVE','PACKAGE','PARTITION',
+                'PLUGIN','PRIOR',
+                'REPLACE','REQUESTS','RESTART','RETURNING','REVERSE','ROUND','RPAD','RAND',
+                'RESTRICT','ROLE','RANK','RELATIVE','ROW_NUMBER',
+                #removed 'RAW_PARTITIONS',
+                'SEGMENT','SEQUENCE','SIGN','SIN','SINH','SOURCE','SPACE','SQLSTATE','SQRT',
+                'SCALAR_ARRAY','SKIP','SUBSTRING','SERVERWIDE',
+                'TIMEOUT','TRUNC','TWO_PHASE','TAN','TANH','TYPE','TEMPORARY','TAGS','TRUSTED',
+                'UUID_TO_CHAR','UNDO','USAGE',
+                'WEEK','WEEKDAY',
+                'YEARDAY'
+                ]
 
 #--- Functions
 def get_grants(privileges,grantors=None):
@@ -166,65 +330,7 @@ def get_grants(privileges,grantors=None):
     return grants
 def isKeyword(ident):
     "Returns True if `ident` is Firebird keyword."
-    return ident in ['ABS','ACCENT','ACOS','ACTION','ACTIVE','ADD','ADMIN',
-                     'AFTER','ALL','ALTER','ALWAYS','AND','ANY','AS','ASC',
-                     'ASCENDING','ASCII_CHAR','ASCII_VAL','ASIN','AT','ATAN',
-                     'ATAN2','AUTO','AUTONOMOUS','AVG','BACKUP','BEFORE',
-                     'BEGIN','BETWEEN','BIGINT','BIN_AND','BIN_NOT','BIN_OR',
-                     'BIN_SHL','BIN_SHR','BIN_XOR','BIT_LENGTH','BLOB','BLOCK',
-                     'BOTH','BREAK','BY','CALLER','CASCADE','CASE','CAST',
-                     'CEIL','CEILING','CHAR','CHAR_LENGTH','CHAR_TO_UUID',
-                     'CHARACTER','CHARACTER_LENGTH','CHECK','CLOSE','COALESCE',
-                     'COLLATE','COLLATION','COLUMN','COMMENT','COMMIT',
-                     'COMMITTED','COMMON','COMPUTED','CONDITIONAL','CONNECT',
-                     'CONSTRAINT','CONTAINING','COS','COSH','COT','COUNT',
-                     'CREATE','CROSS','CSTRING','CURRENT','CURRENT_CONNECTION',
-                     'CURRENT_DATE','CURRENT_ROLE','CURRENT_TIME',
-                     'CURRENT_TIMESTAMP','CURRENT_TRANSACTION','CURRENT_USER',
-                     'CURSOR','DATA','DATABASE','DATE','DATEADD','DATEDIFF',
-                     'DAY','DEC','DECIMAL','DECLARE','DECODE','DEFAULT',
-                     'DELETE','DELETING','DESC','DESCENDING','DESCRIPTOR',
-                     'DIFFERENCE','DISCONNECT','DISTINCT','DO','DOMAIN',
-                     'DOUBLE','DROP','ELSE','END','ENTRY_POINT','ESCAPE',
-                     'EXCEPTION','EXECUTE','EXISTS','EXIT','EXP','EXTERNAL',
-                     'EXTRACT','FETCH','FILE','FILTER','FIRST','FIRSTNAME',
-                     'FLOAT','FLOOR','FOR','FOREIGN','FREE_IT','FROM','FULL',
-                     'FUNCTION','GDSCODE','GEN_ID','GEN_UUID','GENERATED',
-                     'GENERATOR','GLOBAL','GRANT','GRANTED','GROUP','HASH',
-                     'HAVING','HOUR','IF','IGNORE','IIF','IN','INACTIVE',
-                     'INDEX','INNER','INPUT_TYPE','INSENSITIVE','INSERT',
-                     'INSERTING','INT','INTEGER','INTO','IS','ISOLATION','JOIN',
-                     'KEY','LAST','LASTNAME','LEADING','LEAVE','LEFT','LENGTH',
-                     'LEVEL','LIKE','LIMBO','LIST','LN','LOCK','LOG','LOG10',
-                     'LONG','LOWER','LPAD','MANUAL','MAPPING','MATCHED',
-                     'MATCHING','MAX','MAXIMUM_SEGMENT','MAXVALUE','MERGE',
-                     'MIDDLENAME','MILLISECOND','MIN','MINUTE','MINVALUE','MOD',
-                     'MODULE_NAME','MONTH','NAMES','NATIONAL','NATURAL','NCHAR',
-                     'NEXT','NO','NOT','NULL','NULLIF','NULLS','NUMERIC',
-                     'OCTET_LENGTH','OF','ON','ONLY','OPEN','OPTION','OR',
-                     'ORDER','OS_NAME','OUTER','OUTPUT_TYPE','OVERFLOW',
-                     'OVERLAY','PAD','PAGE','PAGE_SIZE','PAGES','PARAMETER',
-                     'PASSWORD','PI','PLACING','PLAN','POSITION','POST_EVENT',
-                     'POWER','PRECISION','PRESERVE','PRIMARY','PRIVILEGES',
-                     'PROCEDURE','PROTECTED','RAND','RDB$DB_KEY','READ','REAL',
-                     'RECORD_VERSION','RECREATE','RECURSIVE','REFERENCES',
-                     'RELEASE','REPLACE','REQUESTS','RESERV','RESERVING',
-                     'RESTART','RESTRICT','RETAIN','RETURNING','RETURNING_VALUES',
-                     'RETURNS','REVERSE','REVOKE','RIGHT','ROLE','ROLLBACK',
-                     'ROUND','ROW_COUNT','ROWS','RPAD','SAVEPOINT','SCALAR_ARRAY',
-                     'SCHEMA','SECOND','SEGMENT','SELECT','SENSITIVE','SEQUENCE',
-                     'SET','SHADOW','SHARED','SIGN','SIMILAR','SIN','SINGULAR',
-                     'SINH','SIZE','SKIP','SMALLINT','SNAPSHOT','SOME','SORT',
-                     'SOURCE','SPACE','SQLCODE','SQLSTATE','SQRT','STABILITY',
-                     'START','STARTING','STARTS','STATEMENT','STATISTICS',
-                     'SUB_TYPE','SUBSTRING','SUM','SUSPEND','TABLE','TAN','TANH',
-                     'TEMPORARY','THEN','TIME','TIMEOUT','TIMESTAMP','TO',
-                     'TRAILING','TRANSACTION','TRIGGER','TRIM','TRUNC','TWO_PHASE',
-                     'TYPE','UNCOMMITTED','UNDO','UNION','UNIQUE','UPDATE',
-                     'UPDATING','UPPER','USER','USING','UUID_TO_CHAR','VALUE',
-                     'VALUES','VARCHAR','VARIABLE','VARYING','VIEW','WAIT','WEEK',
-                     'WEEKDAY','WHEN','WHERE','WHILE','WITH','WORK','WRITE',
-                     'YEAR','YEARDAY']
+    return (ident in RESERVED) or (ident in NON_RESERVED)
 def escape_single_quotes(text):
     return text.replace("'","''")
 
@@ -236,6 +342,8 @@ class Schema(object):
     """This class represents database schema.
     """
 
+    #: option switch: Always quote db object names on output
+    opt_always_quote = False
     #: Datatype declaration methods for procedure parameters: key = numID, value = name
     enum_param_type_from = {PROCPAR_DATATYPE: 'DATATYPE',
                             PROCPAR_DOMAIN: 'DOMAIN',
@@ -267,8 +375,25 @@ class Schema(object):
     enum_transaction_state_types = dict()
     #: Trigger Types: key = numID, value = type_name
     enum_trigger_types = dict()
-    #: option switch: Always quote db object names on output
-    opt_always_quote = False
+    # Firebird 3.0
+    #: Parameter Types: key = numID, value = type_name
+    enum_parameter_types = dict()
+    #: Index activity status: key = numID, value = flag_name
+    enum_index_activity_flags = dict()
+    #: Index uniqueness: key = numID, value = flag_name
+    enum_index_unique_flags = dict()
+    #: Trigger activity status: key = numID, value = flag_name_name
+    enum_trigger_activity_flags = dict()
+    #: Grant option: key = numID, value = option_name
+    enum_grant_options = dict()
+    #: Page type: key = numID, value = type_name
+    enum_page_types = dict()
+    #: Privacy flags: numID, value = flag_name
+    enum_privacy_flags = dict()
+    #: Legacy flags: numID, value = flag_name
+    enum_legacy_flags = dict()
+    #: Determinism flags: numID, value = flag_name
+    enum_determinism_flags = dict()
 
     def __init__(self):
         self._con = None
@@ -305,7 +430,7 @@ class Schema(object):
                             'generators','sequences','triggers','procedures',
                             'constraints','collations','character sets',
                             'exceptions','roles','functions','files','shadows',
-                            'privileges','users']:
+                            'privileges','users','packages']:
                 raise fdb.ProgrammingError("Unknown metadata category '%s'" % data)
         if (not data or data == 'tables'):
             self.__tables = None
@@ -344,6 +469,8 @@ class Schema(object):
             self.__privileges = None
         if (not data or data == 'users'):
             self.__users = None
+        if (not data or data == 'packages'):
+            self.__packages = None
 
     #--- protected
 
@@ -392,6 +519,8 @@ order by r.RDB$DIMENSION""" % field.name)]
             return self.get_function(name)
         elif itype == 17: # Collation
             return self.get_collation(name)
+        elif itype in [17,18]: # Package
+            return self.get_package(name)
         else:
             raise fdb.ProgrammingError('Unsupported subject type')
 
@@ -426,12 +555,16 @@ order by r.RDB$DIMENSION""" % field.name)]
     def _get_all_domains(self):
         if self.__domains is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$FIELD_NAME, RDB$VALIDATION_SOURCE,
-RDB$COMPUTED_SOURCE, RDB$DEFAULT_SOURCE, RDB$FIELD_LENGTH, RDB$FIELD_SCALE,
-RDB$FIELD_TYPE, RDB$FIELD_SUB_TYPE, RDB$DESCRIPTION, RDB$SYSTEM_FLAG,
-RDB$SEGMENT_LENGTH, RDB$EXTERNAL_LENGTH, RDB$EXTERNAL_SCALE, RDB$EXTERNAL_TYPE,
-RDB$DIMENSIONS, RDB$NULL_FLAG, RDB$CHARACTER_LENGTH, RDB$COLLATION_ID,
-RDB$CHARACTER_SET_ID, RDB$FIELD_PRECISION from RDB$FIELDS""")
+            cols = ['RDB$FIELD_NAME','RDB$VALIDATION_SOURCE','RDB$COMPUTED_SOURCE',
+                    'RDB$DEFAULT_SOURCE','RDB$FIELD_LENGTH','RDB$FIELD_SCALE',
+                    'RDB$FIELD_TYPE','RDB$FIELD_SUB_TYPE','RDB$DESCRIPTION',
+                    'RDB$SYSTEM_FLAG','RDB$SEGMENT_LENGTH','RDB$EXTERNAL_LENGTH',
+                    'RDB$EXTERNAL_SCALE','RDB$EXTERNAL_TYPE','RDB$DIMENSIONS',
+                    'RDB$NULL_FLAG','RDB$CHARACTER_LENGTH','RDB$COLLATION_ID',
+                    'RDB$CHARACTER_SET_ID','RDB$FIELD_PRECISION']
+            if self._con.ods >= fdb.ODS_FB_30:
+                cols.extend(['RDB$SECURITY_CLASS', 'RDB$OWNER_NAME'])
+            self._ic.execute("""select %s from RDB$FIELDS""" % ','.join(cols))
             self.__domains = [Domain(self,row) for row in self._ic.itermap()]
         return self.__domains
     def _get_domains(self):
@@ -485,7 +618,12 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
     def _get_all_generators(self):
         if self.__generators is None:
             self.__fail_if_closed()
-            self._ic.execute("select * from rdb$generators")
+            cols = ['RDB$GENERATOR_NAME', 'RDB$GENERATOR_ID', 'RDB$DESCRIPTION',
+                    'RDB$SYSTEM_FLAG']
+            if self._con.ods >= fdb.ODS_FB_30:
+                cols.extend(['RDB$SECURITY_CLASS','RDB$OWNER_NAME','RDB$INITIAL_VALUE',
+                             'RDB$GENERATOR_INCREMENT'])
+            self._ic.execute("select %s from rdb$generators" % ','.join(cols))
             self.__generators = [Sequence(self,row) for row in self._ic.itermap()]
         return self.__generators
     def _get_generators(self):
@@ -495,9 +633,12 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
     def _get_all_triggers(self):
         if self.__triggers is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$TRIGGER_NAME, RDB$RELATION_NAME,
-RDB$TRIGGER_SEQUENCE, RDB$TRIGGER_TYPE, RDB$TRIGGER_SOURCE, RDB$DESCRIPTION,
-RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
+            cols = ['RDB$TRIGGER_NAME', 'RDB$RELATION_NAME', 'RDB$TRIGGER_SEQUENCE',
+                    'RDB$TRIGGER_TYPE', 'RDB$TRIGGER_SOURCE', 'RDB$DESCRIPTION',
+                    'RDB$TRIGGER_INACTIVE', 'RDB$SYSTEM_FLAG', 'RDB$FLAGS']
+            if self._con.ods >= fdb.ODS_FB_30:
+                cols.extend(['RDB$VALID_BLR', 'RDB$ENGINE_NAME', 'RDB$ENTRYPOINT'])
+            self._ic.execute("select %s from RDB$TRIGGERS" % ','.join(cols))
             self.__triggers = [Trigger(self,row) for row in self._ic.itermap()]
         return self.__triggers
     def _get_triggers(self):
@@ -512,6 +653,9 @@ RDB$TRIGGER_INACTIVE, RDB$SYSTEM_FLAG, RDB$FLAGS from RDB$TRIGGERS""")
                     'RDB$SECURITY_CLASS', 'RDB$OWNER_NAME', 'RDB$SYSTEM_FLAG']
             if self._con.ods >= fdb.ODS_FB_21:
                 cols.extend(['RDB$PROCEDURE_TYPE','RDB$VALID_BLR'])
+            if self._con.ods >= fdb.ODS_FB_30:
+                cols.extend(['RDB$ENGINE_NAME', 'RDB$ENTRYPOINT',
+                             'RDB$PACKAGE_NAME', 'RDB$PRIVATE_FLAG'])
             self._ic.execute("select %s from rdb$procedures" % ','.join(cols))
             self.__procedures = [Procedure(self,row) for row in self._ic.itermap()]
         return self.__procedures
@@ -558,9 +702,15 @@ left outer join rdb$check_constraints K on C.rdb$constraint_name = K.rdb$constra
     def _get_all_functions(self):
         if self.__functions is None:
             self.__fail_if_closed()
-            self._ic.execute("""select RDB$FUNCTION_NAME, RDB$FUNCTION_TYPE,
-RDB$DESCRIPTION, RDB$MODULE_NAME, RDB$ENTRYPOINT, RDB$RETURN_ARGUMENT,
-RDB$SYSTEM_FLAG from rdb$functions""")
+            cols = ['RDB$FUNCTION_NAME','RDB$FUNCTION_TYPE','RDB$MODULE_NAME',
+                    'RDB$ENTRYPOINT','RDB$DESCRIPTION','RDB$RETURN_ARGUMENT',
+                    'RDB$SYSTEM_FLAG']
+            if self._con.ods >= fdb.ODS_FB_30:
+                cols.extend(['RDB$ENGINE_NAME','RDB$PACKAGE_NAME','RDB$PRIVATE_FLAG',
+                             'RDB$FUNCTION_SOURCE','RDB$FUNCTION_ID','RDB$VALID_BLR',
+                             'RDB$SECURITY_CLASS','RDB$OWNER_NAME','RDB$LEGACY_FLAG',
+                             'RDB$DETERMINISTIC_FLAG'])
+            self._ic.execute("select %s from rdb$functions" % ','.join(cols))
             self.__functions = [Function(self,row) for row in self._ic.itermap()]
         return self.__functions
     def _get_functions(self):
@@ -599,6 +749,20 @@ FROM RDB$USER_PRIVILEGES""")
             self._ic.execute("select distinct(RDB$USER) FROM RDB$USER_PRIVILEGES")
             self.__users = [fdb.services.User(row[0].strip()) for row in self._ic]
         return self.__users
+    def _get_packages(self):
+        if self.__packages is None:
+            if self._con.ods >= fdb.ODS_FB_30:
+                self.__fail_if_closed()
+                self._ic.execute("""select RDB$PACKAGE_NAME, RDB$PACKAGE_HEADER_SOURCE,
+    RDB$PACKAGE_BODY_SOURCE, RDB$VALID_BODY_FLAG, RDB$SECURITY_CLASS, RDB$OWNER_NAME,
+    RDB$SYSTEM_FLAG, RDB$DESCRIPTION
+                FROM RDB$PACKAGES""")
+                self.__packages = [Package(self,row) for row in self._ic.itermap()]
+            else:
+                self.__packages = []
+        return self.__packages
+    def _get_linger(self):
+        return self.__linger
 
     #--- Properties
 
@@ -606,8 +770,7 @@ FROM RDB$USER_PRIVILEGES""")
     closed = property(__get_closed)
     description = LateBindingProperty(_get_description,None,None,
         "Database description or None if it doesn't have a description.")
-    owner_name = LateBindingProperty(_get_owner_name,None,None,
-                                     "Database owner name.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"Database owner name.")
     default_character_set = LateBindingProperty(_get_default_character_set,None,None,
         "Default :class:`CharacterSet` for database")
     security_class = LateBindingProperty(_get_security_class,None,None,
@@ -666,6 +829,10 @@ FROM RDB$USER_PRIVILEGES""")
         "List of all shadows defined for database.\nItems are :class:`Shadow` objects.")
     privileges = LateBindingProperty(_get_privileges,None,None,
         "List of all privileges defined for database.\nItems are :class:`Privilege` objects.")
+    # FB 3
+    packages = LateBindingProperty(_get_packages,None,None,
+        "List of all packages defined for database.\nItems are :class:`Package` objects.")
+    linger = LateBindingProperty(_get_linger,None,None,"Database linger value.")
 
     #--- Public
 
@@ -689,6 +856,7 @@ FROM RDB$USER_PRIVILEGES""")
         self._ic.execute('select * from RDB$DATABASE')
         row = self._ic.fetchonemap()
         self.__description = row['RDB$DESCRIPTION']
+        self.__linger = row.get('RDB$LINGER')
         self._default_charset_name = row['RDB$CHARACTER_SET_NAME'].strip()
         self.__security_class = row['RDB$SECURITY_CLASS']
         if self.__security_class: self.__security_class = self.__security_class.strip()
@@ -728,6 +896,25 @@ FROM RDB$USER_PRIVILEGES""")
         self.enum_transaction_state_types = enum_dict('RDB$TRANSACTION_STATE')
         # Trigger Types
         self.enum_trigger_types = enum_dict('RDB$TRIGGER_TYPE')
+        # Firebird 3.0
+        # Parameter Types
+        self.enum_parameter_types = enum_dict('RDB$PARAMETER_TYPE')
+        # Index activity
+        self.enum_index_activity_flags = enum_dict('RDB$INDEX_INACTIVE')
+        # Index uniqueness
+        self.enum_index_unique_flags = enum_dict('RDB$UNIQUE_FLAG')
+        # Trigger activity
+        self.enum_trigger_activity_flags = enum_dict('RDB$TRIGGER_INACTIVE')
+        # Grant options
+        self.enum_grant_options = enum_dict('RDB$GRANT_OPTION')
+        # Page types
+        self.enum_page_types = enum_dict('RDB$PAGE_TYPE')
+        # Privacy
+        self.enum_privacy_flags = enum_dict('RDB$PRIVATE_FLAG')
+        # Legacy
+        self.enum_legacy_flags = enum_dict('RDB$LEGACY_FLAG')
+        # Determinism
+        self.enum_determinism_flags = enum_dict('RDB$DETERMINISTIC_FLAG')
 
     def close(self):
         """Sever link to :class:`~fdb.Connection`.
@@ -778,6 +965,7 @@ FROM RDB$USER_PRIVILEGES""")
         - shadows
         - privileges
         - users
+        - packages
 
         :raises ProgrammingError: For undefined metadata category.
 
@@ -947,6 +1135,14 @@ FROM RDB$USER_PRIVILEGES""")
             utype = [8]
         return [p for p in self.privileges
                 if ((p.user_name == uname) and (p.user_type in utype))]
+    def get_package(self,name):
+        """Get :class:`Package` by name.
+
+        :param string name: Package name.
+
+        :returns: :class:`Package` with specified name or `None`.
+        """
+        return self.__object_by_name(self._get_packages(),name)
 
 class BaseSchemaItem(object):
     """Base class for all database schema objects.
@@ -1055,10 +1251,13 @@ class Collation(BaseSchemaItem):
     """
     def __init__(self,schema,attributes):
         super(Collation,self).__init__(schema,attributes)
+        self._type_code = [17,]
 
         self._strip_attribute('RDB$COLLATION_NAME')
         self._strip_attribute('RDB$BASE_COLLATION_NAME')
         self._strip_attribute('RDB$FUNCTION_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$OWNER_NAME')
 
         if not self.issystemobject():
             self._actions = ['create','drop']
@@ -1103,6 +1302,10 @@ class Collation(BaseSchemaItem):
         return self._attributes['RDB$SPECIFIC_ATTRIBUTES']
     def _get_function_name(self):
         return self._attributes['RDB$FUNCTION_NAME']
+    def _get_security_class(self):
+        return self._attributes.get('RDB$SECURITY_CLASS')
+    def _get_owner_name(self):
+        return self._attributes.get('RDB$OWNER_NAME')
 
     #--- Properties
 
@@ -1117,6 +1320,10 @@ class Collation(BaseSchemaItem):
         "Collation specific attributes.")
     function_name = LateBindingProperty(_get_function_name,None,None,
         "Not currently used.")
+    # FB 3.0
+    security_class = LateBindingProperty(_get_security_class,None,None,
+                                         "Security class name or None.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
 
     #--- Public
 
@@ -1146,9 +1353,12 @@ class CharacterSet(BaseSchemaItem):
     """
     def __init__(self,schema,attributes):
         super(CharacterSet,self).__init__(schema,attributes)
+        self._type_code = [11,]
 
         self._strip_attribute('RDB$CHARACTER_SET_NAME')
         self._strip_attribute('RDB$DEFAULT_COLLATE_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$OWNER_NAME')
 
         self._actions = ['alter']
 
@@ -1174,6 +1384,10 @@ class CharacterSet(BaseSchemaItem):
         r = [c for c in self.schema.collations
              if c._attributes['RDB$CHARACTER_SET_ID'] == self.id]
         return r
+    def _get_security_class(self):
+        return self._attributes.get('RDB$SECURITY_CLASS')
+    def _get_owner_name(self):
+        return self._attributes.get('RDB$OWNER_NAME')
 
     #--- properties
 
@@ -1184,6 +1398,10 @@ class CharacterSet(BaseSchemaItem):
                             "Collate object of default collate.")
     collations = LateBindingProperty(_get_collations,None,None,
                             "List of Collations associated with character set.")
+    # FB 3.0
+    security_class = LateBindingProperty(_get_security_class,None,None,
+                                         "Security class name or None.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
 
     #--- Public
 
@@ -1223,6 +1441,8 @@ class DatabaseException(BaseSchemaItem):
         self._type_code = [7,]
 
         self._strip_attribute('RDB$EXCEPTION_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$OWNER_NAME')
 
         if not self.issystemobject():
             self._actions = ['create','recreate','alter','create_or_alter','drop']
@@ -1250,12 +1470,20 @@ class DatabaseException(BaseSchemaItem):
         return self._attributes['RDB$EXCEPTION_NUMBER']
     def _get_message(self):
         return self._attributes['RDB$MESSAGE']
+    def _get_security_class(self):
+        return self._attributes.get('RDB$SECURITY_CLASS')
+    def _get_owner_name(self):
+        return self._attributes.get('RDB$OWNER_NAME')
 
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,
                              "System-assigned unique exception number.")
     message = LateBindingProperty(_get_message,None,None,"Custom message text.")
+    # FB 3.0
+    security_class = LateBindingProperty(_get_security_class,None,None,
+                                         "Security class name or None.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
 
     #--- Public
 
@@ -1279,6 +1507,8 @@ class Sequence(BaseSchemaItem):
         self._type_code = [14,]
 
         self._strip_attribute('RDB$GENERATOR_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$OWNER_NAME')
 
         if not self.issystemobject():
             self._actions = ['create','alter','drop']
@@ -1304,11 +1534,25 @@ class Sequence(BaseSchemaItem):
         return self._attributes['RDB$GENERATOR_ID']
     def _get_value(self):
         return self.schema._select_row("select GEN_ID(%s,0) from RDB$DATABASE" % self.name)['GEN_ID']
+    def _get_security_class(self):
+        return self._attributes.get('RDB$SECURITY_CLASS')
+    def _get_owner_name(self):
+        return self._attributes.get('RDB$OWNER_NAME')
+    def _get_inital_value(self):
+        return self._attributes.get('RDB$INITIAL_VALUE')
+    def _get_increment(self):
+        return self._attributes.get('RDB$GENERATOR_INCREMENT')
 
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,"Internal ID number of the sequence.")
     value = LateBindingProperty(_get_value,None,None,"Current sequence value.")
+    # FB 3.0
+    security_class = LateBindingProperty(_get_security_class,None,None,
+                                         "Security class name or None.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
+    inital_value = LateBindingProperty(_get_inital_value,None,None,"Initial sequence value.")
+    increment = LateBindingProperty(_get_increment,None,None,"Sequence increment.")
 
     #--- Public
 
@@ -1318,6 +1562,9 @@ class Sequence(BaseSchemaItem):
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitGenerator(self)
+    def isidentity(self):
+        "Returns True for system generators created for IDENTITY columns."
+        return self._attributes['RDB$SYSTEM_FLAG'] == 6
 
 class TableColumn(BaseSchemaItem):
     """Represents table column.
@@ -1325,7 +1572,7 @@ class TableColumn(BaseSchemaItem):
     Supported SQL actions:
 
     - User column: alter(name=string,datatype=string_SQLTypeDef,position=number,
-                         expression=computed_by_expr), drop
+                         expression=computed_by_expr,restart=None_or_init_value), drop
     - System column: none
     """
     def __init__(self,schema,table,attributes):
@@ -1337,6 +1584,7 @@ class TableColumn(BaseSchemaItem):
         self._strip_attribute('RDB$RELATION_NAME')
         self._strip_attribute('RDB$FIELD_SOURCE')
         self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$GENERATOR_NAME')
 
         if not self.issystemobject():
             self._actions = ['alter','drop']
@@ -1344,7 +1592,7 @@ class TableColumn(BaseSchemaItem):
     #--- Protected
 
     def _get_alter_sql(self,**params):
-        self._check_params(params,['expression','datatype','name','position'])
+        self._check_params(params,['expression','datatype','name','position','restart'])
         new_expr = params.get('expression')
         new_type = params.get('datatype')
         new_name = params.get('name')
@@ -1368,6 +1616,12 @@ class TableColumn(BaseSchemaItem):
             if new_expr:
                 result += ' COMPUTED BY %s' % new_expr
             return result
+        elif 'restart' in params:
+            restart = params.get('restart')
+            sql += ' RESTART'
+            if restart is not None:
+                sql += ' WITH %d' % restart
+            return sql
         else:
             raise fdb.ProgrammingError("Parameter required.")
     def _get_drop_sql(self,**params):
@@ -1400,6 +1654,10 @@ class TableColumn(BaseSchemaItem):
                 if (p.subject_name == self.table.name and
                     p.field_name == self.name and
                     p.subject_type in self.table._type_code)]
+    def _get_generator(self):
+        return self.schema.get_generator(self._attributes.get('RDB$GENERATOR_NAME'))
+    def _get_identity_type(self):
+        return self._attributes.get('RDB$IDENTITY_TYPE')
 
     #--- Properties
 
@@ -1419,6 +1677,9 @@ class TableColumn(BaseSchemaItem):
                                 "Comlete SQL datatype definition.")
     privileges = LateBindingProperty(_get_privileges,None,None,
         "List of :class:`Privilege` objects granted to this object.")
+    # FB 3.0
+    generator = LateBindingProperty(_get_generator,None,None,"Internal flags.")
+    identity_type = LateBindingProperty(_get_identity_type,None,None,"Internal flags.")
 
     #--- Public
 
@@ -1453,6 +1714,9 @@ class TableColumn(BaseSchemaItem):
     def iswritable(self):
         "Returns True if column is writable (i.e. it's not computed etc.)."
         return bool(self._attributes['RDB$UPDATE_FLAG'])
+    def isidentity(self):
+        "Returns True for identity type column."
+        return self._attributes.get('RDB$IDENTITY_TYPE') is not None
     def has_default(self):
         "Returns True if column has default value."
         return bool(self._attributes.get('RDB$DEFAULT_SOURCE'))
@@ -1710,6 +1974,8 @@ class Domain(BaseSchemaItem):
         self._type_code = [9]
 
         self._strip_attribute('RDB$FIELD_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$OWNER_NAME')
 
         if not self.issystemobject():
             self._actions = ['create','alter','drop']
@@ -1833,6 +2099,10 @@ class Domain(BaseSchemaItem):
                     if self.character_set._attributes['RDB$DEFAULT_COLLATE_NAME'] != cname:
                         l.append(' COLLATE %s' % cname)
         return ''.join(l)
+    def _get_security_class(self):
+        return self._attributes.get('RDB$SECURITY_CLASS')
+    def _get_owner_name(self):
+        return self._attributes.get('RDB$OWNER_NAME')
 
     #--- Properties
 
@@ -1869,6 +2139,10 @@ class Domain(BaseSchemaItem):
         "Indicates the number of digits of precision available to the data type of the column.")
     datatype = LateBindingProperty(_get_datatype,None,None,
         "Comlete SQL datatype definition.")
+    # FB 3.0
+    security_class = LateBindingProperty(_get_security_class,None,None,
+                                         "Security class name or None.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
 
     #--- Public
 
@@ -1908,6 +2182,7 @@ class Dependency(BaseSchemaItem):
         self._strip_attribute('RDB$DEPENDENT_NAME')
         self._strip_attribute('RDB$DEPENDED_ON_NAME')
         self._strip_attribute('RDB$FIELD_NAME')
+        self._strip_attribute('RDB$PACKAGE_NAME')
 
     #--- Protected
 
@@ -1961,6 +2236,10 @@ class Dependency(BaseSchemaItem):
         elif self.dependent_type == 16:
             ## ToDo: Implement handler for BLOB_FILTER
             return None
+        elif self.dependent_type == 17: # Collation
+            return self.schema.get_collation(self.dependent_name)
+        elif self.dependent_type in [18,19]: # Package + package body
+            return self.schema.get_package(self.dependent_name)
         return None
     def _get_depended_on(self):
         if self.depended_on_type == 0: # TABLE
@@ -2007,6 +2286,8 @@ class Dependency(BaseSchemaItem):
             ## ToDo: Implement handler for BLOB_FILTER
             return None
         return None
+    def _get_package(self):
+        return self.schema.get_package(self._attributes.get('RDB$PACKAGE_NAME'))
 
     #--- Properties
 
@@ -2024,6 +2305,9 @@ class Dependency(BaseSchemaItem):
                                     "Name of db object on which dependent depends.")
     depended_on_type = LateBindingProperty(_get_depended_on_type,None,None,
                                     "Type of db object on which dependent depends.")
+    # FB 3.0
+    package = LateBindingProperty(_get_package,None,None,
+        ":class:`Package` instance if dependent depends on object in package or None.")
 
     #--- Public
 
@@ -2042,6 +2326,9 @@ class Dependency(BaseSchemaItem):
     def get_dependencies(self):
         "Returns empty list because Dependency object never has dependencies."
         return []
+    def ispackaged(self):
+        "Returns True if dependency is defined in package."
+        return bool(self._attributes.get('RDB$PACKAGE_NAME'))
 
 class Constraint(BaseSchemaItem):
     """Represents table or column constraint.
@@ -2232,16 +2519,21 @@ class Table(BaseSchemaItem):
                 if datatype.rfind(' COLLATE ') > 0:
                     datatype, collate = datatype.split(' COLLATE ')
                 coldef += '%s' % datatype
-            if col.has_default():
-                coldef += ' DEFAULT %s' % col.default
-            if not col.isnullable():
-                coldef += ' NOT NULL'
-            if col._attributes['RDB$COLLATION_ID'] is not None:
-                cname = col.collation.name
-                if col.domain.character_set._attributes['RDB$DEFAULT_COLLATE_NAME'] != cname:
-                    collate = cname
-            if collate:
-                coldef += ' COLLATE %s' % collate
+            if col.isidentity():
+                coldef += ' GENERATED BY DEFAULT AS IDENTITY'
+                if col.generator.inital_value <> 0:
+                    coldef += ' (START WITH %d)' % col.generator.inital_value
+            else:
+                if col.has_default():
+                    coldef += ' DEFAULT %s' % col.default
+                if not col.isnullable():
+                    coldef += ' NOT NULL'
+                if col._attributes['RDB$COLLATION_ID'] is not None:
+                    cname = col.collation.name
+                    if col.domain.character_set._attributes['RDB$DEFAULT_COLLATE_NAME'] != cname:
+                        collate = cname
+                if collate:
+                    coldef += ' COLLATE %s' % collate
             partdefs.append(coldef)
         if self.has_pkey():
             pk = self.primary_key
@@ -2301,11 +2593,15 @@ class Table(BaseSchemaItem):
                 if c._attributes['RDB$RELATION_NAME'] == self.name]
     def _get_columns(self):
         if self.__columns is None:
+            cols = ['RDB$FIELD_NAME','RDB$RELATION_NAME','RDB$FIELD_SOURCE',
+                    'RDB$FIELD_POSITION','RDB$UPDATE_FLAG','RDB$FIELD_ID',
+                    'RDB$DESCRIPTION','RDB$SECURITY_CLASS','RDB$SYSTEM_FLAG',
+                    'RDB$NULL_FLAG','RDB$DEFAULT_SOURCE','RDB$COLLATION_ID']
+            if self.schema._con.ods >= fdb.ODS_FB_30:
+                cols.extend(['RDB$GENERATOR_NAME', 'RDB$IDENTITY_TYPE'])
             self.__columns = [TableColumn(self.schema,self,row) for row in
-                self.schema._select("""select RDB$FIELD_NAME, RDB$RELATION_NAME,
-RDB$FIELD_SOURCE, RDB$FIELD_POSITION, RDB$UPDATE_FLAG, RDB$FIELD_ID, RDB$DESCRIPTION,
-RDB$SYSTEM_FLAG, RDB$SECURITY_CLASS, RDB$NULL_FLAG, RDB$DEFAULT_SOURCE, RDB$COLLATION_ID
-from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""",(self.name,))]
+                self.schema._select("""select %s from RDB$RELATION_FIELDS
+where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""" % ','.join(cols),(self.name,))]
         return self.__columns
     def _get_primary_key(self):
         for const in self.constraints:
@@ -2340,7 +2636,6 @@ from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION
             "PRIMARY KEY :class:`Constraint` for this table or None.")
     foreign_keys = LateBindingProperty(_get_foreign_keys,None,None,
             "List of FOREIGN KEY :class:`Constraint` instances for this table.")
-
     columns = LateBindingProperty(_get_columns,None,None,
         "Returns list of columns defined for table.\nItems are :class:`TableColumn` objects.")
     constraints = LateBindingProperty(_get_constraints,None,None,
@@ -2351,6 +2646,7 @@ from RDB$RELATION_FIELDS where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION
         "Returns list of triggers defined for table.\nItems are :class:`Trigger` objects.")
     privileges = LateBindingProperty(_get_privileges,None,None,
         "List of :class:`Privilege` objects granted to this object.")
+    # FB 3.0
 
     #--- Public
 
@@ -2533,6 +2829,8 @@ class Trigger(BaseSchemaItem):
 
         self._strip_attribute('RDB$TRIGGER_NAME')
         self._strip_attribute('RDB$RELATION_NAME')
+        self._strip_attribute('RDB$ENGINE_NAME')
+        self._strip_attribute('RDB$ENTRYPOINT')
 
         if not self.issystemobject():
             self._actions = ['create','recreate','alter','create_or_alter','drop']
@@ -2594,9 +2892,15 @@ class Trigger(BaseSchemaItem):
         self._check_params(params,[])
         return 'DROP TRIGGER %s' % self.get_quoted_name()
     def _get_action_time(self):
-        return (self.trigger_type + 1) & 1
+        if self.isddltrigger():
+            return (self.trigger_type) & 1
+        else:
+            return (self.trigger_type + 1) & 1
     def _get_action_type(self,slot):
-        return ((self.trigger_type + 1) >> (slot * 2 - 1)) & 3
+        if self.isddltrigger():
+            return (self.trigger_type & ~TRIGGER_TYPE_DDL) >> 1
+        else:
+            return ((self.trigger_type + 1) >> (slot * 2 - 1)) & 3
     def _get_name(self):
         return self._attributes['RDB$TRIGGER_NAME']
     def _get_relation(self):
@@ -2613,6 +2917,13 @@ class Trigger(BaseSchemaItem):
         return self._attributes['RDB$TRIGGER_SOURCE']
     def _get_flags(self):
         return self._attributes['RDB$FLAGS']
+    def _get_valid_blr(self):
+        result = self._attributes.get('RDB$VALID_BLR')
+        return bool(result) if result is not None else None
+    def _get_engine_name(self):
+        return self._attributes.get('RDB$ENGINE_NAME')
+    def _get_entrypoint(self):
+        return self._attributes.get('RDB$ENTRYPOINT')
     def _istype(self,type_code):
         atype = self._get_action_type(1)
         if atype == type_code:
@@ -2635,6 +2946,11 @@ class Trigger(BaseSchemaItem):
         "Numeric code for trigger type that define what event and when are covered by trigger.")
     source = LateBindingProperty(_get_source,None,None,"PSQL source code.")
     flags = LateBindingProperty(_get_flags,None,None,"Internal flags.")
+    valid_blr = LateBindingProperty(_get_valid_blr,None,None,
+                                    "Trigger BLR invalidation flag. Coul be True/False or None.")
+    # FB 3
+    engine_name = LateBindingProperty(_get_engine_name,None,None,"Engine name.")
+    entrypoint = LateBindingProperty(_get_entrypoint,None,None,"Entrypoint.")
 
     #--- Public
 
@@ -2656,6 +2972,9 @@ class Trigger(BaseSchemaItem):
     def isdbtrigger(self):
         "Returns True if this trigger is database trigger."
         return (self.trigger_type & TRIGGER_TYPE_MASK) == TRIGGER_TYPE_DB
+    def isddltrigger(self):
+        "Returns True if this trigger is DDL trigger."
+        return (self.trigger_type & TRIGGER_TYPE_MASK) == TRIGGER_TYPE_DDL
     def isinsert(self):
         "Returns True if this trigger is set for INSERT operation."
         return self._istype(1)
@@ -2668,7 +2987,11 @@ class Trigger(BaseSchemaItem):
     def get_type_as_string(self):
         "Return string with action and operation specification."
         l = []
-        if self.isdbtrigger():
+        if self.isddltrigger():
+            l.append(TRIGGER_PREFIX_TYPES[self._get_action_time()])
+            code = self._get_action_type(1)
+            l.append('ANY DDL STATEMENT' if code == DDL_TRIGGER_ANY else TRIGGER_DDL_TYPES[code])
+        elif self.isdbtrigger():
             l.append('ON '+TRIGGER_DB_TYPES[self.trigger_type & ~TRIGGER_TYPE_DB])
         else:
             l.append(TRIGGER_PREFIX_TYPES[self._get_action_time()])
@@ -2697,6 +3020,7 @@ class ProcedureParameter(BaseSchemaItem):
         self._strip_attribute('RDB$FIELD_SOURCE')
         self._strip_attribute('RDB$RELATION_NAME')
         self._strip_attribute('RDB$FIELD_NAME')
+        self._strip_attribute('RDB$PACKAGE_NAME')
 
     #--- Protected
 
@@ -2741,29 +3065,27 @@ class ProcedureParameter(BaseSchemaItem):
         rname = self._attributes.get('RDB$RELATION_NAME')
         return (None if rname is None
                 else self.schema.get_table(rname).get_column(self._attributes['RDB$FIELD_NAME']))
+    def _get_package(self):
+        return self.schema.get_package(self._attributes.get('RDB$PACKAGE_NAME'))
 
     #--- Properties
 
-    procedure = LateBindingProperty(_get_procedure,None,None,
-                                "Name of the stored procedure.")
-    sequence = LateBindingProperty(_get_sequence,None,None,
-                                "Sequence (position) of parameter.")
-    domain = LateBindingProperty(_get_domain,None,None,
-                                ":class:`Domain` for this parameter.")
-    datatype = LateBindingProperty(_get_datatype,None,None,
-                                "Comlete SQL datatype definition.")
+    procedure = LateBindingProperty(_get_procedure,None,None,"Name of the stored procedure.")
+    sequence = LateBindingProperty(_get_sequence,None,None,"Sequence (position) of parameter.")
+    domain = LateBindingProperty(_get_domain,None,None,":class:`Domain` for this parameter.")
+    datatype = LateBindingProperty(_get_datatype,None,None,"Comlete SQL datatype definition.")
     type_from = LateBindingProperty(_get_type_from,None,None,
                                 "Numeric code. See :attr:`Schema.enum_param_type_from`.`")
-
     # FB 2.1
     default = LateBindingProperty(_get_default,None,None,"Default value.")
     collation = LateBindingProperty(_get_collation,None,None,
-                                ":class:`collation` for this parameter.")
-    mechanism = LateBindingProperty(_get_mechanism,None,None,
-                                "Parameter mechanism code.")
+                                    ":class:`collation` for this parameter.")
+    mechanism = LateBindingProperty(_get_mechanism,None,None,"Parameter mechanism code.")
     # FB 2.5
-    column = LateBindingProperty(_get_column,None,None,
-                                ":class:`TableColumn` for this parameter.")
+    column = LateBindingProperty(_get_column,None,None,":class:`TableColumn` for this parameter.")
+    # FB 3.0
+    package = LateBindingProperty(_get_package,None,None,
+        "Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
 
     #--- Public
 
@@ -2800,6 +3122,9 @@ class ProcedureParameter(BaseSchemaItem):
     def has_default(self):
         "Returns True if parameter has default value."
         return bool(self._attributes.get('RDB$DEFAULT_SOURCE'))
+    def ispackaged(self):
+        "Returns True if procedure parameter is defined in package."
+        return bool(self._attributes.get('RDB$PACKAGE_NAME'))
 
 class Procedure(BaseSchemaItem):
     """Represents stored procedure.
@@ -2821,6 +3146,10 @@ class Procedure(BaseSchemaItem):
         self._strip_attribute('RDB$PROCEDURE_NAME')
         self._strip_attribute('RDB$OWNER_NAME')
         self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$ENGINE_NAME')
+        self._strip_attribute('RDB$ENTRYPOINT')
+        self._strip_attribute('RDB$PACKAGE_NAME')
+
         self.__ods = schema._con.ods
 
         if not self.issystemobject():
@@ -2929,6 +3258,8 @@ class Procedure(BaseSchemaItem):
                          'RDB$PARAMETER_MECHANISM'])
         if self.__ods >= fdb.ODS_FB_25:
             cols.extend(['RDB$FIELD_NAME','RDB$RELATION_NAME'])
+        if self.__ods >= fdb.ODS_FB_30:
+            cols.extend(['RDB$PACKAGE_NAME'])
         return ','.join(cols)
     def _get_name(self):
         return self._attributes['RDB$PROCEDURE_NAME']
@@ -2971,6 +3302,14 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
         return [p for p in self.schema.privileges
                 if ((p.subject_name == self.name) and
                     (p.subject_type in self._type_code))]
+    def _get_engine_name(self):
+        return self._attributes.get('RDB$ENGINE_NAME')
+    def _get_entrypoint(self):
+        return self._attributes.get('RDB$ENTRYPOINT')
+    def _get_package(self):
+        return self.schema.get_package(self._attributes.get('RDB$PACKAGE_NAME'))
+    def _get_privacy(self):
+        return self._attributes.get('RDB$PRIVATE_FLAG')
 
     #--- Properties
 
@@ -2991,7 +3330,12 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
         "Procedure type code. See :attr:`fdb.Connection.enum_procedure_types`.")
     valid_blr = LateBindingProperty(_get_valid_blr,None,None,
         "Procedure BLR invalidation flag. Coul be True/False or None.")
-
+    # FB 3.0
+    engine_name = LateBindingProperty(_get_engine_name,None,None,"Engine name.")
+    entrypoint = LateBindingProperty(_get_entrypoint,None,None,"Entrypoint.")
+    package = LateBindingProperty(_get_package,None,None,
+        "Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
+    privacy = LateBindingProperty(_get_privacy,None,None,"Privacy flag.")
 
     #--- Public
 
@@ -3016,6 +3360,9 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
     def has_output(self):
         "Returns True if procedure has any output parameters."
         return bool(self._attributes['RDB$PROCEDURE_OUTPUTS'])
+    def ispackaged(self):
+        "Returns True if procedure is defined in package."
+        return bool(self._attributes.get('RDB$PACKAGE_NAME'))
 
 class Role(BaseSchemaItem):
     """Represents user role.
@@ -3031,6 +3378,7 @@ class Role(BaseSchemaItem):
 
         self._strip_attribute('RDB$ROLE_NAME')
         self._strip_attribute('RDB$OWNER_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
 
         if not self.issystemobject():
             self._actions = ['create','drop']
@@ -3047,6 +3395,8 @@ class Role(BaseSchemaItem):
         return self._attributes['RDB$ROLE_NAME']
     def _get_owner_name(self):
         return self._attributes['RDB$OWNER_NAME']
+    def _get_security_class(self):
+        return self._attributes.get('RDB$SECURITY_CLASS')
     def _get_privileges(self):
         return [p for p in self.schema.privileges
                 if ((p.user_name == self.name) and
@@ -3057,6 +3407,8 @@ class Role(BaseSchemaItem):
     owner_name = LateBindingProperty(_get_owner_name,None,None,"User name of role owner.")
     privileges = LateBindingProperty(_get_privileges,None,None,
         "List of :class:`Privilege` objects granted to this object.")
+    security_class = LateBindingProperty(_get_security_class,None,None,
+                                         "Security class name or None.")
 
     #--- Public
 
@@ -3078,18 +3430,27 @@ class FunctionArgument(BaseSchemaItem):
         self.__function = function
 
         self._strip_attribute('RDB$FUNCTION_NAME')
+        self._strip_attribute('RDB$PACKAGE_NAME')
+        self._strip_attribute('RDB$ARGUMENT_NAME')
+        self._strip_attribute('RDB$FIELD_SOURCE')
+        self._strip_attribute('RDB$DEFAULT_SOURCE')
+        self._strip_attribute('RDB$FIELD_NAME')
+        self._strip_attribute('RDB$RELATION_NAME')
+        self._strip_attribute('RDB$DESCRIPTION')
 
     #--- Protected
 
     def _get_name(self):
-        return self._attributes['RDB$FUNCTION_NAME']+'_'+str(self._get_position())
+        return self.argument_name if self.argument_name else (self.function.name+
+                                                              '_'+str(self._get_position()))
     def _get_function(self):
         return self.__function
         #return self.schema.get_function(self._attributes['RDB$FUNCTION_NAME'])
     def _get_position(self):
         return self._attributes['RDB$ARGUMENT_POSITION']
     def _get_mechanism(self):
-        return abs(self._attributes['RDB$MECHANISM'])
+        x = self._attributes['RDB$MECHANISM']
+        return None if x is None else abs(x)
     def _get_length(self):
         return self._attributes['RDB$FIELD_LENGTH']
     def _get_scale(self):
@@ -3105,37 +3466,79 @@ class FunctionArgument(BaseSchemaItem):
     def _get_precision(self):
         return self._attributes['RDB$FIELD_PRECISION']
     def _get_datatype(self):
-        l = []
-        precision_known = False
-        if self.field_type in (FBT_SMALLINT,FBT_INTEGER,FBT_BIGINT):
-            if self.precision != None:
-                if (self.sub_type > 0) and (self.sub_type < MAX_INTSUBTYPES):
-                    l.append('%s(%d, %d)' % \
-                      (INTEGRAL_SUBTYPES[self.sub_type],self.precision,-self.scale))
-                    precision_known = True
-        if not precision_known:
-            if (self.field_type == FBT_SMALLINT) and (self.scale < 0):
-                l.append('NUMERIC(4, %d)' % -self.scale)
-            elif (self.field_type == FBT_INTEGER) and (self.scale < 0):
-                l.append('NUMERIC(9, %d)' % -self.scale)
-            elif (self.field_type == FBT_DOUBLE_PRECISION) and (self.scale < 0):
-                l.append('NUMERIC(15, %d)' % -self.scale)
+        if self.field_type is None:
+            # FB3 PSQL function, datatype defined via internal domain
+            return self.domain.datatype
+        else:
+            # Classic external UDF
+            l = []
+            precision_known = False
+            if self.field_type in (FBT_SMALLINT,FBT_INTEGER,FBT_BIGINT):
+                if self.precision != None:
+                    if (self.sub_type > 0) and (self.sub_type < MAX_INTSUBTYPES):
+                        l.append('%s(%d, %d)' % \
+                          (INTEGRAL_SUBTYPES[self.sub_type],self.precision,-self.scale))
+                        precision_known = True
+            if not precision_known:
+                if (self.field_type == FBT_SMALLINT) and (self.scale < 0):
+                    l.append('NUMERIC(4, %d)' % -self.scale)
+                elif (self.field_type == FBT_INTEGER) and (self.scale < 0):
+                    l.append('NUMERIC(9, %d)' % -self.scale)
+                elif (self.field_type == FBT_DOUBLE_PRECISION) and (self.scale < 0):
+                    l.append('NUMERIC(15, %d)' % -self.scale)
+                else:
+                    l.append(COLUMN_TYPES[self.field_type])
+            if self.field_type in (FBT_CHAR,FBT_VARCHAR,FBT_CSTRING):
+                l.append('(%d)' % (self.length if (self.character_length is None)
+                                   else self.character_length))
+            if self.field_type == FBT_BLOB:
+                if self.sub_type >= 0 and self.sub_type <= MAX_BLOBSUBTYPES:
+                    if self.sub_type > 0:
+                        l.append(' SUB_TYPE %s' % BLOB_SUBTYPES[self.sub_type])
+                else:
+                    l.append(' SUB_TYPE %d' % self.sub_type)
+            if self.field_type in (FBT_CHAR,FBT_VARCHAR,FBT_CSTRING,FBT_BLOB):
+                if self._attributes['RDB$CHARACTER_SET_ID'] is not None and \
+                  (self.character_set.name != self.schema.default_character_set.name):
+                    l.append(' CHARACTER SET %s' % self.character_set.name)
+            return ''.join(l)
+    def _get_package(self):
+        return self.schema.get_package(self._attributes.get('RDB$PACKAGE_NAME'))
+    def _get_argument_name(self):
+        return self._attributes.get('RDB$ARGUMENT_NAME')
+    def _get_domain(self):
+        return self.schema.get_domain(self._attributes.get('RDB$FIELD_SOURCE'))
+    def _get_default(self):
+        result = self._attributes.get('RDB$DEFAULT_SOURCE')
+        if result:
+            if result.upper().startswith('= '):
+                result = result[2:]
+            elif result.upper().startswith('DEFAULT '):
+                result = result[8:]
+        return result
+    def _get_collation(self):
+        cid = self._attributes.get('RDB$COLLATION_ID')
+        return (None if cid is None
+                else self.schema.get_collation_by_id(self.domain._attributes['RDB$CHARACTER_SET_ID'],cid))
+    def _get_argument_mechanism(self):
+        return self._attributes.get('RDB$ARGUMENT_MECHANISM')
+    def _get_column(self):
+        rname = self._attributes.get('RDB$RELATION_NAME')
+        return (None if rname is None
+                else self.schema.get_table(rname).get_column(self._attributes['RDB$FIELD_NAME']))
+    def _get_type_from(self):
+        m = self.argument_mechanism
+        if m is None:
+            return PROCPAR_DATATYPE
+        elif m == 0:
+            return PROCPAR_DATATYPE if self.domain.issystemobject() else PROCPAR_DOMAIN
+        elif m == 1:
+            if self._attributes.get('RDB$RELATION_NAME') is None:
+                return PROCPAR_TYPE_OF_DOMAIN
             else:
-                l.append(COLUMN_TYPES[self.field_type])
-        if self.field_type in (FBT_CHAR,FBT_VARCHAR,FBT_CSTRING):
-            l.append('(%d)' % (self.length if (self.character_length is None)
-                               else self.character_length))
-        if self.field_type == FBT_BLOB:
-            if self.sub_type >= 0 and self.sub_type <= MAX_BLOBSUBTYPES:
-                if self.sub_type > 0:
-                    l.append(' SUB_TYPE %s' % BLOB_SUBTYPES[self.sub_type])
-            else:
-                l.append(' SUB_TYPE %d' % self.sub_type)
-        if self.field_type in (FBT_CHAR,FBT_VARCHAR,FBT_CSTRING,FBT_BLOB):
-            if self._attributes['RDB$CHARACTER_SET_ID'] is not None and \
-              (self.character_set.name != self.schema.default_character_set.name):
-                l.append(' CHARACTER SET %s' % self.character_set.name)
-        return ''.join(l)
+                return PROCPAR_TYPE_OF_COLUMN
+        else:
+            raise fdb.InternalError("Unknown parameter mechanism code: %d" % m)
 
     #--- Properties
 
@@ -3158,6 +3561,19 @@ class FunctionArgument(BaseSchemaItem):
         ":class:`CharacterSet` for a character/text BLOB argument, or None.")
     datatype = LateBindingProperty(_get_datatype,None,None,
         "Comlete SQL datatype definition.")
+    # FB 3.0
+    argument_name = LateBindingProperty(_get_argument_name,None,None,"Argument name.")
+    domain = LateBindingProperty(_get_domain,None,None,":class:`Domain` for this parameter.")
+    default = LateBindingProperty(_get_default,None,None,"Default value.")
+    collation = LateBindingProperty(_get_collation,None,None,
+                                    ":class:`collation` for this parameter.")
+    argument_mechanism = LateBindingProperty(_get_argument_mechanism,None,None,
+                                             "Argiment mechanism.")
+    column = LateBindingProperty(_get_column,None,None,":class:`TableColumn` for this parameter.")
+    type_from = LateBindingProperty(_get_type_from,None,None,
+                                "Numeric code. See :attr:`Schema.enum_param_type_from`.`")
+    package = LateBindingProperty(_get_package,None,None,
+        "Package this function belongs to. \nObject is :class:`Package` instance or None.")
 
     #--- Public
 
@@ -3169,10 +3585,29 @@ class FunctionArgument(BaseSchemaItem):
         visitor.visitFunctionArgument(self)
     def get_sql_definition(self):
         "Returns SQL definition for parameter."
-        return '%s%s%s' % (self.datatype,
-                           ' BY DESCRIPTOR' if self.isbydescriptor() else '',
-                           ' BY VALUE' if self.isbyvalue() and self.isreturning() else '',
-                         )
+        if self.function.isexternal():
+            return '%s%s%s' % (self.datatype,
+                               ' BY DESCRIPTOR' if self.isbydescriptor() else '',
+                               ' BY VALUE' if self.isbyvalue() and self.isreturning() else '',
+                             )
+        else:
+            typedef = self.datatype
+            if self.type_from == PROCPAR_DOMAIN:
+                typedef = self.domain.get_quoted_name()
+            elif self.type_from == PROCPAR_TYPE_OF_DOMAIN:
+                typedef = 'TYPE OF %s' % self.domain.get_quoted_name()
+            elif self.type_from == PROCPAR_TYPE_OF_COLUMN:
+                typedef = 'TYPE OF COLUMN %s.%s' % (self.column.table.get_quoted_name(),
+                                                    self.column.get_quoted_name())
+            result = '%s%s%s' % (self.get_quoted_name()+' ' if not self.isreturning() else '',
+                                 typedef,
+                                 '' if self.isnullable() else ' NOT NULL')
+            c = self.collation
+            if c is not None:
+                result += ' COLLATE %s' % c.get_quoted_name()
+            if not self.isreturning() and self.has_default():
+                result += ' = %s' % self.default
+            return result
     def isbyvalue(self):
         "Returns True if argument is passed by value."
         return self.mechanism == 0
@@ -3195,14 +3630,26 @@ class FunctionArgument(BaseSchemaItem):
     def isreturning(self):
         "Returns True if argument represents return value for function."
         return self.position == self.function._attributes['RDB$RETURN_ARGUMENT']
-
+    # Firebird 3.0
+    def isnullable(self):
+        "Returns True if parameter allows NULL."
+        return not bool(self._attributes.get('RDB$NULL_FLAG'))
+    def has_default(self):
+        "Returns True if parameter has default value."
+        return bool(self._attributes.get('RDB$DEFAULT_SOURCE'))
+    def ispackaged(self):
+        "Returns True if function argument is defined in package."
+        return bool(self._attributes.get('RDB$PACKAGE_NAME'))
 
 class Function(BaseSchemaItem):
     """Represents user defined function.
 
     Supported SQL actions:
 
-    - User UDF: declare, drop
+    - External UDF: declare, drop
+    - PSQL UDF (FB 3, not declared in package): create, recreate, create_or_alter, drop,
+        alter(arguments=string_or_list,returns=string,declare=string_or_list,
+        code=string_or_list)
     - System UDF: none
     """
     def __init__(self,schema,attributes):
@@ -3214,9 +3661,20 @@ class Function(BaseSchemaItem):
         self._strip_attribute('RDB$FUNCTION_NAME')
         self._strip_attribute('RDB$MODULE_NAME')
         self._strip_attribute('RDB$ENTRYPOINT')
+        self._strip_attribute('RDB$ENGINE_NAME')
+        self._strip_attribute('RDB$PACKAGE_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$OWNER_NAME')
+
+        self.__ods = schema._con.ods
 
         if not self.issystemobject():
-            self._actions = ['declare','drop']
+            if self.isexternal():
+                self._actions = ['declare','drop']
+            else:
+                if self._attributes.get('RDB$PACKAGE_NAME') is None:
+                    self._actions = ['create','recreate','alter','create_or_alter','drop']
+        pass
 
     #--- Protected
 
@@ -3235,12 +3693,89 @@ class Function(BaseSchemaItem):
                                                           self.module_name)
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
-        return 'DROP EXTERNAL FUNCTION %s' % self.get_quoted_name()
+        return 'DROP%s FUNCTION %s' % (' EXTERNAL' if self.isexternal() else '',
+                                       self.get_quoted_name())
+    def _get_create_sql(self,**params):
+        self._check_params(params,[])
+        result = 'CREATE FUNCTION %s' % self.get_quoted_name()
+        if self.has_arguments():
+            if len(self.arguments) == 1:
+                result += ' (%s)\n' % self.arguments[0].get_sql_definition()
+            else:
+                result += ' (\n'
+                for p in self.arguments:
+                    result += '  %s%s\n' % (p.get_sql_definition(),
+                                            '' if p.position == len(self.arguments) else ',')
+                result += ')\n'
+        else:
+            result += '\n'
+        result += 'RETURNS %s\n' % self.returns.get_sql_definition()
+        return result+'AS\n'+self.source
+    def _get_alter_sql(self,**params):
+        self._check_params(params,['arguments','returns','declare','code'])
+        arguments = params.get('arguments')
+        returns = params.get('returns')
+        if returns is None:
+            raise fdb.ProgrammingError("Missing required parameter: 'returns'.")
+        declare = params.get('declare')
+        code = params.get('code')
+        if code is None:
+            raise fdb.ProgrammingError("Missing required parameter: 'code'.")
+        #
+        header = ''
+        if arguments is not None:
+            if isinstance(arguments,(list,tuple)):
+                numpars = len(arguments)
+                if numpars == 1:
+                    header = ' (%s)\n' % arguments
+                else:
+                    header = ' (\n'
+                    i = 1
+                    for p in arguments:
+                        header += '  %s%s\n' % (p,'' if i == numpars else ',')
+                        i += 1
+                    header += ')\n'
+            else:
+                header = ' (%s)\n' % arguments
+        #
+        if not header:
+            header += '\n'
+        header += 'RETURNS %s\n' % returns
+        #
+        if code:
+            if declare is None:
+                d = ''
+            elif isinstance(declare,(list,tuple)):
+                d = ''
+                for x in declare:
+                    d += '  %s\n' % x
+            else:
+                d = '%s\n' % declare
+            if isinstance(code,(list,tuple)):
+                c = ''
+                for x in code:
+                    c += '  %s\n' % x
+            else:
+                c = '%s\n' % code
+            body = '%sAS\n%sBEGIN\n%sEND' % ('' if header else '\n',d,c)
+        else:
+            body = '%sAS\nBEGIN\nEND' % ('' if header else '\n')
+        #
+        return 'ALTER FUNCTION %s%s%s' % (self.get_quoted_name(),header,body)
     def _load_arguments(self,mock=None):
+        cols = ['RDB$FUNCTION_NAME','RDB$ARGUMENT_POSITION','RDB$MECHANISM',
+                'RDB$FIELD_TYPE','RDB$FIELD_SCALE','RDB$FIELD_LENGTH',
+                'RDB$FIELD_SUB_TYPE','RDB$CHARACTER_SET_ID','RDB$FIELD_PRECISION',
+                'RDB$CHARACTER_LENGTH']
+        if self.__ods >= fdb.ODS_FB_30:
+            cols.extend(['RDB$PACKAGE_NAME','RDB$ARGUMENT_NAME','RDB$FIELD_SOURCE',
+                         'RDB$DEFAULT_SOURCE','RDB$COLLATION_ID','RDB$NULL_FLAG',
+                         'RDB$ARGUMENT_MECHANISM','RDB$FIELD_NAME','RDB$RELATION_NAME',
+                         'RDB$SYSTEM_FLAG','RDB$DESCRIPTION'])
         self.__arguments = [FunctionArgument(self.schema,self,row) for row in
                             (mock if mock else
-                            self.schema._select("""select * from rdb$function_arguments
-where rdb$function_name = ? order by rdb$argument_position""",(self.name,)))]
+                            self.schema._select("""select %s from rdb$function_arguments
+where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols),(self.name,)))]
         rarg = self._attributes['RDB$RETURN_ARGUMENT']
         if rarg is not None:
             for a in self.__arguments:
@@ -3260,7 +3795,27 @@ where rdb$function_name = ? order by rdb$argument_position""",(self.name,)))]
         if self.__arguments is None:
             self._load_arguments()
         return [a for a in self.__arguments if a.position != 0]
-
+    def _get_engine_mame(self):
+        return self._attributes.get('RDB$ENGINE_NAME')
+    def _get_package(self):
+        return self.schema.get_package(self._attributes.get('RDB$PACKAGE_NAME'))
+    def _get_private_flag(self):
+        return self._attributes.get('RDB$PRIVATE_FLAG')
+    def _get_source(self):
+        return self._attributes.get('RDB$FUNCTION_SOURCE')
+    def _get_id(self):
+        return self._attributes.get('RDB$FUNCTION_ID')
+    def _get_valid_blr(self):
+        result = self._attributes.get('RDB$VALID_BLR')
+        return bool(result) if result is not None else None
+    def _get_security_class(self):
+        return self._attributes.get('RDB$SECURITY_CLASS')
+    def _get_owner_name(self):
+        return self._attributes.get('RDB$OWNER_NAME')
+    def _get_legacy_flag(self):
+        return self._attributes.get('RDB$LEGACY_FLAG')
+    def _get_deterministic_flag(self):
+        return self._attributes.get('RDB$DETERMINISTIC_FLAG')
 
     #--- Properties
 
@@ -3270,6 +3825,19 @@ where rdb$function_name = ? order by rdb$argument_position""",(self.name,)))]
                                   "Returning :class:`FunctionArgument` or None.")
     arguments = LateBindingProperty(_get_arguments,None,None,
         "List of function arguments. Items are :class:`FunctionArgument` instances.")
+    # Firebird 3.0
+    engine_mame = LateBindingProperty(_get_engine_mame,None,None,"Engine name.")
+    package = LateBindingProperty(_get_package,None,None,
+        "Package this function belongs to. \nObject is :class:`Package` instance or None.")
+    private_flag = LateBindingProperty(_get_private_flag,None,None,"Private flag.")
+    source = LateBindingProperty(_get_source,None,None,"Function source.")
+    id = LateBindingProperty(_get_id,None,None,"Function ID.")
+    valid_blr = LateBindingProperty(_get_valid_blr,None,None,"BLR validity flag.")
+    security_class = LateBindingProperty(_get_security_class,None,None,"Security class.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"Owner name.")
+    legacy_flag = LateBindingProperty(_get_legacy_flag,None,None,"Legacy flag.")
+    deterministic_flag = LateBindingProperty(_get_deterministic_flag,None,None,
+                                             "Deterministic flag.")
 
     #--- Public
 
@@ -3279,6 +3847,9 @@ where rdb$function_name = ? order by rdb$argument_position""",(self.name,)))]
         :param visitor: Visitor object of Vistior Pattern.
         """
         visitor.visitFunction(self)
+    def isexternal(self):
+        "Returns True if function is external UDF, False for PSQL functions."
+        return True if self.module_name else False
     def has_arguments(self):
         "Returns True if function has input arguments."
         return bool(self.arguments)
@@ -3288,6 +3859,9 @@ where rdb$function_name = ? order by rdb$argument_position""",(self.name,)))]
     def has_return_argument(self):
         "Returns True if function returns a value in input argument."
         return (self.returns.position != 0 if self.returns is not None else False)
+    def ispackaged(self):
+        "Returns True if function is defined in package."
+        return bool(self._attributes.get('RDB$PACKAGE_NAME'))
 
 class DatabaseFile(BaseSchemaItem):
     """Represents database extension file.
@@ -3335,7 +3909,7 @@ class DatabaseFile(BaseSchemaItem):
 class Shadow(BaseSchemaItem):
     """Represents database shadow.
 
-    Supported SQL actions:  create, drop
+    Supported SQL actions:  create, drop(preserve=bool)
     """
     SHADOW_INACTIVE = 2
     SHADOW_MANUAL = 4
@@ -3368,8 +3942,9 @@ class Shadow(BaseSchemaItem):
                     result += '\n'
         return result
     def _get_drop_sql(self,**params):
-        self._check_params(params,[])
-        return 'DROP SHADOW %d' % self.id
+        self._check_params(params,['preserve'])
+        preserve = params.get('preserve')
+        return 'DROP SHADOW %d%s' % (self.id, ' PRESERVE FILE' if preserve else '')
     def _get_name(self):
         return 'SHADOW_%d' % self.id
     def _get_id(self):
@@ -3573,6 +4148,81 @@ class Privilege(BaseSchemaItem):
         "Returns True if this is ROLE membership privilege."
         return self.privilege == 'M'
 
+class Package(BaseSchemaItem):
+    """Represents PSQL package.
+
+    Supported SQL actions: create(body=bool), recreate(body=bool), create_or_alter,
+      alter(header=string_or_list), drop(body=bool),alter
+    """
+    def __init__(self,schema,attributes):
+        super(Package,self).__init__(schema,attributes)
+        self._type_code = [18,19]
+
+        self._actions = ['create','recreate','create_or_alter','alter','drop']
+
+        self._strip_attribute('RDB$PACKAGE_NAME')
+        self._strip_attribute('RDB$SECURITY_CLASS')
+        self._strip_attribute('RDB$OWNER_NAME')
+
+    def _get_create_sql(self,**params):
+        self._check_params(params,['body'])
+        body = params.get('body')
+        cbody = 'BODY ' if body else ''
+        result = 'CREATE PACKAGE %s%s' % (cbody, self.get_quoted_name())
+        return result+'\nAS\n'+(self.body if body else self.header)
+    def _get_alter_sql(self,**params):
+        self._check_params(params,['header'])
+        header = params.get('header')
+        if not header:
+            hdr = ''
+        else:
+            hdr = '\n'.join(header) if isinstance(header,fdb.ListType) else header
+        return 'ALTER PACKAGE %s\nAS\nBEGIN\n%s\nEND' % (self.get_quoted_name(),hdr)
+    def _get_drop_sql(self,**params):
+        self._check_params(params,['body'])
+        body = params.get('body')
+        cbody = 'BODY ' if body else ''
+        return 'DROP PACKAGE %s%s' % (cbody, self.get_quoted_name())
+    def _get_name(self):
+        return self._attributes['RDB$PACKAGE_NAME']
+    def _get_security_class(self):
+        return self._attributes['RDB$SECURITY_CLASS']
+    def _get_owner_name(self):
+        return self._attributes['RDB$OWNER_NAME']
+    def _get_header(self):
+        return self._attributes['RDB$PACKAGE_HEADER_SOURCE']
+    def _get_body(self):
+        return self._attributes['RDB$PACKAGE_BODY_SOURCE']
+    def _get_functions(self):
+        return [fn for fn in self.schema.functions
+                if fn._attributes['RDB$PACKAGE_NAME'] == self.name]
+    def _get_procedures(self):
+        return [proc for proc in self.schema.procedures
+                if proc._attributes['RDB$PACKAGE_NAME'] == self.name]
+
+    #--- Properties
+
+    header = LateBindingProperty(_get_header,None,None,"Package header source.")
+    body = LateBindingProperty(_get_body,None,None,"Package body source.")
+    security_class = LateBindingProperty(_get_security_class,None,None,
+                                         "Security class name or None.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None,"User name of package creator.")
+    functions = LateBindingProperty(_get_functions,None,None,
+        "List of package functions. Items are :class:`Function` instances.")
+    procedures = LateBindingProperty(_get_procedures,None,None,
+        "List of package procedures. Items are :class:`Procedure` instances.")
+
+    #--- Public
+
+    def accept_visitor(self,visitor):
+        """Visitor Pattern support. Calls `visitProcedure(self)` on parameter object.
+
+        :param visitor: Visitor object of Vistior Pattern.
+        """
+        visitor.visitPackage(self)
+    def has_valid_body(self):
+        result = self._attributes.get('RDB$VALID_BODY_FLAG')
+        return bool(result) if result is not None else None
 
 class SchemaVisitor(object):
     """Helper class for implementation of schema Visitor.
@@ -3627,4 +4277,6 @@ class SchemaVisitor(object):
         self.default_action(dbfile)
     def visitShadow(self,shadow):
         self.default_action(shadow)
+    def visitPackage(self,package):
+        self.default_action(package)
 

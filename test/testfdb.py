@@ -38,9 +38,11 @@ else:
     from StringIO import StringIO
     BytesIO = StringIO
 
-# Change next definition to test FDB on databases with various ODS
-# Supported databases: fbtest20.fdb, fbtest21.fdb, fbtest25.fdb, fbtest30.fdb
-FBTEST_DB = 'fbtest25.fdb'
+FB20 = '2.0'
+FB21 = '2.1'
+FB25 = '2.5'
+FB30 = '3.0'
+
 # Default server host
 #FBTEST_HOST = ''
 FBTEST_HOST = 'localhost'
@@ -95,6 +97,23 @@ class FDBTestBase(unittest.TestCase):
     def __init__(self, methodName='runTest'):
         super(FDBTestBase,self).__init__(methodName)
         self.output = StringIO()
+    def setUp(self):
+        with closing(fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)) as svc:
+            self.version = svc.version
+        if self.version.startswith('2.0'):
+            self.FBTEST_DB = 'fbtest20.fdb'
+            self.version = FB20
+        elif self.version.startswith('2.1'):
+            self.FBTEST_DB = 'fbtest21.fdb'
+            self.version = FB21
+        elif self.version.startswith('2.5'):
+            self.FBTEST_DB = 'fbtest25.fdb'
+            self.version = FB25
+        elif self.version.startswith('3.0'):
+            self.FBTEST_DB = 'fbtest30.fdb'
+            self.version = FB30
+        else:
+            raise Exception("Unsupported Firebird version (%s)" % self.version)
     def clear_output(self):
         self.output.close()
         self.output = StringIO()
@@ -128,6 +147,7 @@ class FDBTestBase(unittest.TestCase):
 
 class TestCreateDrop(FDBTestBase):
     def setUp(self):
+        super(TestCreateDrop,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,'droptest.fdb')
@@ -140,9 +160,10 @@ class TestCreateDrop(FDBTestBase):
 
 class TestConnection(FDBTestBase):
     def setUp(self):
+        super(TestConnection,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
     def tearDown(self):
         pass
     def test_connect(self):
@@ -169,7 +190,7 @@ class TestConnection(FDBTestBase):
             self.assertIn(con.main_transaction,con.transactions)
             self.assertIn(con.query_transaction,con.transactions)
             self.assertEqual(con.default_tpb,fdb.ISOLATION_LEVEL_READ_COMMITED)
-            self.assertIsInstance(con.schema,fdb.schema.Schema)
+            self.assertIsInstance(con.schema,sm.Schema)
             self.assertFalse(con.closed)
     def test_connect_role(self):
         rolename = 'role'
@@ -228,22 +249,32 @@ class TestConnection(FDBTestBase):
         with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
                                  password=FBTEST_PASSWORD)) as con:
             self.assertEqual(con.database_info(fdb.isc_info_db_read_only,'i'),0)
-            self.assertEqual(con.database_info(fdb.isc_info_page_size,'i'),4096)
+            if con.ods < fdb.ODS_FB_30:
+                self.assertEqual(con.database_info(fdb.isc_info_page_size,'i'),4096)
+            else:
+                self.assertEqual(con.database_info(fdb.isc_info_page_size,'i'),8192)
             self.assertEqual(con.database_info(fdb.isc_info_db_sql_dialect,'i'),3)
     def test_db_info(self):
         with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
                                  password=FBTEST_PASSWORD)) as con:
             res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                                fdb.isc_info_db_sql_dialect,fdb.isc_info_user_names])
-            self.assertDictEqual(res,{53: {'SYSDBA': 1}, 62: 3, 14: 4096, 63: 0})
+            if con.ods < fdb.ODS_FB_30:
+                self.assertDictEqual(res,{53: {'SYSDBA': 1}, 62: 3, 14: 4096, 63: 0})
+            else:
+                self.assertDictEqual(res,{53: {'SYSDBA': 1}, 62: 3, 14: 8192, 63: 0})
             res = con.db_info(fdb.isc_info_read_seq_count)
-            self.assertDictEqual(res,{0: 98, 1: 1})
+            if con.ods < fdb.ODS_FB_30:
+                self.assertDictEqual(res,{0: 98, 1: 1})
+            else:
+                self.assertDictEqual(res,{0: 106, 1: 2})
 
 class TestTransaction(FDBTestBase):
     def setUp(self):
+        super(TestTransaction,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
@@ -341,9 +372,10 @@ class TestTransaction(FDBTestBase):
 
 class TestDistributedTransaction(FDBTestBase):
     def setUp(self):
+        super(TestDistributedTransaction,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.db1 = os.path.join(self.dbpath,'fbtest-1.fdb')
         self.db2 = os.path.join(self.dbpath,'fbtest-2.fdb')
         if not os.path.exists(self.db1):
@@ -579,9 +611,10 @@ class TestDistributedTransaction(FDBTestBase):
 
 class TestCursor(FDBTestBase):
     def setUp(self):
+        super(TestCursor,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
@@ -591,38 +624,36 @@ class TestCursor(FDBTestBase):
         self.con.commit()
         self.con.close()
     def test_iteration(self):
-        data = [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
-                ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
-                ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
-                ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'),
-                ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')]
+        if self.con.ods < fdb.ODS_FB_30:
+            data = [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
+                    ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
+                    ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
+                    ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'),
+                    ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')]
+        else:
+            data = [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
+                    ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Euro'),
+                    ('France', 'Euro'), ('Germany', 'Euro'), ('Australia', 'ADollar'),
+                    ('Hong Kong', 'HKDollar'), ('Netherlands', 'Euro'), ('Belgium', 'Euro'),
+                    ('Austria', 'Euro'), ('Fiji', 'FDollar'), ('Russia', 'Ruble'),
+                    ('Romania', 'RLeu')]
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = [row for row in cur]
-        self.assertEqual(len(rows),14)
-        self.assertListEqual(rows,
-            [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
-             ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
-             ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
-             ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'),
-             ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')])
+        self.assertEqual(len(rows),len(data))
+        self.assertListEqual(rows,data)
         cur.execute('select * from country')
         rows = []
         for row in cur:
             rows.append(row)
-        self.assertEqual(len(rows),14)
-        self.assertListEqual(rows,
-            [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
-             ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
-             ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
-             ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'),
-             ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')])
+        self.assertEqual(len(rows),len(data))
+        self.assertListEqual(rows,data)
         cur.execute('select * from country')
         i = 0
         for row in cur:
             i += 1
             self.assertIn(row,data)
-        self.assertEqual(i,14)
+        self.assertEqual(i,len(data))
     def test_description(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
@@ -737,27 +768,49 @@ class TestCursor(FDBTestBase):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchall()
-        self.assertListEqual(rows,
-            [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
-             ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
-             ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
-             ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'),
-             ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')])
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertListEqual(rows,
+                [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
+                 ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
+                 ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
+                 ('Hong Kong', 'HKDollar'), ('Netherlands', 'Guilder'),
+                 ('Belgium', 'BFranc'), ('Austria', 'Schilling'), ('Fiji', 'FDollar')])
+        else:
+            self.assertListEqual(rows,
+                [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
+                 ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Euro'),
+                 ('France', 'Euro'), ('Germany', 'Euro'), ('Australia', 'ADollar'),
+                 ('Hong Kong', 'HKDollar'), ('Netherlands', 'Euro'),
+                 ('Belgium', 'Euro'), ('Austria', 'Euro'), ('Fiji', 'FDollar'),
+                 ('Russia', 'Ruble'), ('Romania', 'RLeu')])
     def test_fetchmany(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchmany(10)
-        self.assertListEqual(rows,
-            [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
-             ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
-             ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
-             ('Hong Kong', 'HKDollar')])
-        rows = cur.fetchmany(10)
-        self.assertListEqual(rows,
-            [('Netherlands', 'Guilder'), ('Belgium', 'BFranc'),
-             ('Austria', 'Schilling'), ('Fiji', 'FDollar')])
-        rows = cur.fetchmany(10)
-        self.assertEqual(len(rows),0)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertListEqual(rows,
+                [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
+                 ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Lira'),
+                 ('France', 'FFranc'), ('Germany', 'D-Mark'), ('Australia', 'ADollar'),
+                 ('Hong Kong', 'HKDollar')])
+            rows = cur.fetchmany(10)
+            self.assertListEqual(rows,
+                [('Netherlands', 'Guilder'), ('Belgium', 'BFranc'),
+                 ('Austria', 'Schilling'), ('Fiji', 'FDollar')])
+            rows = cur.fetchmany(10)
+            self.assertEqual(len(rows),0)
+        else:
+            self.assertListEqual(rows,
+                [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
+                 ('Switzerland', 'SFranc'), ('Japan', 'Yen'), ('Italy', 'Euro'),
+                 ('France', 'Euro'), ('Germany', 'Euro'), ('Australia', 'ADollar'),
+                 ('Hong Kong', 'HKDollar')])
+            rows = cur.fetchmany(10)
+            self.assertListEqual(rows,
+                [('Netherlands', 'Euro'), ('Belgium', 'Euro'), ('Austria', 'Euro'),
+                 ('Fiji', 'FDollar'), ('Russia', 'Ruble'), ('Romania', 'RLeu')])
+            rows = cur.fetchmany(10)
+            self.assertEqual(len(rows),0)
     def test_fetchonemap(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
@@ -767,44 +820,86 @@ class TestCursor(FDBTestBase):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchallmap()
-        self.assertListEqual([row.items() for row in rows],
-            [[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')],
-             [('COUNTRY', 'England'), ('CURRENCY', 'Pound')],
-             [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')],
-             [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')],
-             [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')],
-             [('COUNTRY', 'Italy'), ('CURRENCY', 'Lira')],
-             [('COUNTRY', 'France'), ('CURRENCY', 'FFranc')],
-             [('COUNTRY', 'Germany'), ('CURRENCY', 'D-Mark')],
-             [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')],
-             [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')],
-             [('COUNTRY', 'Netherlands'), ('CURRENCY', 'Guilder')],
-             [('COUNTRY', 'Belgium'), ('CURRENCY', 'BFranc')],
-             [('COUNTRY', 'Austria'), ('CURRENCY', 'Schilling')],
-             [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')]])
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertListEqual([row.items() for row in rows],
+                [[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')],
+                 [('COUNTRY', 'England'), ('CURRENCY', 'Pound')],
+                 [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')],
+                 [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')],
+                 [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')],
+                 [('COUNTRY', 'Italy'), ('CURRENCY', 'Lira')],
+                 [('COUNTRY', 'France'), ('CURRENCY', 'FFranc')],
+                 [('COUNTRY', 'Germany'), ('CURRENCY', 'D-Mark')],
+                 [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')],
+                 [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')],
+                 [('COUNTRY', 'Netherlands'), ('CURRENCY', 'Guilder')],
+                 [('COUNTRY', 'Belgium'), ('CURRENCY', 'BFranc')],
+                 [('COUNTRY', 'Austria'), ('CURRENCY', 'Schilling')],
+                 [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')]])
+        else:
+            self.assertListEqual([row.items() for row in rows],
+                [[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')],
+                 [('COUNTRY', 'England'), ('CURRENCY', 'Pound')],
+                 [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')],
+                 [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')],
+                 [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')],
+                 [('COUNTRY', 'Italy'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'France'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Germany'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')],
+                 [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')],
+                 [('COUNTRY', 'Netherlands'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Belgium'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Austria'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')],
+                 [('COUNTRY', 'Russia'), ('CURRENCY', 'Ruble')],
+                 [('COUNTRY', 'Romania'), ('CURRENCY', 'RLeu')]])
     def test_fetchmanymap(self):
         cur = self.con.cursor()
         cur.execute('select * from country')
         rows = cur.fetchmanymap(10)
-        self.assertListEqual([row.items() for row in rows],
-            [[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')],
-             [('COUNTRY', 'England'), ('CURRENCY', 'Pound')],
-             [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')],
-             [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')],
-             [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')],
-             [('COUNTRY', 'Italy'), ('CURRENCY', 'Lira')],
-             [('COUNTRY', 'France'), ('CURRENCY', 'FFranc')],
-             [('COUNTRY', 'Germany'), ('CURRENCY', 'D-Mark')],
-             [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')],
-             [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')]])
-        rows = cur.fetchmanymap(10)
-        self.assertListEqual([row.items() for row in rows],
-            [[('COUNTRY', 'Netherlands'), ('CURRENCY', 'Guilder')],
-             [('COUNTRY', 'Belgium'), ('CURRENCY', 'BFranc')],
-             [('COUNTRY', 'Austria'), ('CURRENCY', 'Schilling')],
-             [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')]])
-        rows = cur.fetchmany(10)
-        self.assertEqual(len(rows),0)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertListEqual([row.items() for row in rows],
+                [[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')],
+                 [('COUNTRY', 'England'), ('CURRENCY', 'Pound')],
+                 [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')],
+                 [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')],
+                 [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')],
+                 [('COUNTRY', 'Italy'), ('CURRENCY', 'Lira')],
+                 [('COUNTRY', 'France'), ('CURRENCY', 'FFranc')],
+                 [('COUNTRY', 'Germany'), ('CURRENCY', 'D-Mark')],
+                 [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')],
+                 [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')]])
+            rows = cur.fetchmanymap(10)
+            self.assertListEqual([row.items() for row in rows],
+                [[('COUNTRY', 'Netherlands'), ('CURRENCY', 'Guilder')],
+                 [('COUNTRY', 'Belgium'), ('CURRENCY', 'BFranc')],
+                 [('COUNTRY', 'Austria'), ('CURRENCY', 'Schilling')],
+                 [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')]])
+            rows = cur.fetchmany(10)
+            self.assertEqual(len(rows),0)
+        else:
+            self.assertListEqual([row.items() for row in rows],
+                [[('COUNTRY', 'USA'), ('CURRENCY', 'Dollar')],
+                 [('COUNTRY', 'England'), ('CURRENCY', 'Pound')],
+                 [('COUNTRY', 'Canada'), ('CURRENCY', 'CdnDlr')],
+                 [('COUNTRY', 'Switzerland'), ('CURRENCY', 'SFranc')],
+                 [('COUNTRY', 'Japan'), ('CURRENCY', 'Yen')],
+                 [('COUNTRY', 'Italy'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'France'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Germany'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Australia'), ('CURRENCY', 'ADollar')],
+                 [('COUNTRY', 'Hong Kong'), ('CURRENCY', 'HKDollar')]])
+            rows = cur.fetchmanymap(10)
+            self.assertListEqual([row.items() for row in rows],
+                [[('COUNTRY', 'Netherlands'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Belgium'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Austria'), ('CURRENCY', 'Euro')],
+                 [('COUNTRY', 'Fiji'), ('CURRENCY', 'FDollar')],
+                 [('COUNTRY', 'Russia'), ('CURRENCY', 'Ruble')],
+                 [('COUNTRY', 'Romania'), ('CURRENCY', 'RLeu')]])
+            rows = cur.fetchmany(10)
+            self.assertEqual(len(rows),0)
     def test_rowcount(self):
         cur = self.con.cursor()
         self.assertEqual(cur.rowcount,-1)
@@ -834,9 +929,10 @@ class TestCursor(FDBTestBase):
 
 class TestPreparedStatement(FDBTestBase):
     def setUp(self):
+        super(TestPreparedStatement,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
@@ -875,9 +971,10 @@ class TestPreparedStatement(FDBTestBase):
 
 class TestArrays(FDBTestBase):
     def setUp(self):
+        super(TestArrays,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
         tbl = """recreate table AR (c1 integer,
@@ -913,6 +1010,25 @@ class TestArrays(FDBTestBase):
         self.c14 = [decimal.Decimal('10.22222'), decimal.Decimal('100000.333')]
         self.c15 = [decimal.Decimal('1000000000000.22222'), decimal.Decimal('1000000000000.333')]
         #self.con.execute_immediate(tbl)
+        #self.con.commit()
+        #cur = self.con.cursor()
+        #cur.execute("insert into ar (c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12) values (1,?,?,?,?,?,?,?,?,?,?,?)",
+                    #[self.c2,self.c3,self.c4,self.c5,self.c6,self.c7,self.c8,self.c9,
+                     #self.c10,self.c11,self.c12])
+        #cur.execute("insert into ar (c1,c2) values (2,?)",[self.c2])
+        #cur.execute("insert into ar (c1,c3) values (3,?)",[self.c3])
+        #cur.execute("insert into ar (c1,c4) values (4,?)",[self.c4])
+        #cur.execute("insert into ar (c1,c5) values (5,?)",[self.c5])
+        #cur.execute("insert into ar (c1,c6) values (6,?)",[self.c6])
+        #cur.execute("insert into ar (c1,c7) values (7,?)",[self.c7])
+        #cur.execute("insert into ar (c1,c8) values (8,?)",[self.c8])
+        #cur.execute("insert into ar (c1,c9) values (9,?)",[self.c9])
+        #cur.execute("insert into ar (c1,c10) values (10,?)",[self.c10])
+        #cur.execute("insert into ar (c1,c11) values (11,?)",[self.c11])
+        #cur.execute("insert into ar (c1,c12) values (12,?)",[self.c12])
+        #cur.execute("insert into ar (c1,c13) values (13,?)",[self.c13])
+        #cur.execute("insert into ar (c1,c14) values (14,?)",[self.c14])
+        #cur.execute("insert into ar (c1,c15) values (15,?)",[self.c15])
         #self.con.commit()
     def tearDown(self):
         self.con.execute_immediate("delete from AR where c1>=100")
@@ -1095,9 +1211,10 @@ class TestArrays(FDBTestBase):
 
 class TestInsertData(FDBTestBase):
     def setUp(self):
+        super(TestInsertData,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
         self.con2 = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
@@ -1231,9 +1348,10 @@ class TestInsertData(FDBTestBase):
 
 class TestStoredProc(FDBTestBase):
     def setUp(self):
+        super(TestStoredProc,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
@@ -1253,9 +1371,10 @@ class TestStoredProc(FDBTestBase):
 
 class TestServices(FDBTestBase):
     def setUp(self):
+        super(TestServices,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
     def test_attach(self):
         svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
         svc.close()
@@ -1310,9 +1429,10 @@ class TestServices(FDBTestBase):
 
 class TestServices2(FDBTestBase):
     def setUp(self):
+        super(TestServices2,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.fbk = os.path.join(self.dbpath,'test_employee.fbk')
         self.fbk2 = os.path.join(self.dbpath,'test_employee.fbk2')
         self.rfdb = os.path.join(self.dbpath,'test_employee.fdb')
@@ -1409,6 +1529,14 @@ class TestServices2(FDBTestBase):
         output = []
         self.svc.backup('employee', self.fbk, callback=fetchline)
         self.assertGreater(len(output),0)
+        # Firebird 3.0 stats
+        if self.con.ods >= fdb.ODS_FB_30:
+            output = []
+            self.svc.backup('employee', self.fbk, callback=fetchline,
+                            stats=[fdb.services.STATS_TOTAL_TIME,fdb.services.STATS_TIME_DELTA,
+                                   fdb.services.STATS_PAGE_READS,fdb.services.STATS_PAGE_WRITES])
+            self.assertGreater(len(output),0)
+            self.assertIn('gbak: time     delta  reads  writes ', output)
     def test_restore(self):
         def fetchline(line):
             output.append(line)
@@ -1433,6 +1561,14 @@ class TestServices2(FDBTestBase):
         output = []
         self.svc.restore(self.fbk, self.rfdb, replace=1, callback=fetchline)
         self.assertGreater(len(output),0)
+        # Firebird 3.0 stats
+        if self.con.ods >= fdb.ODS_FB_30:
+            output = []
+            self.svc.restore(self.fbk, self.rfdb, replace=1, callback=fetchline,
+                             stats=[fdb.services.STATS_TOTAL_TIME,fdb.services.STATS_TIME_DELTA,
+                                    fdb.services.STATS_PAGE_READS,fdb.services.STATS_PAGE_WRITES])
+            self.assertGreater(len(output),0)
+            self.assertIn('gbak: time     delta  reads  writes ', output)
     def test_nbackup(self):
         if self.con.engine_version < 2.5:
             return
@@ -1473,10 +1609,12 @@ class TestServices2(FDBTestBase):
         self.assertIn(trace2_id,sessions)
         self.assertListEqual(list(sessions[trace2_id].keys()),
                              ['date', 'flags', 'user'])
-        self.assertListEqual(sessions[trace1_id]['flags'],
-                             ['active', ' admin', ' trace'])
-        self.assertListEqual(sessions[trace2_id]['flags'],
-                             ['active', ' admin', ' trace'])
+        if self.con.engine_version < 3.0:
+            self.assertListEqual(sessions[trace1_id]['flags'],['active', ' admin', ' trace'])
+            self.assertListEqual(sessions[trace2_id]['flags'],['active', ' admin', ' trace'])
+        else:
+            self.assertListEqual(sessions[trace1_id]['flags'],['active', ' trace'])
+            self.assertListEqual(sessions[trace2_id]['flags'],['active', ' trace'])
         # Pause session
         svcx.trace_suspend(trace2_id)
         self.assertIn('suspend',svcx.trace_list()[trace2_id]['flags'])
@@ -1564,11 +1702,43 @@ class TestServices2(FDBTestBase):
         self.assertIn('Database dialect\t3',''.join(self.svc.readlines()))
     def test_activateShadowFile(self):
         self.svc.activate_shadow(self.rfdb)
+    def test_nolinger(self):
+        if self.con.ods >= fdb.ODS_FB_30:
+            self.svc.no_linger(self.rfdb)
     def test_sweep(self):
         self.svc.sweep(self.rfdb)
     def test_repair(self):
         result = self.svc.repair(self.rfdb)
         self.assertFalse(result)
+    def test_validate(self):
+        def fetchline(line):
+            output.append(line)
+        output = []
+        self.svc.validate(self.dbfile)
+        # fetch materialized
+        report = self.svc.readlines()
+        self.assertFalse(self.svc.fetching)
+        self.assertFalse(self.svc.isrunning())
+        self.assertIsInstance(report,type(list()))
+        self.assertIn('Validation started','/n'.join(report))
+        self.assertIn('Validation finished','/n'.join(report))
+        # iterate over result
+        self.svc.validate(self.dbfile)
+        for line in self.svc:
+            self.assertIsNotNone(line)
+            self.assertIsInstance(line,fdb.StringType)
+        self.assertFalse(self.svc.fetching)
+        # callback
+        output = []
+        self.svc.validate(self.dbfile, callback=fetchline)
+        self.assertGreater(len(output),0)
+        # Parameters
+        self.svc.validate(self.dbfile,include_tables='COUNTRY|SALES',
+                          include_indices='SALESTATX',lock_timeout=-1)
+        report = '/n'.join(self.svc.readlines())
+        self.assertIn('(COUNTRY)', report)
+        self.assertIn('(SALES)', report)
+        self.assertIn('(SALESTATX)', report)
     def test_getUsers(self):
         users = self.svc.get_users()
         self.assertIsInstance(users,type(list()))
@@ -1608,6 +1778,7 @@ class TestServices2(FDBTestBase):
 
 class TestEvents(FDBTestBase):
     def setUp(self):
+        super(TestEvents,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,'fbevents.fdb')
@@ -1715,9 +1886,10 @@ END""")
 
 class TestStreamBLOBs(FDBTestBase):
     def setUp(self):
+        super(TestStreamBLOBs,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
         #self.con.execute_immediate("recreate table t (c1 integer)")
@@ -1826,9 +1998,10 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
 
 class TestCharsetConversion(FDBTestBase):
     def setUp(self):
+        super(TestCharsetConversion,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD,
                                charset='utf8')
@@ -1929,23 +2102,28 @@ Porém você poderá trocar entre ambos com um mínimo de luta. """
 
 class TestSchema(FDBTestBase):
     def setUp(self):
+        super(TestSchema,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
-        #self.dbfile = 'employee.fdb'
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
+        #self.dbfile = '/home/data/db/employee30.fdb'
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
         self.con.close()
     def testSchemaBindClose(self):
-        s = fdb.schema.Schema()
+        s = sm.Schema()
         self.assertTrue(s.closed)
         s.bind(self.con)
         # properties
         self.assertIsNone(s.description)
+        self.assertIsNone(s.linger)
         self.assertEqual(s.owner_name,'SYSDBA')
         self.assertEqual(s.default_character_set.name,'NONE')
-        self.assertIsNone(s.security_class)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(s.security_class)
+        else:
+            self.assertEqual(s.security_class,'SQL$363')
         self.assertFalse(s.closed)
         #
         s.close()
@@ -2089,9 +2267,14 @@ class TestSchema(FDBTestBase):
             self.assertDictEqual(s.enum_relation_types,
                 {0: 'PERSISTENT', 1: 'VIEW', 2: 'EXTERNAL', 3: 'VIRTUAL',
                  4: 'GLOBAL_TEMPORARY_PRESERVE', 5: 'GLOBAL_TEMPORARY_DELETE'})
-        self.assertDictEqual(s.enum_system_flag_types,
-            {0: 'USER', 1: 'SYSTEM', 2: 'QLI', 3: 'CHECK_CONSTRAINT',
-             4: 'REFERENTIAL_CONSTRAINT', 5: 'VIEW_CHECK'})
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertDictEqual(s.enum_system_flag_types,
+                {0: 'USER', 1: 'SYSTEM', 2: 'QLI', 3: 'CHECK_CONSTRAINT',
+                 4: 'REFERENTIAL_CONSTRAINT', 5: 'VIEW_CHECK'})
+        else:
+            self.assertDictEqual(s.enum_system_flag_types,
+                {0: 'USER', 1: 'SYSTEM', 2: 'QLI', 3: 'CHECK_CONSTRAINT',
+                 4: 'REFERENTIAL_CONSTRAINT', 5: 'VIEW_CHECK', 6: 'IDENTITY_GENERATOR'})
         self.assertDictEqual(s.enum_transaction_state_types,
                              {1: 'LIMBO', 2: 'COMMITTED', 3: 'ROLLED_BACK'})
         if self.con.ods <= fdb.ODS_FB_20:
@@ -2104,11 +2287,36 @@ class TestSchema(FDBTestBase):
                  3: 'PRE_MODIFY', 4: 'POST_MODIFY', 5: 'PRE_ERASE',
                  6: 'POST_ERASE', 8193: 'DISCONNECT', 8194: 'TRANSACTION_START',
                  8195: 'TRANSACTION_COMMIT', 8196: 'TRANSACTION_ROLLBACK'})
+        if self.con.ods >= fdb.ODS_FB_30:
+            self.assertDictEqual(s.enum_parameter_types,
+                {0: 'INPUT', 1: 'OUTPUT'})
+            self.assertDictEqual(s.enum_index_activity_flags,
+                {0: 'ACTIVE', 1: 'INACTIVE'})
+            self.assertDictEqual(s.enum_index_unique_flags,
+                {0: 'NON_UNIQUE', 1: 'UNIQUE'})
+            self.assertDictEqual(s.enum_trigger_activity_flags,
+                {0: 'ACTIVE', 1: 'INACTIVE'})
+            self.assertDictEqual(s.enum_grant_options,
+                {0: 'NONE', 1: 'GRANT_OPTION', 2: 'ADMIN_OPTION'})
+            self.assertDictEqual(s.enum_page_types,
+                {1: 'HEADER', 2: 'PAGE_INVENTORY', 3: 'TRANSACTION_INVENTORY',
+                 4: 'POINTER', 5: 'DATA', 6: 'INDEX_ROOT', 7: 'INDEX_BUCKET',
+                 8: 'BLOB', 9: 'GENERATOR', 10: 'SCN_INVENTORY'})
+            self.assertDictEqual(s.enum_privacy_flags,
+                {0: 'PUBLIC', 1: 'PRIVATE'})
+            self.assertDictEqual(s.enum_legacy_flags,
+                {0: 'NEW_STYLE', 1: 'LEGACY_STYLE'})
+            self.assertDictEqual(s.enum_determinism_flags,
+                {0: 'NON_DETERMINISTIC', 1: 'DETERMINISTIC'})
+
         # properties
         self.assertIsNone(s.description)
         self.assertEqual(s.owner_name,'SYSDBA')
         self.assertEqual(s.default_character_set.name,'NONE')
-        self.assertIsNone(s.security_class)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(s.security_class)
+        else:
+            self.assertEqual(s.security_class,'SQL$363')
         # Lists of db objects
         self.assertIsInstance(s.collations,list)
         self.assertIsInstance(s.character_sets,list)
@@ -2155,8 +2363,8 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.sysgenerators),9)
             self.assertEqual(len(s.syssequences),9)
         else:
-            self.assertEqual(len(s.sysgenerators),11)
-            self.assertEqual(len(s.syssequences),11)
+            self.assertEqual(len(s.sysgenerators),13)
+            self.assertEqual(len(s.syssequences),13)
         self.assertEqual(len(s.sequences),2)
         self.assertEqual(len(s.domains),15)
         if self.con.ods <= fdb.ODS_FB_20:
@@ -2165,6 +2373,8 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.sysdomains),227)
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.sysdomains),230)
+        elif self.con.ods == fdb.ODS_FB_30:
+            self.assertEqual(len(s.sysdomains),275)
         else:
             self.assertEqual(len(s.sysdomains),247)
         self.assertEqual(len(s.indices),12)
@@ -2172,27 +2382,40 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.sysindices),72)
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.sysindices),75)
+        elif self.con.ods == fdb.ODS_FB_30:
+            self.assertEqual(len(s.sysindices),81)
         else:
             self.assertEqual(len(s.sysindices),78)
-        self.assertEqual(len(s.tables),15)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.tables),15)
+        else:
+            self.assertEqual(len(s.tables),16)
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(len(s.systables),33)
         elif self.con.ods == fdb.ODS_FB_21:
             self.assertEqual(len(s.systables),40)
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.systables),42)
+        elif self.con.ods == fdb.ODS_FB_30:
+            self.assertEqual(len(s.systables),50)
         else:
             self.assertEqual(len(s.systables),44)
         self.assertEqual(len(s.views),1)
         self.assertEqual(len(s.sysviews),0)
         self.assertEqual(len(s.triggers),6)
-        self.assertEqual(len(s.systriggers),63)
-        self.assertEqual(len(s.procedures),10)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.systriggers),63)
+        else:
+            self.assertEqual(len(s.systriggers),57)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.procedures),10)
+        else:
+            self.assertEqual(len(s.procedures),11)
         self.assertEqual(len(s.sysprocedures),0)
         if self.con.ods < fdb.ODS_FB_30:
             self.assertEqual(len(s.constraints),80)
         else:
-            self.assertEqual(len(s.constraints),106)
+            self.assertEqual(len(s.constraints),108)
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(len(s.roles),1)
         elif self.con.ods >= fdb.ODS_FB_25:
@@ -2201,9 +2424,14 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.dependencies),163)
         elif self.con.ods == fdb.ODS_FB_21:
             self.assertEqual(len(s.dependencies),157)
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.dependencies),163)
-        self.assertEqual(len(s.functions),0)
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(len(s.dependencies),168)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.functions),0)
+        else:
+            self.assertEqual(len(s.functions),6)
         if self.con.ods < fdb.ODS_FB_30:
             self.assertEqual(len(s.sysfunctions),2)
         else:
@@ -2276,6 +2504,12 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.get_quoted_name(),'ES_ES')
         self.assertListEqual(c.get_dependents(),[])
         self.assertListEqual(c.get_dependencies(),[])
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(c.security_class)
+            self.assertIsNone(c.owner_name)
+        else:
+            self.assertEqual(c.security_class,'SQL$263')
+            self.assertEqual(c.owner_name,'SYSDBA')
         #
         self.assertEqual(c.id,10)
         self.assertEqual(c.character_set.name,'ISO8859_1')
@@ -2288,6 +2522,10 @@ class TestSchema(FDBTestBase):
                              'DISABLE-COMPRESSIONS=1;SPECIALS-FIRST=1')
         self.assertIsNone(c.function_name)
         # User defined collation
+        # create collation TEST_COLLATE
+        # for win1250
+        # from WIN_CZ no pad case insensitive accent insensitive
+        # 'DISABLE-COMPRESSIONS=0;DISABLE-EXPANSIONS=0'
         c = self.con.schema.get_collation('TEST_COLLATE')
         # common properties
         self.assertEqual(c.name,'TEST_COLLATE')
@@ -2329,6 +2567,12 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.get_quoted_name(),'UTF8')
         self.assertListEqual(c.get_dependents(),[])
         self.assertListEqual(c.get_dependencies(),[])
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(c.security_class)
+            self.assertIsNone(c.owner_name)
+        else:
+            self.assertEqual(c.security_class,'SQL$166')
+            self.assertEqual(c.owner_name,'SYSDBA')
         #
         self.assertEqual(c.id,4)
         self.assertEqual(c.bytes_per_character,4)
@@ -2376,6 +2620,12 @@ class TestSchema(FDBTestBase):
         self.assertEqual(d.depended_on_type,7)
         self.assertIsInstance(d.depended_on,sm.DatabaseException)
         self.assertListEqual(c.get_dependencies(),[])
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(c.security_class)
+            self.assertIsNone(c.owner_name)
+        else:
+            self.assertEqual(c.security_class,'SQL$476')
+            self.assertEqual(c.owner_name,'SYSDBA')
         #
         self.assertEqual(c.id,1)
         self.assertEqual(c.message,"Invalid employee number or project id.")
@@ -2432,8 +2682,16 @@ class TestSchema(FDBTestBase):
         #
         if self.con.ods < fdb.ODS_FB_30:
             self.assertEqual(c.id,10)
+            self.assertIsNone(c.security_class)
+            self.assertIsNone(c.owner_name)
+            self.assertIsNone(c.inital_value)
+            self.assertIsNone(c.increment)
         else:
             self.assertEqual(c.id,12)
+            self.assertEqual(c.security_class,'SQL$429')
+            self.assertEqual(c.owner_name,'SYSDBA')
+            self.assertEqual(c.inital_value,0)
+            self.assertEqual(c.increment,1)
         self.assertEqual(c.value,145)
         #
         self.assertEqual(c.get_sql_for('create'),"CREATE SEQUENCE EMP_NO_GEN")
@@ -2459,6 +2717,8 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.get_quoted_name(),'RDB$PAGE_NUMBER')
         self.assertListEqual(c.get_dependents(),[])
         self.assertListEqual(c.get_dependencies(),[])
+        self.assertFalse(c.isidentity())
+        self.assertIsNone(c.generator)
         # User column
         c = self.con.schema.get_table('DEPARTMENT').get_column('PHONE_NO')
         # common properties
@@ -2517,7 +2777,10 @@ class TestSchema(FDBTestBase):
         self.assertFalse(c.isdomainbased())
         self.assertFalse(c.has_default())
         self.assertEqual(c.get_computedby(),"(last_name || ', ' || first_name)")
-        self.assertEqual(c.datatype,'VARCHAR(0)')
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(c.datatype,'VARCHAR(0)')
+        else:
+            self.assertEqual(c.datatype,'VARCHAR(37)')
         #
         self.assertEqual(c.get_sql_for('alter',datatype='VARCHAR(50)',
                                        expression="(first_name || ', ' || last_name)"),
@@ -2531,6 +2794,17 @@ class TestSchema(FDBTestBase):
         # Array column
         c = self.con.schema.get_table('AR').get_column('C2')
         self.assertEqual(c.datatype,'INTEGER[4, 0:3, 2]')
+        # Identity column
+        if self.con.ods >= fdb.ODS_FB_30:
+            c = self.con.schema.get_table('T5').get_column('ID')
+            self.assertTrue(c.isidentity())
+            self.assertTrue(c.generator.isidentity())
+            self.assertEqual(c.identity_type,1)
+            #
+            self.assertEqual(c.get_sql_for('alter',restart=None),
+                "ALTER TABLE T5 ALTER COLUMN ID RESTART")
+            self.assertEqual(c.get_sql_for('alter',restart=100),
+                "ALTER TABLE T5 ALTER COLUMN ID RESTART WITH 100")
     def testIndex(self):
         # System index
         c = self.con.schema.get_index('RDB$INDEX_0')
@@ -2640,6 +2914,12 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.get_quoted_name(),'RDB$6')
         self.assertListEqual(c.get_dependents(),[])
         self.assertListEqual(c.get_dependencies(),[])
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(c.security_class)
+            self.assertIsNone(c.owner_name)
+        else:
+            self.assertEqual(c.security_class,'SQL$439')
+            self.assertEqual(c.owner_name,'SYSDBA')
         # User domain
         c = self.con.schema.get_domain('PRODTYPE')
         # common properties
@@ -2704,7 +2984,7 @@ class TestSchema(FDBTestBase):
     def testDependency(self):
         l = self.con.schema.get_table('DEPARTMENT').get_dependents()
         self.assertEqual(len(l),18)
-        c = l[0]
+        c = l[0] if self.con.ods < fdb.ODS_FB_30 else l[3]
         # common properties
         self.assertIsNone(c.name)
         self.assertIsNone(c.description)
@@ -2713,6 +2993,8 @@ class TestSchema(FDBTestBase):
         self.assertIsNone(c.get_quoted_name())
         self.assertListEqual(c.get_dependents(),[])
         self.assertListEqual(c.get_dependencies(),[])
+        self.assertIsNone(c.package)
+        self.assertFalse(c.ispackaged())
         #
         self.assertEqual(c.dependent_name,'PHONE_LIST')
         self.assertEqual(c.dependent_type,1)
@@ -2723,6 +3005,18 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.depended_on_type,0)
         self.assertIsInstance(c.depended_on,sm.TableColumn)
         self.assertEqual(c.depended_on.name,'DEPT_NO')
+        #
+        if self.con.engine_version >= 3.0:
+            self.assertListEqual(c.get_dependents(),[])
+            l = self.con.schema.get_package('TEST2').get_dependencies()
+            self.assertEqual(len(l),2)
+            x = l[0]
+            self.assertEqual(x.depended_on.name,'FN')
+            self.assertFalse(x.depended_on.ispackaged())
+            x = l[1]
+            self.assertEqual(x.depended_on.name,'F')
+            self.assertTrue(x.depended_on.ispackaged())
+            self.assertIsInstance(x.package,sm.Package)
     def testConstraint(self):
         # Common / PRIMARY KEY
         c = self.con.schema.get_table('CUSTOMER').primary_key
@@ -2891,7 +3185,7 @@ class TestSchema(FDBTestBase):
                     ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5),
                     ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5),
                     ('ORG_CHART', 5), ('ORG_CHART', 5)])
-        elif self.con.ods >= fdb.ODS_FB_25:
+        elif self.con.ods == fdb.ODS_FB_25:
             self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
                    [('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1),
                     ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('CHECK_3', 2),
@@ -2902,27 +3196,43 @@ class TestSchema(FDBTestBase):
                     ('PHONE_LIST', 1), ('ORG_CHART', 5), ('ORG_CHART', 5),
                     ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5),
                     ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5)])
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
+                   [('SAVE_SALARY_CHANGE', 2), ('SAVE_SALARY_CHANGE', 2), ('CHECK_3', 2),
+                    ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_4', 2),
+                    ('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2), ('PHONE_LIST', 1),
+                    ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('PHONE_LIST', 1),
+                    ('PHONE_LIST', 1), ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5),
+                    ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5),
+                    ('ORG_CHART', 5), ('RDB$9', 3), ('RDB$9', 3), ('SET_EMP_NO', 2)]
+                   )
         self.assertListEqual(c.get_dependencies(),[])
         #
         self.assertEqual(c.id,131)
         self.assertEqual(c.dbkey_length,8)
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(c.format,1)
-        elif self.con.ods > fdb.ODS_FB_20:
+        elif (self.con.ods > fdb.ODS_FB_20) and (self.con.ods < fdb.ODS_FB_30):
             self.assertEqual(c.format,2)
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(c.format,1)
         self.assertEqual(c.table_type,'PERSISTENT')
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(c.security_class,'SQL$EMPLOYEE')
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$7')
+        elif self.con.ods == fdb.ODS_FB_30:
+            self.assertEqual(c.security_class,'SQL$440')
         else:
             self.assertEqual(c.security_class,'SQL$482')
         self.assertIsNone(c.external_file)
         self.assertEqual(c.owner_name,'SYSDBA')
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(c.default_class,'SQL$DEFAULT5')
-        elif self.con.ods > fdb.ODS_FB_20:
+        elif (self.con.ods > fdb.ODS_FB_20) and (self.con.ods < fdb.ODS_FB_30):
             self.assertEqual(c.default_class,'SQL$DEFAULT7')
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(c.default_class,'SQL$DEFAULT54')
         self.assertEqual(c.flags,1)
         self.assertEqual(c.primary_key.name,'INTEG_27')
         self.assertListEqual([x.name for x in c.foreign_keys],
@@ -2979,6 +3289,16 @@ class TestSchema(FDBTestBase):
   PRIMARY KEY (EMP_NO)
 )""")
         self.assertEqual(c.get_sql_for('drop'),"DROP TABLE EMPLOYEE")
+        # Identity colums
+        if self.con.ods >= fdb.ODS_FB_30:
+            c = self.con.schema.get_table('T5')
+            self.assertEqual(c.get_sql_for('create'), """CREATE TABLE T5
+(
+  ID NUMERIC(10, 0) GENERATED BY DEFAULT AS IDENTITY,
+  C1 VARCHAR(15),
+  UQ BIGINT GENERATED BY DEFAULT AS IDENTITY (START WITH 100),
+  PRIMARY KEY (ID)
+)""")
     def testView(self):
         # User view
         c = self.con.schema.get_view('PHONE_LIST')
@@ -2991,14 +3311,26 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.get_quoted_name(),'PHONE_LIST')
         self.assertListEqual(c.get_dependents(),[])
         d = c.get_dependencies()
-        self.assertListEqual([(x.depended_on_name,x.field_name,x.depended_on_type) for x in d],
-               [('DEPARTMENT', 'DEPT_NO', 0), ('EMPLOYEE', 'DEPT_NO', 0),
-                ('DEPARTMENT', None, 0), ('EMPLOYEE', None, 0),
-                ('DEPARTMENT', 'PHONE_NO', 0), ('EMPLOYEE', 'PHONE_EXT', 0),
-                ('EMPLOYEE', 'LAST_NAME', 0), ('EMPLOYEE', 'EMP_NO', 0),
-                ('DEPARTMENT', 'LOCATION', 0), ('EMPLOYEE', 'FIRST_NAME', 0)])
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertListEqual([(x.depended_on_name,x.field_name,x.depended_on_type) for x in d],
+                   [('DEPARTMENT', 'DEPT_NO', 0), ('EMPLOYEE', 'DEPT_NO', 0),
+                    ('DEPARTMENT', None, 0), ('EMPLOYEE', None, 0),
+                    ('DEPARTMENT', 'PHONE_NO', 0), ('EMPLOYEE', 'PHONE_EXT', 0),
+                    ('EMPLOYEE', 'LAST_NAME', 0), ('EMPLOYEE', 'EMP_NO', 0),
+                    ('DEPARTMENT', 'LOCATION', 0), ('EMPLOYEE', 'FIRST_NAME', 0)])
+        else:
+            self.assertListEqual([(x.depended_on_name,x.field_name,x.depended_on_type) for x in d],
+                   [('DEPARTMENT', 'DEPT_NO', 0), ('EMPLOYEE', 'DEPT_NO', 0),
+                    ('DEPARTMENT', None, 0), ('EMPLOYEE', None, 0), ('EMPLOYEE', 'EMP_NO', 0),
+                    ('EMPLOYEE', 'FIRST_NAME', 0), ('EMPLOYEE', 'LAST_NAME', 0),
+                    ('EMPLOYEE', 'PHONE_EXT', 0), ('DEPARTMENT', 'LOCATION', 0),
+                    ('DEPARTMENT', 'PHONE_NO', 0)]
+                   )
         #
-        self.assertEqual(c.id,143)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(c.id,143)
+        else:
+            self.assertEqual(c.id,132)
         self.assertEqual(c.sql,"""SELECT
     emp_no, first_name, last_name, phone_ext, location, phone_no
     FROM employee, department
@@ -3009,13 +3341,17 @@ class TestSchema(FDBTestBase):
             self.assertEqual(c.security_class,'SQL$PHONE_LIST')
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$8')
+        elif self.con.ods == fdb.ODS_FB_30:
+            self.assertEqual(c.security_class,'SQL$444')
         else:
             self.assertEqual(c.security_class,'SQL$483')
         self.assertEqual(c.owner_name,'SYSDBA')
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(c.default_class,'SQL$DEFAULT17')
-        elif self.con.ods > fdb.ODS_FB_20:
+        elif (self.con.ods > fdb.ODS_FB_20) and (self.con.ods < fdb.ODS_FB_30):
             self.assertEqual(c.default_class,'SQL$DEFAULT19')
+        elif self.con.ods >= fdb.ODS_FB_30:
+            self.assertEqual(c.default_class,'SQL$DEFAULT55')
         self.assertEqual(c.flags,1)
         self.assertListEqual([x.name for x in c.columns],['EMP_NO', 'FIRST_NAME',
                             'LAST_NAME', 'PHONE_EXT', 'LOCATION', 'PHONE_NO'])
@@ -3105,6 +3441,15 @@ class TestSchema(FDBTestBase):
         self.assertFalse(c.isupdate())
         self.assertFalse(c.isdelete())
         self.assertEqual(c.get_type_as_string(),'BEFORE INSERT')
+        #
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(c.valid_blr)
+            self.assertIsNone(c.engine_name)
+            self.assertIsNone(c.entrypoint)
+        else:
+            self.assertEqual(c.valid_blr,1)
+            self.assertIsNone(c.engine_name)
+            self.assertIsNone(c.entrypoint)
         #
         self.assertEqual(c.get_sql_for('create'),
 """CREATE TRIGGER SET_EMP_NO FOR EMPLOYEE ACTIVE
@@ -3213,7 +3558,7 @@ END""")
         self.assertEqual(c.sequence,0)
         self.assertEqual(c.domain.name,'RDB$32')
         self.assertEqual(c.datatype,'SMALLINT')
-        self.assertEqual(c.type_from,fdb.schema.PROCPAR_DATATYPE)
+        self.assertEqual(c.type_from,sm.PROCPAR_DATATYPE)
         self.assertIsNone(c.default)
         self.assertIsNone(c.collation)
         if self.con.ods <= fdb.ODS_FB_20:
@@ -3268,15 +3613,20 @@ END""")
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(c.security_class,'SQL$20')
         elif self.con.ods >= fdb.ODS_FB_30:
-            self.assertEqual(c.security_class,'SQL$510')
+            self.assertEqual(c.security_class,'SQL$473')
         self.assertEqual(c.owner_name,'SYSDBA')
         self.assertListEqual([x.name for x in c.input_params],['EMP_NO'])
         self.assertListEqual([x.name for x in c.output_params],['PROJ_ID'])
-        self.assertEqual(c.proc_type,0)
         if self.con.engine_version >= 3.0:
             self.assertTrue(c.valid_blr)
+            self.assertEqual(c.proc_type,1)
+            self.assertIsNone(c.engine_name)
+            self.assertIsNone(c.entrypoint)
+            self.assertIsNone(c.package)
+            self.assertIsNone(c.privacy)
         else:
             self.assertIsNone(c.valid_blr)
+            self.assertEqual(c.proc_type,0)
         #
         self.assertEqual(c.get_param('EMP_NO').name,'EMP_NO')
         self.assertEqual(c.get_param('PROJ_ID').name,'PROJ_ID')
@@ -3706,11 +4056,22 @@ END""")
         # common properties
         self.assertEqual(c.name,'STRLEN')
         self.assertIsNone(c.description)
+        self.assertIsNone(c.package)
+        self.assertIsNone(c.engine_mame)
+        self.assertIsNone(c.private_flag)
+        self.assertIsNone(c.source)
+        self.assertIsNone(c.id)
+        self.assertIsNone(c.valid_blr)
+        self.assertIsNone(c.security_class)
+        self.assertIsNone(c.owner_name)
+        self.assertIsNone(c.legacy_flag)
+        self.assertIsNone(c.deterministic_flag)
         self.assertListEqual(c.actions,['declare', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'STRLEN')
         self.assertListEqual(c.get_dependents(),[])
         self.assertListEqual(c.get_dependencies(),[])
+        self.assertFalse(c.ispackaged())
         #
         self.assertEqual(c.module_name,'ib_udf')
         self.assertEqual(c.entrypoint,'IB_UDF_strlen')
@@ -3780,6 +4141,115 @@ MODULE_NAME 'ib_udf'""")
 RETURNS NUMERIC(18, 0) BY DESCRIPTOR
 ENTRY_POINT 'idNvl'
 MODULE_NAME 'fbudf'""")
+        #
+        # Internal PSQL functions (Firebird 3.0)
+        if self.con.ods >= fdb.ODS_FB_30:
+            c = self.con.schema.get_function('F2')
+            # common properties
+            self.assertEqual(c.name,'F2')
+            self.assertIsNone(c.description)
+            self.assertIsNone(c.package)
+            self.assertIsNone(c.engine_mame)
+            self.assertIsNone(c.private_flag)
+            self.assertEqual(c.source,'BEGIN\n  RETURN X+1;\nEND')
+            self.assertEqual(c.id,3)
+            self.assertTrue(c.valid_blr)
+            self.assertEqual(c.security_class,'SQL$588')
+            self.assertEqual(c.owner_name,'SYSDBA')
+            self.assertEqual(c.legacy_flag,0)
+            self.assertEqual(c.deterministic_flag,0)
+            #
+            self.assertListEqual(c.actions,['create','recreate','alter','create_or_alter','drop'])
+            self.assertFalse(c.issystemobject())
+            self.assertEqual(c.get_quoted_name(),'F2')
+            self.assertListEqual(c.get_dependents(),[])
+            self.assertListEqual(c.get_dependencies(),[])
+            #
+            self.assertIsNone(c.module_name)
+            self.assertIsNone(c.entrypoint)
+            self.assertEqual(c.returns.name,'F2_0')
+            self.assertListEqual([a.name for a in c.arguments],['X'])
+            #
+            self.assertTrue(c.has_arguments())
+            self.assertTrue(c.has_return())
+            self.assertFalse(c.has_return_argument())
+            self.assertFalse(c.ispackaged())
+            #
+            self.assertEqual(c.get_sql_for('drop'),"DROP FUNCTION F2")
+            self.assertEqual(c.get_sql_for('create'),
+    """CREATE FUNCTION F2 (X INTEGER)
+    RETURNS INTEGER
+    AS
+    BEGIN
+      RETURN X+1;
+    END""")
+            self.assertEqual(c.get_sql_for('recreate'),
+    """RECREATE FUNCTION F2 (X INTEGER)
+    RETURNS INTEGER
+    AS
+    BEGIN
+      RETURN X+1;
+    END""")
+
+            self.assertEqual(c.get_sql_for('create_or_alter'),
+    """CREATE OR ALTER FUNCTION F2 (X INTEGER)
+    RETURNS INTEGER
+    AS
+    BEGIN
+      RETURN X+1;
+    END""")
+            with self.assertRaises(fdb.ProgrammingError) as cm:
+                c.get_sql_for('alter',declare="DECLARE VARIABLE i integer;",code='')
+            self.assertTupleEqual(cm.exception.args,
+                ("Missing required parameter: 'returns'.",))
+            with self.assertRaises(fdb.ProgrammingError) as cm:
+                c.get_sql_for('alter',declare="DECLARE VARIABLE i integer;",returns='INTEGER')
+            self.assertTupleEqual(cm.exception.args,
+                ("Missing required parameter: 'code'.",))
+            self.assertEqual(c.get_sql_for('alter',returns='INTEGER',code=''),
+    """ALTER FUNCTION F2
+    RETURNS INTEGER
+    AS
+    BEGIN
+    END""")
+            self.assertEqual(c.get_sql_for('alter',arguments="IN1 integer",returns='INTEGER',code=''),
+    """ALTER FUNCTION F2 (IN1 integer)
+    RETURNS INTEGER
+    AS
+    BEGIN
+    END""")
+            self.assertEqual(c.get_sql_for('alter',returns='INTEGER',
+                                           arguments=["IN1 integer","IN2 VARCHAR(10)"],
+                                           code=''),
+    """ALTER FUNCTION F2 (
+      IN1 integer,
+      IN2 VARCHAR(10)
+    )
+    RETURNS INTEGER
+    AS
+    BEGIN
+    END""")
+            #
+            c = self.con.schema.get_function('FX')
+            self.assertEqual(c.get_sql_for('create'),
+    """CREATE FUNCTION FX (
+      F TYPE OF "FIRSTNAME",
+      L TYPE OF COLUMN CUSTOMER.CONTACT_LAST
+    )
+    RETURNS VARCHAR(35)
+    AS
+    BEGIN
+      RETURN L || ', ' || F;
+    END""")
+            #
+            c = self.con.schema.get_function('F1')
+            self.assertEqual(c.name,'F1')
+            self.assertIsNotNone(c.package)
+            self.assertIsInstance(c.package,sm.Package)
+            self.assertListEqual(c.actions,[])
+            self.assertTrue(c.private_flag)
+            self.assertTrue(c.ispackaged())
+
     def testDatabaseFile(self):
         # We have to use mock
         c = sm.DatabaseFile(self.con.schema,{'RDB$FILE_LENGTH': 1000,
@@ -3843,6 +4313,7 @@ MODULE_NAME 'fbudf'""")
   FILE '/path/shadow.sf2' STARTING AT 1000 LENGTH 500
   FILE '/path/shadow.sf3' STARTING AT 1500""")
         self.assertEqual(c.get_sql_for('drop'),"DROP SHADOW 3")
+        self.assertEqual(c.get_sql_for('drop',preserve=True),"DROP SHADOW 3 PRESERVE FILE")
     def testPrivilegeBasic(self):
         p = self.con.schema.get_procedure('ALL_LANGS')
         #
@@ -3918,7 +4389,7 @@ MODULE_NAME 'fbudf'""")
         if self.con.ods <= fdb.ODS_FB_20:
             self.assertEqual(len(p),66)
         elif self.con.ods >= fdb.ODS_FB_30:
-            self.assertEqual(len(p),201)
+            self.assertEqual(len(p),115)
         else:
             self.assertEqual(len(p),68)
         with self.assertRaises(fdb.ProgrammingError) as cm:
@@ -4595,6 +5066,91 @@ MODULE_NAME 'fbudf'""")
             ['GRANT EXECUTE ON PROCEDURE ORG_CHART TO PUBLIC WITH GRANT OPTION',
              'GRANT EXECUTE ON PROCEDURE ORG_CHART TO SYSDBA'])
         #
+    def testPackage(self):
+        if self.con.ods < fdb.ODS_FB_30:
+            return
+        c = self.con.schema.get_package('TEST')
+        # common properties
+        self.assertEqual(c.name,'TEST')
+        self.assertIsNone(c.description)
+        self.assertFalse(c.issystemobject())
+        self.assertListEqual(c.actions,
+            ['create', 'recreate', 'create_or_alter', 'alter', 'drop'])
+        self.assertEqual(c.get_quoted_name(),'TEST')
+        self.assertEqual(c.owner_name,'SYSDBA')
+        self.assertEqual(c.security_class,'SQL$575')
+        self.assertEqual(c.header,"""BEGIN
+  PROCEDURE P1(I INT) RETURNS (O INT); -- public procedure
+  FUNCTION F(X INT) RETURNS INT;
+END""")
+        self.assertEqual(c.body,"""BEGIN
+  FUNCTION F1(I INT) RETURNS INT; -- private function
+
+  PROCEDURE P1(I INT) RETURNS (O INT)
+  AS
+  BEGIN
+  END
+
+  FUNCTION F1(I INT) RETURNS INT
+  AS
+  BEGIN
+    RETURN F(I)+10;
+  END
+
+  FUNCTION F(X INT) RETURNS INT
+  AS
+  BEGIN
+    RETURN X+1;
+  END
+END""")
+        self.assertListEqual(c.get_dependents(),[])
+        self.assertEqual(len(c.get_dependencies()),1)
+        self.assertEqual(len(c.functions), 2)
+        self.assertEqual(len(c.procedures), 1)
+        #
+        self.assertEqual(c.get_sql_for('create'),"""CREATE PACKAGE TEST
+AS
+BEGIN
+  PROCEDURE P1(I INT) RETURNS (O INT); -- public procedure
+  FUNCTION F(X INT) RETURNS INT;
+END""")
+        self.assertEqual(c.get_sql_for('create',body=True),"""CREATE PACKAGE BODY TEST
+AS
+BEGIN
+  FUNCTION F1(I INT) RETURNS INT; -- private function
+
+  PROCEDURE P1(I INT) RETURNS (O INT)
+  AS
+  BEGIN
+  END
+
+  FUNCTION F1(I INT) RETURNS INT
+  AS
+  BEGIN
+    RETURN F(I)+10;
+  END
+
+  FUNCTION F(X INT) RETURNS INT
+  AS
+  BEGIN
+    RETURN X+1;
+  END
+END""")
+        self.assertEqual(c.get_sql_for('alter',header="FUNCTION F2(I INT) RETURNS INT;"),
+"""ALTER PACKAGE TEST
+AS
+BEGIN
+FUNCTION F2(I INT) RETURNS INT;
+END""")
+        self.assertEqual(c.get_sql_for('drop'),"""DROP PACKAGE TEST""")
+        self.assertEqual(c.get_sql_for('drop',body=True),"""DROP PACKAGE BODY TEST""")
+        self.assertEqual( c.get_sql_for('create_or_alter'),"""CREATE OR ALTER PACKAGE TEST
+AS
+BEGIN
+  PROCEDURE P1(I INT) RETURNS (O INT); -- public procedure
+  FUNCTION F(X INT) RETURNS INT;
+END""")
+        #
     def testVisitor(self):
         v = SchemaVisitor(self,'create',follow='dependencies')
         c = self.con.schema.get_procedure('ALL_LANGS')
@@ -4669,9 +5225,10 @@ DROP TABLE JOB
 
 class TestMonitor(FDBTestBase):
     def setUp(self):
+        super(TestMonitor,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
@@ -4751,7 +5308,10 @@ class TestMonitor(FDBTestBase):
         m = self.con.monitor
         m.refresh()
         self.assertEqual(m.db.name.upper(),self.dbfile.upper())
-        self.assertEqual(m.db.page_size,4096)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(m.db.page_size,4096)
+        else:
+            self.assertEqual(m.db.page_size,8192)
         if self.con.ods == fdb.ODS_FB_20:
             self.assertEqual(m.db.ods,11.0)
         elif self.con.ods == fdb.ODS_FB_21:
@@ -4774,8 +5334,21 @@ class TestMonitor(FDBTestBase):
         self.assertIsInstance(m.db.created,datetime.datetime)
         self.assertIsInstance(m.db.pages,int)
         self.assertEqual(m.db.backup_state,fdb.monitor.BACKUP_STATE_NORMAL)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(m.db.crypt_page)
+            self.assertIsNone(m.db.owner)
+            self.assertIsNone(m.db.security_database)
+        else:
+            self.assertEqual(m.db.crypt_page,0)
+            self.assertEqual(m.db.owner,'SYSDBA')
+            self.assertEqual(m.db.security_database,'Default')
         self.assertEqual(m.db.iostats.group,fdb.monitor.STAT_DATABASE)
         self.assertEqual(m.db.iostats.stat_id,m.db.stat_id)
+        self.assertIsInstance(m.db.tablestats,types.DictionaryType)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(m.db.tablestats),0)
+        else:
+            self.assertGreater(len(m.db.tablestats),0)
     def testAttachmentInfo(self):
         if self.con.ods < fdb.ODS_FB_21:
             return
@@ -4803,9 +5376,21 @@ class TestMonitor(FDBTestBase):
             self.assertIsInstance(s.remote_address,str)
             self.assertIsInstance(s.remote_pid,int)
             self.assertIsInstance(s.remote_process,str)
-        self.assertIsInstance(s.character_set,fdb.schema.CharacterSet)
+        self.assertIsInstance(s.character_set,sm.CharacterSet)
         self.assertIsInstance(s.timestamp,datetime.datetime)
         self.assertIsInstance(s.transactions,list)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(s.auth_method)
+            self.assertIsNone(s.client_version)
+            self.assertIsNone(s.remote_version)
+            self.assertIsNone(s.remote_os_user)
+            self.assertIsNone(s.remote_host)
+        else:
+            self.assertIn(s.auth_method,['Srp','Win_Sspi','Legacy_Auth'])
+            self.assertIsInstance(s.client_version,str)
+            self.assertEqual(s.remote_version,'P13')
+            self.assertIsInstance(s.remote_os_user,str)
+            self.assertIsInstance(s.remote_host,str)
         for x in s.transactions:
             self.assertIsInstance(x,fdb.monitor.TransactionInfo)
         self.assertIsInstance(s.statements,list)
@@ -4820,9 +5405,14 @@ class TestMonitor(FDBTestBase):
             self.assertIsInstance(x,fdb.monitor.ContextVariableInfo)
         self.assertEqual(s.iostats.group,fdb.monitor.STAT_ATTACHMENT)
         self.assertEqual(s.iostats.stat_id,s.stat_id)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(m.db.tablestats),0)
+        else:
+            self.assertGreater(len(m.db.tablestats),0)
         #
         self.assertTrue(s.isactive())
         self.assertFalse(s.isidle())
+        self.assertFalse(s.isinternal())
         self.assertTrue(s.isgcallowed())
     def testTransactionInfo(self):
         if self.con.ods < fdb.ODS_FB_21:
@@ -4850,6 +5440,10 @@ class TestMonitor(FDBTestBase):
         self.assertIsInstance(s.variables,list)
         self.assertEqual(s.iostats.group,fdb.monitor.STAT_TRANSACTION)
         self.assertEqual(s.iostats.stat_id,s.stat_id)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(m.db.tablestats),0)
+        else:
+            self.assertGreater(len(m.db.tablestats),0)
         #
         self.assertTrue(s.isactive())
         self.assertFalse(s.isidle())
@@ -4878,6 +5472,10 @@ class TestMonitor(FDBTestBase):
         self.assertIn(s.state,[fdb.monitor.STATE_ACTIVE,fdb.monitor.STATE_IDLE])
         self.assertIsInstance(s.timestamp,datetime.datetime)
         self.assertEqual(s.sql_text,"select * from mon$database")
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertIsNone(s.plan)
+        else:
+            self.assertEqual(s.plan,'Select Expression\n    -> Table "MON$DATABASE" Full Scan')
         # We have to use mocks for callstack
         stack = []
         stack.append(fdb.monitor.CallStackInfo(m,
@@ -4905,6 +5503,10 @@ class TestMonitor(FDBTestBase):
         self.assertListEqual(s.callstack,[stack[1],stack[2],stack[3]])
         self.assertEqual(s.iostats.group,fdb.monitor.STAT_STATEMENT)
         self.assertEqual(s.iostats.stat_id,s.stat_id)
+        if self.con.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(m.db.tablestats),0)
+        else:
+            self.assertGreater(len(m.db.tablestats),0)
         #
         self.assertTrue(s.isactive())
         self.assertFalse(s.isidle())
@@ -4947,7 +5549,7 @@ class TestMonitor(FDBTestBase):
         self.assertEqual(s.id,2)
         self.assertIs(s.statement,m.get_statement(stmt.id))
         self.assertIsNone(s.caller)
-        self.assertIsInstance(s.dbobject,fdb.schema.Trigger)
+        self.assertIsInstance(s.dbobject,sm.Trigger)
         self.assertEqual(s.dbobject.name,'POST_NEW_ORDER')
         self.assertIsInstance(s.timestamp,datetime.datetime)
         self.assertEqual(s.line,1)
@@ -4957,7 +5559,7 @@ class TestMonitor(FDBTestBase):
         #
         x = m.get_call(3)
         self.assertIs(x.caller,s)
-        self.assertIsInstance(x.dbobject,fdb.schema.Procedure)
+        self.assertIsInstance(x.dbobject,sm.Procedure)
         self.assertEqual(x.dbobject.name,'SHIP_ORDER')
     def testIOStatsInfo(self):
         if self.con.ods < fdb.ODS_FB_21:
@@ -4983,6 +5585,20 @@ class TestMonitor(FDBTestBase):
         self.assertIsInstance(s.backouts,int)
         self.assertIsInstance(s.purges,int)
         self.assertIsInstance(s.expunges,int)
+        if self.con.ods >= fdb.ODS_FB_30:
+            self.assertIsInstance(s.locks,int)
+            self.assertIsInstance(s.waits,int)
+            self.assertIsInstance(s.conflits,int)
+            self.assertIsInstance(s.backversion_reads,int)
+            self.assertIsInstance(s.fragment_reads,int)
+            self.assertIsInstance(s.repeated_reads,int)
+        else:
+            self.assertIsNone(s.locks)
+            self.assertIsNone(s.waits)
+            self.assertIsNone(s.conflits)
+            self.assertIsNone(s.backversion_reads)
+            self.assertIsNone(s.fragment_reads)
+            self.assertIsNone(s.repeated_reads)
         if self.con.ods >= fdb.ODS_FB_25:
             self.assertIsInstance(s.memory_used,int)
             self.assertIsInstance(s.memory_allocated,int)
@@ -5029,9 +5645,10 @@ class TestMonitor(FDBTestBase):
 
 class TestConnectionWithSchema(FDBTestBase):
     def setUp(self):
+        super(TestConnectionWithSchema,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
-        self.dbfile = os.path.join(self.dbpath,FBTEST_DB)
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         #self.con = fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
         #self.con.close()
@@ -5040,12 +5657,16 @@ class TestConnectionWithSchema(FDBTestBase):
         s = fdb.connect(host=FBTEST_HOST,database=self.dbfile,user=FBTEST_USER,
                         password=FBTEST_PASSWORD,
                         connection_class=fdb.ConnectionWithSchema)
-        self.assertEqual(len(s.tables),15)
+        if s.ods < fdb.ODS_FB_30:
+            self.assertEqual(len(s.tables),15)
+        else:
+            self.assertEqual(len(s.tables),16)
         self.assertEqual(s.get_table('JOB').name,'JOB')
 
 
 class TestBugs(FDBTestBase):
     def setUp(self):
+        super(TestBugs,self).setUp()
         self.cwd = os.getcwd()
         self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,'fbbugs.fdb')
@@ -5196,7 +5817,7 @@ class TestBugs(FDBTestBase):
         self.assertListEqual(row,[(1,)])
 
     def test_pyfb_44(self):
-        self.con2 = fdb.connect(host=FBTEST_HOST,database=os.path.join(self.dbpath,FBTEST_DB),
+        self.con2 = fdb.connect(host=FBTEST_HOST,database=os.path.join(self.dbpath,self.FBTEST_DB),
                                 user=FBTEST_USER,password=FBTEST_PASSWORD)
         try:
             cur = self.con2.cursor()

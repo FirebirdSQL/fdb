@@ -315,6 +315,16 @@ Module globals
 
    These constants are return values of :meth:`Connection.get_server_capabilities`
 
+.. data:: STATS_TOTAL_TIME
+
+.. data:: STATS_TIME_DELTA
+
+.. data:: STATS_PAGE_READS
+
+.. data:: STATS_PAGE_WRITES
+
+   These constants are options for :meth:`Connection.backup`/:meth:`Connection.restore` 'stats' parameter.
+
 Functions
 ---------
 

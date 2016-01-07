@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Differences from KInterbasDB &mdash; FDB 1.4.11 documentation</title>
+    <title>Differences from KInterbasDB &mdash; FDB 1.5 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.11',
+        VERSION:     '1.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.4.11 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.5 documentation" href="index.html" />
     <link rel="next" title="FDB Reference" href="reference.html" />
     <link rel="prev" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="python-db-api-compliance.html" title="Compliance to Python Database API 2.0"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.5 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -103,9 +103,8 @@ column. For example:</p>
 <p>On output, stream BLOBs are represented by BlobReader instances on request. To
 request streamed access to BLOB, you have to use prepared statement for your query
 and call its <cite>set_stream_blob(column_name)</cite> method. Stream access is not allowed
-for cursors because cursors cache prepared statements internally, which would
-lead to dangerous situations (BlobReader life-time management) and anomalies
-(stream access when it&#8217;s not required). Example:</p>
+for cursors because it would lead to dangerous situations (BlobReader life-time
+management) and anomalies (stream access when it&#8217;s not required). Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">p</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">prep</span><span class="p">(</span><span class="s">&#39;select first 1 MyBLOB from T&#39;</span><span class="p">)</span>
 <span class="n">p</span><span class="o">.</span><span class="n">set_stream_blob</span><span class="p">(</span><span class="s">&#39;MyBLOB&#39;</span><span class="p">)</span>
 <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
@@ -215,7 +214,7 @@ if you do not close it explicitly.</p>
         <li class="right" >
           <a href="python-db-api-compliance.html" title="Compliance to Python Database API 2.0"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.4.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">FDB 1.5 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
