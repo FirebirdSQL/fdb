@@ -167,8 +167,7 @@ class TestConnection(FDBTestBase):
     def tearDown(self):
         pass
     def test_connect(self):
-        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
-                                 password=FBTEST_PASSWORD)) as con:
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
             self.assertIsNotNone(con._db_handle)
             dpb = [1,0x1c,len(FBTEST_USER)]
             dpb.extend(ord(x) for x in FBTEST_USER)
@@ -176,9 +175,13 @@ class TestConnection(FDBTestBase):
             dpb.extend(ord(x) for x in FBTEST_PASSWORD)
             dpb.extend((ord('?'),1,3))
             self.assertEqual(con._dpb,fdb.bs(dpb))
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD,
+                         no_gc=1,no_db_triggers=1) as con:
+            dpb.extend([ibase.isc_dpb_no_garbage_collect,1,1])
+            dpb.extend([ibase.isc_dpb_no_db_triggers,1,1])
+            self.assertEqual(con._dpb,fdb.bs(dpb))
     def test_properties(self):
-        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
-                                 password=FBTEST_PASSWORD)) as con:
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
             self.assertIn('Firebird',con.server_version)
             self.assertIn('Firebird',con.firebird_version)
             self.assertIsInstance(con.version,str)
@@ -194,8 +197,8 @@ class TestConnection(FDBTestBase):
             self.assertFalse(con.closed)
     def test_connect_role(self):
         rolename = 'role'
-        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
-                                 password=FBTEST_PASSWORD,role=rolename)) as con:
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
+                         password=FBTEST_PASSWORD,role=rolename) as con:
             self.assertIsNotNone(con._db_handle)
             dpb = [1,0x1c,len(FBTEST_USER)]
             dpb.extend(ord(x) for x in FBTEST_USER)
@@ -206,8 +209,7 @@ class TestConnection(FDBTestBase):
             dpb.extend((ord('?'),1,3))
             self.assertEqual(con._dpb,fdb.bs(dpb))
     def test_transaction(self):
-        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
-                                 password=FBTEST_PASSWORD)) as con:
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
             self.assertIsNotNone(con.main_transaction)
             self.assertFalse(con.main_transaction.active)
             self.assertFalse(con.main_transaction.closed)
@@ -239,15 +241,13 @@ class TestConnection(FDBTestBase):
             self.assertFalse(tr.active)
             self.assertTrue(tr.closed)
     def test_execute_immediate(self):
-        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
-                                 password=FBTEST_PASSWORD)) as con:
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
             con.execute_immediate("recreate table t (c1 integer)")
             con.commit()
             con.execute_immediate("delete from t")
             con.commit()
     def test_database_info(self):
-        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
-                                 password=FBTEST_PASSWORD)) as con:
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
             self.assertEqual(con.database_info(fdb.isc_info_db_read_only,'i'),0)
             if con.ods < fdb.ODS_FB_30:
                 self.assertEqual(con.database_info(fdb.isc_info_page_size,'i'),4096)
@@ -255,8 +255,7 @@ class TestConnection(FDBTestBase):
                 self.assertEqual(con.database_info(fdb.isc_info_page_size,'i'),8192)
             self.assertEqual(con.database_info(fdb.isc_info_db_sql_dialect,'i'),3)
     def test_db_info(self):
-        with closing(fdb.connect(dsn=self.dbfile,user=FBTEST_USER,
-                                 password=FBTEST_PASSWORD)) as con:
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
             res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                                fdb.isc_info_db_sql_dialect,fdb.isc_info_user_names])
             if con.ods < fdb.ODS_FB_30:
@@ -1750,10 +1749,14 @@ class TestServices2(FDBTestBase):
         user.first_name = 'FDB'
         user.middle_name = 'X.'
         user.last_name = 'TEST'
+        try:
+            self.svc.remove_user(user)
+        except:
+            pass
         self.svc.add_user(user)
         self.assertTrue(self.svc.user_exists(user))
         self.assertTrue(self.svc.user_exists('FDB_TEST'))
-        users = [user for user in self.svc.get_users() if user.name == 'FDB_TEST']
+        users = [u for u in self.svc.get_users() if u.name == 'FDB_TEST']
         self.assertTrue(users)
         self.assertEqual(len(users),1)
         #self.assertEqual(users[0].password,'FDB_TEST')
@@ -1765,7 +1768,7 @@ class TestServices2(FDBTestBase):
         user.middle_name = 'XX.'
         user.last_name = 'XTEST'
         self.svc.modify_user(user)
-        users = [user for user in self.svc.get_users() if user.name == 'FDB_TEST']
+        users = [u for u in self.svc.get_users() if u.name == 'FDB_TEST']
         self.assertTrue(users)
         self.assertEqual(len(users),1)
         #self.assertEqual(users[0].password,'XFDB_TEST')

@@ -69,8 +69,8 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_dpb_verify, isc_dpb_version1, isc_dpb_wal_backup_dir,
     isc_dpb_wal_bufsize, isc_dpb_wal_chkptlen,
     isc_dpb_wal_grp_cmt_wait, isc_dpb_wal_numbufs,
-    isc_dpb_working_directory, isc_info_active_tran_count,
-    isc_info_end, isc_info_truncated,
+    isc_dpb_working_directory, isc_dpb_no_db_triggers, isc_dpb_nolinger,
+    isc_info_active_tran_count, isc_info_end, isc_info_truncated,
     isc_info_sql_stmt_type, isc_info_sql_get_plan, isc_info_sql_records,
     isc_info_req_select_count, isc_info_req_insert_count,
     isc_info_req_update_count, isc_info_req_delete_count,
@@ -163,7 +163,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.5'
+__version__ = '1.5.1'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -551,7 +551,7 @@ def exception_from_status(error, status, preamble=None):
     return error('\n'.join(msglist), sqlcode, error_code)
 
 def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
-              no_reserve, db_key_scope):
+              no_reserve, db_key_scope, no_gc, no_db_triggers, no_linger):
     params = [int2byte(isc_dpb_version1)]
 
     def addString(codeAsByte, s):
@@ -605,13 +605,20 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
         addByte(isc_dpb_no_reserve, no_reserve)
     if db_key_scope:
         addByte(isc_dpb_dbkey_scope, db_key_scope)
+    if no_gc:
+        addByte(isc_dpb_no_garbage_collect, no_gc)
+    if no_db_triggers:
+        addByte(isc_dpb_no_db_triggers, no_db_triggers)
+    if no_linger:
+        addByte(isc_dpb_nolinger, no_linger)
     return b('').join(params)
 
 def connect(dsn='', user=None, password=None, host=None, port=3050, database=None,
             sql_dialect=3, role=None, charset=None, buffers=None,
             force_write=None, no_reserve=None, db_key_scope=None,
             isolation_level=ISOLATION_LEVEL_READ_COMMITED,
-            connection_class=None, fb_library_name=None):
+            connection_class=None, fb_library_name=None,
+            no_gc=None, no_db_triggers=None, no_linger=None):
     """
     Establish a connection to database.
 
@@ -634,6 +641,9 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
     :param connection_class: Custom connection class
     :type connection_class: subclass of :class:`Connection`
     :param string fb_library_name: Full path to Firebird client library. See :func:`~fdb.load_api` for details.
+    :param integer no_gc: No Garbage Collection flag.
+    :param integer no_db_triggers: No database triggers flag (FB 2.1).
+    :param integer no_linger: No linger flag (FB3).
 
     :returns: Connection to database.
     :rtype: :class:`Connection` instance.
@@ -691,8 +701,8 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
     dsn = b(dsn,_FS_ENCODING)
     if charset:
         charset = charset.upper()
-    dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,
-                    force_write, no_reserve, db_key_scope)
+    dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,force_write,
+                    no_reserve, db_key_scope, no_gc, no_db_triggers, no_linger)
 
     _isc_status = ISC_STATUS_ARRAY()
     _db_handle = isc_db_handle(0)
@@ -967,6 +977,10 @@ class Connection(object):
                     api.isc_detach_database(self._isc_status, self._db_handle)
             finally:
                 self._db_handle = None
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        self.close()
     def __get_main_transaction(self):
         return self._main_transaction
     def __get_query_transaction(self):
@@ -3690,6 +3704,10 @@ class Transaction(object):
         self._isc_status = ISC_STATUS_ARRAY()
         self._tr_handle = None
         self.__closed = False
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        self.close()
     def __get_closed(self):
         return self.__closed
         #return self._tr_handle == None

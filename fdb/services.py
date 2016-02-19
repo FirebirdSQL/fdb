@@ -1839,7 +1839,7 @@ class _ServiceActionRequestBuilder(object):
         _code2spb(self._buffer, code)
 
     def add_string(self, code, s):
-#        _checkString(s)
+        _checkString(s)
         _string2spb(self._buffer, code, ibase.b(s))
 
     def add_string_sequence(self, code, stringSequence):

@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.5.1`_ (22.2.2016)
 * `Version 1.5`_ (7.1.2016)
 * `Version 1.4.11`_ (12.11.2015)
 * `Version 1.4.10`_ (31.8.2015)
@@ -28,6 +29,12 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.5.1
+=============
+
+- New :func:`~fdb.connect()` parameters: no_gc, no_db_triggers and no_linger.
+- Direct support for *with* statement (PEP8) in :class:`~fdb.Connection` class.
 
 Version 1.5
 ===========
