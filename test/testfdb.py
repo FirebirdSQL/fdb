@@ -156,6 +156,15 @@ class TestCreateDrop(FDBTestBase):
     def test_create_drop(self):
         with closing(fdb.create_database(host=FBTEST_HOST,database=self.dbfile,
                                          user=FBTEST_USER,password=FBTEST_PASSWORD)) as con:
+            self.assertEqual(con.sql_dialect,3)
+            self.assertEqual(con.charset,None)
+            con.drop_database()
+        #
+        with closing(fdb.create_database(host=FBTEST_HOST,database=self.dbfile,
+                                         user=FBTEST_USER,password=FBTEST_PASSWORD,
+                                         sql_dialect=1,charset='UTF8')) as con:
+            self.assertEqual(con.sql_dialect,1)
+            self.assertEqual(con.charset,'UTF8')
             con.drop_database()
 
 class TestConnection(FDBTestBase):

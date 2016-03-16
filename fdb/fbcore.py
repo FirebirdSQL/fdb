@@ -821,7 +821,7 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
         raise exception_from_status(DatabaseError, isc_status,
                                     "Error while creating database:")
 
-    return connection_class(db_handle)
+    return connection_class(db_handle,sql_dialect=sql_dialect, charset=charset)
 
 
 class _cursor_weakref_callback(object):
