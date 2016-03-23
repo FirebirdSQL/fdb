@@ -164,7 +164,7 @@ if PYTHON_MAJOR_VER != 3:
     from exceptions import NotImplementedError
 
 
-__version__ = '1.5.1'
+__version__ = '1.6'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -1214,11 +1214,11 @@ class Connection(object):
            :mod:`fdb.services`).
         """
         self.__check_attached()
+        buf_size = 256 if info_code != fb_info_page_contents else self.get_page_size() + 10
         request_buffer = bs([info_code])
         if info_code == fb_info_page_contents:
             request_buffer += int_to_bytes(2, 2)
             request_buffer += int_to_bytes(page_number, 4)
-        buf_size = 256 if info_code != fb_info_page_contents else 4096 + 100
         while True:
             res_buf = int2byte(0) * buf_size
             api.isc_database_info(self._isc_status, self._db_handle,
@@ -1236,7 +1236,6 @@ class Connection(object):
             if ord2(res_buf[i]) == isc_info_truncated:
                 if buf_size < SHRT_MAX:
                     buf_size *= 2
-                    #buf_size += self.get_page_size()
                     if buf_size > SHRT_MAX:
                         buf_size = SHRT_MAX
                     continue
