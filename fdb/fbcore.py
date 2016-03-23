@@ -75,7 +75,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_info_req_select_count, isc_info_req_insert_count,
     isc_info_req_update_count, isc_info_req_delete_count,
     isc_info_blob_total_length, isc_info_blob_max_segment,
-
+    fb_info_page_contents,
     isc_info_active_transactions, isc_info_allocation,
     isc_info_attachment_id, isc_info_backout_count,
     isc_info_base_level, isc_info_bpage_errors, isc_info_creation_date,
@@ -120,6 +120,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_info_wal_prv_ckpt_fname, isc_info_wal_prv_ckpt_poffset,
     isc_info_wal_recv_ckpt_fname, isc_info_wal_recv_ckpt_poffset,
     isc_info_window_turns, isc_info_writes, isc_tpb_autocommit,
+
     isc_tpb_commit_time, isc_tpb_concurrency, isc_tpb_consistency,
     isc_tpb_exclusive, isc_tpb_ignore_limbo, isc_tpb_lock_read,
     isc_tpb_lock_timeout, isc_tpb_lock_write, isc_tpb_no_auto_undo,
@@ -377,7 +378,7 @@ _DATABASE_INFO_CODES_WITH_COUNT_RESULTS = (
 )
 _DATABASE_INFO_CODES_WITH_TIMESTAMP_RESULT = (isc_info_creation_date,)
 
-_DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS = (isc_info_user_names,)
+_DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS = (isc_info_user_names, fb_info_page_contents)
 
 def xsqlda_factory(size):
     if size in __xsqlda_cache:
@@ -1177,7 +1178,7 @@ class Connection(object):
         """
         self.__check_attached()
         self.main_transaction.execute_immediate(sql)
-    def database_info(self, info_code, result_type):
+    def database_info(self, info_code, result_type, page_number = None):
         """Wraps the Firebird C API function `isc_database_info`.
 
         For documentation, see the IB 6 API Guide section entitled
@@ -1197,6 +1198,7 @@ class Connection(object):
         :param integer info_code: One of the `isc_info_*` constants.
         :param string result_type: Must be either ‘s’ if you expect a string result,
            or ‘i’ if you expect an integer result.
+        :param integer page_number: Page number for `fb_info_page_contents` info code.
 
         :raises DatabaseError: When error is returned from server.
         :raises OperationalError: When returned information is bigger than SHRT_MAX.
@@ -1213,7 +1215,10 @@ class Connection(object):
         """
         self.__check_attached()
         request_buffer = bs([info_code])
-        buf_size = 256
+        if info_code == fb_info_page_contents:
+            request_buffer += int_to_bytes(2, 2)
+            request_buffer += int_to_bytes(page_number, 4)
+        buf_size = 256 if info_code != fb_info_page_contents else 4096 + 100
         while True:
             res_buf = int2byte(0) * buf_size
             api.isc_database_info(self._isc_status, self._db_handle,
@@ -1231,6 +1236,7 @@ class Connection(object):
             if ord2(res_buf[i]) == isc_info_truncated:
                 if buf_size < SHRT_MAX:
                     buf_size *= 2
+                    #buf_size += self.get_page_size()
                     if buf_size > SHRT_MAX:
                         buf_size = SHRT_MAX
                     continue
@@ -1248,13 +1254,13 @@ class Connection(object):
         if result_type.upper() == 'I':
             return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
         elif (result_type.upper() == 'S'
-              and info_code not in _DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS):
+              and info_code in _DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS):
             # The result buffers for a few request codes don't follow the generic
             # conventions, so we need to return their full contents rather than
             # omitting the initial infrastructural bytes.
-            return ctypes.string_at(res_buf[3:], i - 3)
-        elif result_type.upper() == 'S':
             return ctypes.string_at(res_buf, i)
+        elif result_type.upper() == 'S':
+            return ctypes.string_at(res_buf[3:], i - 3)
         else:
             raise ValueError("Unknown result type requested "
                                  "(must be 'i' or 's').")
@@ -1654,6 +1660,18 @@ class Connection(object):
             self.__group = weakref.ref(group, _weakref_callback(self.__remove_group))
         else:
             self.__group = None
+    def get_page_size(self):
+        "Returns page size in bytes."
+        return self.db_info([isc_info_page_size])[isc_info_page_size]
+    def get_page_contents(self,page_number):
+        """Return content of specified database page as binary string.
+
+        :param int page_number: Page sequence number.
+        """
+        buf = self.database_info(fb_info_page_contents, 's', page_number)
+        stringLen = bytes_to_uint(buf[1:3])
+        return buf[3:3 + stringLen]
+
     #: (Read Only) :class:`ConnectionGroup` this Connection belongs to, or None.
     group = property(__get_group)
     #: (Read Only) (string) Connection Character set name.

@@ -257,6 +257,7 @@ class TestConnection(FDBTestBase):
             con.commit()
     def test_database_info(self):
         with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
+            #x = con.database_info(fdb.fb_info_page_contents,'s',0)
             self.assertEqual(con.database_info(fdb.isc_info_db_read_only,'i'),0)
             if con.ods < fdb.ODS_FB_30:
                 self.assertEqual(con.database_info(fdb.isc_info_page_size,'i'),4096)
@@ -265,6 +266,7 @@ class TestConnection(FDBTestBase):
             self.assertEqual(con.database_info(fdb.isc_info_db_sql_dialect,'i'),3)
     def test_db_info(self):
         with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
+            self.assertEqual(len(con.get_page_contents(0)),con.get_page_size())
             res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                                fdb.isc_info_db_sql_dialect,fdb.isc_info_user_names])
             if con.ods < fdb.ODS_FB_30:
