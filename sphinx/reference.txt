@@ -74,6 +74,12 @@ Module globals
 
    ODS version numbers introduced by Firebird engine version.
 
+.. data:: IMPLEMENTATION_NAMES
+
+.. data:: PROVIDER_NAMES
+
+.. data:: DB_CLASS_NAMES
+
 Exceptions
 ==========
 
@@ -253,6 +259,15 @@ EventBlock
 ----------
 
 .. autoclass:: EventBlock
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+TableAccessStats
+----------------
+
+.. autoclass:: _TableAccessStats
    :member-order: groupwise
    :members:
    :inherited-members:

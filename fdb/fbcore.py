@@ -111,7 +111,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_info_tra_no_rec_version, isc_info_tra_oldest_active,
     isc_info_tra_oldest_interesting, isc_info_tra_oldest_snapshot,
     isc_info_tra_read_committed, isc_info_tra_readonly,
-    isc_info_tra_readwrite, isc_info_tra_rec_version,
+    isc_info_tra_readwrite, isc_info_tra_rec_version, fb_info_tra_dbpath,
     isc_info_update_count, isc_info_user_names, isc_info_version,
     isc_info_wal_avg_grpc_size, isc_info_wal_avg_io_size,
     isc_info_wal_buffer_size, isc_info_wal_ckpt_length,
@@ -154,15 +154,11 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
     isc_db_handle, isc_tr_handle, isc_stmt_handle, isc_blob_handle,
 
-    fbclient_API
+    fbclient_API,
 
     )
 
 PYTHON_MAJOR_VER = sys.version_info[0]
-
-if PYTHON_MAJOR_VER != 3:
-    from exceptions import NotImplementedError
-
 
 __version__ = '1.6'
 
@@ -345,6 +341,22 @@ ODS_FB_21 = 11.1
 ODS_FB_25 = 11.2
 ODS_FB_30 = 12.0
 
+# Translation tables
+
+d = dir(ibase)
+s = 'isc_info_db_impl_'
+q = [x for x in d if x.startswith(s) and x[len(s):] != 'last_value']
+#: Dictionary to map Implementation codes to names
+IMPLEMENTATION_NAMES = dict(zip([getattr(ibase,x) for x in q],[x[len(s):] for x in q]))
+s = 'isc_info_db_code_'
+q = [x for x in d if x.startswith(s) and x[len(s):] != 'last_value']
+#: Dictionary to map provider codes to names
+PROVIDER_NAMES = dict(zip([getattr(ibase,x) for x in q],[x[len(s):] for x in q]))
+s = 'isc_info_db_class_'
+q = [x for x in d if x.startswith(s) and x[len(s):] != 'last_value']
+#: Dictionary to map database class codes to names
+DB_CLASS_NAMES = dict(zip([getattr(ibase,x) for x in q],[x[len(s):] for x in q]))
+
 # Private constants
 
 _SIZE_OF_SHORT = ctypes.sizeof(ctypes.c_short)
@@ -366,10 +378,10 @@ _DATABASE_INFO_CODES_WITH_INT_RESULT = (
     isc_info_writes, isc_info_set_page_buffers, isc_info_db_read_only,
     isc_info_db_size_in_pages, isc_info_page_errors, isc_info_record_errors,
     isc_info_bpage_errors, isc_info_dpage_errors, isc_info_ipage_errors,
-    isc_info_ppage_errors, isc_info_tpage_errors,
+    isc_info_ppage_errors, isc_info_tpage_errors,frb_info_att_charset,
     isc_info_oldest_transaction, isc_info_oldest_active,
     isc_info_oldest_snapshot, isc_info_next_transaction,
-    isc_info_active_tran_count,
+    isc_info_active_tran_count,isc_info_db_class,isc_info_db_provider,
 )
 _DATABASE_INFO_CODES_WITH_COUNT_RESULTS = (
     isc_info_backout_count, isc_info_delete_count, isc_info_expunge_count,
@@ -378,7 +390,8 @@ _DATABASE_INFO_CODES_WITH_COUNT_RESULTS = (
 )
 _DATABASE_INFO_CODES_WITH_TIMESTAMP_RESULT = (isc_info_creation_date,)
 
-_DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS = (isc_info_user_names, fb_info_page_contents)
+_DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS = (isc_info_user_names, fb_info_page_contents,
+                                              isc_info_active_transactions)
 
 def xsqlda_factory(size):
     if size in __xsqlda_cache:
@@ -850,6 +863,8 @@ class TransactionContext(object):
     Performs `rollback` if exception is thrown inside code block, otherwise
     performs `commit` at the end of block.
 
+    .. note: :class:`~fdb.Transaction` acts as context manager and supports `with` statement directly.
+
     Example::
 
        with TransactionContext(my_transaction):
@@ -895,9 +910,6 @@ class Connection(object):
     ProgrammingError = ProgrammingError
     NotSupportedError = NotSupportedError
 
-    #: (integer) sql_dialect for this connection, do not change.
-    sql_dialect = 3
-
     def __init__(self, db_handle, dpb=None, sql_dialect=3, charset=None,
                  isolation_level=ISOLATION_LEVEL_READ_COMMITED):
         """
@@ -914,8 +926,7 @@ class Connection(object):
 
         self._default_tpb = isolation_level
         # Main transaction
-        self._main_transaction = Transaction([self],
-                                             default_tpb=self._default_tpb)
+        self._main_transaction = Transaction([self], default_tpb=self._default_tpb)
         # ReadOnly ReadCommitted transaction
         self._query_transaction = Transaction([self],
                                               default_tpb=ISOLATION_LEVEL_READ_COMMITED_RO)
@@ -928,8 +939,7 @@ class Connection(object):
         self.__monitor = None
         self.__ods = None
 
-        # (integer) sql_dialect for this connection, do not change.
-        self.sql_dialect = sql_dialect
+        self.__sql_dialect = sql_dialect
         self._dpb = dpb
         self._isc_status = ISC_STATUS_ARRAY()
         self._db_handle = db_handle
@@ -937,7 +947,7 @@ class Connection(object):
         self.__ic = self.query_transaction.cursor()
         self.__ic._set_as_internal()
         # Get Firebird engine version
-        verstr = self.db_info([isc_info_firebird_version])[isc_info_firebird_version]
+        verstr = self.db_info(isc_info_firebird_version)
         x = verstr.split()
         if x[0].find('V') > 0:
             (x,self.__version) = x[0].split('V')
@@ -948,6 +958,8 @@ class Connection(object):
             self.__version = '0.0.0.0'
         x = self.__version.split('.')
         self.__engine_version = float('%s.%s' % (x[0],x[1]))
+        #
+        self.__page_size = self.db_info(isc_info_page_size)
     def __remove_group(self, group_ref):
         self.__group = None
     def __ensure_group_membership(self, must_be_member, err_msg):
@@ -982,6 +994,8 @@ class Connection(object):
         return self
     def __exit__(self, *args):
         self.close()
+    def __get_sql_dialect(self):
+        return self.__sql_dialect
     def __get_main_transaction(self):
         return self._main_transaction
     def __get_query_transaction(self):
@@ -991,9 +1005,9 @@ class Connection(object):
     def __get_closed(self):
         return self._db_handle == None
     def __get_server_version(self):
-        return self.db_info([isc_info_version])[isc_info_version]
+        return self.db_info(isc_info_version)
     def __get_firebird_version(self):
-        return self.db_info([isc_info_firebird_version])[isc_info_firebird_version]
+        return self.db_info(isc_info_firebird_version)
     def __get_version(self):
         return self.__version
     def __get_engine_version(self):
@@ -1020,11 +1034,57 @@ class Connection(object):
             return None
     def __get_ods(self):
         if not self.__ods:
-            raw = self.db_info([ibase.isc_info_ods_version,
-                                ibase.isc_info_ods_minor_version])
-            self.__ods = float('%d.%d' % (raw[ibase.isc_info_ods_version],
-                                          raw[ibase.isc_info_ods_minor_version]))
+            self.__ods = float('%d.%d' % (self.ods_version,self.ods_minor_version))
         return self.__ods
+    def __get_ods_version(self):
+        return self.db_info(isc_info_ods_version)
+    def __get_ods_minor_version(self):
+        return self.db_info(isc_info_ods_minor_version)
+    def __get_page_size(self):
+        return self.__page_size
+    def __get_page_cache_size(self):
+        return self.db_info(isc_info_num_buffers)
+    def __get_database_name(self):
+        return self.db_info(isc_info_db_id)[0]
+    def __get_site_name(self):
+        return self.db_info(isc_info_db_id)[1]
+    def __get_attachment_id(self):
+        return self.db_info(isc_info_attachment_id)
+    def __get_io_stats(self):
+        return self.db_info([isc_info_reads,isc_info_writes,isc_info_fetches,isc_info_marks])
+    def __get_current_memory(self):
+        return self.db_info(isc_info_current_memory)
+    def __get_max_memory(self):
+        return self.db_info(isc_info_max_memory)
+    def __get_pages_allocated(self):
+        return self.db_info(isc_info_allocation)
+    def __get_database_sql_dialect(self):
+        return self.db_info(isc_info_db_sql_dialect)
+    def __get_sweep_interval(self):
+        return self.db_info(isc_info_sweep_interval)
+    def __get_space_reservation(self):
+        value = self.db_info(isc_info_no_reserve)
+        return value == 0
+    def __get_forced_writes(self):
+        value = self.db_info(isc_info_forced_writes)
+        return value == 1
+    def __get_creation_date(self):
+        return self.db_info(isc_info_creation_date)
+    def __get_implementation_id(self):
+        return self.db_info(isc_info_implementation)[0]
+    def __get_provider_id(self):
+        return self.db_info(isc_info_db_provider)
+    def __get_db_class_id(self):
+        return self.db_info(isc_info_db_class)
+    def __get_oit(self):
+        return self.db_info(isc_info_oldest_transaction)
+    def __get_oat(self):
+        return self.db_info(isc_info_oldest_active)
+    def __get_ost(self):
+        return self.db_info(isc_info_oldest_snapshot)
+    def __get_next_transaction(self):
+        return self.db_info(isc_info_next_transaction)
+
     def __parse_date(self, raw_value):
         "Convert raw data to datetime.date"
         nday = bytes_to_int(raw_value) + 678882
@@ -1214,7 +1274,7 @@ class Connection(object):
            :mod:`fdb.services`).
         """
         self.__check_attached()
-        buf_size = 256 if info_code != fb_info_page_contents else self.get_page_size() + 10
+        buf_size = 256 if info_code != fb_info_page_contents else self.page_size + 10
         request_buffer = bs([info_code])
         if info_code == fb_info_page_contents:
             request_buffer += int_to_bytes(2, 2)
@@ -1248,7 +1308,9 @@ class Connection(object):
         if ord2(res_buf[i]) != isc_info_end:
             raise InternalError("Exited request loop sucessfuly, but"
                                 " res_buf[i] != sc_info_end.")
-        if request_buffer[0] != res_buf[0]:
+        if (request_buffer[0] != res_buf[0]) and (info_code != isc_info_active_transactions):
+            # isc_info_active_transactions with no active transactions returns empty buffer
+            # and does not follow this rule, so we'll report it only for other codes.
             raise InternalError("Result code does not match request code.")
         if result_type.upper() == 'I':
             return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
@@ -1259,7 +1321,7 @@ class Connection(object):
             # omitting the initial infrastructural bytes.
             return ctypes.string_at(res_buf, i)
         elif result_type.upper() == 'S':
-            return ctypes.string_at(res_buf[3:], i - 3)
+            return ctypes.string_at(res_buf[3:], bytes_to_int(res_buf[1:3]))
         else:
             raise ValueError("Unknown result type requested "
                                  "(must be 'i' or 's').")
@@ -1287,8 +1349,7 @@ class Connection(object):
             counts = {}
             for i in range(pairCount):
                 bufForThisPair = buf[i * pairSize:(i + 1) * pairSize]
-                relationId = struct.unpack('<H',
-                                           bufForThisPair[:uShortSize])[0]
+                relationId = struct.unpack('<H',bufForThisPair[:uShortSize])[0]
                 count = struct.unpack('<i', bufForThisPair[uShortSize:])[0]
                 counts[relationId] = count
             return counts
@@ -1320,35 +1381,27 @@ class Connection(object):
                 # (IB 6 API Guide page 52)
                 buf = self.database_info(infoCode, 's')
                 pos = 0
+                items = []
 
                 if PYTHON_MAJOR_VER == 3:
-                    conLocalityCode = struct.unpack('B',
-                                                int2byte(buf[pos]))[0]
+                    count = struct.unpack('B',int2byte(buf[pos]))[0]
                 else:
-                    conLocalityCode = struct.unpack('B', buf[pos])[0]
+                    count = struct.unpack('B',buf[pos])[0]
                 pos += 1
 
-                if PYTHON_MAJOR_VER == 3:
-                    dbFilenameLen = struct.unpack('B', int2byte(buf[1]))[0]
-                else:
-                    dbFilenameLen = struct.unpack('B', buf[1])[0]
-                pos += 1
+                while count > 0:
+                    if PYTHON_MAJOR_VER == 3:
+                        slen = struct.unpack('B', int2byte(buf[pos]))[0]
+                    else:
+                        slen = struct.unpack('B', buf[pos])[0]
+                    pos += 1
 
-                dbFilename = buf[pos:pos + dbFilenameLen]
-                pos += dbFilenameLen
+                    item = buf[pos:pos + slen]
+                    pos += slen
+                    items.append(p3fix(item,self._python_charset))
+                    count -= 1
 
-                if PYTHON_MAJOR_VER == 3:
-                    siteNameLen = struct.unpack('B', int2byte(buf[pos]))[0]
-                else:
-                    siteNameLen = struct.unpack('B', buf[pos])[0]
-                pos += 1
-
-                siteName = buf[pos:pos + siteNameLen]
-                pos += siteNameLen
-
-                results[infoCode] = (conLocalityCode,
-                                     p3fix(dbFilename,self._python_charset),
-                                     p3fix(siteName,self._python_charset))
+                results[infoCode] = tuple(items)
             elif infoCode == isc_info_implementation:
                 # (IB 6 API Guide page 52)
                 buf = self.database_info(infoCode, 's')
@@ -1457,6 +1510,19 @@ class Connection(object):
                     res[un] = res.get(un, 0) + 1
 
                 results[infoCode] = res
+            elif infoCode  == isc_info_active_transactions:
+                buf = self.database_info(infoCode, 's')
+                transactions = []
+                uShortSize = struct.calcsize('<H')
+                pos = 1 # Skip inital byte (info_code)
+                while pos < len(buf):
+                    tid_size = struct.unpack('<H',buf[pos:pos+uShortSize])[0]
+                    fmt = '<I' if tid_size == 4 else '<L'
+                    pos += uShortSize
+                    transactions.append(struct.unpack(fmt, buf[pos:pos+tid_size])[0])
+                    pos += tid_size
+                    pos += 1 # Skip another info_code
+                results[infoCode] = transactions
             elif infoCode in _DATABASE_INFO_CODES_WITH_INT_RESULT:
                 results[infoCode] = self.database_info(infoCode, 'i')
             elif infoCode in _DATABASE_INFO_CODES_WITH_COUNT_RESULTS:
@@ -1659,9 +1725,6 @@ class Connection(object):
             self.__group = weakref.ref(group, _weakref_callback(self.__remove_group))
         else:
             self.__group = None
-    def get_page_size(self):
-        "Returns page size in bytes."
-        return self.db_info([isc_info_page_size])[isc_info_page_size]
     def get_page_contents(self,page_number):
         """Return content of specified database page as binary string.
 
@@ -1670,7 +1733,39 @@ class Connection(object):
         buf = self.database_info(fb_info_page_contents, 's', page_number)
         stringLen = bytes_to_uint(buf[1:3])
         return buf[3:3 + stringLen]
+    def get_active_transaction_ids(self):
+        """Return list of transaction IDs for all currently active transactions."""
+        return self.db_info(isc_info_active_transactions)
+    def get_active_transaction_count(self):
+        """Return count of currently active transactions."""
+        return self.db_info(isc_info_active_tran_count)
+    def get_table_access_stats(self):
+        """Return current stats for access to tables.
 
+        :returns: List of :class:`fbcore._TableAccessStats` instances."""
+        tables = {}
+        info_codes = [isc_info_read_seq_count,isc_info_read_idx_count,
+                      isc_info_insert_count,isc_info_update_count,
+                      isc_info_delete_count,isc_info_backout_count,
+                      isc_info_purge_count,isc_info_expunge_count]
+        stats = self.db_info(info_codes)
+        for info_code in info_codes:
+            stat = stats[info_code]
+            for table,count in stat.iteritems():
+                tables.setdefault(table,_TableAccessStats(table))._set_info(info_code,count)
+        return tables.values()
+
+
+    #: (Read Only) (int) Internal ID (server-side) for connection.
+    attachment_id = property(__get_attachment_id)
+    #: (Read Only) (int) SQL dialect for this connection.
+    sql_dialect = property(__get_sql_dialect)
+    #: (Read Only) (int) SQL dialect of attached database.
+    database_sql_dialect = property(__get_database_sql_dialect)
+    #: (Read Only) (string) Database name (filename or alias).
+    database_name = property(__get_database_name)
+    #: (Read Only) (string) Database site name.
+    site_name = property(__get_site_name)
     #: (Read Only) :class:`ConnectionGroup` this Connection belongs to, or None.
     group = property(__get_group)
     #: (Read Only) (string) Connection Character set name.
@@ -1688,7 +1783,7 @@ class Connection(object):
     query_transaction = property(__get_query_transaction)
     #: (Read/Write) Deafult Transaction Parameter Block used for all newly started transactions.
     default_tpb = property(__get_default_tpb, __set_default_tpb)
-    #: (Read Only) True if connection is closed.
+    #: (Read Only) (bool) True if connection is closed.
     closed = property(__get_closed)
     #: (Read Only) (string) Version string returned by server for this connection.
     #: This version string contains InterBase-friendly engine version number, i.e.
@@ -1705,14 +1800,57 @@ class Connection(object):
     version = property(__get_version)
     #: (Read Only) (float) Firebird version number of connected server. Only major.minor version.
     engine_version = property(__get_engine_version)
+    #: (Read Only) (int) Server implementation ID
+    implementation_id = property(__get_implementation_id)
+    #: (Read Only) (int) Server provider ID
+    provider_id = property(__get_provider_id)
+    #: (Read Only) (int) Database class ID
+    db_class_id = property(__get_db_class_id)
     #: (Read Only) (:class:`~fdb.schema.Schema`) Database metadata object.
     schema = utils.LateBindingProperty(_get_schema)
-    #: (Read Only) (float) On-Disk Structure (ODS) version.
+    #: (Read Only) (datetime.datetime) Database creation date & time.
+    creation_date = property(__get_creation_date)
+    #: (Read Only) (float) On-Disk Structure (ODS).
     ods = property(__get_ods)
+    #: (Read Only) (int) On-Disk Structure (ODS) major version number.
+    ods_version = property(__get_ods_version)
+    #: (Read Only) (int) On-Disk Structure (ODS) minor version number.
+    ods_minor_version = property(__get_ods_minor_version)
+    #: (Read Only) (int) Database page size in bytes.
+    page_size = property(__get_page_size)
+    #: (Read Only) (int) Size of page cache in pages.
+    page_cache_size = property(__get_page_cache_size)
+    #: (Read Only) (int) Number of database pages allocated.
+    pages_allocated = property(__get_pages_allocated)
+    #: (Read Only) (int) Sweep interval.
+    sweep_interval = property(__get_sweep_interval)
+    #: (Read Only) (bool) When True 20% page space is reserved for holding backup versions of modified records.
+    space_reservation = property(__get_space_reservation)
+    #: (Read Only) (bool) Mode in which database writes are performed: True=sync, False=async.
+    forced_writes = property(__get_forced_writes)
+    #: (Read Only) Dictionary with I/O stats (reads,writes,fetches,marks)
+    #: Keys are `isc_info_reads`, `isc_info_writes`, `isc_info_fetches` and `isc_info_marks` constants.
+    io_stats = property(__get_io_stats)
+    #: (Read Only) (int) Amount of server memory (in bytes) currently in use.
+    current_memory = property(__get_current_memory)
+    #: (Read Only) (int) Maximum amount of memory (in bytes) used at one time since the first process
+    #: attached to the database.
+    max_memory = property(__get_max_memory)
+    #: (Read Only) (int) ID of Oldest Interesting Transaction.
+    oit = property(__get_oit)
+    #: (Read Only) (int) ID of Oldest Active Transaction.
+    oat = property(__get_oat)
+    #: (Read Only) (int) ID of Oldest Snapshot Transaction.
+    ost = property(__get_ost)
+    #: (Read Only) (int) ID of Next Transaction.
+    next_transaction = property(__get_next_transaction)
 
     #: (Read Only) (:class:`~fdb.monitor.Monitor`) Database monitoring object.
     monitor = utils.LateBindingProperty(_get_monitor)
 
+    def isreadonly(self):
+        "Returns True if database is read-only."
+        return self.db_info(isc_info_db_read_only) != 0
 
 @utils.embed_attributes(schema.Schema,'schema')
 class ConnectionWithSchema(Connection):
@@ -2734,8 +2872,6 @@ class PreparedStatement(object):
             valuebuf = ctypes.create_string_buffer(bs([0]),esize)
         else:
             raise OperationalError("Unsupported Firebird ARRAY subtype: %i" % dtype)
-        if valuebuf == None:
-            raise NotImplementedError("ARRAY")
         self.__fill_db_array_buffer(esize,dtype,
                                     subtype,scale,
                                     dim,dimensions,
@@ -3309,15 +3445,21 @@ class Cursor(object):
     __next__ = next
     def __iter__(self):
         return self
+    def __valid_ps(self):
+        return (self._ps is not None) and not (isinstance(self._ps,weakref.ProxyType)
+                                               and not dir(self._ps))
     def __get_description(self):
-        return self._ps.description
+        if self.__valid_ps():
+            return self._ps.description
+        else:
+            return []
     def __get_rowcount(self):
-        if self._ps:
+        if self.__valid_ps():
             return self._ps.rowcount
         else:
             return -1
     def __get_name(self):
-        if self._ps:
+        if self.__valid_ps():
             return self._ps._name
         else:
             return None
@@ -3325,7 +3467,7 @@ class Cursor(object):
         if name == None or not isinstance(name, StringType):
             raise ProgrammingError("The name attribute can only be set to a"
                                    " string, and cannot be deleted")
-        if not self._ps:
+        if not self.__valid_ps():
             raise ProgrammingError("This cursor has not yet executed a"
                                    " statement, so setting its name attribute"
                                    " would be meaningless")
@@ -3334,7 +3476,7 @@ class Cursor(object):
                                    " context of currently executed statement")
         self._ps._set_cursor_name(name)
     def __get_plan(self):
-        if self._ps != None:
+        if self.__valid_ps():
             return self._ps.plan
         else:
             return None
@@ -3754,6 +3896,19 @@ class Transaction(object):
                                    "'commit' or 'rollback'.")
         else:
             self.__default_action = action
+    def __get_transaction_id(self):
+        return self.trans_info(isc_info_tra_id)
+    def __get_oit(self):
+        return self.trans_info(isc_info_tra_oldest_interesting)
+    def __get_oat(self):
+        return self.trans_info(isc_info_tra_oldest_active)
+    def __get_ost(self):
+        return self.trans_info(isc_info_tra_oldest_snapshot)
+    def __get_isolation(self):
+        return self.trans_info(isc_info_tra_isolation)
+    def __get_lock_timeout(self):
+        return self.trans_info(isc_info_tra_lock_timeout)
+
     def execute_immediate(self, sql):
         """Executes a statement without caching its prepared form on
            **all connections** this transaction is bound to.
@@ -4084,7 +4239,7 @@ class Transaction(object):
         if request_buffer[0] != res_buf[0]:
             raise InternalError("Result code does not match request code.")
         if result_type.upper() == 'I':
-            return bytes_to_uint(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
+            return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
         elif result_type.upper() == 'S':
             return p3fix(ctypes.string_at(res_buf, i),self.__python_charset)
         else:
@@ -4107,7 +4262,12 @@ class Transaction(object):
     def __del__(self):
         if self._tr_handle != None:
             self.close()
+    def isreadonly(self):
+        "Returns True if transaction is Read Only."
+        return self.trans_info(isc_info_tra_access) == isc_info_tra_readonly;
 
+    #: (Read Only) (int) Internal ID (server-side) for transaction.
+    transaction_id = property(__get_transaction_id)
     #: (Read Only) True if transaction is closed.
     closed = property(__get_closed)
     #: (Read Only) True if transaction is active.
@@ -4118,6 +4278,19 @@ class Transaction(object):
     #: taken when physical transaction has to be ended automatically.
     #: **Default is 'commit'**.
     default_action = property(__get_default_action,__set_default_action)
+    #: (Read Only) (int) ID of Oldest Interesting Transaction when this transaction started.
+    oit = property(__get_oit)
+    #: (Read Only) (int) ID of Oldest Active Transaction when this transaction started.
+    oat = property(__get_oat)
+    #: (Read Only) (int) ID of Oldest Snapshot Transaction when this transaction started.
+    ost = property(__get_ost)
+    #: (Read Only) (int) or (tuple) Isolation level code [isc_info_tra_consistency,
+    #  isc_info_tra_concurrency or isc_info_tra_read_committed]. For `isc_info_tra_read_committed`
+    #  return tuple where first item is `isc_info_tra_read_committed` and second one is
+    #  [isc_info_tra_no_rec_version or isc_info_tra_rec_version]
+    isolation = property(__get_isolation)
+    #: (Read Only) (int) Lock timeout (seconds or -1 for unlimited).
+    lock_timeout = property(__get_lock_timeout)
 
 class ConnectionGroup(object):
     """Manager for distributed transactions, i.e. transactions that span multiple
@@ -4755,6 +4928,39 @@ class _RowMapping(object):
         for fieldName in self:
             yield fieldName, self[fieldName]
 
+
+class _TableAccessStats(object):
+    """An internal class that wraps results from :meth:`~fdb.Connection.get_table_access_stats()`"""
+    def __init__(self,table_id):
+        self.table_id = table_id
+        self.table_name = None
+        self.sequential = None
+        self.indexed = None
+        self.inserts = None
+        self.updates = None
+        self.deletes = None
+        self.backouts = None
+        self.purges = None
+        self.expunges = None
+    def _set_info(self,info_code,value):
+        if info_code == isc_info_read_seq_count:
+            self.sequential = value
+        elif info_code == isc_info_read_idx_count:
+            self.indexed = value
+        elif info_code == isc_info_insert_count:
+            self.inserts = value
+        elif info_code == isc_info_update_count:
+            self.updates = value
+        elif info_code == isc_info_delete_count:
+            self.deletes = value
+        elif info_code == isc_info_backout_count:
+            self.backouts = value
+        elif info_code == isc_info_purge_count:
+            self.purges = value
+        elif info_code == isc_info_expunge_count:
+            self.expunges = value
+        else:
+            ProgrammingError("Unsupported info code: %d" % info_code)
 
 class _RequestBufferBuilder(object):
     def __init__(self, clusterIdentifier=None):

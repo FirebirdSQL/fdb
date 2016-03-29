@@ -154,6 +154,7 @@ charset_map = {
     'OCTETS'              :   None,  # Allow to pass through unchanged.
     'UNICODE_FSS'         :   'utf_8',
     'UTF8'                :   'utf_8',  # (Firebird 2.0+)
+    'ASCII'               :   'ascii',
     'SJIS_0208'           :   'shift_jis',
     'EUCJ_0208'           :   'euc_jp',
     'DOS737'              :   'cp737',
@@ -178,6 +179,7 @@ charset_map = {
     'KSC_5601'            :   'euc_kr',
     'DOS852'              :   'cp852',
     'DOS857'              :   'cp857',
+    'DOS858'              :   'cp858',
     'DOS861'              :   'cp861',
     'DOS866'              :   'cp866',
     'DOS869'              :   'cp869',
@@ -191,8 +193,10 @@ charset_map = {
     'WIN1255'             :   'cp1255',
     'WIN1256'             :   'cp1256',
     'WIN1257'             :   'cp1257',
-    'KOI8-R'              :   'koi8_r',  # (Firebird 2.0+)
-    'KOI8-U'              :   'koi8_u',  # (Firebird 2.0+)
+    'GB18030'             :   'gb18030',
+    'GBK'                 :   'gbk',
+    'KOI8R'               :   'koi8_r',  # (Firebird 2.0+)
+    'KOI8U'               :   'koi8_u',  # (Firebird 2.0+)
     'WIN1258'             :   'cp1258',  # (Firebird 2.0+)
     }
 
@@ -205,6 +209,7 @@ SHRT_MAX = 32767
 USHRT_MAX = 65535
 INT_MIN = -2147483648
 INT_MAX = 2147483647
+UINT_MAX = 4294967295
 LONG_MIN = -9223372036854775808
 LONG_MAX = 9223372036854775807
 SSIZE_T_MIN = INT_MIN
@@ -394,7 +399,7 @@ isc_info_fetches = 7
 isc_info_marks = 8
 isc_info_implementation = 11
 isc_info_isc_version = 12
-isc_info_base_level = 13
+isc_info_base_level = 13 # Note: This is useless info item, consider as obsolete
 isc_info_page_size = 14
 isc_info_num_buffers = 15
 isc_info_limbo = 16
@@ -457,7 +462,7 @@ isc_info_db_provider = 108
 isc_info_active_transactions = 109
 isc_info_active_tran_count = 110
 isc_info_creation_date = 111
-isc_info_db_file_size = 112 # added in FB 2.1
+isc_info_db_file_size = 112 # added in FB 2.1, nbackup-related - size (in pages) of locked db
 fb_info_page_contents = 113 # added in FB 2.5
 # Added in Firebird 3.0
 fb_info_page_warns = 115

@@ -266,7 +266,14 @@ class TestConnection(FDBTestBase):
             self.assertEqual(con.database_info(fdb.isc_info_db_sql_dialect,'i'),3)
     def test_db_info(self):
         with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
-            self.assertEqual(len(con.get_page_contents(0)),con.get_page_size())
+            with con.trans() as t1, con.trans() as t2:
+                self.assertListEqual(con.db_info(fdb.isc_info_active_transactions),[])
+                t1.begin()
+                t2.begin()
+                self.assertListEqual(con.db_info(fdb.isc_info_active_transactions),
+                                     [t1.transaction_id,t2.transaction_id])
+            #
+            self.assertEqual(len(con.get_page_contents(0)),con.page_size)
             res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                                fdb.isc_info_db_sql_dialect,fdb.isc_info_user_names])
             if con.ods < fdb.ODS_FB_30:
@@ -278,7 +285,43 @@ class TestConnection(FDBTestBase):
                 self.assertDictEqual(res,{0: 98, 1: 1})
             else:
                 self.assertDictEqual(res,{0: 106, 1: 2})
-
+    def test_info_attributes(self):
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
+            self.assertGreater(con.attachment_id,0)
+            self.assertEqual(con.sql_dialect,3)
+            self.assertEqual(con.database_sql_dialect,3)
+            self.assertEqual(con.database_name,self.dbfile)
+            self.assertIsInstance(con.site_name,str)
+            self.assertIn(con.implementation_id,fdb.IMPLEMENTATION_NAMES.keys())
+            self.assertIn(con.provider_id,fdb.PROVIDER_NAMES.keys())
+            self.assertIn(con.db_class_id,fdb.DB_CLASS_NAMES.keys())
+            self.assertIsInstance(con.creation_date,datetime.datetime)
+            self.assertIn(con.page_size,[4096,8192,16384])
+            self.assertEqual(con.sweep_interval,20000)
+            self.assertTrue(con.space_reservation)
+            self.assertTrue(con.forced_writes)
+            self.assertGreater(con.current_memory,0)
+            self.assertGreater(con.max_memory,0)
+            self.assertGreater(con.oit,0)
+            self.assertGreater(con.oat,0)
+            self.assertGreater(con.ost,0)
+            self.assertGreater(con.next_transaction,0)
+            self.assertFalse(con.isreadonly())
+            #
+            io = con.io_stats
+            self.assertEqual(len(io),4)
+            self.assertIsInstance(io,dict)
+            s = con.get_table_access_stats()
+            self.assertEqual(len(s),6)
+            self.assertIsInstance(s[0],fdb.fbcore._TableAccessStats)
+            #
+            with con.trans() as t1, con.trans() as t2:
+                self.assertListEqual(con.get_active_transaction_ids(),[])
+                t1.begin()
+                t2.begin()
+                self.assertListEqual(con.get_active_transaction_ids(),
+                                     [t1.transaction_id,t2.transaction_id])
+                self.assertEqual(con.get_active_transaction_count(), 2)
 class TestTransaction(FDBTestBase):
     def setUp(self):
         super(TestTransaction,self).setUp()
@@ -378,6 +421,13 @@ class TestTransaction(FDBTestBase):
         tr = self.con.main_transaction
         info = tr.transaction_info(ibase.isc_info_tra_isolation,'s')
         self.assertEqual(info,'\x08\x02\x00\x03\x01')
+        #
+        self.assertGreater(tr.transaction_id,0)
+        self.assertGreater(tr.oit,0)
+        self.assertGreater(tr.oat,0)
+        self.assertGreater(tr.ost,0)
+        self.assertEqual(tr.lock_timeout,-1)
+        self.assertTupleEqual(tr.isolation,(3,1))
         tr.commit()
 
 class TestDistributedTransaction(FDBTestBase):

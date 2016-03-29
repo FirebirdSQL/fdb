@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Compliance to Python Database API 2.0 &mdash; FDB 1.5.1 documentation</title>
+    <title>Compliance to Python Database API 2.0 &mdash; FDB 1.6 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.5.1',
+        VERSION:     '1.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.5.1 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.6 documentation" href="index.html" />
     <link rel="next" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
     <link rel="prev" title="Usage Guide" href="usage-guide.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -33,9 +33,9 @@
 <![endif]-->
 
   </head>
-  <body>
+  <body role="document">
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -50,14 +50,14 @@
         <li class="right" >
           <a href="usage-guide.html" title="Usage Guide"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">FDB 1.5.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="compliance-to-python-database-api-2-0">
 <h1>Compliance to Python Database API 2.0<a class="headerlink" href="#compliance-to-python-database-api-2-0" title="Permalink to this headline">¶</a></h1>
@@ -65,7 +65,7 @@
 <a class="reference external" href="http://www.python.org/dev/peps/pep-0249/">http://www.python.org/dev/peps/pep-0249/</a></p>
 <div class="section" id="unsupported-optional-features">
 <h2>Unsupported Optional Features<a class="headerlink" href="#unsupported-optional-features" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref py py-meth docutils literal"><span class="pre">fdb.Cursor.nextset()</span></tt></p>
+<p><code class="xref py py-meth docutils literal"><span class="pre">fdb.Cursor.nextset()</span></code></p>
 <blockquote>
 <div>This method is not implemented because the database engine does not support
 opening multiple result sets simultaneously with a single cursor.</div></blockquote>
@@ -86,18 +86,18 @@ as attributes (in addition to being available at module scope).</p>
 </div>
 <div class="section" id="nominally-supported-optional-features">
 <h2>Nominally Supported Optional Features<a class="headerlink" href="#nominally-supported-optional-features" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">fdb.Cursor</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><code class="xref py py-class docutils literal"><span class="pre">fdb.Cursor</span></code></a></p>
 <blockquote>
-<div><p><a class="reference internal" href="reference.html#fdb.Cursor.arraysize" title="fdb.Cursor.arraysize"><tt class="xref py py-attr docutils literal"><span class="pre">arraysize</span></tt></a></p>
+<div><p><a class="reference internal" href="reference.html#fdb.Cursor.arraysize" title="fdb.Cursor.arraysize"><code class="xref py py-attr docutils literal"><span class="pre">arraysize</span></code></a></p>
 <blockquote>
 <div>As required by the spec, the value of this attribute is observed with
 respect to the <cite>fetchmany</cite> method. However, changing the value of this
 attribute does not make any difference in fetch efficiency because
 the database engine only supports fetching a single row at a time.</div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Cursor.setinputsizes" title="fdb.Cursor.setinputsizes"><tt class="xref py py-meth docutils literal"><span class="pre">setinputsizes()</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor.setinputsizes" title="fdb.Cursor.setinputsizes"><code class="xref py py-meth docutils literal"><span class="pre">setinputsizes()</span></code></a></p>
 <blockquote>
 <div>Although this method is present, it does nothing, as allowed by the spec.</div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Cursor.setoutputsize" title="fdb.Cursor.setoutputsize"><tt class="xref py py-meth docutils literal"><span class="pre">setoutputsize()</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor.setoutputsize" title="fdb.Cursor.setoutputsize"><code class="xref py py-meth docutils literal"><span class="pre">setoutputsize()</span></code></a></p>
 <blockquote>
 <div>Although this method is present, it does nothing, as allowed by the spec.</div></blockquote>
 </div></blockquote>
@@ -108,7 +108,7 @@ the database engine only supports fetching a single row at a time.</div></blockq
 of the Python DB API. This section attempts to document only those
 features that overlap with the DB API, or are too insignificant
 to warrant their own subsection elsewhere.</p>
-<p><a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><code class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></code></a></p>
 <blockquote>
 <div><p>This function supports the following optional keyword arguments in addition
 to those required by the spec:</p>
@@ -121,8 +121,8 @@ to those required by the spec:</p>
 </tbody>
 </table>
 <p><em>Example:</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;host:/path/database.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;limited_user&#39;</span><span class="p">,</span>
-   <span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="s">&#39;MORE_POWERFUL_ROLE&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s1">&#39;host:/path/database.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;limited_user&#39;</span><span class="p">,</span>
+   <span class="n">password</span><span class="o">=</span><span class="s1">&#39;pass&#39;</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="s1">&#39;MORE_POWERFUL_ROLE&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -137,8 +137,8 @@ extended character sets with FDB.</td>
 </tbody>
 </table>
 <p><em>Example:</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;host:/path/database.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span>
-    <span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s">&#39;UTF8&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s1">&#39;host:/path/database.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;sysdba&#39;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s1">&#39;pass&#39;</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s1">&#39;UTF8&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -156,30 +156,30 @@ SQL Dialects.</td>
 </tbody>
 </table>
 <p><em>Example:</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s">&#39;host:/path/database.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;sysdba&#39;</span><span class="p">,</span>
-   <span class="n">password</span><span class="o">=</span><span class="s">&#39;pass&#39;</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">fdb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dsn</span><span class="o">=</span><span class="s1">&#39;host:/path/database.db&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;sysdba&#39;</span><span class="p">,</span>
+   <span class="n">password</span><span class="o">=</span><span class="s1">&#39;pass&#39;</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><tt class="xref py py-class docutils literal"><span class="pre">fdb.Connection</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><code class="xref py py-class docutils literal"><span class="pre">fdb.Connection</span></code></a></p>
 <blockquote>
-<div><p><a class="reference internal" href="reference.html#fdb.Connection.charset" title="fdb.Connection.charset"><tt class="xref py py-attr docutils literal"><span class="pre">charset</span></tt></a></p>
+<div><p><a class="reference internal" href="reference.html#fdb.Connection.charset" title="fdb.Connection.charset"><code class="xref py py-attr docutils literal"><span class="pre">charset</span></code></a></p>
 <blockquote>
 <div><em>(read-only)</em> The character set of the connection (set via the <cite>charset</cite>
-parameter of <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><tt class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></tt></a>). See Firebird Documentation for a list
+parameter of <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><code class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></code></a>). See Firebird Documentation for a list
 of available character sets, and <cite>Unicode Fields and FDB</cite> section
 for information on handling extended character sets with FDB.</div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Connection.sql_dialect" title="fdb.Connection.sql_dialect"><tt class="xref py py-attr docutils literal"><span class="pre">sql_dialect</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Connection.sql_dialect" title="fdb.Connection.sql_dialect"><code class="xref py py-attr docutils literal"><span class="pre">sql_dialect</span></code></a></p>
 <blockquote>
 <div>This integer attribute indicates which SQL dialect the connection is using.
 You should not change a connection&#8217;s dialect; instead, discard the connection
 and establish a new one with the desired dialect. For more information, see
 the documentation of the <cite>sql_dialect</cite> argument of the <cite>connect</cite> function.</div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Connection.server_version" title="fdb.Connection.server_version"><tt class="xref py py-attr docutils literal"><span class="pre">server_version</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Connection.server_version" title="fdb.Connection.server_version"><code class="xref py py-attr docutils literal"><span class="pre">server_version</span></code></a></p>
 <blockquote>
 <div><em>(read-only)</em> The version string of the database server to which this connection
 is connected.</div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Connection.execute_immediate" title="fdb.Connection.execute_immediate"><tt class="xref py py-meth docutils literal"><span class="pre">execute_immediate()</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Connection.execute_immediate" title="fdb.Connection.execute_immediate"><code class="xref py py-meth docutils literal"><span class="pre">execute_immediate()</span></code></a></p>
 <blockquote>
 <div><p>Executes a statement without caching its prepared form. The statement must <em>not</em> be
 of a type that returns a result set. In most cases (especially cases in which the same
@@ -196,8 +196,8 @@ the statement using one of the cursor&#8217;s execute methods.</p>
 </tbody>
 </table>
 </div></blockquote>
-<p><tt class="xref py py-meth docutils literal"><span class="pre">commit(retaining=False)()</span></tt>
-<tt class="xref py py-meth docutils literal"><span class="pre">rollback(retaining=False,</span> <span class="pre">savepoint=None)()</span></tt></p>
+<p><code class="xref py py-meth docutils literal"><span class="pre">commit(retaining=False)()</span></code>
+<code class="xref py py-meth docutils literal"><span class="pre">rollback(retaining=False,</span> <span class="pre">savepoint=None)()</span></code></p>
 <blockquote>
 <div>The <cite>commit</cite> and <cite>rollback</cite> methods accept an optional boolean parameter <cite>retaining</cite>
 (default <cite>False</cite>) that indicates whether the transactional context of the transaction
@@ -208,9 +208,9 @@ that causes the transaction to roll back only as far as the designated
 savepoint, rather than rolling back entirely. For details, see the
 Advanced Transaction Control: Savepoints section of this document.</div></blockquote>
 </div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">fdb.Cursor</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><code class="xref py py-class docutils literal"><span class="pre">fdb.Cursor</span></code></a></p>
 <blockquote>
-<div><p><a class="reference internal" href="reference.html#fdb.Cursor.description" title="fdb.Cursor.description"><tt class="xref py py-attr docutils literal"><span class="pre">description</span></tt></a></p>
+<div><p><a class="reference internal" href="reference.html#fdb.Cursor.description" title="fdb.Cursor.description"><code class="xref py py-attr docutils literal"><span class="pre">description</span></code></a></p>
 <blockquote>
 <div><p>FDB makes absolutely no guarantees about <cite>description</cite> except those
 required by the Python Database API Specification 2.0 (that is, <cite>description</cite>
@@ -220,7 +220,7 @@ class or type. FDB provides several named positional constants to be
 used as indices into a given element of <cite>description</cite> . The contents
 of all <cite>description</cite> elements are defined by the DB API spec; these
 constants are provided merely for convenience.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">DESCRIPTION_NAME</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">DESCRIPTION_NAME</span>
 <span class="n">DESCRIPTION_TYPE_CODE</span>
 <span class="n">DESCRIPTION_DISPLAY_SIZE</span>
 <span class="n">DESCRIPTION_INTERNAL_SIZE</span>
@@ -231,13 +231,13 @@ constants are provided merely for convenience.</p>
 </div>
 <p>Here is an example of accessing the <em>name</em> of the first field in the
 <cite>description</cite> of cursor <cite>cur</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">nameOfFirstField</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">fdb</span><span class="o">.</span><span class="n">DESCRIPTION_NAME</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">nameOfFirstField</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">fdb</span><span class="o">.</span><span class="n">DESCRIPTION_NAME</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>For more information, see the documentation of Cursor.description in
 the <a class="reference external" href="Python-DB-API-2.0.html">DB API Specification</a>.</p>
 </div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Cursor.rowcount" title="fdb.Cursor.rowcount"><tt class="xref py py-attr docutils literal"><span class="pre">rowcount</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor.rowcount" title="fdb.Cursor.rowcount"><code class="xref py py-attr docutils literal"><span class="pre">rowcount</span></code></a></p>
 <blockquote>
 <div>Although FDB&#8217;s <cite>Cursor`s implement this
 attribute, the database engine&#8217;s own support for the determination of
@@ -256,9 +256,9 @@ so on, in increments of 1302. As required by the Python DB API Spec,
 the rowcount attribute &#8220;is -1 in case no executeXX() has been
 performed on the cursor or the rowcount of the last operation is not
 determinable by the interface&#8221;.</div></blockquote>
-<p><a class="reference internal" href="reference.html#fdb.Cursor.fetchone" title="fdb.Cursor.fetchone"><tt class="xref py py-meth docutils literal"><span class="pre">fetchone()</span></tt></a></p>
-<p><a class="reference internal" href="reference.html#fdb.Cursor.fetchmany" title="fdb.Cursor.fetchmany"><tt class="xref py py-meth docutils literal"><span class="pre">fetchmany()</span></tt></a></p>
-<p><a class="reference internal" href="reference.html#fdb.Cursor.fetchall" title="fdb.Cursor.fetchall"><tt class="xref py py-meth docutils literal"><span class="pre">fetchall()</span></tt></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor.fetchone" title="fdb.Cursor.fetchone"><code class="xref py py-meth docutils literal"><span class="pre">fetchone()</span></code></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor.fetchmany" title="fdb.Cursor.fetchmany"><code class="xref py py-meth docutils literal"><span class="pre">fetchmany()</span></code></a></p>
+<p><a class="reference internal" href="reference.html#fdb.Cursor.fetchall" title="fdb.Cursor.fetchall"><code class="xref py py-meth docutils literal"><span class="pre">fetchall()</span></code></a></p>
 <blockquote>
 <div>FDB makes absolutely no guarantees about
 the return value of the <cite>fetchone</cite> / <cite>fetchmany</cite> / <cite>fetchall</cite> methods
@@ -276,7 +276,7 @@ being an instance of a particular class or type.</div></blockquote>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -295,7 +295,7 @@ being an instance of a particular class or type.</div></blockquote>
   <h4>Next topic</h4>
   <p class="topless"><a href="differences-from-kdb.html"
                         title="next chapter">Differences from KInterbasDB</a></p>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -312,7 +312,7 @@ being an instance of a particular class or type.</div></blockquote>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -327,12 +327,12 @@ being an instance of a particular class or type.</div></blockquote>
         <li class="right" >
           <a href="usage-guide.html" title="Usage Guide"
              >previous</a> |</li>
-        <li><a href="index.html">FDB 1.5.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2009-2016, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

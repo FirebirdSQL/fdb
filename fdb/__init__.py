@@ -23,8 +23,6 @@
 from fdb.fbcore import *
 from fdb.fbcore import __version__
 from fdb import services
-#from fdb import schema
-#from fdb import utils
 
 __all__ = (# Common with KInterbasDB
            'BINARY', 'Binary', 'BlobReader', 'Connection', 'ConnectionGroup',
@@ -93,7 +91,7 @@ __all__ = (# Common with KInterbasDB
            'isc_info_tra_id', 'isc_info_tra_isolation', 'isc_info_tra_lock_timeout',
            'isc_info_tra_no_rec_version', 'isc_info_tra_oldest_active',
            'isc_info_tra_oldest_interesting', 'isc_info_tra_oldest_snapshot',
-           'isc_info_tra_read_committed', 'isc_info_tra_readonly',
+           'isc_info_tra_read_committed', 'isc_info_tra_readonly','fb_info_tra_dbpath',
            'isc_info_tra_readwrite', 'isc_info_tra_rec_version', 'isc_info_update_count',
            'isc_info_user_names', 'isc_info_version', 'isc_info_wal_avg_grpc_size',
            'isc_info_wal_avg_io_size', 'isc_info_wal_buffer_size',
@@ -119,9 +117,11 @@ __all__ = (# Common with KInterbasDB
            'SQL_ARRAY', 'SQL_BLOB', 'SQL_DOUBLE', 'SQL_D_FLOAT', 'SQL_FLOAT',
            'SQL_INT64', 'SQL_LONG', 'SQL_QUAD', 'SQL_SHORT', 'SQL_TEXT',
            'SQL_TIMESTAMP', 'SQL_TYPE_DATE', 'SQL_TYPE_TIME', 'SQL_VARYING',
-           'SUBTYPE_DECIMAL', 'SUBTYPE_NUMERIC', 'build_dpb',
-           'charset_map',
-           'isc_info_end', 'isc_sqlcode', 'bs',
+           'SUBTYPE_DECIMAL', 'SUBTYPE_NUMERIC', 'SQL_BOOLEAN', 'build_dpb',
+           'charset_map', 'load_api',
+           'isc_info_end', 'isc_sqlcode', 'bs', 'ConnectionWithSchema',
+           'ODS_FB_20','ODS_FB_21','ODS_FB_25','ODS_FB_30',
+
            )
 
 # Present in KDB but missing in FDB

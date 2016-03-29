@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.6`_ (30.3.2016)
 * `Version 1.5.1`_ (22.2.2016)
 * `Version 1.5`_ (7.1.2016)
 * `Version 1.4.11`_ (12.11.2015)
@@ -29,6 +30,14 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.6
+===========
+
+- New: Extended support for database and transaction info (new attributes and functions on :class:`~fdb.Connection` and
+  :class:`~fdb.Transaction`, fixes and improvements to :meth:`~fdb.Connection.db_info` and :meth:`~fdb.Connection.database_info`).
+- Fix: Missing character sets for automatic translations.
+- (PYFB-64) - cursor.description throws ReferenceError after executemany INSERT 
 
 Version 1.5.1
 =============
