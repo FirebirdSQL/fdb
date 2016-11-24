@@ -3561,6 +3561,8 @@ class Cursor(object):
         :raises ProgrammingError: When more parameters than expected are suplied.
         :raises DatabaseError: When error is returned by server.
         """
+        if is_dead_proxy(self._ps):
+            self._ps = None
         if self._ps != None:
             self._ps.close()
         if not self._transaction.active:

@@ -677,12 +677,25 @@ class TestCursor(FDBTestBase):
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
-        #self.con.execute_immediate("recreate table t (c1 integer)")
-        #self.con.commit()
+        self.con.execute_immediate("recreate table t (c1 integer primary key)")
+        self.con.commit()
     def tearDown(self):
         self.con.execute_immediate("delete from t")
         self.con.commit()
         self.con.close()
+    def test_executemany(self):
+        cur = self.con.cursor()
+        cur.executemany("insert into t values(?)",[(1,),(2,)])
+        cur.executemany("insert into t values(?)",[(3,),(4,)])
+        self.con.commit()
+        p = cur.prep("insert into t values(?)")
+        cur.executemany(p,[(5,),(6,)])
+        cur.executemany(p,[(7,),(8,)])
+        self.con.commit()
+        cur.execute("select * from T order by c1")
+        rows = cur.fetchall()
+        self.assertListEqual(rows,[(1,),(2,),(3,),(4,),
+                                   (5,),(6,),(7,),(8,)])
     def test_iteration(self):
         if self.con.ods < fdb.ODS_FB_30:
             data = [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),
