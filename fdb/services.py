@@ -29,6 +29,7 @@ import ctypes
 import struct
 import warnings
 import datetime
+import types
 
 api = None
 
@@ -760,7 +761,8 @@ class Connection(object):
                        # 2004.06.06: False by default b/c gstat behaves that way:
                        show_system_tables_and_indexes=0,
                        show_record_versions=0,
-                       callback=None
+                       callback=None,
+                       tables=None
                        ):
         """Request database statisctics. **(ASYNC service)**
 
@@ -775,6 +777,7 @@ class Connection(object):
         :param integer show_record_versions: `1` to analyze record versions.
         :param function callback: Function to call back with each output line.
           Function must accept only one parameter: line of output.
+        :param string_or_list tables: table name or iterable of table names.
 
         If `callback` is not specified, statistical report could be retrieved
         through :meth:`readline`, :meth:`readlines`, iteration over `Connection`
@@ -812,6 +815,12 @@ class Connection(object):
 
         reqBuf.add_database_name(database)
         reqBuf.add_option_mask(optionMask)
+        if tables is not None:
+            if isinstance(tables, types.StringTypes):
+                tables = (tables,)
+            cmdline = ['-t']
+            cmdline.extend(tables)
+            reqBuf.add_string(ibase.isc_spb_command_line, ' '.join(cmdline))
         self._act(reqBuf)
         self.__fetching = True
         self.__eof = False

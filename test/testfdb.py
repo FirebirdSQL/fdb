@@ -1572,6 +1572,21 @@ class TestServices2(FDBTestBase):
         output = []
         self.svc.get_statistics('employee', callback=fetchline)
         self.assertGreater(len(output),0)
+        # fetch only selected tables
+        stats = self.svc.get_statistics('employee',
+                                        show_user_data_pages=True,
+                                        tables='COUNTRY')
+        stats = '\n'.join(self.svc.readlines())
+        self.assertIn('COUNTRY',stats)
+        self.assertNotIn('JOB',stats)
+        #
+        stats = self.svc.get_statistics('employee',
+                                        show_user_data_pages=True,
+                                        tables=('COUNTRY','PROJECT'))
+        stats = '\n'.join(self.svc.readlines())
+        self.assertIn('COUNTRY',stats)
+        self.assertIn('PROJECT',stats)
+        self.assertNotIn('JOB',stats)
     def test_backup(self):
         def fetchline(line):
             output.append(line)
