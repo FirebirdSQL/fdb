@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.6.1`_ (30.11.2016)
 * `Version 1.6`_ (30.3.2016)
 * `Version 1.5.1`_ (22.2.2016)
 * `Version 1.5`_ (7.1.2016)
@@ -30,6 +31,12 @@ Changelog
 * `Version 0.7.2`_ (27. 3. 2012)
 * `Version 0.7.1`_ (31. 1. 2012)
 * `Version 0.7`_ (21. 12. 2011)
+
+Version 1.6.1
+=============
+
+- (PYFB-68) - Add support for isc_spb_sts_table option
+- (PYFB-67) -  	Cursor fails after use with executemany(). ReferenceError: weakly-referenced object no longer exists
 
 Version 1.6
 ===========

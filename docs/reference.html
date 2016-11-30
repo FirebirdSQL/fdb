@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.6 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.6.1 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.6',
+        VERSION:     '1.6.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.6 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.6.1 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -4028,7 +4028,7 @@ server.</td>
 
 <dl class="method">
 <dt id="fdb.services.Connection.get_statistics">
-<code class="descname">get_statistics</code><span class="sig-paren">(</span><em>database</em>, <em>show_only_db_log_pages=0</em>, <em>show_only_db_header_pages=0</em>, <em>show_user_data_pages=1</em>, <em>show_user_index_pages=1</em>, <em>show_system_tables_and_indexes=0</em>, <em>show_record_versions=0</em>, <em>callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.services.Connection.get_statistics" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_statistics</code><span class="sig-paren">(</span><em>database</em>, <em>show_only_db_log_pages=0</em>, <em>show_only_db_header_pages=0</em>, <em>show_user_data_pages=1</em>, <em>show_user_index_pages=1</em>, <em>show_system_tables_and_indexes=0</em>, <em>show_record_versions=0</em>, <em>callback=None</em>, <em>tables=None</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.services.Connection.get_statistics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request database statisctics. <strong>(ASYNC service)</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -4046,6 +4046,7 @@ tables and indices.</li>
 <li><strong>show_record_versions</strong> (<em>integer</em>) &#8211; <cite>1</cite> to analyze record versions.</li>
 <li><strong>callback</strong> (<a class="reference internal" href="#fdb.schema.FunctionArgument.function" title="fdb.schema.FunctionArgument.function"><em>function</em></a>) &#8211; Function to call back with each output line.
 Function must accept only one parameter: line of output.</li>
+<li><strong>tables</strong> (<em>string_or_list</em>) &#8211; table name or iterable of table names.</li>
 </ul>
 </td>
 </tr>
@@ -11027,7 +11028,7 @@ API functions as member methods. Uses <a class="reference external" href="http:/
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

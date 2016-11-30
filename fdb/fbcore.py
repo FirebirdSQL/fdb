@@ -160,7 +160,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
-__version__ = '1.6'
+__version__ = '1.6.1'
 
 apilevel = '2.0'
 threadsafety = 1

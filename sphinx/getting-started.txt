@@ -6,9 +6,7 @@ Getting Started with FDB
 Installation
 ************
 
-FDB is written as pure-Python module on top of Firebird client library (fbclient.so/dll) using ctypes_,
-so *make sure you have Firebird client properly installed before you try to install FDB*, otherwise the 
-installation will fail. FDB supports Firebird version 2.0 and higher.
+FDB is written as pure-Python module on top of Firebird client library (fbclient.so/dll) using ctypes_, so *make sure you have Firebird client properly installed before you try to install FDB*, otherwise the installation will fail. FDB supports Firebird version 2.0 and higher.
 
 FDB is distributed as `setuptools`_ package, so you'll need setuptools or 
 `compatible package <http://pypi.python.org/pypi/distribute>`_ installed to
@@ -43,14 +41,9 @@ Download the source tarball, uncompress it, then run the install command::
 Quick-start Guide
 *****************
 
-This brief tutorial aims to get the reader started by demonstrating
-elementary usage of FDB. It is not a comprehensive Python
-Database API tutorial, nor is it comprehensive in its coverage of
-anything else.
+This brief tutorial aims to get the reader started by demonstrating elementary usage of FDB. It is not a comprehensive Python Database API tutorial, nor is it comprehensive in its coverage of anything else.
 
-The numerous advanced features of FDB are covered in another
-section of this documentation, which is not in a tutorial format, though it
-is replete with examples.
+The numerous advanced features of FDB are covered in another section of this documentation, which is not in a tutorial format, though it is replete with examples.
 
 
 Connecting to a Database
@@ -140,8 +133,7 @@ Sample output:
 
 **Example 2**
 
-Here's another trivial example that demonstrates various ways of
-fetching a single row at a time from a `SELECT`-cursor:
+Here's another trivial example that demonstrates various ways of fetching a single row at a time from a `SELECT`-cursor:
 
 .. sourcecode:: python
 
@@ -183,8 +175,7 @@ Sample output:
 
 **Example 3**
 
-The following program is a simplistic table printer (applied in this
-example to `languages`):
+The following program is a simplistic table printer (applied in this example to `languages`):
 
 .. sourcecode:: python
 
@@ -252,10 +243,7 @@ Let's insert more languages:
     con.commit()
 
 
-Note the use of a *parameterized* SQL statement above. When dealing
-with repetitive statements, this is much faster and less error-prone
-than assembling each SQL statement manually. (You can read more about
-parameterized SQL statements in the section on :ref:`Prepared Statements <prepared-statements>`.)
+Note the use of a *parameterized* SQL statement above. When dealing with repetitive statements, this is much faster and less error-prone than assembling each SQL statement manually. (You can read more about parameterized SQL statements in the section on :ref:`Prepared Statements <prepared-statements>`.)
 
 After running Example 4, the table printer from Example 3 would print:
 
@@ -272,26 +260,13 @@ After running Example 4, the table printer from Example 3 would print:
 Calling Stored Procedures
 =========================
 
-Firebird supports stored procedures written in a proprietary procedural
-SQL language. Firebird stored procedures can have *input* parameters and/or
-*output* parameters. Some databases support *input/output* parameters,
-where the same parameter is used for both input and output; Firebird does
-not support this.
+Firebird supports stored procedures written in a proprietary procedural SQL language. Firebird stored procedures can have *input* parameters and/or *output* parameters. Some databases support *input/output* parameters, where the same parameter is used for both input and output; Firebird does not support this.
 
-It is important to distinguish between procedures that *return a
-result set* and procedures that *populate and return their output
-parameters exactly once*. Conceptually, the latter "return their
-output parameters" like a Python function, whereas the former "yield
-result rows" like a Python generator.
+It is important to distinguish between procedures that *return a result set* and procedures that *populate and return their output parameters exactly once*. Conceptually, the latter "return their output parameters" like a Python function, whereas the former "yield result rows" like a Python generator.
 
-Firebird's *server-side* procedural SQL syntax makes no such distinction,
-but *client-side* SQL code (and C API code) must. A result set is
-retrieved from a stored procedure by `SELECT`ing from the procedure,
-whereas output parameters are retrieved with an `EXECUTE PROCEDURE`
-statement.
+Firebird's *server-side* procedural SQL syntax makes no such distinction, but *client-side* SQL code (and C API code) must. A result set is retrieved from a stored procedure by `SELECT`ing from the procedure, whereas output parameters are retrieved with an `EXECUTE PROCEDURE` statement.
 
-To *retrieve a result set* from a stored procedure with FDB,
-use code such as this:
+To *retrieve a result set* from a stored procedure with FDB, use code such as this:
 
 .. sourcecode:: python
 
@@ -304,8 +279,7 @@ use code such as this:
     con.commit() # If the procedure had any side effects, commit them.
 
 
-To *execute* a stored procedure and *access its output parameters*,
-use code such as this:
+To *execute* a stored procedure and *access its output parameters*, use code such as this:
 
 .. sourcecode:: python
 
@@ -318,7 +292,4 @@ use code such as this:
     con.commit() # If the procedure had any side effects, commit them.
 
 
-This latter is not very elegant; it would be preferable to access the
-procedure's output parameters as the return value of
-`Cursor.callproc()`. The Python DB API specification requires the
-current behavior, however.
+This latter is not very elegant; it would be preferable to access the procedure's output parameters as the return value of `Cursor.callproc()`. The Python DB API specification requires the current behavior, however.
