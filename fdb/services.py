@@ -162,10 +162,7 @@ def _renderSizedIntegerForSPB(i, myformat):
     return (destFormat, destVal)
 
 
-def connect(host='service_mgr',
-    user=os.environ.get('ISC_USER', 'sysdba'),
-    password=os.environ.get('ISC_PASSWORD', None)
-  ):
+def connect(host='service_mgr',user=None,password=None):
     """Establishes a connection to the Services Manager.
 
     :param string host: (optional) Host machine specification. Local by default.
@@ -182,6 +179,10 @@ def connect(host='service_mgr',
        `getStatistics` MUST NOT include the host name of the database server.
     """
     setattr(sys.modules[__name__],'api',fdb.load_api())
+    if not user:
+        user = os.environ.get('ISC_USER', 'SYSDBA')
+    if not password:
+        password = os.environ.get('ISC_PASSWORD', None)
     if password is None:
         raise fdb.ProgrammingError('A password is required to use'
                                    ' the Services Manager.')
