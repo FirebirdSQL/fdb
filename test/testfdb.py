@@ -2473,7 +2473,7 @@ class TestSchema(FDBTestBase):
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(len(s.sysindices),72)
         elif self.con.ods == fdb.ODS_FB_25:
-            self.assertEqual(len(s.sysindices),75)
+            self.assertEqual(len(s.sysindices),76)
         elif self.con.ods == fdb.ODS_FB_30:
             self.assertEqual(len(s.sysindices),81)
         else:
@@ -2505,7 +2505,7 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.procedures),11)
         self.assertEqual(len(s.sysprocedures),0)
         if self.con.ods < fdb.ODS_FB_30:
-            self.assertEqual(len(s.constraints),80)
+            self.assertEqual(len(s.constraints),82)
         else:
             self.assertEqual(len(s.constraints),108)
         if self.con.ods <= fdb.ODS_FB_21:
@@ -2591,7 +2591,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'ES_ES')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'ES_ES')
         self.assertListEqual(c.get_dependents(),[])
@@ -2622,7 +2622,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'TEST_COLLATE')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['create', 'drop'])
+        self.assertListEqual(c.actions,['comment', 'create', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'TEST_COLLATE')
         self.assertListEqual(c.get_dependents(),[])
@@ -2648,13 +2648,15 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('drop',badparam='')
         self.assertTupleEqual(cm.exception.args,
             ("Unsupported parameter(s) 'badparam'",))
+        self.assertEqual(c.get_sql_for('comment'),
+            "COMMENT ON COLLATION TEST_COLLATE IS NULL")
 
     def testCharacterSet(self):
         c = self.con.schema.get_character_set('UTF8')
         # common properties
         self.assertEqual(c.name,'UTF8')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['alter'])
+        self.assertListEqual(c.actions,['alter','comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'UTF8')
         self.assertListEqual(c.get_dependents(),[])
@@ -2690,6 +2692,9 @@ class TestSchema(FDBTestBase):
         self.assertTupleEqual(cm.exception.args,
             ("Missing required parameter: 'collation'.",))
         #
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON CHARACTER SET UTF8 IS NULL')
+        #
         self.assertEqual(c.get_collation('UCS_BASIC').name,'UCS_BASIC')
         self.assertEqual(c.get_collation_by_id(c.get_collation('UCS_BASIC').id).name,
                          'UCS_BASIC')
@@ -2699,7 +2704,7 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.name,'UNKNOWN_EMP_ID')
         self.assertIsNone(c.description)
         self.assertListEqual(c.actions,
-                ['create', 'recreate', 'alter', 'create_or_alter', 'drop'])
+                ['comment', 'create', 'recreate', 'alter', 'create_or_alter', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'UNKNOWN_EMP_ID')
         d = c.get_dependents()
@@ -2740,13 +2745,15 @@ class TestSchema(FDBTestBase):
             ("Missing required parameter: 'message'.",))
         self.assertEqual(c.get_sql_for('create_or_alter'),
             "CREATE OR ALTER EXCEPTION UNKNOWN_EMP_ID 'Invalid employee number or project id.'")
+        self.assertEqual(c.get_sql_for('comment'),
+            "COMMENT ON EXCEPTION UNKNOWN_EMP_ID IS NULL")
     def testSequence(self):
         # System generator
         c = self.con.schema.get_sequence('RDB$FIELD_NAME')
         # common properties
         self.assertEqual(c.name,'RDB$FIELD_NAME')
         self.assertEqual(c.description,"Implicit domain name")
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'RDB$FIELD_NAME')
         self.assertListEqual(c.get_dependents(),[])
@@ -2758,7 +2765,8 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'EMP_NO_GEN')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['create', 'alter', 'drop'])
+        self.assertListEqual(c.actions,['comment', 'create',
+                                        'alter', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'EMP_NO_GEN')
         d = c.get_dependents()
@@ -2798,13 +2806,18 @@ class TestSchema(FDBTestBase):
             c.get_sql_for('alter')
         self.assertTupleEqual(cm.exception.args,
             ("Missing required parameter: 'value'.",))
+        self.assertEqual(c.get_sql_for('comment'),
+            "COMMENT ON SEQUENCE EMP_NO_GEN IS NULL")
+        c.schema.opt_generator_keyword = 'GENERATOR'
+        self.assertEqual(c.get_sql_for('comment'),
+            "COMMENT ON GENERATOR EMP_NO_GEN IS NULL")
     def testTableColumn(self):
         # System column
         c = self.con.schema.get_table('RDB$PAGES').get_column('RDB$PAGE_NUMBER')
         # common properties
         self.assertEqual(c.name,'RDB$PAGE_NUMBER')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'RDB$PAGE_NUMBER')
         self.assertListEqual(c.get_dependents(),[])
@@ -2816,7 +2829,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'PHONE_NO')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['alter', 'drop'])
+        self.assertListEqual(c.actions,['comment', 'alter', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'PHONE_NO')
         d = c.get_dependents()
@@ -2844,6 +2857,8 @@ class TestSchema(FDBTestBase):
         self.assertTrue(c.has_default())
         self.assertIsNone(c.get_computedby())
         #
+        self.assertEqual(c.get_sql_for('comment'),
+            "COMMENT ON COLUMN DEPARTMENT.PHONE_NO IS NULL")
         self.assertEqual(c.get_sql_for('drop'),
                          "ALTER TABLE DEPARTMENT DROP PHONE_NO")
         self.assertEqual(c.get_sql_for('alter',name='NewName'),
@@ -2903,7 +2918,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'RDB$INDEX_0')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['recompute'])
+        self.assertListEqual(c.actions,['recompute','comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'RDB$INDEX_0')
         self.assertListEqual(c.get_dependents(),[])
@@ -2916,8 +2931,9 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'MAXSALX')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,
-            ['create', 'activate', 'deactivate', 'recompute', 'drop'])
+        self.assertListEqual(c.actions,['recompute', 'comment',
+                                        'create', 'activate',
+                                        'deactivate', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'MAXSALX')
         self.assertListEqual(c.get_dependents(),[])
@@ -2955,6 +2971,8 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.get_sql_for('deactivate'),"ALTER INDEX MAXSALX INACTIVE")
         self.assertEqual(c.get_sql_for('recompute'),"SET STATISTICS INDEX MAXSALX")
         self.assertEqual(c.get_sql_for('drop'),"DROP INDEX MAXSALX")
+        self.assertEqual(c.get_sql_for('comment'),
+            "COMMENT ON INDEX MAXSALX IS NULL")
         # Constraint index
         c = self.con.schema.get_index('RDB$FOREIGN6')
         # common properties
@@ -2968,7 +2986,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'LAST_NAME')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'LAST_NAME')
         self.assertListEqual(c.get_dependents(),[])
@@ -2995,13 +3013,16 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.datatype,'VARCHAR(20)')
         #
         self.assertTrue(c.isnullable())
+        #
+        self.assertEqual(c.get_sql_for('comment'),
+            "COMMENT ON COLUMN PHONE_LIST.LAST_NAME IS NULL")
     def testDomain(self):
         # System domain
         c = self.con.schema.get_domain('RDB$6')
         # common properties
         self.assertEqual(c.name,'RDB$6')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'RDB$6')
         self.assertListEqual(c.get_dependents(),[])
@@ -3017,7 +3038,8 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'PRODTYPE')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['create', 'alter', 'drop'])
+        self.assertListEqual(c.actions,['comment', 'create',
+                                        'alter', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'PRODTYPE')
         self.assertListEqual(c.get_dependents(),[])
@@ -3073,6 +3095,8 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.get_quoted_name(),'"FIRSTNAME"')
         self.assertEqual(c.get_sql_for('create'),
             'CREATE DOMAIN "FIRSTNAME" AS VARCHAR(15)')
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON DOMAIN "FIRSTNAME" IS NULL')
     def testDependency(self):
         l = self.con.schema.get_table('DEPARTMENT').get_dependents()
         self.assertEqual(len(l),18)
@@ -3241,7 +3265,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'RDB$PAGES')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'RDB$PAGES')
         self.assertListEqual(c.get_dependents(),[])
@@ -3251,7 +3275,8 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'EMPLOYEE')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['create', 'recreate', 'drop'])
+        self.assertListEqual(c.actions,['comment', 'create',
+                                        'recreate', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'EMPLOYEE')
         d = c.get_dependents()
@@ -3279,15 +3304,27 @@ class TestSchema(FDBTestBase):
                     ('ORG_CHART', 5), ('ORG_CHART', 5)])
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
-                   [('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1),
-                    ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('CHECK_3', 2),
-                    ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2),
-                    ('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2),
-                    ('CHECK_4', 2), ('SET_EMP_NO', 2), ('SAVE_SALARY_CHANGE', 2),
-                    ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('SAVE_SALARY_CHANGE', 2),
-                    ('PHONE_LIST', 1), ('ORG_CHART', 5), ('ORG_CHART', 5),
-                    ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5),
-                    ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5)])
+                    [('RDB$9', 3), ('RDB$9', 3), ('CHECK_3', 2),
+                     ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2),
+                     ('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2),
+                     ('CHECK_4', 2), ('SET_EMP_NO', 2),
+                     ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1),
+                     ('PHONE_LIST', 1), ('PHONE_LIST', 1),
+                     ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1),
+                     ('PHONE_LIST', 1), ('PHONE_LIST', 1),
+                     ('ORG_CHART', 5), ('ORG_CHART', 5),
+                     ('ORG_CHART', 5), ('ORG_CHART', 5),
+                     ('ORG_CHART', 5), ('DELETE_EMPLOYEE', 5),
+                     ('DELETE_EMPLOYEE', 5)])
+                   #[('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1),
+                    #('PHONE_LIST', 1), ('PHONE_LIST', 1), ('CHECK_3', 2),
+                    #('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2),
+                    #('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2),
+                    #('CHECK_4', 2), ('SET_EMP_NO', 2), ('SAVE_SALARY_CHANGE', 2),
+                    #('PHONE_LIST', 1), ('PHONE_LIST', 1), ('SAVE_SALARY_CHANGE', 2),
+                    #('PHONE_LIST', 1), ('ORG_CHART', 5), ('ORG_CHART', 5),
+                    #('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5),
+                    #('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5)])
         elif self.con.ods >= fdb.ODS_FB_30:
             self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
                    [('SAVE_SALARY_CHANGE', 2), ('SAVE_SALARY_CHANGE', 2), ('CHECK_3', 2),
@@ -3391,13 +3428,17 @@ class TestSchema(FDBTestBase):
   UQ BIGINT GENERATED BY DEFAULT AS IDENTITY (START WITH 100),
   PRIMARY KEY (ID)
 )""")
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON TABLE EMPLOYEE IS NULL')
+
     def testView(self):
         # User view
         c = self.con.schema.get_view('PHONE_LIST')
         # common properties
         self.assertEqual(c.name,'PHONE_LIST')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['create', 'recreate', 'alter',
+        self.assertListEqual(c.actions,['comment','create',
+                                        'recreate', 'alter',
                                         'create_or_alter', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'PHONE_LIST')
@@ -3492,6 +3533,8 @@ class TestSchema(FDBTestBase):
     emp_no, first_name, last_name, phone_ext, location, phone_no
     FROM employee, department
     WHERE employee.dept_no = department.dept_no""")
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON VIEW PHONE_LIST IS NULL')
 
     def testTrigger(self):
         # System trigger
@@ -3499,7 +3542,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'RDB$TRIGGER_1')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'RDB$TRIGGER_1')
         self.assertListEqual(c.get_dependents(),[])
@@ -3510,7 +3553,7 @@ class TestSchema(FDBTestBase):
         self.assertEqual(c.name,'SET_EMP_NO')
         self.assertIsNone(c.description)
         self.assertListEqual(c.actions,
-            ['create', 'recreate', 'alter', 'create_or_alter', 'drop'])
+            ['comment','create', 'recreate', 'alter', 'create_or_alter', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'SET_EMP_NO')
         self.assertListEqual(c.get_dependents(),[])
@@ -3617,6 +3660,8 @@ BEGIN
     new.emp_no = gen_id(emp_no_gen, 1);
 END""")
         self.assertEqual(c.get_sql_for('drop'),"DROP TRIGGER SET_EMP_NO")
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON TRIGGER SET_EMP_NO IS NULL')
         # Multi-trigger
         c = self.con.schema.get_trigger('TR_MULTI')
         #
@@ -3640,7 +3685,7 @@ END""")
         # common properties
         self.assertEqual(c.name,'EMP_NO')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'EMP_NO')
         self.assertListEqual(c.get_dependents(),[])
@@ -3668,11 +3713,14 @@ END""")
         # common properties
         self.assertEqual(c.name,'PROJ_ID')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,[])
+        self.assertListEqual(c.actions,['comment'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'PROJ_ID')
         self.assertListEqual(c.get_dependents(),[])
         self.assertListEqual(c.get_dependencies(),[])
+        #
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON PARAMETER GET_EMP_PROJ.PROJ_ID IS NULL')
         #
         self.assertFalse(c.isinput())
         self.assertEqual(c.get_sql_definition(),'PROJ_ID CHAR(5)')
@@ -3681,8 +3729,9 @@ END""")
         # common properties
         self.assertEqual(c.name,'GET_EMP_PROJ')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,
-            ['create', 'recreate', 'alter', 'create_or_alter', 'drop'])
+        self.assertListEqual(c.actions,['comment','create',
+                                        'recreate', 'alter',
+                                        'create_or_alter', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'GET_EMP_PROJ')
         self.assertListEqual(c.get_dependents(),[])
@@ -3879,12 +3928,14 @@ AS
 BEGIN
   /* PASS */
 END""")
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON PROCEDURE GET_EMP_PROJ IS NULL')
     def testRole(self):
         c = self.con.schema.get_role('TEST_ROLE')
         # common properties
         self.assertEqual(c.name,'TEST_ROLE')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['create', 'drop'])
+        self.assertListEqual(c.actions,['comment','create', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'TEST_ROLE')
         self.assertListEqual(c.get_dependents(),[])
@@ -3894,6 +3945,8 @@ END""")
         #
         self.assertEqual(c.get_sql_for('create'),"CREATE ROLE TEST_ROLE")
         self.assertEqual(c.get_sql_for('drop'),"DROP ROLE TEST_ROLE")
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON ROLE TEST_ROLE IS NULL')
     def _mockFunction(self,name):
         f = None
         if name == 'STRLEN':
@@ -4158,7 +4211,7 @@ END""")
         self.assertIsNone(c.owner_name)
         self.assertIsNone(c.legacy_flag)
         self.assertIsNone(c.deterministic_flag)
-        self.assertListEqual(c.actions,['declare', 'drop'])
+        self.assertListEqual(c.actions,['comment','declare', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'STRLEN')
         self.assertListEqual(c.get_dependents(),[])
@@ -4189,6 +4242,8 @@ MODULE_NAME 'ib_udf'""")
             c.get_sql_for('declare',badparam='')
         self.assertTupleEqual(cm.exception.args,
             ("Unsupported parameter(s) 'badparam'",))
+        self.assertEqual(c.get_sql_for('comment'),
+            'COMMENT ON EXTERNAL FUNCTION STRLEN IS NULL')
         #
         c = self._mockFunction('STRING2BLOB')
         self.assertEqual(len(c.arguments),2)

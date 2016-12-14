@@ -344,6 +344,8 @@ class Schema(object):
 
     #: option switch: Always quote db object names on output
     opt_always_quote = False
+    #: option switch: Keyword for generator/sequence
+    opt_generator_keyword = 'SEQUENCE'
     #: Datatype declaration methods for procedure parameters: key = numID, value = name
     enum_param_type_from = {PROCPAR_DATATYPE: 'DATATYPE',
                             PROCPAR_DOMAIN: 'DOMAIN',
@@ -1145,8 +1147,7 @@ FROM RDB$USER_PRIVILEGES""")
         return self.__object_by_name(self._get_packages(),name)
 
 class BaseSchemaItem(object):
-    """Base class for all database schema objects.
-    """
+    """Base class for all database schema objects."""
     #: Weak reference to parent :class:`Schema` instance.
     schema = None
     def __init__(self,schema,attributes):
@@ -1215,10 +1216,7 @@ class BaseSchemaItem(object):
         return True if self._attributes.get('RDB$SYSTEM_FLAG',False) else False
     def get_quoted_name(self):
         "Returns quoted (if necessary) name."
-        if self._needs_quoting(self.name):
-            return '"%s"' % self.name
-        else:
-            return self.name
+        return self._get_quoted_ident(self.name)
     def get_dependents(self):
         "Returns list of all database objects that depend on this one."
         return [d for d in self.schema.dependencies if d.depended_on_name == self.name and
@@ -1246,8 +1244,8 @@ class Collation(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User collation: create, drop
-    - System collation: none
+    - User collation: create, drop, comment
+    - System collation: comment
     """
     def __init__(self,schema,attributes):
         super(Collation,self).__init__(schema,attributes)
@@ -1259,8 +1257,9 @@ class Collation(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$OWNER_NAME')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','drop']
+            self._actions.extend(['create','drop'])
 
     #--- Protected
 
@@ -1285,6 +1284,9 @@ class Collation(BaseSchemaItem):
             'ACCENT INSENSITIVE' if self.isaccentinsensitive() else 'ACCENT SENSITIVE',
             "'%s'" % self.specific_attributes if self.specific_attributes else '')
         return base_sql.strip()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON COLLATION %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$COLLATION_NAME']
     def _get_id(self):
@@ -1349,7 +1351,7 @@ class Collation(BaseSchemaItem):
 class CharacterSet(BaseSchemaItem):
     """Represents character set.
 
-    Supported SQL actions: alter(collation=Collation instance or collation name)
+    Supported SQL actions: alter(collation=Collation instance or collation name), comment
     """
     def __init__(self,schema,attributes):
         super(CharacterSet,self).__init__(schema,attributes)
@@ -1360,7 +1362,7 @@ class CharacterSet(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$OWNER_NAME')
 
-        self._actions = ['alter']
+        self._actions = ['alter','comment']
 
     #--- protected
 
@@ -1368,10 +1370,13 @@ class CharacterSet(BaseSchemaItem):
         self._check_params(params,['collation'])
         collation = params.get('collation')
         if collation:
-            return ('ALTER CHARACTER SET %s SET DEFAULT COLLATION %s' % (self.name,
-                    collation.name if isinstance(collation,Collation) else collation))
+            return ('ALTER CHARACTER SET %s SET DEFAULT COLLATION %s' % (self.get_quoted_name(),
+                    collation.get_quoted_name() if isinstance(collation,Collation) else collation))
         else:
             raise fdb.ProgrammingError("Missing required parameter: 'collation'.")
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON CHARACTER SET %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$CHARACTER_SET_NAME']
     def _get_id(self):
@@ -1433,8 +1438,8 @@ class DatabaseException(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User exception: create, recreate, alter(message=string), create_or_alter, drop
-    - System exception: none
+    - User exception: create, recreate, alter(message=string), create_or_alter, drop, comment
+    - System exception: comment
     """
     def __init__(self,schema,attributes):
         super(DatabaseException,self).__init__(schema,attributes)
@@ -1444,8 +1449,11 @@ class DatabaseException(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$OWNER_NAME')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','recreate','alter','create_or_alter','drop']
+            self._actions.extend(['create','recreate','alter',
+                                  'create_or_alter','drop'])
+
 
     #--- Protected
 
@@ -1464,6 +1472,9 @@ class DatabaseException(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP EXCEPTION %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON EXCEPTION %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$EXCEPTION_NAME']
     def _get_id(self):
@@ -1499,8 +1510,8 @@ class Sequence(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User sequence: create, alter(value=number), drop
-    - System sequence: none
+    - User sequence: create, alter(value=number), drop, comment
+    - System sequence: comment
     """
     def __init__(self,schema,attributes):
         super(Sequence,self).__init__(schema,attributes)
@@ -1510,24 +1521,33 @@ class Sequence(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$OWNER_NAME')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','alter','drop']
+            self._actions.extend(['create','alter','drop'])
 
     #--- protected
 
     def _get_create_sql(self,**params):
         self._check_params(params,[])
-        return 'CREATE SEQUENCE %s' % self.get_quoted_name()
+        return 'CREATE %s %s' % (self.schema.opt_generator_keyword,
+                                 self.get_quoted_name())
     def _get_alter_sql(self,**params):
         self._check_params(params,['value'])
         value = params.get('value')
         if value is not None:
-            return "ALTER SEQUENCE %s RESTART WITH %d" % (self.get_quoted_name(),value)
+            return "ALTER %s %s RESTART WITH %d" % (self.schema.opt_generator_keyword,
+                                                    self.get_quoted_name(),
+                                                    value)
         else:
             raise fdb.ProgrammingError("Missing required parameter: 'value'.")
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
-        return 'DROP SEQUENCE %s' % self.get_quoted_name()
+        return 'DROP %s %s' % (self.schema.opt_generator_keyword,
+                               self.get_quoted_name())
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON %s %s IS %s' % (self.schema.opt_generator_keyword,
+          self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$GENERATOR_NAME']
     def _get_id(self):
@@ -1572,8 +1592,8 @@ class TableColumn(BaseSchemaItem):
     Supported SQL actions:
 
     - User column: alter(name=string,datatype=string_SQLTypeDef,position=number,
-                         expression=computed_by_expr,restart=None_or_init_value), drop
-    - System column: none
+                         expression=computed_by_expr,restart=None_or_init_value), drop, comment
+    - System column: comment
     """
     def __init__(self,schema,table,attributes):
         super(TableColumn,self).__init__(schema,attributes)
@@ -1586,8 +1606,9 @@ class TableColumn(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$GENERATOR_NAME')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['alter','drop']
+            self._actions.extend(['alter','drop'])
 
     #--- Protected
 
@@ -1628,6 +1649,10 @@ class TableColumn(BaseSchemaItem):
         self._check_params(params,[])
         return 'ALTER TABLE %s DROP %s' % (self.table.get_quoted_name(),
                                            self.get_quoted_name())
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON COLUMN %s.%s IS %s' % (self.table.get_quoted_name(),
+            self.get_quoted_name(),
+            'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$FIELD_NAME']
     def _get_table(self):
@@ -1726,8 +1751,8 @@ class Index(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User index: create, activate, deactivate, recompute, drop
-    - System index: recompute
+    - User index: create, activate, deactivate, recompute, drop, comment
+    - System index: recompute, comment
     """
     def __init__(self,schema,attributes):
         super(Index,self).__init__(schema,attributes)
@@ -1739,10 +1764,9 @@ class Index(BaseSchemaItem):
         self._strip_attribute('RDB$RELATION_NAME')
         self._strip_attribute('RDB$FOREIGN_KEY')
 
-        if self.issystemobject():
-            self._actions = ['recompute']
-        else:
-            self._actions = ['create','activate','deactivate','recompute','drop']
+        self._actions = ['recompute','comment']
+        if not self.issystemobject():
+            self._actions.extend(['create','activate','deactivate','drop'])
 
     #--- Protected
 
@@ -1765,6 +1789,9 @@ class Index(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP INDEX %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON INDEX %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$INDEX_NAME']
     def _get_table(self):
@@ -1862,7 +1889,7 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
 class ViewColumn(BaseSchemaItem):
     """Represents view column.
 
-    Supported SQL actions: none
+    Supported SQL actions: comment
     """
     def __init__(self,schema,view,attributes):
         super(ViewColumn,self).__init__(schema,attributes)
@@ -1876,8 +1903,14 @@ class ViewColumn(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('BASE_RELATION')
 
+        self._actions = ['comment']
+
     #--- Protected
 
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON COLUMN %s.%s IS %s' % (self.view.get_quoted_name(),
+            self.get_quoted_name(),
+            'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$FIELD_NAME']
     def _get_base_field(self):
@@ -1966,8 +1999,8 @@ class Domain(BaseSchemaItem):
     Supported SQL actions:
 
     - User domain: create, alter(name=string,default=string_definition_or_None,
-      check=string_definition_or_None,datatype=string_SQLTypeDef), drop
-    - System domain: none
+      check=string_definition_or_None,datatype=string_SQLTypeDef), drop, comment
+    - System domain: comment
     """
     def __init__(self,schema,attributes):
         super(Domain,self).__init__(schema,attributes)
@@ -1977,8 +2010,9 @@ class Domain(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$OWNER_NAME')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','alter','drop']
+            self._actions.extend(['create','alter','drop'])
 
     #--- Protected
 
@@ -2016,6 +2050,9 @@ class Domain(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP DOMAIN %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON DOMAIN %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$FIELD_NAME']
     def _get_expression(self):
@@ -2480,8 +2517,8 @@ class Table(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User table: create, recreate, drop
-    - System table: none
+    - User table: create, recreate, drop, comment
+    - System table: comment
     """
     def __init__(self,schema,attributes):
         super(Table,self).__init__(schema,attributes)
@@ -2494,8 +2531,9 @@ class Table(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$DEFAULT_CLASS')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','recreate','drop']
+            self._actions.extend(['create','recreate','drop'])
 
     #--- Protected
 
@@ -2561,6 +2599,9 @@ class Table(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP TABLE %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON TABLE %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$RELATION_NAME']
     def _get_id(self):
@@ -2690,8 +2731,8 @@ class View(BaseSchemaItem):
     Supported SQL actions:
 
     - User views: create, recreate, alter(columns=string_or_list,query=string,check=bool),
-      create_or_alter, drop
-    - System views: none
+      create_or_alter, drop, comment
+    - System views: comment
     """
     def __init__(self,schema,attributes):
         super(View,self).__init__(schema,attributes)
@@ -2705,8 +2746,9 @@ class View(BaseSchemaItem):
         self._strip_attribute('RDB$SECURITY_CLASS')
         self._strip_attribute('RDB$DEFAULT_CLASS')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','recreate','alter','create_or_alter','drop']
+            self._actions.extend(['create','recreate','alter','create_or_alter','drop'])
 
     #--- Protected
 
@@ -2730,6 +2772,9 @@ class View(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP VIEW %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON VIEW %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$RELATION_NAME']
     def _get_sql(self):
@@ -2820,8 +2865,8 @@ class Trigger(BaseSchemaItem):
 
     - User trigger: create, recreate, create_or_alter, drop,
       alter(fire_on=string,active=bool,sequence=int,declare=string_or_list,
-      code=string_or_list)
-    - System trigger: none
+      code=string_or_list), comment
+    - System trigger: comment
     """
     def __init__(self,schema,attributes):
         super(Trigger,self).__init__(schema,attributes)
@@ -2832,8 +2877,9 @@ class Trigger(BaseSchemaItem):
         self._strip_attribute('RDB$ENGINE_NAME')
         self._strip_attribute('RDB$ENTRYPOINT')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','recreate','alter','create_or_alter','drop']
+            self._actions.extend(['create','recreate','alter','create_or_alter','drop'])
 
     #--- Protected
 
@@ -2891,6 +2937,9 @@ class Trigger(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP TRIGGER %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON TRIGGER %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_action_time(self):
         if self.isddltrigger():
             return (self.trigger_type) & 1
@@ -3009,7 +3058,7 @@ class Trigger(BaseSchemaItem):
 class ProcedureParameter(BaseSchemaItem):
     """Represents procedure parameter.
 
-    Supported SQL actions: none.
+    Supported SQL actions: comment
     """
     def __init__(self,schema,proc,attributes):
         super(ProcedureParameter,self).__init__(schema,attributes)
@@ -3022,8 +3071,14 @@ class ProcedureParameter(BaseSchemaItem):
         self._strip_attribute('RDB$FIELD_NAME')
         self._strip_attribute('RDB$PACKAGE_NAME')
 
+        self._actions = ['comment']
+
     #--- Protected
 
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON PARAMETER %s.%s IS %s' % (self.procedure.get_quoted_name(),
+            self.get_quoted_name(),
+            'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$PARAMETER_NAME']
     def _get_procedure(self):
@@ -3134,8 +3189,8 @@ class Procedure(BaseSchemaItem):
     - User procedure: create(no_code=bool), recreate(no_code=bool),
       create_or_alter(no_code=bool), drop,
       alter(input=string_or_list,output=string_or_list,declare=string_or_list,
-      code=string_or_list)
-    - System procedure: none
+      code=string_or_list), comment
+    - System procedure: comment
     """
     def __init__(self,schema,attributes):
         super(Procedure,self).__init__(schema,attributes)
@@ -3152,8 +3207,9 @@ class Procedure(BaseSchemaItem):
 
         self.__ods = schema._con.ods
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','recreate','alter','create_or_alter','drop']
+            self._actions.extend(['create','recreate','alter','create_or_alter','drop'])
 
     #--- Protected
 
@@ -3249,6 +3305,9 @@ class Procedure(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP PROCEDURE %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON PROCEDURE %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def __param_columns(self):
         cols = ['RDB$PARAMETER_NAME','RDB$PROCEDURE_NAME','RDB$PARAMETER_NUMBER',
                 'RDB$PARAMETER_TYPE','RDB$FIELD_SOURCE','RDB$DESCRIPTION',
@@ -3369,8 +3428,8 @@ class Role(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User role: create, drop
-    - System role: none
+    - User role: create, drop, comment
+    - System role: comment
     """
     def __init__(self,schema,attributes):
         super(Role,self).__init__(schema,attributes)
@@ -3380,8 +3439,9 @@ class Role(BaseSchemaItem):
         self._strip_attribute('RDB$OWNER_NAME')
         self._strip_attribute('RDB$SECURITY_CLASS')
 
+        self._actions = ['comment']
         if not self.issystemobject():
-            self._actions = ['create','drop']
+            self._actions.extend(['create','drop'])
 
     #--- Protected
 
@@ -3391,6 +3451,9 @@ class Role(BaseSchemaItem):
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP ROLE %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON ROLE %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$ROLE_NAME']
     def _get_owner_name(self):
@@ -3646,7 +3709,7 @@ class Function(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - External UDF: declare, drop
+    - External UDF: declare, drop, comment
     - PSQL UDF (FB 3, not declared in package): create, recreate, create_or_alter, drop,
         alter(arguments=string_or_list,returns=string,declare=string_or_list,
         code=string_or_list)
@@ -3670,7 +3733,7 @@ class Function(BaseSchemaItem):
 
         if not self.issystemobject():
             if self.isexternal():
-                self._actions = ['declare','drop']
+                self._actions = ['comment','declare','drop']
             else:
                 if self._attributes.get('RDB$PACKAGE_NAME') is None:
                     self._actions = ['create','recreate','alter','create_or_alter','drop']
@@ -3695,6 +3758,9 @@ class Function(BaseSchemaItem):
         self._check_params(params,[])
         return 'DROP%s FUNCTION %s' % (' EXTERNAL' if self.isexternal() else '',
                                        self.get_quoted_name())
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON EXTERNAL FUNCTION %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_create_sql(self,**params):
         self._check_params(params,[])
         result = 'CREATE FUNCTION %s' % self.get_quoted_name()
