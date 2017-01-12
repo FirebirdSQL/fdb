@@ -160,6 +160,12 @@ class TestCreateDrop(FDBTestBase):
             self.assertEqual(con.charset,None)
             con.drop_database()
         #
+        with closing(fdb.create_database(host=FBTEST_HOST,port=3050,database=self.dbfile,
+                                         user=FBTEST_USER,password=FBTEST_PASSWORD)) as con:
+            self.assertEqual(con.sql_dialect,3)
+            self.assertEqual(con.charset,None)
+            con.drop_database()
+        #
         with closing(fdb.create_database(host=FBTEST_HOST,database=self.dbfile,
                                          user=FBTEST_USER,password=FBTEST_PASSWORD,
                                          sql_dialect=1,charset='UTF8')) as con:
@@ -184,6 +190,10 @@ class TestConnection(FDBTestBase):
             dpb.extend(ord(x) for x in FBTEST_PASSWORD)
             dpb.extend((ord('?'),1,3))
             self.assertEqual(con._dpb,fdb.bs(dpb))
+        with fdb.connect(database=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
+            self.assertIsNotNone(con._db_handle)
+        with fdb.connect(port=3050,database=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
+            self.assertIsNotNone(con._db_handle)
         with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD,
                          no_gc=1,no_db_triggers=1) as con:
             dpb.extend([ibase.isc_dpb_no_garbage_collect,1,1])

@@ -627,7 +627,7 @@ def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
         addByte(isc_dpb_nolinger, no_linger)
     return b('').join(params)
 
-def connect(dsn='', user=None, password=None, host=None, port=3050, database=None,
+def connect(dsn='', user=None, password=None, host=None, port=None, database=None,
             sql_dialect=3, role=None, charset=None, buffers=None,
             force_write=None, no_reserve=None, db_key_scope=None,
             isolation_level=ISOLATION_LEVEL_READ_COMMITED,
@@ -640,7 +640,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
     :param string user: User name. If not specified, fdb attempts to use ISC_USER envar.
     :param string password: User password. If not specified, fdb attempts to use ISC_PASSWORD envar.
     :param string host: Server host machine specification.
-    :param integer port: Port used by Firebird server **(not used)**.
+    :param integer port: Port used by Firebird server.
     :param string database: Database specification (file spec. or alias)
     :param sql_dialect: SQL Dialect for connection.
     :type sql_dialect): 1, 2 or 3
@@ -708,9 +708,15 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
                 % (host[:-1], host)
                 )
         elif host:
-            dsn = '%s:%s' % (host, database)
+            if port:
+                dsn = '%s/%d:%s' % (host, port, database)
+            else:
+                dsn = '%s:%s' % (host, database)
         else:
-            dsn = database
+            if port:
+                dsn = 'localhost/%d:%s' % (port, database)
+            else:
+                dsn = database
 
     dsn = b(dsn,_FS_ENCODING)
     if charset:
@@ -730,7 +736,7 @@ def connect(dsn='', user=None, password=None, host=None, port=3050, database=Non
     return connection_class(_db_handle, dpb, sql_dialect, charset, isolation_level)
 
 def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
-                    host=None, port=3050, database=None,
+                    host=None, port=None, database=None,
                     page_size=None, length=None, charset=None, files=None,
                     connection_class=None, fb_library_name=None):
     """
@@ -744,7 +750,7 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
     :param string user: User name. If not specified, fdb attempts to use ISC_USER envar.
     :param string password: User password. If not specified, fdb attempts to use ISC_PASSWORD envar.
     :param string host: Server host machine specification.
-    :param integer port: Port used by Firebird server **(not used)**.
+    :param integer port: Port used by Firebird server.
     :param string database: Database specification (file spec. or alias)
     :param integer page_size: Database page size.
     :param integer length: Database size in pages.
@@ -803,9 +809,15 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
                     % (host[:-1], host)
                     )
             elif host:
-                dsn = '%s:%s' % (host, database)
+                if port:
+                    dsn = '%s/%d:%s' % (host, port, database)
+                else:
+                    dsn = '%s:%s' % (host, database)
             else:
-                dsn = database
+                if port:
+                    dsn = 'localhost/%d:%s' % (port, database)
+                else:
+                    dsn = database
 
         dsn = b(dsn,_FS_ENCODING)
 
