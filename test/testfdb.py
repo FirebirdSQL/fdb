@@ -686,16 +686,19 @@ class TestCursor(FDBTestBase):
     def test_executemany(self):
         cur = self.con.cursor()
         cur.executemany("insert into t values(?)",[(1,),(2,)])
-        cur.executemany("insert into t values(?)",[(3,),(4,)])
+        cur.executemany("insert into t values(?)",[(3,)])
+        cur.executemany("insert into t values(?)",[(4,),(5,),(6,)])
         self.con.commit()
         p = cur.prep("insert into t values(?)")
-        cur.executemany(p,[(5,),(6,)])
         cur.executemany(p,[(7,),(8,)])
+        cur.executemany(p,[(9,)])
+        cur.executemany(p,[(10,),(11,),(12,)])
         self.con.commit()
         cur.execute("select * from T order by c1")
         rows = cur.fetchall()
         self.assertListEqual(rows,[(1,),(2,),(3,),(4,),
-                                   (5,),(6,),(7,),(8,)])
+                                   (5,),(6,),(7,),(8,),
+                                   (9,),(10,),(11,),(12,)])
     def test_iteration(self):
         if self.con.ods < fdb.ODS_FB_30:
             data = [('USA', 'Dollar'), ('England', 'Pound'), ('Canada', 'CdnDlr'),

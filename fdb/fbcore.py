@@ -3564,7 +3564,10 @@ class Cursor(object):
         if is_dead_proxy(self._ps):
             self._ps = None
         if self._ps != None:
-            self._ps.close()
+            # Dirty trick to check whether operation when it's
+            # PreparedStatement is the one we (may) have weak proxy for
+            if self._ps.__repr__.__self__ is not operation:
+                self._ps.close()
         if not self._transaction.active:
             self._transaction.begin()
         if isinstance(operation, PreparedStatement):
