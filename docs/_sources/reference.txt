@@ -369,12 +369,88 @@ Database schema
 .. module:: fdb.schema
    :synopsis: Submodule for work with database metadata (schema)
 
+Module globals
+--------------
+
+.. data:: COLUMN_TYPES
+
+.. data:: INTEGRAL_SUBTYPES
+
+.. data:: BLOB_SUBTYPES
+
+.. data:: RESERVED
+
+.. data:: NON_RESERVED
+
+Section codes for :meth:`Schema.get_metadata_ddl`:
+
+.. data:: SCRIPT_COLLATIONS
+
+.. data:: SCRIPT_CHARACTER_SETS
+
+.. data:: SCRIPT_UDFS
+
+.. data:: SCRIPT_GENERATORS
+
+.. data:: SCRIPT_EXCEPTIONS
+
+.. data:: SCRIPT_DOMAINS
+
+.. data:: SCRIPT_PACKAGE_DEFS
+
+.. data:: SCRIPT_FUNCTION_DEFS
+
+.. data:: SCRIPT_PROCEDURE_DEFS
+
+.. data:: SCRIPT_TABLES
+
+.. data:: SCRIPT_PRIMARY_KEYS
+
+.. data:: SCRIPT_UNIQUE_CONSTRAINTS
+
+.. data:: SCRIPT_CHECK_CONSTRAINTS
+
+.. data:: SCRIPT_FOREIGN_CONSTRAINTS
+
+.. data:: SCRIPT_INDICES
+
+.. data:: SCRIPT_VIEWS
+
+.. data:: SCRIPT_PACKAGE_BODIES
+
+.. data:: SCRIPT_PROCEDURE_BODIES
+
+.. data:: SCRIPT_FUNCTION_BODIES
+
+.. data:: SCRIPT_TRIGGERS
+
+.. data:: SCRIPT_ROLES
+
+.. data:: SCRIPT_GRANTS
+
+.. data:: SCRIPT_COMMENTS
+
+.. data:: SCRIPT_SHADOWS
+
+.. data:: SCRIPT_SET_GENERATORS
+
+.. data:: SCRIPT_INDEX_DEACTIVATIONS
+
+.. data:: SCRIPT_INDEX_ACTIVATIONS
+
+.. data:: SCRIPT_TRIGGER_DEACTIVATIONS
+
+.. data:: SCRIPT_TRIGGER_ACTIVATIONS
+
+
 Functions
 ---------
 
 .. autofunction:: get_grants
 
 .. autofunction:: isKeyword
+
+.. autofunction:: escape_single_quotes
 
 
 Schema
@@ -576,9 +652,36 @@ Shadow
    :undoc-members:
 
 Privilege
--------------
+---------
 
 .. autoclass:: Privilege
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Package
+-------
+
+.. autoclass:: Package
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+BackupHistory
+-------------
+
+.. autoclass:: BackupHistory
+   :member-order: groupwise
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+Filter
+------
+
+.. autoclass:: Filter
    :member-order: groupwise
    :members:
    :inherited-members:

@@ -165,6 +165,51 @@ PROCPAR_DOMAIN = 1
 PROCPAR_TYPE_OF_DOMAIN = 2
 PROCPAR_TYPE_OF_COLUMN = 3
 
+SCRIPT_COLLATIONS = 1
+SCRIPT_CHARACTER_SETS = 2
+SCRIPT_UDFS = 3
+SCRIPT_GENERATORS = 4
+SCRIPT_EXCEPTIONS = 5
+SCRIPT_DOMAINS = 6
+SCRIPT_PACKAGE_DEFS = 7
+SCRIPT_FUNCTION_DEFS = 8
+SCRIPT_PROCEDURE_DEFS = 9
+SCRIPT_TABLES = 10
+SCRIPT_PRIMARY_KEYS = 11
+SCRIPT_UNIQUE_CONSTRAINTS = 12
+SCRIPT_CHECK_CONSTRAINTS = 13
+SCRIPT_FOREIGN_CONSTRAINTS = 14
+SCRIPT_INDICES = 15
+SCRIPT_VIEWS = 16
+SCRIPT_PACKAGE_BODIES = 17
+SCRIPT_PROCEDURE_BODIES = 18
+SCRIPT_FUNCTION_BODIES = 19
+SCRIPT_TRIGGERS = 20
+SCRIPT_ROLES = 21
+SCRIPT_GRANTS = 22
+SCRIPT_COMMENTS = 23
+SCRIPT_SHADOWS = 24
+SCRIPT_SET_GENERATORS = 25
+SCRIPT_INDEX_DEACTIVATIONS = 26
+SCRIPT_INDEX_ACTIVATIONS = 27
+SCRIPT_TRIGGER_DEACTIVATIONS = 28
+SCRIPT_TRIGGER_ACTIVATIONS = 29
+
+SCRIPT_DEFAULT_ORDER = [SCRIPT_COLLATIONS,SCRIPT_CHARACTER_SETS,
+                        SCRIPT_UDFS,SCRIPT_GENERATORS,
+                        SCRIPT_EXCEPTIONS,SCRIPT_DOMAINS,
+                        SCRIPT_PACKAGE_DEFS,
+                        SCRIPT_FUNCTION_DEFS,SCRIPT_PROCEDURE_DEFS,
+                        SCRIPT_TABLES,SCRIPT_PRIMARY_KEYS,
+                        SCRIPT_UNIQUE_CONSTRAINTS,
+                        SCRIPT_CHECK_CONSTRAINTS,
+                        SCRIPT_FOREIGN_CONSTRAINTS,SCRIPT_INDICES,
+                        SCRIPT_VIEWS,SCRIPT_PACKAGE_BODIES,
+                        SCRIPT_PROCEDURE_BODIES,
+                        SCRIPT_FUNCTION_BODIES,SCRIPT_TRIGGERS,
+                        SCRIPT_GRANTS,SCRIPT_ROLES,SCRIPT_COMMENTS,
+                        SCRIPT_SHADOWS,SCRIPT_SET_GENERATORS]
+
 RESERVED = ['ACTIVE','ADD','ADMIN','AFTER','ALL','ALTER','AND',
             'ANY','ARE','AS','ASC','ASCENDING','AT','AUTO','AUTODDL','AVG',
             'BASED','BASE_NAME','BEFORE','BEGIN','BETWEEN','BIGINT','BIT_LENGTH',
@@ -432,7 +477,8 @@ class Schema(object):
                             'generators','sequences','triggers','procedures',
                             'constraints','collations','character sets',
                             'exceptions','roles','functions','files','shadows',
-                            'privileges','users','packages']:
+                            'privileges','users','packages','backup_history',
+                            'filters']:
                 raise fdb.ProgrammingError("Unknown metadata category '%s'" % data)
         if (not data or data == 'tables'):
             self.__tables = None
@@ -473,6 +519,10 @@ class Schema(object):
             self.__users = None
         if (not data or data == 'packages'):
             self.__packages = None
+        if (not data or data == 'backup_history'):
+            self.__backup_history = None
+        if (not data or data == 'filters'):
+            self.__filters = None
 
     #--- protected
 
@@ -672,9 +722,13 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
             # Constraint.issystemobject() that is called in Constraint.__init__()
             # will drop result from internal cursor and we'll not load all constraints.
             self._get_all_tables()
-            self._ic.execute("""select * from rdb$relation_constraints C
+            self._ic.execute("""select c.RDB$CONSTRAINT_NAME,
+c.RDB$CONSTRAINT_TYPE, c.RDB$RELATION_NAME, c.RDB$DEFERRABLE,
+c.RDB$INITIALLY_DEFERRED, c.RDB$INDEX_NAME, r.RDB$CONST_NAME_UQ,
+r.RDB$MATCH_OPTION,r.RDB$UPDATE_RULE,r.RDB$DELETE_RULE,
+k.RDB$TRIGGER_NAME from rdb$relation_constraints C
 left outer join rdb$ref_constraints R on C.rdb$constraint_name = R.rdb$constraint_name
-left outer join rdb$check_constraints K on C.rdb$constraint_name = K.rdb$constraint_name""")
+left outer join rdb$check_constraints K on (C.rdb$constraint_name = K.rdb$constraint_name) and (c.RDB$CONSTRAINT_TYPE in ('CHECK','NOT NULL'))""")
             self.__constraints = [Constraint(self,row) for row in self._ic.itermap()]
             # Check constrains need special care because they're doubled
             # (select above returns two records for them with different trigger names)
@@ -745,6 +799,22 @@ RDB$GRANT_OPTION, RDB$RELATION_NAME, RDB$FIELD_NAME, RDB$USER_TYPE, RDB$OBJECT_T
 FROM RDB$USER_PRIVILEGES""")
             self.__privileges = [Privilege(self,row) for row in self._ic.itermap()]
         return self.__privileges
+    def _get_backup_history(self):
+        if self.__backup_history is None:
+            self.__fail_if_closed()
+            self._ic.execute("""SELECT RDB$BACKUP_ID, RDB$TIMESTAMP,
+RDB$BACKUP_LEVEL, RDB$GUID, RDB$SCN, RDB$FILE_NAME
+FROM RDB$BACKUP_HISTORY""")
+            self.__backup_history = [BackupHistory(self,row) for row in self._ic.itermap()]
+        return self.__backup_history
+    def _get_filters(self):
+        if self.__filters is None:
+            self.__fail_if_closed()
+            self._ic.execute("""SELECT RDB$FUNCTION_NAME, RDB$DESCRIPTION,
+RDB$MODULE_NAME, RDB$ENTRYPOINT, RDB$INPUT_SUB_TYPE, RDB$OUTPUT_SUB_TYPE, RDB$SYSTEM_FLAG
+FROM RDB$FILTERS""")
+            self.__filters = [Filter(self,row) for row in self._ic.itermap()]
+        return self.__filters
     def _get_users(self):
         if self.__users is None:
             self.__fail_if_closed()
@@ -831,6 +901,10 @@ FROM RDB$USER_PRIVILEGES""")
         "List of all shadows defined for database.\nItems are :class:`Shadow` objects.")
     privileges = LateBindingProperty(_get_privileges,None,None,
         "List of all privileges defined for database.\nItems are :class:`Privilege` objects.")
+    backup_history = LateBindingProperty(_get_backup_history,None,None,
+        "List of all nbackup hisotry records.\nItems are :class:`BackupHistory` objects.")
+    filters = LateBindingProperty(_get_filters,None,None,
+        "List of all user-defined BLOB filters.\nItems are :class:`Filter` objects.")
     # FB 3
     packages = LateBindingProperty(_get_packages,None,None,
         "List of all packages defined for database.\nItems are :class:`Package` objects.")
@@ -968,6 +1042,8 @@ FROM RDB$USER_PRIVILEGES""")
         - privileges
         - users
         - packages
+        - backup_history
+        - filters
 
         :raises ProgrammingError: For undefined metadata category.
 
@@ -977,6 +1053,178 @@ FROM RDB$USER_PRIVILEGES""")
         if not self.closed:
             self._ic.transaction.commit()
 
+    def get_metadata_ddl(self,sections = SCRIPT_DEFAULT_ORDER):
+        """Returns list of DDL SQL commands for creation of specified categories of
+database objects.
+
+        :param list sections: List of section identifiers.
+
+        :returns: List with SQL commands.
+
+        Sections identifiers are represented by SCRIPT_* contants
+        defined in schema module.
+
+        Sections are created in the order of occerence in list.
+        Uses SCRIPT_DEFAULT_ORDER list when sections are not specified.
+"""
+        def order_by_dependency(items,get_dependencies):
+            ordered = []
+            wlist = list(items)
+            while len(wlist) > 0:
+                item = wlist.pop(0)
+                add = True
+                for dep in get_dependencies(item):
+                    if (type(dep.depended_on) is View) and (dep.depended_on not in ordered):
+                        wlist.append(item)
+                        add = False
+                        break
+                if add:
+                    ordered.append(item)
+            return ordered
+        def view_dependencies(item):
+            return [x for x in item.get_dependencies()
+                    if x.depended_on_type == 1]
+        #
+        script = []
+        for section in sections:
+            if section == SCRIPT_COLLATIONS:
+                for collation in self.collations:
+                    if not collation.issystemobject():
+                        script.append(collation.get_sql_for('create'))
+            elif section == SCRIPT_CHARACTER_SETS:
+                for charset in self.character_sets:
+                    if charset.name != charset.default_collate.name:
+                        script.append(charset.get_sql_for('alter',
+                            collation=charset.default_collate.name))
+            elif section == SCRIPT_UDFS:
+                for udf in self.functions:
+                    if udf.isexternal():
+                        script.append(udf.get_sql_for('declare'))
+            elif section == SCRIPT_GENERATORS:
+                for generator in self.generators:
+                    script.append(generator.get_sql_for('create'))
+            elif section == SCRIPT_EXCEPTIONS:
+                for e in self.exceptions:
+                    script.append(e.get_sql_for('create'))
+            elif section == SCRIPT_DOMAINS:
+                for domain in self.domains:
+                    script.append(domain.get_sql_for('create'))
+            elif section == SCRIPT_PACKAGE_DEFS:
+                for package in self.packages:
+                    script.append(package.get_sql_for('create'))
+            elif section == SCRIPT_FUNCTION_DEFS:
+                for func in (x for x in self.functions if
+                             not x.isexternal() and
+                             not x.ispackaged()):
+                    script.append(func.get_sql_for('create',no_code=True))
+            elif section == SCRIPT_PROCEDURE_DEFS:
+                for proc in (x for x in self.procedures
+                             if not x.ispackaged()):
+                    script.append(proc.get_sql_for('create',no_code=True))
+            elif section == SCRIPT_TABLES:
+                for table in self.tables:
+                    script.append(table.get_sql_for('create',
+                                                    no_pk=True,
+                                                    no_unique=True))
+            elif section == SCRIPT_PRIMARY_KEYS:
+                for constraint in (x for x in self.constraints
+                             if x.ispkey()):
+                    script.append(constraint.get_sql_for('create'))
+            elif section == SCRIPT_UNIQUE_CONSTRAINTS:
+                for table in self.tables:
+                    for constraint in (x for x in table.constraints
+                             if x.isunique()):
+                        script.append(constraint.get_sql_for('create'))
+            elif section == SCRIPT_CHECK_CONSTRAINTS:
+                for table in self.tables:
+                    for constraint in (x for x in table.constraints
+                             if x.ischeck()):
+                        script.append(constraint.get_sql_for('create'))
+            elif section == SCRIPT_FOREIGN_CONSTRAINTS:
+                for table in self.tables:
+                    for constraint in (x for x in table.constraints
+                                 if x.isfkey()):
+                        script.append(constraint.get_sql_for('create'))
+            elif section == SCRIPT_INDICES:
+                for table in self.tables:
+                    for index in (x for x in table.indices
+                                  if not x.isenforcer()):
+                        script.append(index.get_sql_for('create'))
+            elif section == SCRIPT_VIEWS:
+                seen = []
+                for view in order_by_dependency(self.views,
+                                                view_dependencies):
+                    script.append(view.get_sql_for('create'))
+            elif section == SCRIPT_PACKAGE_BODIES:
+                for package in self.packages:
+                    script.append(package.get_sql_for('create',body=True))
+            elif section == SCRIPT_PROCEDURE_BODIES:
+                for proc in (x for x in self.procedures
+                             if not x.ispackaged()):
+                    script.append('ALTER' + proc.get_sql_for('create')[6:])
+            elif section == SCRIPT_FUNCTION_BODIES:
+                for func in (x for x in self.functions if
+                             not x.isexternal() and
+                             not x.ispackaged()):
+                    script.append('ALTER' + func.get_sql_for('create')[6:])
+            elif section == SCRIPT_TRIGGERS:
+                for trigger in self.triggers:
+                    script.append(trigger.get_sql_for('create'))
+            elif section == SCRIPT_ROLES:
+                for role in (x for x in self.roles
+                             if not x.issystemobject()):
+                    script.append(role.get_sql_for('create'))
+            elif section == SCRIPT_GRANTS:
+                for priv in (x for x in self.privileges
+                             if x.user_name != 'SYSDBA'
+                             and not x.subject.issystemobject()):
+                    script.append(priv.get_sql_for('grant'))
+            elif section == SCRIPT_COMMENTS:
+                for objects in [self.character_sets,self.collations,
+                                self.exceptions,self.domains,
+                                self.generators,self.tables,
+                                self.indices,self.views,
+                                self.triggers,self.procedures,
+                                self.functions,self.roles]:
+                    for obj in objects:
+                        if obj.description is not None:
+                            script.append(obj.get_sql_for('comment'))
+                        if type(obj) in (Table,View):
+                            for col in obj.columns:
+                                if col.description is not None:
+                                    script.append(col.get_sql_for('comment'))
+                        elif type(obj) == Procedure:
+                            if type(obj) in (Table,View):
+                                for par in obj.input_params:
+                                    if par.description is not None:
+                                        script.append(par.get_sql_for('comment'))
+                                for par in obj.output_params:
+                                    if par.description is not None:
+                                        script.append(par.get_sql_for('comment'))
+            elif section == SCRIPT_SHADOWS:
+                for shadow in self.shadows:
+                    script.append(shadow.get_sql_for('create'))
+            elif section == SCRIPT_INDEX_DEACTIVATIONS:
+                for index in self.indices:
+                    script.append(index.get_sql_for('deactivate'))
+            elif section == SCRIPT_INDEX_ACTIVATIONS:
+                for index in self.indices:
+                    script.append(index.get_sql_for('activate'))
+            elif section == SCRIPT_SET_GENERATORS:
+                for generator in self.generators:
+                    script.append(generator.get_sql_for('alter',
+                                    value=generator.value))
+            elif section == SCRIPT_TRIGGER_DEACTIVATIONS:
+                for trigger in self.triggers:
+                    script.append(trigger.get_sql_for('alter',
+                                                      active=False))
+            elif section == SCRIPT_TRIGGER_ACTIVATIONS:
+                for trigger in self.triggers:
+                    script.append(trigger.get_sql_for('alter',
+                                                      active=True))
+            else:
+                raise ValueError("Unknown section code %s" % section)
+        return script
 
     def ismultifile(self):
         "Returns true if database has multiple files."
@@ -1553,7 +1801,7 @@ class Sequence(BaseSchemaItem):
     def _get_id(self):
         return self._attributes['RDB$GENERATOR_ID']
     def _get_value(self):
-        return self.schema._select_row("select GEN_ID(%s,0) from RDB$DATABASE" % self.name)['GEN_ID']
+        return self.schema._select_row("select GEN_ID(%s,0) from RDB$DATABASE" % self.get_quoted_name())['GEN_ID']
     def _get_security_class(self):
         return self._attributes.get('RDB$SECURITY_CLASS')
     def _get_owner_name(self):
@@ -1772,8 +2020,7 @@ class Index(BaseSchemaItem):
 
     def _get_create_sql(self,**params):
         self._check_params(params,[])
-        return """CREATE %s%s INDEX %s
-   ON %s %s""" % ('UNIQUE ' if self.isunique() else '',
+        return """CREATE %s%s INDEX %s ON %s %s""" % ('UNIQUE ' if self.isunique() else '',
                   self.index_type, self.get_quoted_name(),self.table.name,
                   'COMPUTED BY %s' % self.expression if self.isexpression()
                   else '(%s)' % ','.join(self.segment_names))
@@ -2021,10 +2268,14 @@ class Domain(BaseSchemaItem):
         sql = 'CREATE DOMAIN %s AS %s' % (self.get_quoted_name(),self.datatype)
         if self.has_default():
             sql += ' DEFAULT %s' % self.default
+        if not self.isnullable():
+            sql += ' NOT NULL'
         if self.isvalidated():
             sql += ' ' + self.validation
         if self._attributes['RDB$COLLATION_ID']:
-            sql += 'COLLATE %s' % self._attributes['RDB$COLLATION_ID']
+            #sql += ' COLLATE %s' % self.collation.get_quoted_name()
+            if self.character_set._attributes['RDB$DEFAULT_COLLATE_NAME'] != self.collation.name:
+                sql += ' COLLATE %s' % self.collation.get_quoted_name()
         return sql
     def _get_alter_sql(self,**params):
         self._check_params(params,['name','default','check','datatype'])
@@ -2100,7 +2351,7 @@ class Domain(BaseSchemaItem):
         precision_known = False
         if self.field_type in (FBT_SMALLINT,FBT_INTEGER,FBT_BIGINT):
             if self.precision != None:
-                if (self.sub_type > 0) and (self.sub_type < MAX_INTSUBTYPES):
+                if (self.sub_type > 0) and (self.sub_type <= MAX_INTSUBTYPES):
                     l.append('%s(%d, %d)' % \
                       (INTEGRAL_SUBTYPES[self.sub_type],self.precision,-self.scale))
                     precision_known = True
@@ -2131,10 +2382,6 @@ class Domain(BaseSchemaItem):
               self._attributes['RDB$COLLATION_ID']:
                 if (self._attributes['RDB$CHARACTER_SET_ID'] is not None):
                     l.append(' CHARACTER SET %s' % self.character_set.name)
-                if self._attributes['RDB$COLLATION_ID'] is not None:
-                    cname = self.collation.name
-                    if self.character_set._attributes['RDB$DEFAULT_COLLATE_NAME'] != cname:
-                        l.append(' COLLATE %s' % cname)
         return ''.join(l)
     def _get_security_class(self):
         return self._attributes.get('RDB$SECURITY_CLASS')
@@ -2286,7 +2533,11 @@ class Dependency(BaseSchemaItem):
             else:
                 return t
         elif self.depended_on_type == 1: # VIEW
-            return self.schema.get_view(self.depended_on_name)
+            t = self.schema.get_view(self.depended_on_name)
+            if self.field_name:
+                return t.get_column(self.field_name)
+            else:
+                return t
         elif self.depended_on_type == 2: # TRIGGER
             return self.schema.get_trigger(self.depended_on_name)
         elif self.depended_on_type == 3: # COMPUTED FIELD (i.e. DOMAIN)
@@ -2517,7 +2768,9 @@ class Table(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User table: create, recreate, drop, comment
+    - User table: create (no_pk=bool,no_unique=bool),
+                  recreate (no_pk=bool,no_unique=bool),
+                  drop, comment
     - System table: comment
     """
     def __init__(self,schema,attributes):
@@ -2538,64 +2791,73 @@ class Table(BaseSchemaItem):
     #--- Protected
 
     def _get_create_sql(self,**params):
-        self._check_params(params,[])
-        tabdef = 'CREATE %sTABLE %s' % ('GLOBAL TEMPORARY ' if self.isgtt() else '',
-                                        self.get_quoted_name())
-        if self.isexternal():
-            tabdef += "  EXTERNAL FILE '%s'\n" % self.external_file
-        tabdef += '\n('
-        partdefs = []
-        for col in self.columns:
-            coldef = '\n  %s ' % col.get_quoted_name()
-            collate = ''
-            if col.isdomainbased():
-                coldef += '%s' % col.domain.get_quoted_name()
-            elif col.iscomputed():
-                coldef += 'COMPUTED BY %s' % col.get_computedby()
-            else:
-                datatype = col.datatype
-                if datatype.rfind(' COLLATE ') > 0:
-                    datatype, collate = datatype.split(' COLLATE ')
-                coldef += '%s' % datatype
-            if col.isidentity():
-                coldef += ' GENERATED BY DEFAULT AS IDENTITY'
-                if col.generator.inital_value != 0:
-                    coldef += ' (START WITH %d)' % col.generator.inital_value
-            else:
-                if col.has_default():
-                    coldef += ' DEFAULT %s' % col.default
-                if not col.isnullable():
-                    coldef += ' NOT NULL'
-                if col._attributes['RDB$COLLATION_ID'] is not None:
-                    cname = col.collation.name
-                    if col.domain.character_set._attributes['RDB$DEFAULT_COLLATE_NAME'] != cname:
-                        collate = cname
+        try:
+            self._check_params(params,['no_pk','no_unique'])
+            no_pk = params.get('no_pk',False)
+            no_unique = params.get('no_unique',False)
+            #
+            tabdef = 'CREATE %sTABLE %s' % ('GLOBAL TEMPORARY ' if self.isgtt() else '',
+                                            self.get_quoted_name())
+            if self.isexternal():
+                tabdef += "  EXTERNAL FILE '%s'\n" % self.external_file
+            tabdef += ' ('
+            partdefs = []
+            for col in self.columns:
+                coldef = '\n  %s ' % col.get_quoted_name()
+                collate = ''
+                if col.isdomainbased():
+                    coldef += '%s' % col.domain.get_quoted_name()
+                elif col.iscomputed():
+                    coldef += 'COMPUTED BY %s' % col.get_computedby()
+                else:
+                    datatype = col.datatype
+                    if datatype.rfind(' COLLATE ') > 0:
+                        datatype, collate = datatype.split(' COLLATE ')
+                    coldef += '%s' % datatype
+                if col.isidentity():
+                    coldef += ' GENERATED BY DEFAULT AS IDENTITY'
+                    if col.generator.inital_value != 0:
+                        coldef += ' (START WITH %d)' % col.generator.inital_value
+                else:
+                    if col.has_default():
+                        coldef += ' DEFAULT %s' % col.default
+                    if not col.isnullable():
+                        coldef += ' NOT NULL'
+                    if col._attributes['RDB$COLLATION_ID'] is not None:
+                        # Sometimes RDB$COLLATION_ID has a garbage value
+                        if col.collation is not None:
+                            cname = col.collation.name
+                            if col.domain.character_set._attributes['RDB$DEFAULT_COLLATE_NAME'] != cname:
+                                collate = cname
                 if collate:
                     coldef += ' COLLATE %s' % collate
-            partdefs.append(coldef)
-        if self.has_pkey():
-            pk = self.primary_key
-            pkdef = '\n  '
-            if not pk.name.startswith('INTEG_'):
-                pkdef += 'CONSTRAINT %s\n  ' % pk.get_quoted_name()
-            i = pk.index
-            pkdef +=  'PRIMARY KEY (%s)' % ','.join(i.segment_names)
-            if not i.issystemobject():
-                pkdef += '\n    USING %s INDEX %s' % (i.index_type,i.get_quoted_name())
-            partdefs.append(pkdef)
-        for uq in self.constraints:
-            if uq.isunique():
-                uqdef = '\n  '
-                if not uq.name.startswith('INTEG_'):
-                    uqdef += 'CONSTRAINT %s\n  ' % uq.get_quoted_name()
-                i = uq.index
-                uqdef +=  'UNIQUE (%s)' % ','.join(i.segment_names)
+                partdefs.append(coldef)
+            if self.has_pkey() and not no_pk:
+                pk = self.primary_key
+                pkdef = '\n  '
+                if not pk.name.startswith('INTEG_'):
+                    pkdef += 'CONSTRAINT %s\n  ' % pk.get_quoted_name()
+                i = pk.index
+                pkdef +=  'PRIMARY KEY (%s)' % ','.join(i.segment_names)
                 if not i.issystemobject():
-                    uqdef += '\n    USING %s INDEX %s' % (i.index_type,i.get_quoted_name())
-                partdefs.append(uqdef)
-        tabdef += ','.join(partdefs)
-        tabdef += '\n)'
-        return tabdef
+                    pkdef += '\n    USING %s INDEX %s' % (i.index_type,i.get_quoted_name())
+                partdefs.append(pkdef)
+            if not no_unique:
+                for uq in self.constraints:
+                    if uq.isunique():
+                        uqdef = '\n  '
+                        if not uq.name.startswith('INTEG_'):
+                            uqdef += 'CONSTRAINT %s\n  ' % uq.get_quoted_name()
+                        i = uq.index
+                        uqdef +=  'UNIQUE (%s)' % ','.join(i.segment_names)
+                        if not i.issystemobject():
+                            uqdef += '\n    USING %s INDEX %s' % (i.index_type,i.get_quoted_name())
+                        partdefs.append(uqdef)
+            tabdef += ','.join(partdefs)
+            tabdef += '\n)'
+            return tabdef
+        except Exception as e:
+            raise e
     def _get_drop_sql(self,**params):
         self._check_params(params,[])
         return 'DROP TABLE %s' % self.get_quoted_name()
@@ -2863,7 +3125,7 @@ class Trigger(BaseSchemaItem):
 
     Supported SQL actions:
 
-    - User trigger: create, recreate, create_or_alter, drop,
+    - User trigger: create(inactive=bool), recreate, create_or_alter, drop,
       alter(fire_on=string,active=bool,sequence=int,declare=string_or_list,
       code=string_or_list), comment
     - System trigger: comment
@@ -2884,11 +3146,12 @@ class Trigger(BaseSchemaItem):
     #--- Protected
 
     def _get_create_sql(self,**params):
-        self._check_params(params,[])
+        self._check_params(params,['inactive'])
+        inactive = params.get('inactive',False)
         result = 'CREATE TRIGGER %s' % self.get_quoted_name()
         if self._attributes['RDB$RELATION_NAME']:
             result += ' FOR %s' % self.relation.get_quoted_name()
-        result += ' %s\n%s POSITION %d\n%s' % ('ACTIVE' if self.isactive() else 'INACTIVE',
+        result += ' %s\n%s POSITION %d\n%s' % ('ACTIVE' if self.isactive() and not inactive else 'INACTIVE',
                                                self.get_type_as_string(),
                                                self.sequence,self.source)
         return result
@@ -3239,15 +3502,18 @@ class Procedure(BaseSchemaItem):
                                             '' if p.sequence+1 == self._attributes['RDB$PROCEDURE_OUTPUTS']
                                             else ',')
                 result += ')\n'
-        return result+'AS\n'+('BEGIN\nEND' if no_code else self.source)
+        return result+'AS\n'+(('BEGIN\nEND' if self.proc_type != 1
+                               else 'BEGIN\n  SUSPEND;\nEND')
+                              if no_code else self.source)
     def _get_alter_sql(self,**params):
         self._check_params(params,['input','output','declare','code'])
         inpars = params.get('input')
         outpars = params.get('output')
         declare = params.get('declare')
         code = params.get('code')
-        if code is None:
-            raise fdb.ProgrammingError("Missing required parameter: 'code'.")
+        body = params.get('body')
+        if (code is None) and (body is None):
+            raise fdb.ProgrammingError("Either 'code' or 'body' must be specified.")
         #
         header = ''
         if inpars is not None:
@@ -3538,7 +3804,7 @@ class FunctionArgument(BaseSchemaItem):
             precision_known = False
             if self.field_type in (FBT_SMALLINT,FBT_INTEGER,FBT_BIGINT):
                 if self.precision != None:
-                    if (self.sub_type > 0) and (self.sub_type < MAX_INTSUBTYPES):
+                    if (self.sub_type > 0) and (self.sub_type <= MAX_INTSUBTYPES):
                         l.append('%s(%d, %d)' % \
                           (INTEGRAL_SUBTYPES[self.sub_type],self.precision,-self.scale))
                         precision_known = True
@@ -3710,7 +3976,8 @@ class Function(BaseSchemaItem):
     Supported SQL actions:
 
     - External UDF: declare, drop, comment
-    - PSQL UDF (FB 3, not declared in package): create, recreate, create_or_alter, drop,
+    - PSQL UDF (FB 3, not declared in package): create(no_code=bool),
+        recreate(no_code=bool), create_or_alter(no_code=bool), drop,
         alter(arguments=string_or_list,returns=string,declare=string_or_list,
         code=string_or_list)
     - System UDF: none
@@ -3737,7 +4004,6 @@ class Function(BaseSchemaItem):
             else:
                 if self._attributes.get('RDB$PACKAGE_NAME') is None:
                     self._actions = ['create','recreate','alter','create_or_alter','drop']
-        pass
 
     #--- Protected
 
@@ -3762,7 +4028,8 @@ class Function(BaseSchemaItem):
         return 'COMMENT ON EXTERNAL FUNCTION %s IS %s' % (self.get_quoted_name(),
           'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_create_sql(self,**params):
-        self._check_params(params,[])
+        self._check_params(params,['no_code'])
+        no_code = params.get('no_code')
         result = 'CREATE FUNCTION %s' % self.get_quoted_name()
         if self.has_arguments():
             if len(self.arguments) == 1:
@@ -3776,7 +4043,7 @@ class Function(BaseSchemaItem):
         else:
             result += '\n'
         result += 'RETURNS %s\n' % self.returns.get_sql_definition()
-        return result+'AS\n'+self.source
+        return result+'AS\n'+('BEGIN\nEND' if no_code else self.source)
     def _get_alter_sql(self,**params):
         self._check_params(params,['arguments','returns','declare','code'])
         arguments = params.get('arguments')
@@ -4073,7 +4340,7 @@ class Privilege(BaseSchemaItem):
         self._strip_attribute('RDB$FIELD_NAME')
     def _get_grant_sql(self,**params):
         self._check_params(params,['grantors'])
-        grantors = params.get('grantors')
+        grantors = params.get('grantors',['SYSDBA'])
         privileges = {'S':'SELECT','I':'INSERT','U':'UPDATE','D':'DELETE','R':'REFERENCES'}
         admin_option = ' WITH GRANT OPTION' if self.has_grant() else ''
         if self.privilege in privileges:
@@ -4103,7 +4370,7 @@ class Privilege(BaseSchemaItem):
                                        self.user_name,admin_option,granted_by)
     def _get_revoke_sql(self,**params):
         self._check_params(params,['grant_option','grantors'])
-        grantors = params.get('grantors')
+        grantors = params.get('grantors',['SYSDBA'])
         option_only = params.get('grant_option',False)
         if option_only and not self.has_grant():
             raise fdb.ProgrammingError("Can't revoke grant option that wasn't granted.")
@@ -4289,6 +4556,124 @@ class Package(BaseSchemaItem):
     def has_valid_body(self):
         result = self._attributes.get('RDB$VALID_BODY_FLAG')
         return bool(result) if result is not None else None
+
+class BackupHistory(BaseSchemaItem):
+    """Represents entry of history for backups performed
+using the nBackup utility.
+
+    Supported SQL actions:  None
+    """
+    def __init__(self,schema,attributes):
+        super(BackupHistory,self).__init__(schema,attributes)
+        self._type_code = []
+
+        self._strip_attribute('RDB$FILE_NAME')
+
+    #--- Protected
+
+    def _get_name(self):
+        return 'BCKP_%d' % self.sequence
+    def _get_backup_id(self):
+        return self._attributes['RDB$BACKUP_ID']
+    def _get_filename(self):
+        return self._attributes['RDB$FILE_NAME']
+    def _get_created(self):
+        return self._attributes['RDB$TIMESTAMP']
+    def _get_level(self):
+        return self._attributes['RDB$BACKUP_LEVEL']
+    def _get_scn(self):
+        return self._attributes['RDB$SCN']
+    def _get_guid(self):
+        return self._attributes['RDB$GUID']
+
+    #--- Properties
+
+    backup_id = LateBindingProperty(_get_backup_id,None,None,"The identifier assigned by the engine.")
+    filename = LateBindingProperty(_get_filename,None,None,"Full path and file name of backup file.")
+    created = LateBindingProperty(_get_created,None,None,"Backup date and time.")
+    level = LateBindingProperty(_get_level,None,None,"Backup level.")
+    scn = LateBindingProperty(_get_scn,None,None,"System (scan) number.")
+    guid = LateBindingProperty(_get_guid,None,None,"Unique identifier.")
+
+    #--- Public
+
+    def accept_visitor(self,visitor):
+        """Visitor Pattern support. Calls `visitBackupHistory(self)` on parameter object.
+
+        :param visitor: Visitor object of Vistior Pattern.
+        """
+        visitor.visitBackupHistory(self)
+    def issystemobject(self):
+        "Returns True."
+        return True
+
+
+class Filter(BaseSchemaItem):
+    """Represents userdefined BLOB filter.
+
+    Supported SQL actions:
+
+    - BLOB filter: declare, drop, comment
+    - System UDF: none
+    """
+    def __init__(self,schema,attributes):
+        super(Filter,self).__init__(schema,attributes)
+        self._type_code = [16,]
+
+        self._strip_attribute('RDB$FUNCTION_NAME')
+        self._strip_attribute('RDB$MODULE_NAME')
+        self._strip_attribute('RDB$ENTRYPOINT')
+
+        self.__ods = schema._con.ods
+
+        if not self.issystemobject():
+            self._actions = ['comment','declare','drop']
+
+    #--- Protected
+
+    def _get_declare_sql(self,**params):
+        self._check_params(params,[])
+        fdef = 'DECLARE FILTER %s\nINPUT_TYPE %d OUTPUT_TYPE %d\n' % (self.get_quoted_name(),
+                                                                      self.input_sub_type,
+                                                                      self.output_sub_type)
+        return "%sENTRY_POINT '%s' MODULE_NAME '%s'" % (fdef,self.entrypoint,
+                                                          self.module_name)
+    def _get_drop_sql(self,**params):
+        self._check_params(params,[])
+        return 'DROP FILTER %s' % self.get_quoted_name()
+    def _get_comment_sql(self,**params):
+        return 'COMMENT ON FILTER %s IS %s' % (self.get_quoted_name(),
+          'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
+    def _get_name(self):
+        return self._attributes['RDB$FUNCTION_NAME']
+    def _get_module_name(self):
+        return self._attributes['RDB$MODULE_NAME']
+    def _get_entrypoint(self):
+        return self._attributes['RDB$ENTRYPOINT']
+    def _get_input_sub_type(self):
+        return self._attributes.get('RDB$INPUT_SUB_TYPE')
+    def _get_output_sub_type(self):
+        return self._attributes.get('RDB$OUTPUT_SUB_TYPE')
+
+    #--- Properties
+
+    module_name = LateBindingProperty(_get_module_name,None,None,
+        "The name of the dynamic library or shared object where the code of the BLOB filter is located.")
+    entrypoint = LateBindingProperty(_get_entrypoint,None,None,
+        "The exported name of the BLOB filter in the filter library.")
+    input_sub_type = LateBindingProperty(_get_input_sub_type,None,None,
+        "The BLOB subtype of the data to be converted by the function.")
+    output_sub_type = LateBindingProperty(_get_output_sub_type,None,None,
+        "The BLOB subtype of the converted data.")
+
+    #--- Public
+
+    def accept_visitor(self,visitor):
+        """Visitor Pattern support. Calls `visitFilter(self)` on parameter object.
+
+        :param visitor: Visitor object of Vistior Pattern.
+        """
+        visitor.visitFilter(self)
 
 class SchemaVisitor(object):
     """Helper class for implementation of schema Visitor.

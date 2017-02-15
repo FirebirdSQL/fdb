@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.7`_ (15.2.2017)
 * `Version 1.6.1`_ (30.11.2016)
 * `Version 1.6`_ (30.3.2016)
 * `Version 1.5.1`_ (22.2.2016)
@@ -24,19 +25,29 @@ Changelog
 * `Version 1.1`_ (9.4.2013)
 * `Version 1.0`_ (7.3.2013)
 * `Version 0.9.9`_ (30.11.2012)
-* `Version 0.9.1`_ (8. 9. 2012)
-* `Version 0.9`_ (5. 9. 2012)
-* `Version 0.8.5`_ (28. 6. 2012)
-* `Version 0.8`_ (31. 5. 2012)
-* `Version 0.7.2`_ (27. 3. 2012)
-* `Version 0.7.1`_ (31. 1. 2012)
-* `Version 0.7`_ (21. 12. 2011)
+* `Version 0.9.1`_ (8.9.2012)
+* `Version 0.9`_ (5.9.2012)
+* `Version 0.8.5`_ (28.6.2012)
+* `Version 0.8`_ (31.5.2012)
+* `Version 0.7.2`_ (27.3.2012)
+* `Version 0.7.1`_ (31.1.2012)
+* `Version 0.7`_ (21.12.2011)
+
+Version 1.7
+===========
+
+- (PYFB-66_) - Port parameter for connect and create_database is not used
+- (PYFB-69_) - Can not connect to FB services if set ISC_USER & ISC_PASSWORD by os.environ[...]
+- (PYFB-70_) - executemany(operation, seq_of_parameters) appears to run slower than it should
+- Number of fixes to DDL generators in schema module
+- Added support for :class:`~fdb.schema.Filter` and :class:`~fdb.schema.BackupHistory` in schema module.
+- Added DDL scripts generator :meth:`~fdb.schema.Schema.get_metadata_ddl`.
 
 Version 1.6.1
 =============
 
-- (PYFB-68) - Add support for isc_spb_sts_table option
-- (PYFB-67) -  	Cursor fails after use with executemany(). ReferenceError: weakly-referenced object no longer exists
+- (PYFB-68_) - Add support for isc_spb_sts_table option
+- (PYFB-67_) - Cursor fails after use with executemany(). ReferenceError: weakly-referenced object no longer exists
 
 Version 1.6
 ===========
@@ -44,7 +55,7 @@ Version 1.6
 - New: Extended support for database and transaction info (new attributes and functions on :class:`~fdb.Connection` and
   :class:`~fdb.Transaction`, fixes and improvements to :meth:`~fdb.Connection.db_info` and :meth:`~fdb.Connection.database_info`).
 - Fix: Missing character sets for automatic translations.
-- (PYFB-64) - cursor.description throws ReferenceError after executemany INSERT 
+- (PYFB-64_) - cursor.description throws ReferenceError after executemany INSERT 
 
 Version 1.5.1
 =============
@@ -67,27 +78,27 @@ Version 1.5
   - GBAK statistics (service)
   - On-line validation (service)
 
-- (PYFB-60) Cursor: executemany(operation, seq_of_parameters) does PREPARE of <operation> for each parameter from <seq_of_parameters>
+- (PYFB-60_) Cursor: executemany(operation, seq_of_parameters) does PREPARE of <operation> for each parameter from <seq_of_parameters>
 
 Version 1.4.11
 ==============
 
-- (PYFB-58) Severe performance loss and minor memory leak
+- (PYFB-58_) Severe performance loss and minor memory leak
 
 Version 1.4.10
 ==============
 
-- (PYFB-54) Windows 7x64 and FB2.5.2x32 Python2.7: Error in Registry Path. FDB driver does not find the library fbclient.dll
-- (PYFB-55) get_sql_for incorrect generate sql query for Views
-- (PYFB-56) schema.reload typing mistake for views
-- (PYFB-57) role.privileges does not return correct privilege list
+- (PYFB-54_) Windows 7x64 and FB2.5.2x32 Python2.7: Error in Registry Path. FDB driver does not find the library fbclient.dll
+- (PYFB-55_) get_sql_for incorrect generate sql query for Views
+- (PYFB-56_) schema.reload typing mistake for views
+- (PYFB-57_) role.privileges does not return correct privilege list
 
 
 Version 1.4.9
 =============
 
-- (PYFB-51) <procedure>.get_sql_for('<re>create') returns invalid output parameters
-- (PYFB-52) isc_info* types which are _DATABASE_INFO_CODES_WITH_COUNT_RESULTS raises TypeError: 'float' object cannot be interpreted as an integer 
+- (PYFB-51_) <procedure>.get_sql_for('<re>create') returns invalid output parameters
+- (PYFB-52_) isc_info* types which are _DATABASE_INFO_CODES_WITH_COUNT_RESULTS raises TypeError: 'float' object cannot be interpreted as an integer 
 
 Version 1.4.8
 =============
@@ -105,7 +116,7 @@ Version 1.4.6
 Bugs Fixed
 ----------
 
-- (PYFB-50) Exception ReferenceError: 'weakly-referenced object no longer exists' in PreparedStatement and Cursor
+- (PYFB-50_) Exception ReferenceError: 'weakly-referenced object no longer exists' in PreparedStatement and Cursor
 
 Version 1.4.5
 =============
@@ -113,7 +124,7 @@ Version 1.4.5
 Bugs Fixed
 ----------
 
-- (PYFB-49) Memory and DB resource leak due to circular references.
+- (PYFB-49_) Memory and DB resource leak due to circular references.
 
 Version 1.4.4
 =============
@@ -121,12 +132,12 @@ Version 1.4.4
 Improvements
 ------------
 
-- (PYFB-47) Firebird client library path added as optinal parameter to :func:`fdb.connect` and :func:`fdb.create_database`.
+- (PYFB-47_) Firebird client library path added as optinal parameter to :func:`fdb.connect` and :func:`fdb.create_database`.
 
 Bugs Fixed
 ----------
 
-- Additional fix related to PYFB-43
+- Additional fix related to PYFB-43_
 - Additional correction for unregistered problem with circular ref. between PS and Cursor when explicit PS is executed.
 
 
@@ -136,7 +147,7 @@ Version 1.4.3
 Bugs Fixed
 ----------
 
-- Previous fix for PYFB-43 was incomplete, corrected.
+- Previous fix for PYFB-43_ was incomplete, corrected.
 
 
 Version 1.4.2
@@ -145,11 +156,11 @@ Version 1.4.2
 Improvements
 ------------
 
-- In relation to PYFB-43 I had to make a **backward incompatible change** to event processing API. Starting from this version
+- In relation to PYFB-43_ I had to make a **backward incompatible change** to event processing API. Starting from this version
   `EventConduit` does not automatically starts collection of events upon creation, but it's now necessary to call 
   :meth:`~fdb.EventConduit.begin` method. To mitigate the inconvenience, EventConduit now supports context manager
   protocol that ensures calls to begin() and close() via `with` statement.
-- In relation to PYFB-39 I have decided to drop support for implicitly cached and reused prepared statements. I never
+- In relation to PYFB-39_ I have decided to drop support for implicitly cached and reused prepared statements. I never
   liked this feature as I think it's a sneaky method how to put some performance to badly written applications that 
   in worst case may lead to significant resource consumption on server side when developers are not only lazy but also stupid.
   It was implemented for the sake of compatibility with KInterbasDB. 
@@ -159,8 +170,8 @@ Improvements
 Bugs Fixed
 ----------
 
-- PYFB-44 - Inserting a datetime.date into a TIMESTAMP column does not work
-- PYFB-42 - Python 3.4 and FDB - backup throws an exception
+- PYFB-44_ - Inserting a datetime.date into a TIMESTAMP column does not work
+- PYFB-42_ - Python 3.4 and FDB - backup throws an exception
 - Unregistered - Fixes in monitor.TransactionInfo
 
 
@@ -170,7 +181,7 @@ Version 1.4.1
 Improvements
 ------------
 
-- PYFB-40 - fbclient.dll is not found if not in path.
+- PYFB-40_ - fbclient.dll is not found if not in path.
   Aside from registry lookup, client library isn't loaded until first call to :func:`fdb.connect`, :func:`fdb.create_database`
   or :func:`fdb.load_api` (which now supports optional specification of Firebird Client Library to load). 
 - Adjustments for Firebird 3.0 (Alpha1)
@@ -200,7 +211,7 @@ Improvements
 Bugs Fixed
 ----------
 
-- PYFB-37 - Unicode Strings incorrect not allowed for insertion into BLOB SubType 1.
+- PYFB-37_ - Unicode Strings incorrect not allowed for insertion into BLOB SubType 1.
 
 
 Version 1.3
@@ -279,8 +290,8 @@ Version 1.1.1
 Bugs Fixed
 ----------
 
-- PYFB-35 - Call to fetch after a sql statement without a result should raise exception
-- PYFB-34 - Server resources not released on PreparedStatement destruction
+- PYFB-35_ - Call to fetch after a sql statement without a result should raise exception
+- PYFB-34_ - Server resources not released on PreparedStatement destruction
 
 Version 1.1
 ===========
@@ -293,7 +304,7 @@ New Features
 Bugs Fixed
 ----------
 
-- PYFB-30 - BLOBs are truncated at first zero byte
+- PYFB-30_ - BLOBs are truncated at first zero byte
 
 Version 1.0
 ===========
@@ -306,7 +317,7 @@ Improvements
 Bugs Fixed
 ----------
 
-- PYFB-25 - Truncate long text from VARCHAR(5000)
+- PYFB-25_ - Truncate long text from VARCHAR(5000)
 
 Version 0.9.9
 =============
@@ -362,7 +373,7 @@ New Features
 Bugs Fixed
 ----------
 
-- Fix for PYFB-17 and PYFB-18 (see our JIRA tracker for details)
+- Fix for PYFB-17_ and PYFB-18_ (see our JIRA tracker for details)
 - Fixes for automatic unicode conversions + refactoring
 - Some optimizations
 
@@ -373,13 +384,13 @@ Version 0.8
 New Features
 ------------
 
-- Support for Firebird Event Notifications - `JIRA entry <http://tracker.firebirdsql.org/browse/PYFB-8>`
+- (PYFB-8_) - Support for Firebird Event Notifications
 
 Bugs Fixes
 ----------
 
-- database_info (isc_info_firebird_version) fails opn amd64 linux - `JIRA entry <http://tracker.firebirdsql.org/browse/PYFB-16>`
-- more than 2 consecutive cursor open execute and iter fail - `JIRA entry <http://tracker.firebirdsql.org/browse/PYFB-15>`
+- (PYFB-16_) - database_info (isc_info_firebird_version) fails opn amd64 linux
+- (PYFB-15_) - more than 2 consecutive cursor open execute and iter fail
 
 
 Version 0.7.2
@@ -416,3 +427,37 @@ What’s missing
 - TRACE service
 - Documentation (but you can use KInterbasDB one as FDB is as close to it as possible).
 - Python 3.x support (haven’t had time to test it, but it shouldn’t be hard to make it work there)
+
+.. _PYFB-8: http://tracker.firebirdsql.org/browse/PYFB-8
+.. _PYFB-15: http://tracker.firebirdsql.org/browse/PYFB-15
+.. _PYFB-16: http://tracker.firebirdsql.org/browse/PYFB-16
+.. _PYFB-17: http://tracker.firebirdsql.org/browse/PYFB-17
+.. _PYFB-18: http://tracker.firebirdsql.org/browse/PYFB-18
+.. _PYFB-24: http://tracker.firebirdsql.org/browse/PYFB-24
+.. _PYFB-25: http://tracker.firebirdsql.org/browse/PYFB-25
+.. _PYFB-30: http://tracker.firebirdsql.org/browse/PYFB-30
+.. _PYFB-34: http://tracker.firebirdsql.org/browse/PYFB-34
+.. _PYFB-35: http://tracker.firebirdsql.org/browse/PYFB-35
+.. _PYFB-37: http://tracker.firebirdsql.org/browse/PYFB-37
+.. _PYFB-39: http://tracker.firebirdsql.org/browse/PYFB-39
+.. _PYFB-40: http://tracker.firebirdsql.org/browse/PYFB-40
+.. _PYFB-42: http://tracker.firebirdsql.org/browse/PYFB-42
+.. _PYFB-43: http://tracker.firebirdsql.org/browse/PYFB-43
+.. _PYFB-44: http://tracker.firebirdsql.org/browse/PYFB-44
+.. _PYFB-47: http://tracker.firebirdsql.org/browse/PYFB-47
+.. _PYFB-49: http://tracker.firebirdsql.org/browse/PYFB-49
+.. _PYFB-50: http://tracker.firebirdsql.org/browse/PYFB-50
+.. _PYFB-51: http://tracker.firebirdsql.org/browse/PYFB-51
+.. _PYFB-52: http://tracker.firebirdsql.org/browse/PYFB-52
+.. _PYFB-54: http://tracker.firebirdsql.org/browse/PYFB-54
+.. _PYFB-55: http://tracker.firebirdsql.org/browse/PYFB-55
+.. _PYFB-56: http://tracker.firebirdsql.org/browse/PYFB-56
+.. _PYFB-57: http://tracker.firebirdsql.org/browse/PYFB-57
+.. _PYFB-58: http://tracker.firebirdsql.org/browse/PYFB-58
+.. _PYFB-60: http://tracker.firebirdsql.org/browse/PYFB-60
+.. _PYFB-64: http://tracker.firebirdsql.org/browse/PYFB-64
+.. _PYFB-66: http://tracker.firebirdsql.org/browse/PYFB-66
+.. _PYFB-67: http://tracker.firebirdsql.org/browse/PYFB-67
+.. _PYFB-68: http://tracker.firebirdsql.org/browse/PYFB-68
+.. _PYFB-69: http://tracker.firebirdsql.org/browse/PYFB-69
+.. _PYFB-70: http://tracker.firebirdsql.org/browse/PYFB-70

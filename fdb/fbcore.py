@@ -819,8 +819,6 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
                 else:
                     dsn = database
 
-        dsn = b(dsn,_FS_ENCODING)
-
         # Parameter checks
 
         sql = "create database '%s' user '%s' password '%s'" % (dsn,user,password)
@@ -832,6 +830,7 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
             sql = '%s default character set %s' % (sql,charset.upper())
         if files:
             sql = '%s %s' % (sql,files)
+        sql = b(sql,_FS_ENCODING)
 
     isc_status = ISC_STATUS_ARRAY(0)
     trans_handle = isc_tr_handle(0)
@@ -867,6 +866,8 @@ class _weakref_callback(object):
         func = self.__funcref()
         if func:
             func(*args, **kwargs)
+
+
 
 
 class TransactionContext(object):

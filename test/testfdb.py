@@ -29,6 +29,8 @@ import fdb.schema as sm
 import sys, os
 import threading
 import time
+import cStringIO
+import struct
 from decimal import Decimal
 from contextlib import closing
 
@@ -1054,6 +1056,7 @@ class TestPreparedStatement(FDBTestBase):
             cur2.execute(ps)
         self.assertTupleEqual(cm.exception.args,
             ('PreparedStatement was created by different Cursor.',))
+
 
 class TestArrays(FDBTestBase):
     def setUp(self):
@@ -2978,8 +2981,8 @@ class TestSchema(FDBTestBase):
         self.assertFalse(c.isinactive())
         self.assertFalse(c.isenforcer())
         #
-        self.assertEqual(c.get_sql_for('create'),"""CREATE DESCENDING INDEX MAXSALX
-   ON JOB (JOB_COUNTRY,MAX_SALARY)""")
+        self.assertEqual(c.get_sql_for('create'),
+          """CREATE DESCENDING INDEX MAXSALX ON JOB (JOB_COUNTRY,MAX_SALARY)""")
         self.assertEqual(c.get_sql_for('activate'),"ALTER INDEX MAXSALX ACTIVE")
         self.assertEqual(c.get_sql_for('deactivate'),"ALTER INDEX MAXSALX INACTIVE")
         self.assertEqual(c.get_sql_for('recompute'),"SET STATISTICS INDEX MAXSALX")
@@ -3085,7 +3088,7 @@ class TestSchema(FDBTestBase):
         #
         self.assertEqual(c.get_sql_for('create'),
             "CREATE DOMAIN PRODTYPE AS VARCHAR(12) DEFAULT 'software' " \
-            "CHECK (VALUE IN ('software', 'hardware', 'other', 'N/A'))")
+            "NOT NULL CHECK (VALUE IN ('software', 'hardware', 'other', 'N/A'))")
         self.assertEqual(c.get_sql_for('drop'),"DROP DOMAIN PRODTYPE")
         self.assertEqual(c.get_sql_for('alter',name='New_name'),
             'ALTER DOMAIN PRODTYPE TO "New_name"')
@@ -3325,10 +3328,10 @@ class TestSchema(FDBTestBase):
                      ('PHONE_LIST', 1), ('PHONE_LIST', 1),
                      ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1),
                      ('PHONE_LIST', 1), ('PHONE_LIST', 1),
+                     ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5),
                      ('ORG_CHART', 5), ('ORG_CHART', 5),
                      ('ORG_CHART', 5), ('ORG_CHART', 5),
-                     ('ORG_CHART', 5), ('DELETE_EMPLOYEE', 5),
-                     ('DELETE_EMPLOYEE', 5)])
+                     ('ORG_CHART', 5)])
                    #[('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1),
                     #('PHONE_LIST', 1), ('PHONE_LIST', 1), ('CHECK_3', 2),
                     #('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2),
@@ -3400,8 +3403,7 @@ class TestSchema(FDBTestBase):
         self.assertTrue(c.has_pkey())
         self.assertTrue(c.has_fkey())
         #
-        self.assertEqual(c.get_sql_for('create'),"""CREATE TABLE EMPLOYEE
-(
+        self.assertEqual(c.get_sql_for('create'),"""CREATE TABLE EMPLOYEE (
   EMP_NO EMPNO NOT NULL,
   FIRST_NAME "FIRSTNAME" NOT NULL,
   LAST_NAME "LASTNAME" NOT NULL,
@@ -3415,8 +3417,20 @@ class TestSchema(FDBTestBase):
   FULL_NAME COMPUTED BY (last_name || ', ' || first_name),
   PRIMARY KEY (EMP_NO)
 )""")
-        self.assertEqual(c.get_sql_for('recreate'),"""RECREATE TABLE EMPLOYEE
-(
+        self.assertEqual(c.get_sql_for('create',no_pk=True),"""CREATE TABLE EMPLOYEE (
+  EMP_NO EMPNO NOT NULL,
+  FIRST_NAME "FIRSTNAME" NOT NULL,
+  LAST_NAME "LASTNAME" NOT NULL,
+  PHONE_EXT VARCHAR(4),
+  HIRE_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,
+  DEPT_NO DEPTNO NOT NULL,
+  JOB_CODE JOBCODE NOT NULL,
+  JOB_GRADE JOBGRADE NOT NULL,
+  JOB_COUNTRY COUNTRYNAME NOT NULL,
+  SALARY SALARY NOT NULL,
+  FULL_NAME COMPUTED BY (last_name || ', ' || first_name)
+)""")
+        self.assertEqual(c.get_sql_for('recreate'),"""RECREATE TABLE EMPLOYEE (
   EMP_NO EMPNO NOT NULL,
   FIRST_NAME "FIRSTNAME" NOT NULL,
   LAST_NAME "LASTNAME" NOT NULL,
@@ -3711,9 +3725,9 @@ END""")
         self.assertEqual(c.type_from,sm.PROCPAR_DATATYPE)
         self.assertIsNone(c.default)
         self.assertIsNone(c.collation)
-        if self.con.ods <= fdb.ODS_FB_20:
+        if self.con.ods <= fdb.ODS_FB_25:
             self.assertIsNone(c.mechanism)
-        elif self.con.ods > fdb.ODS_FB_20:
+        elif self.con.ods > fdb.ODS_FB_25:
             self.assertEqual(c.mechanism,0)
         self.assertIsNone(c.column)
         #
@@ -3779,8 +3793,8 @@ END""")
             self.assertIsNone(c.package)
             self.assertIsNone(c.privacy)
         else:
-            self.assertIsNone(c.valid_blr)
-            self.assertEqual(c.proc_type,0)
+            self.assertTrue(c.valid_blr)
+            self.assertEqual(c.proc_type,1)
         #
         self.assertEqual(c.get_param('EMP_NO').name,'EMP_NO')
         self.assertEqual(c.get_param('PROJ_ID').name,'PROJ_ID')
@@ -3802,6 +3816,7 @@ END""")
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
+  SUSPEND;
 END""")
         self.assertEqual(c.get_sql_for('recreate'),
 """RECREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
@@ -3820,6 +3835,7 @@ END""")
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
+  SUSPEND;
 END""")
         self.assertEqual(c.get_sql_for('create_or_alter'),
 """CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
@@ -3838,6 +3854,7 @@ END""")
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
+  SUSPEND;
 END""")
         self.assertEqual(c.get_sql_for('drop'),"DROP PROCEDURE GET_EMP_PROJ")
         self.assertEqual(c.get_sql_for('alter',code="  /* PASS */"),
@@ -3848,8 +3865,8 @@ BEGIN
 END""")
         with self.assertRaises(fdb.ProgrammingError) as cm:
             c.get_sql_for('alter',declare="DECLARE VARIABLE i integer;")
-        self.assertTupleEqual(cm.exception.args,
-            ("Missing required parameter: 'code'.",))
+            self.assertTupleEqual(cm.exception.args,
+                ("Missing required parameter: 'code'.",))
         self.assertEqual(c.get_sql_for('alter',code=''),
 """ALTER PROCEDURE GET_EMP_PROJ
 AS
@@ -4342,6 +4359,12 @@ MODULE_NAME 'fbudf'""")
     AS
     BEGIN
       RETURN X+1;
+    END""")
+            self.assertEqual(c.get_sql_for('create',no_code=True),
+    """CREATE FUNCTION F2 (X INTEGER)
+    RETURNS INTEGER
+    AS
+    BEGIN
     END""")
             self.assertEqual(c.get_sql_for('recreate'),
     """RECREATE FUNCTION F2 (X INTEGER)
@@ -5316,7 +5339,7 @@ END""")
         c = self.con.schema.get_procedure('ALL_LANGS')
         c.accept_visitor(v)
         self.maxDiff = None
-        output = "CREATE TABLE JOB\n(\n  JOB_CODE JOBCODE NOT NULL,\n" \
+        output = "CREATE TABLE JOB (\n  JOB_CODE JOBCODE NOT NULL,\n" \
             "  JOB_GRADE JOBGRADE NOT NULL,\n" \
             "  JOB_COUNTRY COUNTRYNAME NOT NULL,\n" \
             "  JOB_TITLE VARCHAR(25) NOT NULL,\n" \
@@ -5382,6 +5405,273 @@ DROP PROCEDURE SHOW_LANGS
 DROP TABLE JOB
 """)
 
+    def testScript(self):
+        self.maxDiff = None
+        self.assertEqual(25,len(sm.SCRIPT_DEFAULT_ORDER))
+        s = self.con.schema
+        script = s.get_metadata_ddl([sm.SCRIPT_COLLATIONS])
+        self.assertListEqual(script,["""CREATE COLLATION TEST_COLLATE
+   FOR WIN1250
+   FROM WIN_CZ
+   NO PAD
+   CASE INSENSITIVE
+   ACCENT INSENSITIVE
+   'DISABLE-COMPRESSIONS=0;DISABLE-EXPANSIONS=0'"""])
+        script = s.get_metadata_ddl([sm.SCRIPT_CHARACTER_SETS])
+        self.assertListEqual(script,[])
+        script = s.get_metadata_ddl([sm.SCRIPT_UDFS])
+        self.assertListEqual(script,[])
+        script = s.get_metadata_ddl([sm.SCRIPT_GENERATORS])
+        self.assertListEqual(script,['CREATE SEQUENCE EMP_NO_GEN',
+                                     'CREATE SEQUENCE CUST_NO_GEN'])
+        script = s.get_metadata_ddl([sm.SCRIPT_EXCEPTIONS])
+        self.assertListEqual(script,["CREATE EXCEPTION UNKNOWN_EMP_ID 'Invalid employee number or project id.'",
+                                     "CREATE EXCEPTION REASSIGN_SALES 'Reassign the sales records before deleting this employee.'",
+                                     'CREATE EXCEPTION ORDER_ALREADY_SHIPPED \'Order status is "shipped."\'',
+                                     "CREATE EXCEPTION CUSTOMER_ON_HOLD 'This customer is on hold.'",
+                                     "CREATE EXCEPTION CUSTOMER_CHECK 'Overdue balance -- can not ship.'"])
+        script = s.get_metadata_ddl([sm.SCRIPT_DOMAINS])
+        self.assertListEqual(script,['CREATE DOMAIN "FIRSTNAME" AS VARCHAR(15)',
+                                     'CREATE DOMAIN "LASTNAME" AS VARCHAR(20)',
+                                     'CREATE DOMAIN PHONENUMBER AS VARCHAR(20)',
+                                     'CREATE DOMAIN COUNTRYNAME AS VARCHAR(15)',
+                                     'CREATE DOMAIN ADDRESSLINE AS VARCHAR(30)',
+                                     'CREATE DOMAIN EMPNO AS SMALLINT',
+                                     "CREATE DOMAIN DEPTNO AS CHAR(3) CHECK (VALUE = '000' OR (VALUE > '0' AND VALUE <= '999') OR VALUE IS NULL)",
+                                     'CREATE DOMAIN PROJNO AS CHAR(5) CHECK (VALUE = UPPER (VALUE))',
+                                     'CREATE DOMAIN CUSTNO AS INTEGER CHECK (VALUE > 1000)',
+                                     "CREATE DOMAIN JOBCODE AS VARCHAR(5) CHECK (VALUE > '99999')",
+                                     'CREATE DOMAIN JOBGRADE AS SMALLINT CHECK (VALUE BETWEEN 0 AND 6)',
+                                     'CREATE DOMAIN SALARY AS NUMERIC(10, 2) DEFAULT 0 CHECK (VALUE > 0)',
+                                     'CREATE DOMAIN BUDGET AS DECIMAL(12, 2) DEFAULT 50000 CHECK (VALUE > 10000 AND VALUE <= 2000000)',
+                                     "CREATE DOMAIN PRODTYPE AS VARCHAR(12) DEFAULT 'software' NOT NULL CHECK (VALUE IN ('software', 'hardware', 'other', 'N/A'))",
+                                     "CREATE DOMAIN PONUMBER AS CHAR(8) CHECK (VALUE STARTING WITH 'V')"])
+        script = s.get_metadata_ddl([sm.SCRIPT_PACKAGE_DEFS])
+        self.assertListEqual(script,[])
+        script = s.get_metadata_ddl([sm.SCRIPT_FUNCTION_DEFS])
+        self.assertListEqual(script,[])
+        script = s.get_metadata_ddl([sm.SCRIPT_PROCEDURE_DEFS])
+        self.assertListEqual(script,['CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\n  SUSPEND;\nEND', 'CREATE PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE DELETE_EMPLOYEE (EMP_NUM INTEGER)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE DEPT_BUDGET (DNO CHAR(3))\nRETURNS (TOT DECIMAL(12, 2))\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE ORG_CHART\nRETURNS (\n  HEAD_DEPT CHAR(25),\n  DEPARTMENT CHAR(25),\n  MNGR_NAME CHAR(20),\n  TITLE CHAR(5),\n  EMP_CNT INTEGER\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE MAIL_LABEL (CUST_NO INTEGER)\nRETURNS (\n  LINE1 CHAR(40),\n  LINE2 CHAR(40),\n  LINE3 CHAR(40),\n  LINE4 CHAR(40),\n  LINE5 CHAR(40),\n  LINE6 CHAR(40)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE SHIP_ORDER (PO_NUM CHAR(8))\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                     'CREATE PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\n  SUSPEND;\nEND'])
+        script = s.get_metadata_ddl([sm.SCRIPT_TABLES])
+        self.assertListEqual(script,['CREATE TABLE COUNTRY (\n  COUNTRY COUNTRYNAME NOT NULL,\n  CURRENCY VARCHAR(10) NOT NULL\n)',
+                                     'CREATE TABLE JOB (\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  JOB_TITLE VARCHAR(25) NOT NULL,\n  MIN_SALARY SALARY NOT NULL,\n  MAX_SALARY SALARY NOT NULL,\n  JOB_REQUIREMENT BLOB SUB_TYPE TEXT SEGMENT SIZE 400,\n  LANGUAGE_REQ VARCHAR(15)[5]\n)',
+                                     "CREATE TABLE DEPARTMENT (\n  DEPT_NO DEPTNO NOT NULL,\n  DEPARTMENT VARCHAR(25) NOT NULL,\n  HEAD_DEPT DEPTNO,\n  MNGR_NO EMPNO,\n  BUDGET BUDGET,\n  LOCATION VARCHAR(15),\n  PHONE_NO PHONENUMBER DEFAULT '555-1234'\n)",
+                                     'CREATE TABLE EMPLOYEE (\n  EMP_NO EMPNO NOT NULL,\n  FIRST_NAME "FIRSTNAME" NOT NULL,\n  LAST_NAME "LASTNAME" NOT NULL,\n  PHONE_EXT VARCHAR(4),\n  HIRE_DATE TIMESTAMP DEFAULT \'NOW\' NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  SALARY SALARY NOT NULL,\n  FULL_NAME COMPUTED BY (last_name || \', \' || first_name)\n)',
+                                     'CREATE TABLE CUSTOMER (\n  CUST_NO CUSTNO NOT NULL,\n  CUSTOMER VARCHAR(25) NOT NULL,\n  CONTACT_FIRST "FIRSTNAME",\n  CONTACT_LAST "LASTNAME",\n  PHONE_NO PHONENUMBER,\n  ADDRESS_LINE1 ADDRESSLINE,\n  ADDRESS_LINE2 ADDRESSLINE,\n  CITY VARCHAR(25),\n  STATE_PROVINCE VARCHAR(15),\n  COUNTRY COUNTRYNAME,\n  POSTAL_CODE VARCHAR(12),\n  ON_HOLD CHAR(1) DEFAULT NULL\n)',
+                                     'CREATE TABLE T4 (\n  C1 INTEGER,\n  C_OCTETS CHAR(5) CHARACTER SET OCTETS,\n  V_OCTETS VARCHAR(30) CHARACTER SET OCTETS,\n  C_NONE CHAR(5),\n  V_NONE VARCHAR(30),\n  C_WIN1250 CHAR(5) CHARACTER SET WIN1250,\n  V_WIN1250 VARCHAR(30) CHARACTER SET WIN1250,\n  C_UTF8 CHAR(5) CHARACTER SET UTF8,\n  V_UTF8 VARCHAR(30) CHARACTER SET UTF8\n)',
+                                     'CREATE TABLE PROJECT (\n  PROJ_ID PROJNO NOT NULL,\n  PROJ_NAME VARCHAR(20) NOT NULL,\n  PROJ_DESC BLOB SUB_TYPE TEXT SEGMENT SIZE 800,\n  TEAM_LEADER EMPNO,\n  PRODUCT PRODTYPE\n)',
+                                     'CREATE TABLE EMPLOYEE_PROJECT (\n  EMP_NO EMPNO NOT NULL,\n  PROJ_ID PROJNO NOT NULL\n)',
+                                     'CREATE TABLE PROJ_DEPT_BUDGET (\n  FISCAL_YEAR INTEGER NOT NULL,\n  PROJ_ID PROJNO NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  QUART_HEAD_CNT INTEGER[4],\n  PROJECTED_BUDGET BUDGET\n)',
+                                     "CREATE TABLE SALARY_HISTORY (\n  EMP_NO EMPNO NOT NULL,\n  CHANGE_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  UPDATER_ID VARCHAR(20) NOT NULL,\n  OLD_SALARY SALARY NOT NULL,\n  PERCENT_CHANGE DOUBLE PRECISION DEFAULT 0 NOT NULL,\n  NEW_SALARY COMPUTED BY (old_salary + old_salary * percent_change / 100)\n)",
+                                     "CREATE TABLE SALES (\n  PO_NUMBER PONUMBER NOT NULL,\n  CUST_NO CUSTNO NOT NULL,\n  SALES_REP EMPNO,\n  ORDER_STATUS VARCHAR(7) DEFAULT 'new' NOT NULL,\n  ORDER_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  SHIP_DATE TIMESTAMP,\n  DATE_NEEDED TIMESTAMP,\n  PAID CHAR(1) DEFAULT 'n',\n  QTY_ORDERED INTEGER DEFAULT 1 NOT NULL,\n  TOTAL_VALUE DECIMAL(9, 2) NOT NULL,\n  DISCOUNT FLOAT DEFAULT 0 NOT NULL,\n  ITEM_TYPE PRODTYPE,\n  AGED COMPUTED BY (ship_date - order_date)\n)",
+                                     'CREATE TABLE T3 (\n  C1 INTEGER,\n  C2 CHAR(10) CHARACTER SET UTF8,\n  C3 VARCHAR(10) CHARACTER SET UTF8,\n  C4 BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET UTF8,\n  C5 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
+                                     'CREATE TABLE T2 (\n  C1 SMALLINT,\n  C2 INTEGER,\n  C3 BIGINT,\n  C4 CHAR(5),\n  C5 VARCHAR(10),\n  C6 DATE,\n  C7 TIME,\n  C8 TIMESTAMP,\n  C9 BLOB SUB_TYPE TEXT SEGMENT SIZE 80,\n  C10 NUMERIC(18, 2),\n  C11 DECIMAL(18, 2),\n  C12 FLOAT,\n  C13 DOUBLE PRECISION,\n  C14 NUMERIC(8, 4),\n  C15 DECIMAL(8, 4),\n  C16 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
+                                     'CREATE TABLE AR (\n  C1 INTEGER,\n  C2 INTEGER[4, 0:3, 2],\n  C3 VARCHAR(15)[0:5, 2],\n  C4 CHAR(5)[5],\n  C5 TIMESTAMP[2],\n  C6 TIME[2],\n  C7 DECIMAL(10, 2)[2],\n  C8 NUMERIC(10, 2)[2],\n  C9 SMALLINT[2],\n  C10 BIGINT[2],\n  C11 FLOAT[2],\n  C12 DOUBLE PRECISION[2],\n  C13 DECIMAL(10, 1)[2],\n  C14 DECIMAL(10, 5)[2],\n  C15 DECIMAL(18, 5)[2]\n)',
+                                     'CREATE TABLE T (\n  C1 INTEGER NOT NULL\n)'])
+        script = s.get_metadata_ddl([sm.SCRIPT_PRIMARY_KEYS])
+        self.assertListEqual(script,['ALTER TABLE COUNTRY ADD PRIMARY KEY (COUNTRY)',
+                                     'ALTER TABLE JOB ADD PRIMARY KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)',
+                                     'ALTER TABLE DEPARTMENT ADD PRIMARY KEY (DEPT_NO)',
+                                     'ALTER TABLE EMPLOYEE ADD PRIMARY KEY (EMP_NO)',
+                                     'ALTER TABLE PROJECT ADD PRIMARY KEY (PROJ_ID)',
+                                     'ALTER TABLE EMPLOYEE_PROJECT ADD PRIMARY KEY (EMP_NO,PROJ_ID)',
+                                     'ALTER TABLE PROJ_DEPT_BUDGET ADD PRIMARY KEY (FISCAL_YEAR,PROJ_ID,DEPT_NO)',
+                                     'ALTER TABLE SALARY_HISTORY ADD PRIMARY KEY (EMP_NO,CHANGE_DATE,UPDATER_ID)',
+                                     'ALTER TABLE CUSTOMER ADD PRIMARY KEY (CUST_NO)',
+                                     'ALTER TABLE SALES ADD PRIMARY KEY (PO_NUMBER)',
+                                     'ALTER TABLE T ADD PRIMARY KEY (C1)'],)
+        script = s.get_metadata_ddl([sm.SCRIPT_UNIQUE_CONSTRAINTS])
+        self.assertListEqual(script,['ALTER TABLE DEPARTMENT ADD UNIQUE (DEPARTMENT)',
+                                     'ALTER TABLE PROJECT ADD UNIQUE (PROJ_NAME)'])
+        script = s.get_metadata_ddl([sm.SCRIPT_CHECK_CONSTRAINTS])
+        self.assertListEqual(script,['ALTER TABLE JOB ADD CHECK (min_salary < max_salary)',
+                                     'ALTER TABLE EMPLOYEE ADD CHECK ( salary >= (SELECT min_salary FROM job WHERE\n                        job.job_code = employee.job_code AND\n                        job.job_grade = employee.job_grade AND\n                        job.job_country = employee.job_country) AND\n            salary <= (SELECT max_salary FROM job WHERE\n                        job.job_code = employee.job_code AND\n                        job.job_grade = employee.job_grade AND\n                        job.job_country = employee.job_country))',
+                                     "ALTER TABLE CUSTOMER ADD CHECK (on_hold IS NULL OR on_hold = '*')",
+                                     'ALTER TABLE PROJ_DEPT_BUDGET ADD CHECK (FISCAL_YEAR >= 1993)',
+                                     'ALTER TABLE SALARY_HISTORY ADD CHECK (percent_change between -50 and 50)',
+                                     'ALTER TABLE SALES ADD CHECK (total_value >= 0)',
+                                     'ALTER TABLE SALES ADD CHECK (ship_date >= order_date OR ship_date IS NULL)',
+                                     "ALTER TABLE SALES ADD CHECK (NOT (order_status = 'shipped' AND\n            EXISTS (SELECT on_hold FROM customer\n                    WHERE customer.cust_no = sales.cust_no\n                    AND customer.on_hold = '*')))",
+                                     'ALTER TABLE SALES ADD CHECK (date_needed > order_date OR date_needed IS NULL)',
+                                     "ALTER TABLE SALES ADD CHECK (paid in ('y', 'n'))",
+                                     "ALTER TABLE SALES ADD CHECK (NOT (order_status = 'shipped' AND ship_date IS NULL))",
+                                     "ALTER TABLE SALES ADD CHECK (order_status in\n                            ('new', 'open', 'shipped', 'waiting'))",
+                                     'ALTER TABLE SALES ADD CHECK (discount >= 0 AND discount <= 1)',
+                                     'ALTER TABLE SALES ADD CHECK (qty_ordered >= 1)'])
+        script = s.get_metadata_ddl([sm.SCRIPT_FOREIGN_CONSTRAINTS])
+        self.assertListEqual(script,['ALTER TABLE JOB ADD FOREIGN KEY (JOB_COUNTRY)\n  REFERENCES COUNTRY (COUNTRY)',
+                                     'ALTER TABLE DEPARTMENT ADD FOREIGN KEY (HEAD_DEPT)\n  REFERENCES DEPARTMENT (DEPT_NO)',
+                                     'ALTER TABLE DEPARTMENT ADD FOREIGN KEY (MNGR_NO)\n  REFERENCES EMPLOYEE (EMP_NO)',
+                                     'ALTER TABLE EMPLOYEE ADD FOREIGN KEY (DEPT_NO)\n  REFERENCES DEPARTMENT (DEPT_NO)',
+                                     'ALTER TABLE EMPLOYEE ADD FOREIGN KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)\n  REFERENCES JOB (JOB_CODE,JOB_GRADE,JOB_COUNTRY)',
+                                     'ALTER TABLE CUSTOMER ADD FOREIGN KEY (COUNTRY)\n  REFERENCES COUNTRY (COUNTRY)',
+                                     'ALTER TABLE PROJECT ADD FOREIGN KEY (TEAM_LEADER)\n  REFERENCES EMPLOYEE (EMP_NO)',
+                                     'ALTER TABLE EMPLOYEE_PROJECT ADD FOREIGN KEY (EMP_NO)\n  REFERENCES EMPLOYEE (EMP_NO)',
+                                     'ALTER TABLE EMPLOYEE_PROJECT ADD FOREIGN KEY (PROJ_ID)\n  REFERENCES PROJECT (PROJ_ID)',
+                                     'ALTER TABLE PROJ_DEPT_BUDGET ADD FOREIGN KEY (DEPT_NO)\n  REFERENCES DEPARTMENT (DEPT_NO)',
+                                     'ALTER TABLE PROJ_DEPT_BUDGET ADD FOREIGN KEY (PROJ_ID)\n  REFERENCES PROJECT (PROJ_ID)',
+                                     'ALTER TABLE SALARY_HISTORY ADD FOREIGN KEY (EMP_NO)\n  REFERENCES EMPLOYEE (EMP_NO)',
+                                     'ALTER TABLE SALES ADD FOREIGN KEY (CUST_NO)\n  REFERENCES CUSTOMER (CUST_NO)',
+                                     'ALTER TABLE SALES ADD FOREIGN KEY (SALES_REP)\n  REFERENCES EMPLOYEE (EMP_NO)'])
+        script = s.get_metadata_ddl([sm.SCRIPT_INDICES])
+        self.assertListEqual(script,['CREATE ASCENDING INDEX MINSALX ON JOB (JOB_COUNTRY,MIN_SALARY)',
+                                     'CREATE DESCENDING INDEX MAXSALX ON JOB (JOB_COUNTRY,MAX_SALARY)',
+                                     'CREATE DESCENDING INDEX BUDGETX ON DEPARTMENT (BUDGET)',
+                                     'CREATE ASCENDING INDEX NAMEX ON EMPLOYEE (LAST_NAME,FIRST_NAME)',
+                                     'CREATE ASCENDING INDEX CUSTNAMEX ON CUSTOMER (CUSTOMER)',
+                                     'CREATE ASCENDING INDEX CUSTREGION ON CUSTOMER (COUNTRY,CITY)',
+                                     'CREATE UNIQUE ASCENDING INDEX PRODTYPEX ON PROJECT (PRODUCT,PROJ_NAME)',
+                                     'CREATE ASCENDING INDEX UPDATERX ON SALARY_HISTORY (UPDATER_ID)',
+                                     'CREATE DESCENDING INDEX CHANGEX ON SALARY_HISTORY (CHANGE_DATE)',
+                                     'CREATE ASCENDING INDEX NEEDX ON SALES (DATE_NEEDED)',
+                                     'CREATE ASCENDING INDEX SALESTATX ON SALES (ORDER_STATUS,PAID)',
+                                     'CREATE DESCENDING INDEX QTYX ON SALES (ITEM_TYPE,QTY_ORDERED)'])
+        script = s.get_metadata_ddl([sm.SCRIPT_VIEWS])
+        self.assertListEqual(script,['CREATE VIEW PHONE_LIST (EMP_NO,FIRST_NAME,LAST_NAME,PHONE_EXT,LOCATION,PHONE_NO)\n   AS\n     SELECT\n    emp_no, first_name, last_name, phone_ext, location, phone_no\n    FROM employee, department\n    WHERE employee.dept_no = department.dept_no'])
+        script = s.get_metadata_ddl([sm.SCRIPT_PACKAGE_BODIES])
+        self.assertListEqual(script,[])
+        script = s.get_metadata_ddl([sm.SCRIPT_FUNCTION_BODIES])
+        self.assertListEqual(script,[])
+        script = s.get_metadata_ddl([sm.SCRIPT_PROCEDURE_BODIES])
+        self.assertListEqual(script,['ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\n\tFOR SELECT proj_id\n\t\tFROM employee_project\n\t\tWHERE emp_no = :emp_no\n\t\tINTO :proj_id\n\tDO\n\t\tSUSPEND;\nEND', 'ALTER PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\n\tBEGIN\n\tINSERT INTO employee_project (emp_no, proj_id) VALUES (:emp_no, :proj_id);\n\tWHEN SQLCODE -530 DO\n\t\tEXCEPTION unknown_emp_id;\n\tEND\n\tSUSPEND;\nEND',
+                                     'ALTER PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\n\tSELECT SUM(budget), AVG(budget), MIN(budget), MAX(budget)\n\t\tFROM department\n\t\tWHERE head_dept = :head_dept\n\t\tINTO :tot_budget, :avg_budget, :min_budget, :max_budget;\n\tSUSPEND;\nEND',
+                                     "ALTER PROCEDURE DELETE_EMPLOYEE (EMP_NUM INTEGER)\nAS\nDECLARE VARIABLE any_sales INTEGER;\nBEGIN\n\tany_sales = 0;\n\n\t/*\n\t *\tIf there are any sales records referencing this employee,\n\t *\tcan't delete the employee until the sales are re-assigned\n\t *\tto another employee or changed to NULL.\n\t */\n\tSELECT count(po_number)\n\tFROM sales\n\tWHERE sales_rep = :emp_num\n\tINTO :any_sales;\n\n\tIF (any_sales > 0) THEN\n\tBEGIN\n\t\tEXCEPTION reassign_sales;\n\t\tSUSPEND;\n\tEND\n\n\t/*\n\t *\tIf the employee is a manager, update the department.\n\t */\n\tUPDATE department\n\tSET mngr_no = NULL\n\tWHERE mngr_no = :emp_num;\n\n\t/*\n\t *\tIf the employee is a project leader, update project.\n\t */\n\tUPDATE project\n\tSET team_leader = NULL\n\tWHERE team_leader = :emp_num;\n\n\t/*\n\t *\tDelete the employee from any projects.\n\t */\n\tDELETE FROM employee_project\n\tWHERE emp_no = :emp_num;\n\n\t/*\n\t *\tDelete old salary records.\n\t */\n\tDELETE FROM salary_history\n\tWHERE emp_no = :emp_num;\n\n\t/*\n\t *\tDelete the employee.\n\t */\n\tDELETE FROM employee\n\tWHERE emp_no = :emp_num;\n\n\tSUSPEND;\nEND",
+                                     'ALTER PROCEDURE DEPT_BUDGET (DNO CHAR(3))\nRETURNS (TOT DECIMAL(12, 2))\nAS\nDECLARE VARIABLE sumb DECIMAL(12, 2);\n\tDECLARE VARIABLE rdno CHAR(3);\n\tDECLARE VARIABLE cnt INTEGER;\nBEGIN\n\ttot = 0;\n\n\tSELECT budget FROM department WHERE dept_no = :dno INTO :tot;\n\n\tSELECT count(budget) FROM department WHERE head_dept = :dno INTO :cnt;\n\n\tIF (cnt = 0) THEN\n\t\tSUSPEND;\n\n\tFOR SELECT dept_no\n\t\tFROM department\n\t\tWHERE head_dept = :dno\n\t\tINTO :rdno\n\tDO\n\t\tBEGIN\n\t\t\tEXECUTE PROCEDURE dept_budget :rdno RETURNING_VALUES :sumb;\n\t\t\ttot = tot + sumb;\n\t\tEND\n\n\tSUSPEND;\nEND',
+                                     "ALTER PROCEDURE ORG_CHART\nRETURNS (\n  HEAD_DEPT CHAR(25),\n  DEPARTMENT CHAR(25),\n  MNGR_NAME CHAR(20),\n  TITLE CHAR(5),\n  EMP_CNT INTEGER\n)\nAS\nDECLARE VARIABLE mngr_no INTEGER;\n\tDECLARE VARIABLE dno CHAR(3);\nBEGIN\n\tFOR SELECT h.department, d.department, d.mngr_no, d.dept_no\n\t\tFROM department d\n\t\tLEFT OUTER JOIN department h ON d.head_dept = h.dept_no\n\t\tORDER BY d.dept_no\n\t\tINTO :head_dept, :department, :mngr_no, :dno\n\tDO\n\tBEGIN\n\t\tIF (:mngr_no IS NULL) THEN\n\t\tBEGIN\n\t\t\tmngr_name = '--TBH--';\n\t\t\ttitle = '';\n\t\tEND\n\n\t\tELSE\n\t\t\tSELECT full_name, job_code\n\t\t\tFROM employee\n\t\t\tWHERE emp_no = :mngr_no\n\t\t\tINTO :mngr_name, :title;\n\n\t\tSELECT COUNT(emp_no)\n\t\tFROM employee\n\t\tWHERE dept_no = :dno\n\t\tINTO :emp_cnt;\n\n\t\tSUSPEND;\n\tEND\nEND",
+                                     "ALTER PROCEDURE MAIL_LABEL (CUST_NO INTEGER)\nRETURNS (\n  LINE1 CHAR(40),\n  LINE2 CHAR(40),\n  LINE3 CHAR(40),\n  LINE4 CHAR(40),\n  LINE5 CHAR(40),\n  LINE6 CHAR(40)\n)\nAS\nDECLARE VARIABLE customer\tVARCHAR(25);\n\tDECLARE VARIABLE first_name\t\tVARCHAR(15);\n\tDECLARE VARIABLE last_name\t\tVARCHAR(20);\n\tDECLARE VARIABLE addr1\t\tVARCHAR(30);\n\tDECLARE VARIABLE addr2\t\tVARCHAR(30);\n\tDECLARE VARIABLE city\t\tVARCHAR(25);\n\tDECLARE VARIABLE state\t\tVARCHAR(15);\n\tDECLARE VARIABLE country\tVARCHAR(15);\n\tDECLARE VARIABLE postcode\tVARCHAR(12);\n\tDECLARE VARIABLE cnt\t\tINTEGER;\nBEGIN\n\tline1 = '';\n\tline2 = '';\n\tline3 = '';\n\tline4 = '';\n\tline5 = '';\n\tline6 = '';\n\n\tSELECT customer, contact_first, contact_last, address_line1,\n\t\taddress_line2, city, state_province, country, postal_code\n\tFROM CUSTOMER\n\tWHERE cust_no = :cust_no\n\tINTO :customer, :first_name, :last_name, :addr1, :addr2,\n\t\t:city, :state, :country, :postcode;\n\n\tIF (customer IS NOT NULL) THEN\n\t\tline1 = customer;\n\tIF (first_name IS NOT NULL) THEN\n\t\tline2 = first_name || ' ' || last_name;\n\tELSE\n\t\tline2 = last_name;\n\tIF (addr1 IS NOT NULL) THEN\n\t\tline3 = addr1;\n\tIF (addr2 IS NOT NULL) THEN\n\t\tline4 = addr2;\n\n\tIF (country = 'USA') THEN\n\tBEGIN\n\t\tIF (city IS NOT NULL) THEN\n\t\t\tline5 = city || ', ' || state || '  ' || postcode;\n\t\tELSE\n\t\t\tline5 = state || '  ' || postcode;\n\tEND\n\tELSE\n\tBEGIN\n\t\tIF (city IS NOT NULL) THEN\n\t\t\tline5 = city || ', ' || state;\n\t\tELSE\n\t\t\tline5 = state;\n\t\tline6 = country || '    ' || postcode;\n\tEND\n\n\tSUSPEND;\nEND",
+                                     "ALTER PROCEDURE SHIP_ORDER (PO_NUM CHAR(8))\nAS\nDECLARE VARIABLE ord_stat CHAR(7);\n\tDECLARE VARIABLE hold_stat CHAR(1);\n\tDECLARE VARIABLE cust_no INTEGER;\n\tDECLARE VARIABLE any_po CHAR(8);\nBEGIN\n\tSELECT s.order_status, c.on_hold, c.cust_no\n\tFROM sales s, customer c\n\tWHERE po_number = :po_num\n\tAND s.cust_no = c.cust_no\n\tINTO :ord_stat, :hold_stat, :cust_no;\n\n\t/* This purchase order has been already shipped. */\n\tIF (ord_stat = 'shipped') THEN\n\tBEGIN\n\t\tEXCEPTION order_already_shipped;\n\t\tSUSPEND;\n\tEND\n\n\t/*\tCustomer is on hold. */\n\tELSE IF (hold_stat = '*') THEN\n\tBEGIN\n\t\tEXCEPTION customer_on_hold;\n\t\tSUSPEND;\n\tEND\n\n\t/*\n\t *\tIf there is an unpaid balance on orders shipped over 2 months ago,\n\t *\tput the customer on hold.\n\t */\n\tFOR SELECT po_number\n\t\tFROM sales\n\t\tWHERE cust_no = :cust_no\n\t\tAND order_status = 'shipped'\n\t\tAND paid = 'n'\n\t\tAND ship_date < CAST('NOW' AS TIMESTAMP) - 60\n\t\tINTO :any_po\n\tDO\n\tBEGIN\n\t\tEXCEPTION customer_check;\n\n\t\tUPDATE customer\n\t\tSET on_hold = '*'\n\t\tWHERE cust_no = :cust_no;\n\n\t\tSUSPEND;\n\tEND\n\n\t/*\n\t *\tShip the order.\n\t */\n\tUPDATE sales\n\tSET order_status = 'shipped', ship_date = 'NOW'\n\tWHERE po_number = :po_num;\n\n\tSUSPEND;\nEND",
+                                     "ALTER PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nDECLARE VARIABLE i INTEGER;\nBEGIN\n  i = 1;\n  WHILE (i <= 5) DO\n  BEGIN\n    SELECT language_req[:i] FROM joB\n    WHERE ((job_code = :code) AND (job_grade = :grade) AND (job_country = :cty)\n           AND (language_req IS NOT NULL))\n    INTO :languages;\n    IF (languages = ' ') THEN  /* Prints 'NULL' instead of blanks */\n       languages = 'NULL';         \n    i = i +1;\n    SUSPEND;\n  END\nEND",
+                                     "ALTER PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\n\tFOR SELECT job_code, job_grade, job_country FROM job \n\t\tINTO :code, :grade, :country\n\n\tDO\n\tBEGIN\n\t    FOR SELECT languages FROM show_langs \n \t\t    (:code, :grade, :country) INTO :lang DO\n\t        SUSPEND;\n\t    /* Put nice separators between rows */\n\t    code = '=====';\n\t    grade = '=====';\n\t    country = '===============';\n\t    lang = '==============';\n\t    SUSPEND;\n\tEND\n    END"])
+        script = s.get_metadata_ddl([sm.SCRIPT_TRIGGERS])
+        self.assertListEqual(script,['CREATE TRIGGER SET_EMP_NO FOR EMPLOYEE ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.emp_no is null) then\n    new.emp_no = gen_id(emp_no_gen, 1);\nEND',
+                                     "CREATE TRIGGER SAVE_SALARY_CHANGE FOR EMPLOYEE ACTIVE\nAFTER UPDATE POSITION 0\nAS\nBEGIN\n    IF (old.salary <> new.salary) THEN\n        INSERT INTO salary_history\n            (emp_no, change_date, updater_id, old_salary, percent_change)\n        VALUES (\n            old.emp_no,\n            'NOW',\n            user,\n            old.salary,\n            (new.salary - old.salary) * 100 / old.salary);\nEND",
+                                     'CREATE TRIGGER SET_CUST_NO FOR CUSTOMER ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.cust_no is null) then\n    new.cust_no = gen_id(cust_no_gen, 1);\nEND',
+                                     "CREATE TRIGGER POST_NEW_ORDER FOR SALES ACTIVE\nAFTER INSERT POSITION 0\nAS\nBEGIN\n    POST_EVENT 'new_order';\nEND",
+                                     'CREATE TRIGGER TR_MULTI FOR COUNTRY ACTIVE\nAFTER INSERT OR UPDATE OR DELETE POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND',
+                                     'CREATE TRIGGER TR_CONNECT ACTIVE\nON CONNECT POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND'])
+        script = s.get_metadata_ddl([sm.SCRIPT_ROLES])
+        self.assertListEqual(script,['CREATE ROLE TEST_ROLE'])
+        script = s.get_metadata_ddl([sm.SCRIPT_GRANTS])
+        self.assertListEqual(script,['GRANT SELECT ON COUNTRY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON COUNTRY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON COUNTRY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON COUNTRY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON COUNTRY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON JOB TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON JOB TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON JOB TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON JOB TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON JOB TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON DEPARTMENT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON DEPARTMENT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON DEPARTMENT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON DEPARTMENT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON DEPARTMENT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON EMPLOYEE TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON EMPLOYEE TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON EMPLOYEE TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON EMPLOYEE TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON PHONE_LIST TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON PHONE_LIST TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON PHONE_LIST TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON PHONE_LIST TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON PHONE_LIST TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON EMPLOYEE_PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON EMPLOYEE_PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON EMPLOYEE_PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON EMPLOYEE_PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON EMPLOYEE_PROJECT TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON PROJ_DEPT_BUDGET TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON PROJ_DEPT_BUDGET TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON PROJ_DEPT_BUDGET TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON PROJ_DEPT_BUDGET TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON PROJ_DEPT_BUDGET TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON SALARY_HISTORY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON SALARY_HISTORY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON SALARY_HISTORY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON SALARY_HISTORY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON SALARY_HISTORY TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON CUSTOMER TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON CUSTOMER TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON CUSTOMER TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON CUSTOMER TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON CUSTOMER TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT SELECT ON SALES TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT INSERT ON SALES TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT UPDATE ON SALES TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT DELETE ON SALES TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT REFERENCES ON SALES TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE GET_EMP_PROJ TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE ADD_EMP_PROJ TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE SUB_TOT_BUDGET TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE DELETE_EMPLOYEE TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE DEPT_BUDGET TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE ORG_CHART TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE MAIL_LABEL TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE SHIP_ORDER TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE SHOW_LANGS TO PUBLIC WITH GRANT OPTION',
+                                     'GRANT EXECUTE ON PROCEDURE ALL_LANGS TO PUBLIC WITH GRANT OPTION'])
+        script = s.get_metadata_ddl([sm.SCRIPT_COMMENTS])
+        self.assertListEqual(script,["COMMENT ON CHARACTER SET NONE IS 'Comment on NONE character set'"])
+        script = s.get_metadata_ddl([sm.SCRIPT_SHADOWS])
+        self.assertListEqual(script,[])
+        script = s.get_metadata_ddl([sm.SCRIPT_INDEX_DEACTIVATIONS])
+        self.assertListEqual(script,['ALTER INDEX NEEDX INACTIVE',
+                                     'ALTER INDEX SALESTATX INACTIVE',
+                                     'ALTER INDEX QTYX INACTIVE',
+                                     'ALTER INDEX UPDATERX INACTIVE',
+                                     'ALTER INDEX CHANGEX INACTIVE',
+                                     'ALTER INDEX PRODTYPEX INACTIVE',
+                                     'ALTER INDEX CUSTNAMEX INACTIVE',
+                                     'ALTER INDEX CUSTREGION INACTIVE',
+                                     'ALTER INDEX NAMEX INACTIVE',
+                                     'ALTER INDEX BUDGETX INACTIVE',
+                                     'ALTER INDEX MINSALX INACTIVE',
+                                     'ALTER INDEX MAXSALX INACTIVE'])
+        script = s.get_metadata_ddl([sm.SCRIPT_INDEX_ACTIVATIONS])
+        self.assertListEqual(script,['ALTER INDEX NEEDX ACTIVE',
+                                     'ALTER INDEX SALESTATX ACTIVE',
+                                     'ALTER INDEX QTYX ACTIVE',
+                                     'ALTER INDEX UPDATERX ACTIVE',
+                                     'ALTER INDEX CHANGEX ACTIVE',
+                                     'ALTER INDEX PRODTYPEX ACTIVE',
+                                     'ALTER INDEX CUSTNAMEX ACTIVE',
+                                     'ALTER INDEX CUSTREGION ACTIVE',
+                                     'ALTER INDEX NAMEX ACTIVE',
+                                     'ALTER INDEX BUDGETX ACTIVE',
+                                     'ALTER INDEX MINSALX ACTIVE',
+                                     'ALTER INDEX MAXSALX ACTIVE'])
+        script = s.get_metadata_ddl([sm.SCRIPT_GENERATOR_SETS])
+        self.assertListEqual(script,['ALTER SEQUENCE EMP_NO_GEN RESTART WITH 145',
+                                     'ALTER SEQUENCE CUST_NO_GEN RESTART WITH 1015'])
+        script = s.get_metadata_ddl([sm.SCRIPT_TRIGGER_DEACTIVATIONS])
+        self.assertListEqual(script,['ALTER TRIGGER SET_EMP_NO INACTIVE',
+                                     'ALTER TRIGGER SAVE_SALARY_CHANGE INACTIVE',
+                                     'ALTER TRIGGER SET_CUST_NO INACTIVE',
+                                     'ALTER TRIGGER POST_NEW_ORDER INACTIVE',
+                                     'ALTER TRIGGER TR_MULTI INACTIVE',
+                                     'ALTER TRIGGER TR_CONNECT INACTIVE'])
+        script = s.get_metadata_ddl([sm.SCRIPT_TRIGGER_ACTIVATIONS])
+        self.assertListEqual(script,['ALTER TRIGGER SET_EMP_NO ACTIVE',
+                                     'ALTER TRIGGER SAVE_SALARY_CHANGE ACTIVE',
+                                     'ALTER TRIGGER SET_CUST_NO ACTIVE',
+                                     'ALTER TRIGGER POST_NEW_ORDER ACTIVE',
+                                     'ALTER TRIGGER TR_MULTI ACTIVE',
+                                     'ALTER TRIGGER TR_CONNECT ACTIVE'])
 
 class TestMonitor(FDBTestBase):
     def setUp(self):
@@ -5992,6 +6282,47 @@ class TestBugs(FDBTestBase):
             self.con2.execute_immediate("delete from t2")
             self.con2.commit()
             self.con2.close()
+
+
+class RawFileWriter(object):
+    """Abstract class for raw serialization of result sets."""
+    def __init__(self):
+        self.f = cStringIO.StringIO()
+    def writeBytes(self,value):
+        self.f.write(value)
+    def writeShort(self,value):
+        self.f.write(struct.pack('<h', value))
+    def writeInt(self,value):
+        self.f.write(struct.pack('<l', value))
+    def writeBigint(self,value):
+        self.f.write(struct.pack('<q', value))
+    def tell(self):
+        return self.f.tell()
+    def seek(self,offset,whence=0):
+        self.f.seek(offset,whence)
+    def close(self):
+        self.f.close()
+    def get_content(self):
+        return self.f.getvalue()
+
+class RawFileReader(object):
+    """Abstract class for raw serialization of result sets."""
+    def __init__(self,content):
+        self.f = cStringIO.StringIO(content)
+    def readBytes(self,count):
+        return self.f.read(count)
+    def readShort(self):
+        return struct.unpack('<h', self.f.read(2))[0]
+    def readInt(self):
+        return struct.unpack('<l', self.f.read(4))[0]
+    def readBigint(self):
+        return struct.unpack('<q', self.f.read(8))[0]
+    def tell(self):
+        return self.f.tell()
+    def seek(self,offset,whence=0):
+        self.f.seek(offset,whence)
+    def close(self):
+        self.f.close()
 
 
 if __name__ == '__main__':

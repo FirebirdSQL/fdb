@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; FDB 1.6.1 documentation</title>
+    <title>Index &mdash; FDB 1.7 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.6.1',
+        VERSION:     '1.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.6.1 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.7 documentation" href="index.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <!--[if lte IE 6]>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -105,10 +105,14 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor">accept_visitor() (fdb.schema.BaseSchemaItem method)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.accept_visitor">accept_visitor() (fdb.schema.BackupHistory method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.accept_visitor">(fdb.schema.BaseSchemaItem method)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.CharacterSet.accept_visitor">(fdb.schema.CharacterSet method)</a>
   </dt>
@@ -138,6 +142,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.accept_visitor">(fdb.schema.Filter method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.accept_visitor">(fdb.schema.Function method)</a>
   </dt>
 
@@ -147,6 +155,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.accept_visitor">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.accept_visitor">(fdb.schema.Package method)</a>
   </dt>
 
         
@@ -211,10 +223,14 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.actions">actions (fdb.schema.BaseSchemaItem attribute)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.actions">actions (fdb.schema.BackupHistory attribute)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.actions">(fdb.schema.BaseSchemaItem attribute)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.CharacterSet.actions">(fdb.schema.CharacterSet attribute)</a>
   </dt>
@@ -244,6 +260,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.actions">(fdb.schema.Filter attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.actions">(fdb.schema.Function attribute)</a>
   </dt>
 
@@ -253,6 +273,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.actions">(fdb.schema.Index attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.actions">(fdb.schema.Package attribute)</a>
   </dt>
 
         
@@ -408,6 +432,20 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.ConnectionWithSchema.backup_history">backup_history (fdb.ConnectionWithSchema attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Schema.backup_history">(fdb.schema.Schema attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.schema.BackupHistory.backup_id">backup_id (fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.monitor.DatabaseInfo.backup_state">backup_state (fdb.monitor.DatabaseInfo attribute)</a>
   </dt>
 
@@ -421,6 +459,10 @@
 
       
   <dt><a href="reference.html#fdb.monitor.BACKUP_STATE_STALLED">BACKUP_STATE_STALLED (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.BackupHistory">BackupHistory (class in fdb.schema)</a>
   </dt>
 
       
@@ -484,7 +526,15 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.schema.BLOB_SUBTYPES">BLOB_SUBTYPES (in module fdb.schema)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.BlobReader">BlobReader (class in fdb)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Package.body">body (fdb.schema.Package attribute)</a>
   </dt>
 
       
@@ -758,6 +808,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.schema.COLUMN_TYPES">COLUMN_TYPES (in module fdb.schema)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.schema.Table.columns">columns (fdb.schema.Table attribute)</a>
   </dt>
 
@@ -831,12 +885,12 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Cursor.connection">connection (fdb.Cursor attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Connection.DatabaseError">Connection.DatabaseError</a>
   </dt>
@@ -975,6 +1029,12 @@
   <dt><a href="reference.html#fdb.monitor.DatabaseInfo.created">created (fdb.monitor.DatabaseInfo attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BackupHistory.created">(fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.Connection.creation_date">creation_date (fdb.Connection attribute)</a>
   </dt>
@@ -1319,6 +1379,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.BackupHistory.description">(fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.BaseSchemaItem.description">(fdb.schema.BaseSchemaItem attribute)</a>
   </dt>
 
@@ -1351,6 +1415,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.description">(fdb.schema.Filter attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.description">(fdb.schema.Function attribute)</a>
   </dt>
 
@@ -1360,6 +1428,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.description">(fdb.schema.Index attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.description">(fdb.schema.Package attribute)</a>
   </dt>
 
         
@@ -1541,10 +1613,14 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.Function.entrypoint">entrypoint (fdb.schema.Function attribute)</a>
+  <dt><a href="reference.html#fdb.schema.Filter.entrypoint">entrypoint (fdb.schema.Filter attribute)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Function.entrypoint">(fdb.schema.Function attribute)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.Procedure.entrypoint">(fdb.schema.Procedure attribute)</a>
   </dt>
@@ -1791,6 +1867,10 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.schema.escape_single_quotes">escape_single_quotes() (in module fdb.schema)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.fbcore.EventBlock.event_buf">event_buf (fdb.fbcore.EventBlock attribute)</a>
   </dt>
 
@@ -1987,8 +2067,6 @@
   <dt><a href="reference.html#fdb.Cursor.fetchonemap">fetchonemap() (fdb.Cursor method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Dependency.field_name">field_name (fdb.schema.Dependency attribute)</a>
   </dt>
@@ -1999,6 +2077,8 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Domain.field_type">field_type (fdb.schema.Domain attribute)</a>
   </dt>
@@ -2010,9 +2090,15 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.DatabaseFile.filename">filename (fdb.schema.DatabaseFile attribute)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.filename">filename (fdb.schema.BackupHistory attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.DatabaseFile.filename">(fdb.schema.DatabaseFile attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.ConnectionWithSchema.files">files (fdb.ConnectionWithSchema attribute)</a>
   </dt>
@@ -2024,6 +2110,20 @@
 
         
   <dt><a href="reference.html#fdb.schema.Shadow.files">(fdb.schema.Shadow attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="reference.html#fdb.schema.Filter">Filter (class in fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.ConnectionWithSchema.filters">filters (fdb.ConnectionWithSchema attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Schema.filters">(fdb.schema.Schema attribute)</a>
   </dt>
 
       </dl></dd>
@@ -2123,6 +2223,10 @@
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Package.functions">(fdb.schema.Package attribute)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.Schema.functions">(fdb.schema.Schema attribute)</a>
   </dt>
@@ -2233,10 +2337,14 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_dependencies">get_dependencies() (fdb.schema.BaseSchemaItem method)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.get_dependencies">get_dependencies() (fdb.schema.BackupHistory method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_dependencies">(fdb.schema.BaseSchemaItem method)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.CharacterSet.get_dependencies">(fdb.schema.CharacterSet method)</a>
   </dt>
@@ -2266,6 +2374,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.get_dependencies">(fdb.schema.Filter method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.get_dependencies">(fdb.schema.Function method)</a>
   </dt>
 
@@ -2275,6 +2387,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.get_dependencies">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.get_dependencies">(fdb.schema.Package method)</a>
   </dt>
 
         
@@ -2323,10 +2439,14 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_dependents">get_dependents() (fdb.schema.BaseSchemaItem method)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.get_dependents">get_dependents() (fdb.schema.BackupHistory method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_dependents">(fdb.schema.BaseSchemaItem method)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.CharacterSet.get_dependents">(fdb.schema.CharacterSet method)</a>
   </dt>
@@ -2356,6 +2476,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.get_dependents">(fdb.schema.Filter method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.get_dependents">(fdb.schema.Function method)</a>
   </dt>
 
@@ -2365,6 +2489,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.get_dependents">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.get_dependents">(fdb.schema.Package method)</a>
   </dt>
 
         
@@ -2452,10 +2580,14 @@
   <dt><a href="reference.html#fdb.services.Connection.get_log">get_log() (fdb.services.Connection method)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.services.Connection.get_message_file_directory">get_message_file_directory() (fdb.services.Connection method)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="reference.html#fdb.services.Connection.get_message_file_directory">get_message_file_directory() (fdb.services.Connection method)</a>
+  <dt><a href="reference.html#fdb.schema.Schema.get_metadata_ddl">get_metadata_ddl() (fdb.schema.Schema method)</a>
   </dt>
 
       
@@ -2479,10 +2611,14 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_quoted_name">get_quoted_name() (fdb.schema.BaseSchemaItem method)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.get_quoted_name">get_quoted_name() (fdb.schema.BackupHistory method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_quoted_name">(fdb.schema.BaseSchemaItem method)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.CharacterSet.get_quoted_name">(fdb.schema.CharacterSet method)</a>
   </dt>
@@ -2512,6 +2648,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.get_quoted_name">(fdb.schema.Filter method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.get_quoted_name">(fdb.schema.Function method)</a>
   </dt>
 
@@ -2521,6 +2661,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.get_quoted_name">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.get_quoted_name">(fdb.schema.Package method)</a>
   </dt>
 
         
@@ -2603,10 +2747,14 @@
 
       </dl></dd>
       
-  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_sql_for">get_sql_for() (fdb.schema.BaseSchemaItem method)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.get_sql_for">get_sql_for() (fdb.schema.BackupHistory method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.get_sql_for">(fdb.schema.BaseSchemaItem method)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.CharacterSet.get_sql_for">(fdb.schema.CharacterSet method)</a>
   </dt>
@@ -2636,6 +2784,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.get_sql_for">(fdb.schema.Filter method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.get_sql_for">(fdb.schema.Function method)</a>
   </dt>
 
@@ -2645,6 +2797,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.get_sql_for">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.get_sql_for">(fdb.schema.Package method)</a>
   </dt>
 
         
@@ -2756,6 +2912,10 @@
   <dt><a href="reference.html#fdb.services.User.group_id">group_id (fdb.services.User attribute)</a>
   </dt>
 
+      
+  <dt><a href="reference.html#fdb.schema.BackupHistory.guid">guid (fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -2796,12 +2956,12 @@
   <dt><a href="reference.html#fdb.schema.Privilege.has_grant">has_grant() (fdb.schema.Privilege method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Procedure.has_input">has_input() (fdb.schema.Procedure method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Procedure.has_output">has_output() (fdb.schema.Procedure method)</a>
   </dt>
@@ -2816,6 +2976,14 @@
 
       
   <dt><a href="reference.html#fdb.schema.Function.has_return_argument">has_return_argument() (fdb.schema.Function method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Package.has_valid_body">has_valid_body() (fdb.schema.Package method)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Package.header">header (fdb.schema.Package attribute)</a>
   </dt>
 
   </dl></td>
@@ -2960,7 +3128,15 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.schema.Filter.input_sub_type">input_sub_type (fdb.schema.Filter attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.monitor.IOStatsInfo.inserts">inserts (fdb.monitor.IOStatsInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.INTEGRAL_SUBTYPES">INTEGRAL_SUBTYPES (in module fdb.schema)</a>
   </dt>
 
       
@@ -3157,12 +3333,12 @@
   <dt><a href="reference.html#fdb.monitor.AttachmentInfo.isgcallowed">isgcallowed() (fdb.monitor.AttachmentInfo method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Table.isgtt">isgtt() (fdb.schema.Table method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Sequence.isidentity">isidentity() (fdb.schema.Sequence method)</a>
   </dt>
@@ -3378,10 +3554,14 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.issystemobject">issystemobject() (fdb.schema.BaseSchemaItem method)</a>
+  <dt><a href="reference.html#fdb.schema.BackupHistory.issystemobject">issystemobject() (fdb.schema.BackupHistory method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.BaseSchemaItem.issystemobject">(fdb.schema.BaseSchemaItem method)</a>
+  </dt>
+
         
   <dt><a href="reference.html#fdb.schema.CharacterSet.issystemobject">(fdb.schema.CharacterSet method)</a>
   </dt>
@@ -3411,6 +3591,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.issystemobject">(fdb.schema.Filter method)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.issystemobject">(fdb.schema.Function method)</a>
   </dt>
 
@@ -3420,6 +3604,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.issystemobject">(fdb.schema.Index method)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.issystemobject">(fdb.schema.Package method)</a>
   </dt>
 
         
@@ -3618,9 +3806,15 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.schema.BackupHistory.level">level (fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.monitor.CallStackInfo.line">line (fdb.monitor.CallStackInfo attribute)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.ConnectionWithSchema.linger">linger (fdb.ConnectionWithSchema attribute)</a>
   </dt>
@@ -3631,8 +3825,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.load_api">load_api() (in module fdb)</a>
   </dt>
@@ -3749,9 +3941,15 @@
   </dt>
 
       
-  <dt><a href="reference.html#fdb.schema.Function.module_name">module_name (fdb.schema.Function attribute)</a>
+  <dt><a href="reference.html#fdb.schema.Filter.module_name">module_name (fdb.schema.Filter attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Function.module_name">(fdb.schema.Function attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="reference.html#fdb.monitor.Monitor">Monitor (class in fdb.monitor)</a>
   </dt>
@@ -3841,6 +4039,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.BackupHistory.name">(fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.BaseSchemaItem.name">(fdb.schema.BaseSchemaItem attribute)</a>
   </dt>
 
@@ -3873,6 +4075,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.name">(fdb.schema.Filter attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.name">(fdb.schema.Function attribute)</a>
   </dt>
 
@@ -3882,6 +4088,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.name">(fdb.schema.Index attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.name">(fdb.schema.Package attribute)</a>
   </dt>
 
         
@@ -3966,8 +4176,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.Connection.next_transaction">next_transaction (fdb.Connection attribute)</a>
   </dt>
@@ -3978,6 +4186,8 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.PreparedStatement.NO_FETCH_ATTEMPTED_YET">NO_FETCH_ATTEMPTED_YET (fdb.PreparedStatement attribute)</a>
   </dt>
@@ -3988,6 +4198,10 @@
 
       
   <dt><a href="reference.html#fdb.monitor.NO_WAIT">NO_WAIT (in module fdb.monitor)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.NON_RESERVED">NON_RESERVED (in module fdb.schema)</a>
   </dt>
 
       
@@ -4062,12 +4276,12 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.monitor.TransactionInfo.oldest">oldest (fdb.monitor.TransactionInfo attribute)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.monitor.TransactionInfo.oldest_active">oldest_active (fdb.monitor.TransactionInfo attribute)</a>
   </dt>
@@ -4087,6 +4301,16 @@
 
       </dl></dd>
       
+  <dt><a href="reference.html#fdb.ConnectionWithSchema.opt_generator_keyword">opt_generator_keyword (fdb.ConnectionWithSchema attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="reference.html#fdb.schema.Schema.opt_generator_keyword">(fdb.schema.Schema attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
   <dt><a href="reference.html#fdb.Connection.ost">ost (fdb.Connection attribute)</a>
   </dt>
 
@@ -4102,6 +4326,10 @@
       </dl></dd>
       
   <dt><a href="reference.html#fdb.schema.Procedure.output_params">output_params (fdb.schema.Procedure attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.Filter.output_sub_type">output_sub_type (fdb.schema.Filter attribute)</a>
   </dt>
 
       
@@ -4140,6 +4368,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Package.owner_name">(fdb.schema.Package attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Procedure.owner_name">(fdb.schema.Procedure attribute)</a>
   </dt>
 
@@ -4170,6 +4402,10 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="reference.html#fdb.schema.Package">Package (class in fdb.schema)</a>
+  </dt>
+
       
   <dt><a href="reference.html#fdb.schema.Dependency.package">package (fdb.schema.Dependency attribute)</a>
   </dt>
@@ -4422,6 +4658,10 @@
 
       <dd><dl>
         
+  <dt><a href="reference.html#fdb.schema.Package.procedures">(fdb.schema.Package attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Schema.procedures">(fdb.schema.Schema attribute)</a>
   </dt>
 
@@ -4548,12 +4788,12 @@
   <dt><a href="reference.html#fdb.ConnectionGroup.remove">remove() (fdb.ConnectionGroup method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.services.Connection.remove_user">remove_user() (fdb.services.Connection method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.TableReservation.render">render() (fdb.TableReservation method)</a>
   </dt>
@@ -4574,6 +4814,10 @@
 
       
   <dt><a href="reference.html#fdb.monitor.DatabaseInfo.reserve_space">reserve_space (fdb.monitor.DatabaseInfo attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.RESERVED">RESERVED (in module fdb.schema)</a>
   </dt>
 
       
@@ -4711,6 +4955,10 @@
 
       <dd><dl>
         
+  <dt><a href="reference.html#fdb.schema.BackupHistory.schema">(fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.BaseSchemaItem.schema">(fdb.schema.BaseSchemaItem attribute)</a>
   </dt>
 
@@ -4743,6 +4991,10 @@
   </dt>
 
         
+  <dt><a href="reference.html#fdb.schema.Filter.schema">(fdb.schema.Filter attribute)</a>
+  </dt>
+
+        
   <dt><a href="reference.html#fdb.schema.Function.schema">(fdb.schema.Function attribute)</a>
   </dt>
 
@@ -4752,6 +5004,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Index.schema">(fdb.schema.Index attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.schema">(fdb.schema.Package attribute)</a>
   </dt>
 
         
@@ -4804,6 +5060,126 @@
   </dt>
 
       
+  <dt><a href="reference.html#fdb.schema.BackupHistory.scn">scn (fdb.schema.BackupHistory attribute)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_CHARACTER_SETS">SCRIPT_CHARACTER_SETS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_CHECK_CONSTRAINTS">SCRIPT_CHECK_CONSTRAINTS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_COLLATIONS">SCRIPT_COLLATIONS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_COMMENTS">SCRIPT_COMMENTS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_DOMAINS">SCRIPT_DOMAINS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_EXCEPTIONS">SCRIPT_EXCEPTIONS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_FOREIGN_CONSTRAINTS">SCRIPT_FOREIGN_CONSTRAINTS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_FUNCTION_BODIES">SCRIPT_FUNCTION_BODIES (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_FUNCTION_DEFS">SCRIPT_FUNCTION_DEFS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_GENERATORS">SCRIPT_GENERATORS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_GRANTS">SCRIPT_GRANTS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_INDEX_ACTIVATIONS">SCRIPT_INDEX_ACTIVATIONS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_INDEX_DEACTIVATIONS">SCRIPT_INDEX_DEACTIVATIONS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_INDICES">SCRIPT_INDICES (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_PACKAGE_BODIES">SCRIPT_PACKAGE_BODIES (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_PACKAGE_DEFS">SCRIPT_PACKAGE_DEFS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_PRIMARY_KEYS">SCRIPT_PRIMARY_KEYS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_PROCEDURE_BODIES">SCRIPT_PROCEDURE_BODIES (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_PROCEDURE_DEFS">SCRIPT_PROCEDURE_DEFS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_ROLES">SCRIPT_ROLES (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_SET_GENERATORS">SCRIPT_SET_GENERATORS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_SHADOWS">SCRIPT_SHADOWS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_TABLES">SCRIPT_TABLES (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_TRIGGER_ACTIVATIONS">SCRIPT_TRIGGER_ACTIVATIONS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_TRIGGER_DEACTIVATIONS">SCRIPT_TRIGGER_DEACTIVATIONS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_TRIGGERS">SCRIPT_TRIGGERS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_UDFS">SCRIPT_UDFS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_UNIQUE_CONSTRAINTS">SCRIPT_UNIQUE_CONSTRAINTS (in module fdb.schema)</a>
+  </dt>
+
+      
+  <dt><a href="reference.html#fdb.schema.SCRIPT_VIEWS">SCRIPT_VIEWS (in module fdb.schema)</a>
+  </dt>
+
+      
   <dt><a href="reference.html#fdb.ConnectionWithSchema.security_class">security_class (fdb.ConnectionWithSchema attribute)</a>
   </dt>
 
@@ -4826,6 +5202,10 @@
 
         
   <dt><a href="reference.html#fdb.schema.Function.security_class">(fdb.schema.Function attribute)</a>
+  </dt>
+
+        
+  <dt><a href="reference.html#fdb.schema.Package.security_class">(fdb.schema.Package attribute)</a>
   </dt>
 
         
@@ -4975,6 +5355,8 @@
   <dt><a href="reference.html#fdb.schema.Shadow">Shadow (class in fdb.schema)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.schema.Shadow.SHADOW_CONDITIONAL">SHADOW_CONDITIONAL (fdb.schema.Shadow attribute)</a>
   </dt>
@@ -5041,8 +5423,6 @@
   <dt><a href="reference.html#fdb.monitor.SHUTDOWN_MODE_FULL">SHUTDOWN_MODE_FULL (in module fdb.monitor)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="reference.html#fdb.monitor.SHUTDOWN_MODE_MULTI">SHUTDOWN_MODE_MULTI (in module fdb.monitor)</a>
   </dt>
@@ -6039,11 +6419,11 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.6.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2009-2016, David Rushby, Pavel Cisar.
+        &copy; Copyright 2009-2017, David Rushby, Pavel Cisar.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
