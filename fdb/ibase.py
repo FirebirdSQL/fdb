@@ -238,8 +238,7 @@ SQL_QUAD = 550
 SQL_TYPE_TIME = 560
 SQL_TYPE_DATE = 570
 SQL_INT64 = 580
-# Firebird 3
-SQL_BOOLEAN = 32764
+SQL_BOOLEAN = 32764 # Firebird 3
 SQL_NULL = 32766
 
 SUBTYPE_NUMERIC = 1
@@ -465,6 +464,7 @@ isc_info_creation_date = 111
 isc_info_db_file_size = 112 # added in FB 2.1, nbackup-related - size (in pages) of locked db
 fb_info_page_contents = 113 # added in FB 2.5
 # Added in Firebird 3.0
+fb_info_implementation = 114
 fb_info_page_warns = 115
 fb_info_record_warns = 116
 fb_info_bpage_warns = 117
@@ -477,6 +477,10 @@ fb_info_pip_warns = 123
 isc_info_db_last_value = (fb_info_pip_warns + 1)
 
 isc_info_version = isc_info_isc_version
+
+# flags set in fb_info_crypt_state
+fb_info_crypt_encrypted = 0x01,
+fb_info_crypt_process = 0x02
 
 # Blob information items
 isc_info_blob_num_segments = 4
@@ -577,7 +581,6 @@ isc_tpb_no_auto_undo = 20
 isc_tpb_lock_timeout = 21
 
 # BLOB parameter buffer
-
 isc_bpb_version1          = 1
 isc_bpb_source_type       = 1
 isc_bpb_target_type       = 2
@@ -603,7 +606,7 @@ isc_segstr_eof = 335544367
 # Service parameter block stuff
 isc_spb_current_version = 2
 isc_spb_version = isc_spb_current_version
-isc_spb_version3 = 3
+isc_spb_version3 = 3 # Firebird 3.0
 isc_spb_user_name = isc_dpb_user_name
 isc_spb_sys_user_name = isc_dpb_sys_user_name
 isc_spb_sys_user_name_enc = isc_dpb_sys_user_name_enc
@@ -632,8 +635,8 @@ isc_spb_host_name = 121
 isc_spb_os_user = 122
 isc_spb_config = 123
 isc_spb_expected_db = 124
+# This will not be used in protocol 13, therefore may be reused
 isc_spb_specific_auth_data = isc_spb_trusted_auth
-
 
 # Service action items
 isc_action_svc_backup = 1           # Starts database backup process on the server
@@ -680,6 +683,8 @@ isc_info_svc_timeout = 64        # Sets / signifies a timeout value for reading 
 isc_info_svc_limbo_trans = 66    # Retrieve the limbo transactions */
 isc_info_svc_running = 67        # Checks to see if a service is running on an attachment */
 isc_info_svc_get_users = 68      # Returns the user information from isc_action_svc_display_users */
+isc_info_svc_auth_block = 69     # FB 3.0: Sets authentication block for service query() call */
+isc_info_svc_stdin = 78	         # Returns maximum size of data, needed as stdin for service */
 
 # Parameters for isc_action_{add|del|mod|disp)_user
 isc_spb_sec_userid = 5
@@ -697,7 +702,7 @@ isc_spb_bkp_file = 5
 isc_spb_bkp_factor = 6
 isc_spb_bkp_length = 7
 isc_spb_bkp_skip_data = 8 # Firebird 3.0
-isc_spb_bkp_stat = 15 # Firebird 3.0
+isc_spb_bkp_stat = 15 # Firebird 2.5
 isc_spb_bkp_ignore_checksums = 0x01
 isc_spb_bkp_ignore_limbo = 0x02
 isc_spb_bkp_metadata_only = 0x04
@@ -775,6 +780,9 @@ isc_spb_tra_advise_unknown = 33
 isc_spb_tra_id_64 = 46
 isc_spb_single_tra_id_64 = 47
 isc_spb_multi_tra_id_64 = 48
+isc_spb_rpr_commit_trans_64 = 49
+isc_spb_rpr_rollback_trans_64 = 50
+isc_spb_rpr_recover_two_phase_64 = 51
 
 isc_spb_rpr_validate_db = 0x01
 isc_spb_rpr_sweep_db = 0x02
@@ -917,7 +925,6 @@ isc_info_db_impl_linux_alpha = 83
 isc_info_db_impl_linux_arm64 = 84
 isc_info_db_impl_linux_ppc64el = 85
 isc_info_db_impl_linux_ppc64 = 86 # Firebird 3.0
-
 isc_info_db_impl_last_value = (isc_info_db_impl_linux_ppc64 + 1)
 
 # Info DB provider
@@ -942,8 +949,124 @@ isc_info_db_class_classic_access = 13
 isc_info_db_class_server_access = 14
 isc_info_db_class_last_value = (isc_info_db_class_server_access+1)
 
-# status codes
-isc_segment = 335544366
+# Request information items
+isc_info_number_messages = 4
+isc_info_max_message = 5
+isc_info_max_send = 6
+isc_info_max_receive = 7
+isc_info_state = 8
+isc_info_message_number = 9
+isc_info_message_size = 10
+isc_info_request_cost = 11
+isc_info_access_path = 12
+isc_info_req_select_count = 13
+isc_info_req_insert_count = 14
+isc_info_req_update_count = 15
+isc_info_req_delete_count = 16
+
+# Access path items
+isc_info_rsb_end = 0
+isc_info_rsb_begin = 1
+isc_info_rsb_type = 2
+isc_info_rsb_relation = 3
+isc_info_rsb_plan = 4
+
+# RecordSource (RSB) types
+isc_info_rsb_unknown = 1
+isc_info_rsb_indexed = 2
+isc_info_rsb_navigate = 3
+isc_info_rsb_sequential = 4
+isc_info_rsb_cross = 5
+isc_info_rsb_sort = 6
+isc_info_rsb_first = 7
+isc_info_rsb_boolean = 8
+isc_info_rsb_union = 9
+isc_info_rsb_aggregate = 10
+isc_info_rsb_merge = 11
+isc_info_rsb_ext_sequential = 12
+isc_info_rsb_ext_indexed = 13
+isc_info_rsb_ext_dbkey = 14
+isc_info_rsb_left_cross = 15
+isc_info_rsb_select = 16
+isc_info_rsb_sql_join = 17
+isc_info_rsb_simulate = 18
+isc_info_rsb_sim_cross = 19
+isc_info_rsb_once = 20
+isc_info_rsb_procedure = 21
+isc_info_rsb_skip = 22
+isc_info_rsb_virt_sequential = 23
+isc_info_rsb_recursive = 24
+# Firebird 3.0
+isc_info_rsb_window = 25
+isc_info_rsb_singular = 26
+isc_info_rsb_writelock = 27
+isc_info_rsb_buffer = 28
+isc_info_rsb_hash = 29
+
+# Bitmap expressions
+isc_info_rsb_and = 1
+isc_info_rsb_or = 2
+isc_info_rsb_dbkey = 3
+isc_info_rsb_index = 4
+
+isc_info_req_active = 2
+isc_info_req_inactive = 3
+isc_info_req_send = 4
+isc_info_req_receive = 5
+isc_info_req_select = 6
+isc_info_req_sql_stall = 7
+
+# Blob Subtypes
+isc_blob_untyped = 0
+# internal subtypes
+isc_blob_text = 1
+isc_blob_blr = 2
+isc_blob_acl = 3
+isc_blob_ranges = 4
+isc_blob_summary = 5
+isc_blob_format = 6
+isc_blob_tra = 7
+isc_blob_extfile = 8
+isc_blob_debug_info = 9
+isc_blob_max_predefined_subtype = 10
+
+# Masks for fb_shutdown_callback
+fb_shut_confirmation = 1
+fb_shut_preproviders = 2
+fb_shut_postproviders = 4
+fb_shut_finish = 8
+fb_shut_exit = 16 # Firebird 3.0
+
+# Shutdown reasons, used by engine
+# Users should provide positive values
+fb_shutrsn_svc_stopped = -1
+fb_shutrsn_no_connection = -2
+fb_shutrsn_app_stopped = -3
+fb_shutrsn_device_removed = -4 # Not used by FB 3.0
+fb_shutrsn_signal = -5
+fb_shutrsn_services = -6
+fb_shutrsn_exit_called = -7
+
+# Cancel types for fb_cancel_operation
+fb_cancel_disable = 1
+fb_cancel_enable = 2
+fb_cancel_raise = 3
+fb_cancel_abort = 4
+
+# Debug information items
+fb_dbg_version = 1
+fb_dbg_end = 255
+fb_dbg_map_src2blr = 2
+fb_dbg_map_varname = 3
+fb_dbg_map_argument = 4
+# Firebird 3.0
+fb_dbg_subproc = 5
+fb_dbg_subfunc = 6
+fb_dbg_map_curname = 7
+
+# sub code for fb_dbg_map_argument
+fb_dbg_arg_input = 0
+fb_dbg_arg_output = 1
 
 FB_API_HANDLE = c_uint
 if platform.architecture() == ('64bit', 'WindowsPE'):
@@ -1692,6 +1815,7 @@ class fbclient_API(object):
         self.isc_compile_request2.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),
                                               POINTER(isc_req_handle), c_short, STRING]
 
+        # This function always returns error since FB 3.0
         self.isc_ddl = fb_library.isc_ddl
         self.isc_ddl.restype = ISC_STATUS
         self.isc_ddl.argtypes = [POINTER(ISC_STATUS), POINTER(isc_db_handle),

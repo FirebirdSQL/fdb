@@ -21,6 +21,42 @@
 #
 # See LICENSE.TXT for details.
 
+# BLR data types
+
+blr_text = 14
+blr_text2 = 15
+blr_short = 7
+blr_long = 8
+blr_quad = 9
+blr_float = 10
+blr_double = 27
+blr_d_float = 11
+blr_timestamp = 35
+blr_varying = 37
+blr_varying2 = 38
+blr_blob = 261
+blr_cstring = 40
+blr_cstring2 = 41
+blr_blob_id = 45
+blr_sql_date = 12
+blr_sql_time = 13
+blr_int64 = 16
+blr_blob2 = 17
+blr_domain_name = 18
+blr_domain_name2 = 19
+blr_not_nullable = 20
+blr_column_name = 21
+blr_column_name2 = 22
+blr_bool = 23 # Firebird 3.0
+
+# first sub parameter for blr_domain_name[2]
+blr_domain_type_of = 0
+blr_domain_full = 1
+
+# Historical alias for pre V6 applications
+blr_date = blr_timestamp
+
+# Other BLR codes
 
 blr_inner = 0
 blr_left = 1
@@ -34,6 +70,9 @@ blr_trigger_code = 3
 blr_default_code = 4
 blr_raise = 5
 blr_exception_msg = 6
+# Firebird 3.0
+blr_exception_params = 7
+blr_sql_state = 8
 
 blr_version4 = 4
 blr_version5 = 5
@@ -70,6 +109,7 @@ blr_count = 28
 blr_maximum = 29
 blr_minimum = 30
 blr_total = 31
+# unused codes 32..33
 blr_add = 34
 blr_subtract = 35
 blr_multiply = 36
@@ -101,6 +141,7 @@ blr_any = 60
 blr_missing = 61
 blr_unique = 62
 blr_like = 63
+# unused codes 64..66
 blr_rse = 67
 blr_first = 68
 blr_project = 69
@@ -115,20 +156,23 @@ blr_map = 77
 blr_group_by = 78
 blr_aggregate = 79
 blr_join_type = 80
+# unused codes 81..82
 blr_agg_count = 83
 blr_agg_max = 84
 blr_agg_min = 85
 blr_agg_total = 86
 blr_agg_average = 87
 blr_parameter3 = 88
-blr_run_max = 89
-blr_run_min = 90
-blr_run_total = 91
-blr_run_average = 92
+# Unsupported
+#blr_run_max = 89
+#blr_run_min = 90
+#blr_run_total = 91
+#blr_run_average = 92
 blr_agg_count2 = 93
 blr_agg_count_distinct = 94
 blr_agg_total_distinct = 95
 blr_agg_average_distinct = 96
+# unused codes 97..99
 blr_function = 100
 blr_gen_id = 101
 blr_prot_mask = 102
@@ -138,8 +182,11 @@ blr_value_if = 105
 blr_matching2 = 106
 blr_index = 107
 blr_ansi_like = 108
-blr_seek = 112
+blr_scrollable = 109 # Firebird 3.0
+#blr_seek = 112 # Defined in FB < 3.0
+# unused codes 110..117
 
+# these indicate directions for blr_seek and blr_find
 blr_continue = 0
 blr_forward = 1
 blr_backward = 2
@@ -149,6 +196,7 @@ blr_eof_backward = 4
 blr_run_count = 118
 blr_rs_stream = 119
 blr_exec_proc = 120
+# unused codes 121..123
 blr_procedure = 124
 blr_pid = 125
 blr_exec_pid = 126
@@ -157,8 +205,13 @@ blr_abort = 128
 blr_block = 129
 blr_error_handler = 130
 blr_cast = 131
+# Firebird 3.0
+blr_pid2 = 132
+blr_procedure2 = 133
+#
 blr_start_savepoint = 134
 blr_end_savepoint = 135
+#unused codes 136..138
 
 # Access plan items
 blr_plan = 139
@@ -171,11 +224,14 @@ blr_retrieve = 145
 
 blr_relation2 = 146
 blr_rid2 = 147
+# unused codes 148..149
 blr_set_generator = 150
 blr_ansi_any = 151
 blr_exists = 152
+# unused codes 153
 blr_record_version = 154
 blr_stall = 155
+# unused codes 156..157
 blr_ansi_all = 158
 blr_extract = 159
 
@@ -207,6 +263,7 @@ blr_current_time2 = 169
 blr_agg_list = 170
 blr_agg_list_distinct = 171
 blr_modify2 = 172
+# unused codes 173
 
 # FB 1.0 specific BLR
 blr_current_role = 174
@@ -251,6 +308,15 @@ blr_savepoint_release_single = 3
 blr_cursor_open = 0
 blr_cursor_close = 1
 blr_cursor_fetch = 2
+blr_cursor_fetch_scroll = 3 # Firebird 3.0
+
+# Scroll options (FB 3.0)
+blr_croll_forward = 0
+blr_croll_backward = 1
+blr_croll_bof = 2
+blr_croll_eof = 3
+blr_croll_absolute = 4
+blr_croll_relative = 5
 
 # FB 2.1 specific BLR
 
@@ -283,3 +349,24 @@ blr_exec_stmt_role = 14
 blr_stmt_expr = 190
 blr_derived_expr = 191
 
+# FB 3.0 specific BLR
+
+blr_procedure3 = 192
+blr_exec_proc2 = 193
+blr_function2 = 194
+blr_window = 195
+blr_partition_by = 196
+blr_continue_loop = 197
+blr_procedure4 = 198
+blr_agg_function = 199
+blr_substring_similar = 200
+blr_bool_as_value = 201
+blr_coalesce = 202
+blr_decode = 203
+blr_exec_subproc = 204
+blr_subproc_decl = 205
+blr_subproc = 206
+blr_subfunc_decl = 207
+blr_subfunc = 208
+blr_record_version2 = 209
+blr_gen_id2 = 210 # NEXT VALUE FOR generator
