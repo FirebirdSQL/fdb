@@ -1397,12 +1397,19 @@ class fbclient_API(object):
             if not fb_library_name:
                 raise Exception("The location of Firebird Client Library could not be determined.")
         elif not os.path.exists(fb_library_name):
-            raise Exception("Firebird Client Library '%s' not found" % fb_library_name)
+            path,file_name = os.path.split(fb_library_name)
+            file_name = find_library(file_name)
+            if not file_name:
+                raise Exception("Firebird Client Library '%s' not found" % fb_library_name)
+            else:
+                fb_library_name = file_name
 
         if sys.platform in ['win32', 'cygwin', 'os2', 'os2emx']:
             fb_library = WinDLL(fb_library_name)
         else:
             fb_library = CDLL(fb_library_name)
+
+        self.client_library = fb_library
 
 
         self.isc_attach_database = fb_library.isc_attach_database
