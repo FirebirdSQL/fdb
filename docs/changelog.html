@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changelog &mdash; FDB 1.7 documentation</title>
+    <title>Changelog &mdash; FDB 1.8 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.7',
+        VERSION:     '1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.7 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.8 documentation" href="index.html" />
     <link rel="next" title="LICENSE" href="license.html" />
     <link rel="prev" title="FDB Reference" href="reference.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -62,6 +62,7 @@
   <div class="section" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
+<li><a class="reference internal" href="#version-1-8">Version 1.8</a> (20.9.2017)</li>
 <li><a class="reference internal" href="#version-1-7">Version 1.7</a> (15.2.2017)</li>
 <li><a class="reference internal" href="#version-1-6-1">Version 1.6.1</a> (30.11.2016)</li>
 <li><a class="reference internal" href="#version-1-6">Version 1.6</a> (30.3.2016)</li>
@@ -93,6 +94,15 @@
 <li><a class="reference internal" href="#version-0-7-1">Version 0.7.1</a> (31.1.2012)</li>
 <li><a class="reference internal" href="#version-0-7">Version 0.7</a> (21.12.2011)</li>
 </ul>
+<div class="section" id="version-1-8">
+<h2>Version 1.8<a class="headerlink" href="#version-1-8" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>In relation to (<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-71">PYFB-71</a>) a better memory exhaustion safeguard was implemented for materialized blobs. See <a class="reference internal" href="usage-guide.html#working-with-blobs"><span>Working with BLOBs</span></a> for details.</li>
+<li>Added service support for backup and restore from/to local byte stream. See <a class="reference internal" href="reference.html#fdb.services.Connection.local_backup" title="fdb.services.Connection.local_backup"><code class="xref py py-meth docutils literal"><span class="pre">local_backup()</span></code></a> and <a class="reference internal" href="reference.html#fdb.services.Connection.local_restore" title="fdb.services.Connection.local_restore"><code class="xref py py-meth docutils literal"><span class="pre">local_restore()</span></code></a> for details.</li>
+<li>Added attribute <a class="reference internal" href="reference.html#fdb.schema.TableColumn.id" title="fdb.schema.TableColumn.id"><code class="xref py py-attr docutils literal"><span class="pre">fdb.schema.TableColumn.id</span></code></a> (RDB$FIELD_ID)</li>
+<li>Added method <a class="reference internal" href="reference.html#fdb.BlobReader.get_info" title="fdb.BlobReader.get_info"><code class="xref py py-meth docutils literal"><span class="pre">fdb.BlobReader.get_info()</span></code></a>.</li>
+</ul>
+</div>
 <div class="section" id="version-1-7">
 <h2>Version 1.7<a class="headerlink" href="#version-1-7" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -382,7 +392,7 @@ data conversions and other failures (exceptions raised).</li>
 <h3>Bugs Fixed<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-35">PYFB-35</a> - Call to fetch after a sql statement without a result should raise exception</li>
-<li><a href="#id29"><span class="problematic" id="id30">PYFB-34_</span></a> - Server resources not released on PreparedStatement destruction</li>
+<li><a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-34">PYFB-34</a> - Server resources not released on PreparedStatement destruction</li>
 </ul>
 </div>
 </div>
@@ -540,6 +550,7 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
+<li><a class="reference internal" href="#version-1-8">Version 1.8</a></li>
 <li><a class="reference internal" href="#version-1-7">Version 1.7</a></li>
 <li><a class="reference internal" href="#version-1-6-1">Version 1.6.1</a></li>
 <li><a class="reference internal" href="#version-1-6">Version 1.6</a></li>
@@ -682,7 +693,7 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

@@ -2,6 +2,7 @@
 Changelog
 #########
 
+* `Version 1.8`_ (20.9.2017)
 * `Version 1.7`_ (15.2.2017)
 * `Version 1.6.1`_ (30.11.2016)
 * `Version 1.6`_ (30.3.2016)
@@ -32,6 +33,14 @@ Changelog
 * `Version 0.7.2`_ (27.3.2012)
 * `Version 0.7.1`_ (31.1.2012)
 * `Version 0.7`_ (21.12.2011)
+
+Version 1.8
+===========
+
+- In relation to (PYFB-71_) a better memory exhaustion safeguard was implemented for materialized blobs. See :ref:`Working with BLOBs <working_with_blobs>` for details.
+- Added service support for backup and restore from/to local byte stream. See :meth:`~fdb.services.Connection.local_backup()` and :meth:`~fdb.services.Connection.local_restore()` for details.
+- Added attribute :attr:`fdb.schema.TableColumn.id` (RDB$FIELD_ID)
+- Added method :meth:`fdb.BlobReader.get_info()`.
 
 Version 1.7
 ===========
@@ -461,3 +470,4 @@ What’s missing
 .. _PYFB-68: http://tracker.firebirdsql.org/browse/PYFB-68
 .. _PYFB-69: http://tracker.firebirdsql.org/browse/PYFB-69
 .. _PYFB-70: http://tracker.firebirdsql.org/browse/PYFB-70
+.. _PYFB-71: http://tracker.firebirdsql.org/browse/PYFB-71

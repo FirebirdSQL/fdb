@@ -1392,7 +1392,8 @@ class TestInsertData(FDBTestBase):
         cur.transaction.commit()
         cur.execute('select C1,C9 from T2 where C1 = 5')
         row = cur.fetchone()
-        self.assertEqual(row[1],big_blob)
+        self.assertIsInstance(row[1],fdb.BlobReader)
+        self.assertEqual(row[1].read(),big_blob)
         # Unicode in BLOB
         blob_text = 'This is a BLOB!'
         if not isinstance(blob_text,ibase.myunicode):
@@ -5655,7 +5656,7 @@ DROP TABLE JOB
                                      'ALTER INDEX BUDGETX ACTIVE',
                                      'ALTER INDEX MINSALX ACTIVE',
                                      'ALTER INDEX MAXSALX ACTIVE'])
-        script = s.get_metadata_ddl([sm.SCRIPT_GENERATOR_SETS])
+        script = s.get_metadata_ddl([sm.SCRIPT_SET_GENERATORS])
         self.assertListEqual(script,['ALTER SEQUENCE EMP_NO_GEN RESTART WITH 145',
                                      'ALTER SEQUENCE CUST_NO_GEN RESTART WITH 1015'])
         script = s.get_metadata_ddl([sm.SCRIPT_TRIGGER_DEACTIVATIONS])
@@ -6283,46 +6284,6 @@ class TestBugs(FDBTestBase):
             self.con2.commit()
             self.con2.close()
 
-
-class RawFileWriter(object):
-    """Abstract class for raw serialization of result sets."""
-    def __init__(self):
-        self.f = cStringIO.StringIO()
-    def writeBytes(self,value):
-        self.f.write(value)
-    def writeShort(self,value):
-        self.f.write(struct.pack('<h', value))
-    def writeInt(self,value):
-        self.f.write(struct.pack('<l', value))
-    def writeBigint(self,value):
-        self.f.write(struct.pack('<q', value))
-    def tell(self):
-        return self.f.tell()
-    def seek(self,offset,whence=0):
-        self.f.seek(offset,whence)
-    def close(self):
-        self.f.close()
-    def get_content(self):
-        return self.f.getvalue()
-
-class RawFileReader(object):
-    """Abstract class for raw serialization of result sets."""
-    def __init__(self,content):
-        self.f = cStringIO.StringIO(content)
-    def readBytes(self,count):
-        return self.f.read(count)
-    def readShort(self):
-        return struct.unpack('<h', self.f.read(2))[0]
-    def readInt(self):
-        return struct.unpack('<l', self.f.read(4))[0]
-    def readBigint(self):
-        return struct.unpack('<q', self.f.read(8))[0]
-    def tell(self):
-        return self.f.tell()
-    def seek(self,offset,whence=0):
-        self.f.seek(offset,whence)
-    def close(self):
-        self.f.close()
 
 
 if __name__ == '__main__':

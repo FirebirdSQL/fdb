@@ -832,6 +832,25 @@ These drawbacks are addressed by `stream` BLOBs. Using BLOBs in `stream` mode is
 * For **input** values, simply use :ref:`parametrized statement <parametrized-statements>` and pass any `file-like` object in place of BLOB parameter. The `file-like` object must implement only the :meth:`~file.read` method, as no other metod is used.
 * For **output** values, you have to call :meth:`Cursor.set_stream_blob` (or :meth:`PreparedStatement.set_stream_blob`) method with specification of column name(s) that should be returned as `file-like` objects. FDB then returns :class:`BlobReader` instance instead string in place of returned BLOB value for these column(s).
 
+.. important::
+
+   **Before FDB version 1.8** load of materialized blob with multiple segments (i.e. larger than 64K) failed with error (SQLCODE: 101 - segment buffer length shorter than expected). This was an artefact of backward
+   compatibility with KInterbasDB that prevented them to exhaust your memory
+   with very large materialized blobs.
+   
+   **Since FDB version 1.8** this memory exhaustion safeguard was enhanced in
+   more convenient (but backward incompatible) way. New methods
+   :meth:`PreparedStatement.set_stream_blob_treshold()` and :meth:`Cursor.set_stream_blob_treshold()` were introduced to
+   control the maximum size of materialized blobs. When particular blob value exceeds this threshold, an instance of :class:`BlobReader` is
+   returned instead string value, so your application has to be prepared to handle BLOBs in both incarnations. 
+   
+   Zero value effectively forces all blobs to be returned as stream blobs.
+   Negative value means no size limit for materialized blobs (use at your
+   own risk). **The default treshold value is 64K.**
+   
+   Blob size treshold has effect only on materialized blob columns, i.e. columns not explicitly requested to be returned as streamed ones using :meth:`PreparedStatement.set_stream_blob` that are always returned as stream blobs.
+
+        
 The :class:`BlobReader` instance is bound to particular BLOB value returned by server, so its life time is limited. The actual BLOB value is not opened initially, so no additonal API calls to server are made if you'll decide to ignore the value completely. You also don't need to open the BLOB value explicitly, as BLOB is opened automatically on first call to :meth:`~BlobReader.next`, :meth:`~BlobReader.read`, :meth:`~BlobReader.readline`, :meth:`~BlobReader.readlines` or :meth:`~BlobReader.seek`. However, it's good practice to :meth:`~BlobReader.close` the reader once you're finished reading, as it's likely that Python's garbage collector would call the `__del__` method too late, when fetch context is already gone, and closing the reader would cause an error.
 
 .. warning::

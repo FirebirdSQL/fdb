@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Usage Guide &mdash; FDB 1.7 documentation</title>
+    <title>Usage Guide &mdash; FDB 1.8 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.7',
+        VERSION:     '1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.7 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.8 documentation" href="index.html" />
     <link rel="next" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
     <link rel="prev" title="Getting Started with FDB" href="getting-started.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -743,6 +743,21 @@ suitable for such binary streams, but Python 3 native strings are <cite>unicode<
 <li>For <strong>input</strong> values, simply use <a class="reference internal" href="#parametrized-statements"><span>parametrized statement</span></a> and pass any <cite>file-like</cite> object in place of BLOB parameter. The <cite>file-like</cite> object must implement only the <a class="reference external" href="http://docs.python.org/library/stdtypes.html#file.read" title="(in Python v2.7)"><code class="xref py py-meth docutils literal"><span class="pre">read()</span></code></a> method, as no other metod is used.</li>
 <li>For <strong>output</strong> values, you have to call <a class="reference internal" href="reference.html#fdb.Cursor.set_stream_blob" title="fdb.Cursor.set_stream_blob"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.set_stream_blob()</span></code></a> (or <a class="reference internal" href="reference.html#fdb.PreparedStatement.set_stream_blob" title="fdb.PreparedStatement.set_stream_blob"><code class="xref py py-meth docutils literal"><span class="pre">PreparedStatement.set_stream_blob()</span></code></a>) method with specification of column name(s) that should be returned as <cite>file-like</cite> objects. FDB then returns <a class="reference internal" href="reference.html#fdb.BlobReader" title="fdb.BlobReader"><code class="xref py py-class docutils literal"><span class="pre">BlobReader</span></code></a> instance instead string in place of returned BLOB value for these column(s).</li>
 </ul>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p><strong>Before FDB version 1.8</strong> load of materialized blob with multiple segments (i.e. larger than 64K) failed with error (SQLCODE: 101 - segment buffer length shorter than expected). This was an artefact of backward
+compatibility with KInterbasDB that prevented them to exhaust your memory
+with very large materialized blobs.</p>
+<p><strong>Since FDB version 1.8</strong> this memory exhaustion safeguard was enhanced in
+more convenient (but backward incompatible) way. New methods
+<a class="reference internal" href="reference.html#fdb.PreparedStatement.set_stream_blob_treshold" title="fdb.PreparedStatement.set_stream_blob_treshold"><code class="xref py py-meth docutils literal"><span class="pre">PreparedStatement.set_stream_blob_treshold()</span></code></a> and <a class="reference internal" href="reference.html#fdb.Cursor.set_stream_blob_treshold" title="fdb.Cursor.set_stream_blob_treshold"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.set_stream_blob_treshold()</span></code></a> were introduced to
+control the maximum size of materialized blobs. When particular blob value exceeds this threshold, an instance of <a class="reference internal" href="reference.html#fdb.BlobReader" title="fdb.BlobReader"><code class="xref py py-class docutils literal"><span class="pre">BlobReader</span></code></a> is
+returned instead string value, so your application has to be prepared to handle BLOBs in both incarnations.</p>
+<p>Zero value effectively forces all blobs to be returned as stream blobs.
+Negative value means no size limit for materialized blobs (use at your
+own risk). <strong>The default treshold value is 64K.</strong></p>
+<p class="last">Blob size treshold has effect only on materialized blob columns, i.e. columns not explicitly requested to be returned as streamed ones using <a class="reference internal" href="reference.html#fdb.PreparedStatement.set_stream_blob" title="fdb.PreparedStatement.set_stream_blob"><code class="xref py py-meth docutils literal"><span class="pre">PreparedStatement.set_stream_blob()</span></code></a> that are always returned as stream blobs.</p>
+</div>
 <p>The <a class="reference internal" href="reference.html#fdb.BlobReader" title="fdb.BlobReader"><code class="xref py py-class docutils literal"><span class="pre">BlobReader</span></code></a> instance is bound to particular BLOB value returned by server, so its life time is limited. The actual BLOB value is not opened initially, so no additonal API calls to server are made if you&#8217;ll decide to ignore the value completely. You also don&#8217;t need to open the BLOB value explicitly, as BLOB is opened automatically on first call to <a class="reference internal" href="reference.html#fdb.BlobReader.next" title="fdb.BlobReader.next"><code class="xref py py-meth docutils literal"><span class="pre">next()</span></code></a>, <a class="reference internal" href="reference.html#fdb.BlobReader.read" title="fdb.BlobReader.read"><code class="xref py py-meth docutils literal"><span class="pre">read()</span></code></a>, <a class="reference internal" href="reference.html#fdb.BlobReader.readline" title="fdb.BlobReader.readline"><code class="xref py py-meth docutils literal"><span class="pre">readline()</span></code></a>, <a class="reference internal" href="reference.html#fdb.BlobReader.readlines" title="fdb.BlobReader.readlines"><code class="xref py py-meth docutils literal"><span class="pre">readlines()</span></code></a> or <a class="reference internal" href="reference.html#fdb.BlobReader.seek" title="fdb.BlobReader.seek"><code class="xref py py-meth docutils literal"><span class="pre">seek()</span></code></a>. However, it&#8217;s good practice to <a class="reference internal" href="reference.html#fdb.BlobReader.close" title="fdb.BlobReader.close"><code class="xref py py-meth docutils literal"><span class="pre">close()</span></code></a> the reader once you&#8217;re finished reading, as it&#8217;s likely that Python&#8217;s garbage collector would call the <cite>__del__</cite> method too late, when fetch context is already gone, and closing the reader would cause an error.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -3211,7 +3226,7 @@ set of privileges (for example all privileges granted on specific object or grat
         <li class="right" >
           <a href="getting-started.html" title="Getting Started with FDB"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

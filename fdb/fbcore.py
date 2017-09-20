@@ -75,6 +75,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_info_req_select_count, isc_info_req_insert_count,
     isc_info_req_update_count, isc_info_req_delete_count,
     isc_info_blob_total_length, isc_info_blob_max_segment,
+    isc_info_blob_type, isc_info_blob_num_segments,
     fb_info_page_contents,
     isc_info_active_transactions, isc_info_allocation,
     isc_info_attachment_id, isc_info_backout_count,
@@ -135,6 +136,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
     #isc_sqlcode, isc_sql_interprete, fb_interpret, isc_dsql_execute_immediate,
     XSQLDA_PTR, ISC_SHORT, ISC_LONG, ISC_SCHAR, ISC_UCHAR, ISC_QUAD,
+    ISC_DATE, ISC_TIME,
     SHRT_MIN, SHRT_MAX, USHRT_MAX, INT_MIN, INT_MAX, LONG_MIN, LONG_MAX,
 
 
@@ -148,7 +150,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
     blr_varying, blr_varying2, blr_text, blr_text2, blr_short, blr_long,
     blr_int64, blr_float, blr_d_float, blr_double, blr_timestamp, blr_sql_date,
-    blr_sql_time,
+    blr_sql_time, blr_cstring, blr_quad, blr_blob,
 
     SQLDA_version1, isc_segment,
 
@@ -160,7 +162,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
-__version__ = '1.7'
+__version__ = '1.8'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -2161,6 +2163,7 @@ class PreparedStatement(object):
         # type constants in the isc_info_sql_stmt_* series.
         self.statement_type = None
         self.__streamed_blobs = []
+        self.__streamed_blob_treshold = 65536
         self.__blob_readers = []
         self.__executed = False
         self.__prepared = False
@@ -2714,40 +2717,51 @@ class PreparedStatement(object):
                             segment_size = bytes_to_uint(result[
                                 offset + 2:offset + 2 + length])
                             offset += length + 2
-                    # Load BLOB
-                    allow_incomplete_segment_read = False
-                    status = ISC_STATUS(0)
-                    blob = ctypes.create_string_buffer(blob_length)
-                    bytes_read = 0
-                    bytes_actually_read = ctypes.c_ushort(0)
-                    while bytes_read < blob_length:
-                        status = api.isc_get_segment(self._isc_status,
-                                                       blob_handle,
-                                                       bytes_actually_read,
-                                                       min(segment_size,
-                                                           blob_length - bytes_read),
-                                                       ctypes.byref(
-                                                           blob, bytes_read))
-                        if status != 0:
-                            if ((status == isc_segment)
-                                and allow_incomplete_segment_read):
-                                bytes_read += bytes_actually_read.value
+                    # Does the blob size exceeds treshold for streamed one?
+                    if ((self.__streamed_blob_treshold >= 0) and
+                        (blob_length > self.__streamed_blob_treshold)):
+                        # Stream BLOB
+                        value = BlobReader(blobid,self.cursor._connection._db_handle,
+                                           self.cursor._transaction._tr_handle,
+                                           sqlvar.sqlsubtype == 1,
+                                           self.__charset)
+                        self.__blob_readers.append(value)
+                    else:
+                        # Load BLOB
+                        allow_incomplete_segment_read = True
+                        status = ISC_STATUS(0)
+                        blob = ctypes.create_string_buffer(blob_length)
+                        bytes_read = 0
+                        bytes_actually_read = ctypes.c_ushort(0)
+                        while bytes_read < blob_length:
+                            status = api.isc_get_segment(self._isc_status,
+                                                           blob_handle,
+                                                           bytes_actually_read,
+                                                           min(segment_size,
+                                                               blob_length - bytes_read),
+                                                           ctypes.byref(
+                                                               blob, bytes_read))
+                            if status != 0:
+                                if ((status == isc_segment)
+                                    and allow_incomplete_segment_read):
+                                    bytes_read += bytes_actually_read.value
+                                else:
+                                    raise exception_from_status(DatabaseError,
+                                                                self._isc_status,
+                                                                "Cursor.read_output_blob/isc_get_segment:")
                             else:
-                                raise exception_from_status(DatabaseError,
-                                                            self._isc_status,
-                                                            "Cursor.read_output_blob/isc_get_segment:")
-                        else:
-                            bytes_read += bytes_actually_read.value
-                    # Finish
+                                bytes_read += bytes_actually_read.value
+                        # Finalize value
+                        value = blob.raw
+                        if ((self.__charset or PYTHON_MAJOR_VER == 3)
+                            and sqlvar.sqlsubtype == 1):
+                            value = b2u(value,self.__python_charset)
+                    # Close blob
                     api.isc_close_blob(self._isc_status, blob_handle)
                     if db_api_error(self._isc_status):
                         raise exception_from_status(DatabaseError,
                                                     self._isc_status,
                                                     "Cursor.read_otput_blob/isc_close_blob:")
-                    value = blob.raw
-                    if ((self.__charset or PYTHON_MAJOR_VER == 3)
-                        and sqlvar.sqlsubtype == 1):
-                        value = b2u(value,self.__python_charset)
             elif vartype == SQL_ARRAY:
                 value = []
                 val = sqlvar.sqldata[:sqlvar.sqllen]
@@ -3348,26 +3362,35 @@ class PreparedStatement(object):
             raise exception_from_status(OperationalError, self._isc_status,
                                         "Could not set cursor name:")
         self._name = name
-    def set_stream_blob(self,blob_name):
+    def set_stream_blob(self,blob_spec):
         """Specify a BLOB column(s) to work in `stream` mode instead classic,
         materialized mode.
 
-        :param blob_name: Single name or sequence of column names. Name must
+        :param blob_spec: Single name or sequence of column names. Name must
                           be in format as it's stored in database (refer
                           to :attr:`description` for real value).
-        :type blob_name: string or sequence
+        :type blob_spec: string or sequence
 
         .. important::
 
            BLOB name is **permanently** added to the list of BLOBs handled
            as `stream` BLOBs by this instance.
 
-        :param string blob_name: Name of BLOB column.
+        :param string blob_spec: Name of BLOB column.
         """
-        if isinstance(blob_name,ibase.StringType):
-            self.__streamed_blobs.append(blob_name)
+        if isinstance(blob_spec,ibase.StringType):
+            self.__streamed_blobs.append(blob_spec)
         else:
-            self.__streamed_blobs.extend(blob_name)
+            self.__streamed_blobs.extend(blob_spec)
+    def set_stream_blob_treshold(self, size):
+        """Specify max. blob size for materialized blobs.
+        If size of particular blob exceeds this threshold, returns streamed blob
+        (:class:`BlobReader`) instead string. Value -1 means no size limit (use
+        at your own risk). Default value is 64K
+
+        :param integer size: Max. size for materialized blob.
+        """
+        self.__streamed_blob_treshold = size
     def __del__(self):
         if self._stmt_handle != None:
             self._close()
@@ -3789,6 +3812,18 @@ class Cursor(object):
         """
         if self._ps:
             self._ps.set_stream_blob(blob_name)
+        else:
+            raise ProgrammingError
+    def set_stream_blob_treshold(self, size):
+        """Specify max. blob size for materialized blobs.
+        If size of particular blob exceeds this threshold, returns streamed blob
+        (:class:`BlobReader`) instead string. Value -1 means no size limit (use
+        at your own risk). Default value is 64K
+
+        :param integer size: Max. size for materialized blob.
+        """
+        if self._ps:
+            self._ps.set_stream_blob_treshold(size)
         else:
             raise ProgrammingError
     def __del__(self):
@@ -4673,7 +4708,7 @@ class BlobReader(object):
     def __BLOB_get(self):
         self.__reset_buffer()
         # Load BLOB
-        allow_incomplete_segment_read = False
+        allow_incomplete_segment_read = True
         status = ISC_STATUS(0)
         bytes_read = 0
         bytes_actually_read = ctypes.c_ushort(0)
@@ -4852,6 +4887,57 @@ class BlobReader(object):
         """Return current position in BLOB, like stdio‘s `ftell()`
         and :meth:`file.tell`."""
         return self.__pos
+    def get_info(self):
+        """Return information about BLOB.
+
+        :returns:  Tuple with values: blob_length, segment_size, num_segments, blob_type
+
+        Meaning of individual values:
+
+        :blob_length:  Total blob length in bytes
+        :segment_size: Size of largest segment
+        :num_segments: Number of segments
+        :blob_type:    isc_bpb_type_segmented or isc_bpb_type_stream
+        """
+        self.__ensure_open()
+        result = ctypes.cast(ctypes.create_string_buffer(30),
+                             buf_pointer)
+        api.isc_blob_info(self._isc_status, self._blob_handle, 4,
+                          bs([isc_info_blob_total_length,
+                              isc_info_blob_max_segment,
+                              isc_info_blob_num_segments,
+                              isc_info_blob_type]),
+                          30, result)
+        if db_api_error(self._isc_status):
+            raise exception_from_status(DatabaseError,
+                                            self._isc_status,
+                                            "Source isc_blob_info failed:")
+        offset = 0
+        while bytes_to_uint(result[offset]) != isc_info_end:
+            code = bytes_to_uint(result[offset])
+            offset += 1
+            if code == isc_info_blob_total_length:
+                length = bytes_to_uint(result[offset:offset + 2])
+                blob_length = bytes_to_uint(result[
+                    offset + 2:offset + 2 + length])
+                offset += length + 2
+            elif code == isc_info_blob_max_segment:
+                length = bytes_to_uint(result[offset:offset + 2])
+                segment_size = bytes_to_uint(result[
+                    offset + 2:offset + 2 + length])
+                offset += length + 2
+            elif code == isc_info_blob_num_segments:
+                length = bytes_to_uint(result[offset:offset + 2])
+                num_segments = bytes_to_uint(result[
+                    offset + 2:offset + 2 + length])
+                offset += length + 2
+            elif code == isc_info_blob_type:
+                length = bytes_to_uint(result[offset:offset + 2])
+                blob_type = bytes_to_uint(result[
+                    offset + 2:offset + 2 + length])
+                offset += length + 2
+        #
+        return (blob_length,segment_size,num_segments,blob_type)
     def __get_closed(self):
         return self.__closed
     def __get_mode(self):

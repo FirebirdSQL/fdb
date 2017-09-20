@@ -23,6 +23,7 @@
 from fdb.fbcore import *
 from fdb.fbcore import __version__
 from fdb import services
+from fdb import blr
 
 __all__ = (# Common with KInterbasDB
            'BINARY', 'Binary', 'BlobReader', 'Connection', 'ConnectionGroup',

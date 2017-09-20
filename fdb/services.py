@@ -30,6 +30,7 @@ import struct
 import warnings
 import datetime
 import types
+import time
 
 api = None
 
@@ -347,6 +348,9 @@ class Connection(object):
             return st
     def _extract_int(self, raw, index):
         new_index = index + ctypes.sizeof(ctypes.c_ushort)
+        return (fdb.bytes_to_uint(raw[index:new_index]), new_index)
+    def _extract_longint(self, raw, index):
+        new_index = index + ctypes.sizeof(ctypes.c_uint)
         return (fdb.bytes_to_int(raw[index:new_index]), new_index)
     def _extract_string(self, raw, index):
         (size, index) = self._extract_int(raw, index)
@@ -357,6 +361,10 @@ class Connection(object):
                  ibase.charset_map.get(self.charset, self.charset)), new_index)
         else:
             return (str(raw[index:new_index]), new_index)
+    def _extract_bytes(self, raw, index):
+        (size, index) = self._extract_int(raw, index)
+        new_index = index + size
+        return (bytes(raw[index:new_index]), new_index)
     def _Q(self, code, result_type, timeout=-1):
         if code < 0 or code > ibase.USHRT_MAX:
             raise fdb.ProgrammingError("The service query request_buf code"
@@ -962,6 +970,86 @@ class Connection(object):
         if callback:
             for line in self:
                 callback(line)
+    def local_backup(self,
+                     source_database,
+                     backup_stream,
+                     # Backup operation optionMask:
+                     ignore_checksums=0,
+                     ignore_limbo_transactions=0,
+                     metadata_only=0,
+                     collect_garbage=1,
+                     transportable=1,
+                     convert_external_tables_to_internal=0,
+                     compressed=1,
+                     no_db_triggers=0):
+        """Request logical (GBAK) database backup into local byte stream. **(SYNC service)**
+
+        :param string source_database: Source database specification.
+        :param backup_stream: Backup stream.
+        :param integer ignore_checksums: `1` to ignore checksums.
+        :param integer ignore_limbo_transactions: `1` to ignore limbo transactions.
+        :param integer metadata_only: `1` to create only metadata backup.
+        :param integer collect_garbage: `0` to skip garbage collection.
+        :param integer transportable: `0` to do not create transportable backup.
+        :param integer convert_external_tables_to_internal: `1` to convert
+           external table to internal ones.
+        :param integer compressed: `0` to create uncompressed backup.
+        :param integer no_db_triggers: `1` to disable database triggers temporarily.
+        """
+        self.__check_active()
+        # Begin parameter validation section.
+        _checkString(source_database)
+
+        # Begin option bitmask setup section.
+        optionMask = 0
+        if ignore_checksums:
+            optionMask |= ibase.isc_spb_bkp_ignore_checksums
+        if ignore_limbo_transactions:
+            optionMask |= ibase.isc_spb_bkp_ignore_limbo
+        if metadata_only:
+            optionMask |= ibase.isc_spb_bkp_metadata_only
+        if not collect_garbage:
+            optionMask |= ibase.isc_spb_bkp_no_garbage_collect
+        if not transportable:
+            optionMask |= ibase.isc_spb_bkp_non_transportable
+        if convert_external_tables_to_internal:
+            optionMask |= ibase.isc_spb_bkp_convert
+        if not compressed:
+            optionMask |= ibase.isc_spb_bkp_expand
+        if no_db_triggers:
+            optionMask |= ibase.isc_spb_bkp_no_triggers
+        # End option bitmask setup section.
+
+        # Construct the request buffer.
+        request = _ServiceActionRequestBuilder(ibase.isc_action_svc_backup)
+
+        # Source database filename:
+        request.add_database_name(source_database)
+
+        # Backup file transported via stdout:
+        request.add_string(ibase.isc_spb_bkp_file,'stdout')
+
+        # Options bitmask:
+        request.add_numeric(ibase.isc_spb_options, optionMask)
+
+        # Done constructing the request buffer.
+        self._act(request)
+        eof = False
+        request = fdb.bs([ibase.isc_info_svc_to_eof])
+        spb = ibase.b('')
+        while not eof:
+            api.isc_service_query(self._isc_status, self._svc_handle, None,
+                                  len(spb), spb,
+                                  len(request), request,
+                                  ibase.USHRT_MAX, self._result_buffer)
+            if fdb.db_api_error(self._isc_status):
+                raise fdb.exception_from_status(fdb.DatabaseError,
+                                      self._isc_status,
+                                      "Services/isc_service_query:")
+            (result, _) = self._extract_bytes(self._result_buffer, 1)
+            if ord(self._result_buffer[_]) == ibase.isc_info_end:
+                eof = True
+            backup_stream.write(result)
     def restore(self,
                 source_filenames,
                 dest_filenames, dest_file_pages=(),
@@ -1096,6 +1184,161 @@ class Connection(object):
         if callback:
             for line in self:
                 callback(line)
+    def local_restore(self,
+                      backup_stream,
+                      dest_filenames, dest_file_pages=(),
+                      page_size=None,
+                      cache_buffers=None,
+                      access_mode_read_only=0,
+                      replace=0,
+                      deactivate_indexes=0,
+                      do_not_restore_shadows=0,
+                      do_not_enforce_constraints=0,
+                      commit_after_each_table=0,
+                      use_all_page_space=0,
+                      no_db_triggers=0,
+                      metadata_only=0):
+        """Request database restore from logical (GBAK) backup stored in local byte stream. **(SYNC service)**
+
+        :param backup_stream: Backup stream.
+        :param dest_filenames: Database file(s) specification.
+        :type dest_filenames: string or tuple of strings
+        :param dest_file_pages: (optional) specification of database file max.
+           # of pages.
+        :type dest_file_pages: tuple of integers
+        :param integer page_size: (optional) Page size.
+        :param integer cache_buffers: (optional) Size of page-cache for this
+           database.
+        :param integer access_mode_read_only: `1` to create R/O database.
+        :param integer replace: `1` to replace existing database.
+        :param integer deactivate_indexes: `1` to do not activate indices.
+        :param integer do_not_restore_shadows: `1` to do not restore shadows.
+        :param integer do_not_enforce_constraints: `1` to do not enforce
+           constraints during restore.
+        :param integer commit_after_each_table: `1` to commit after each table
+           is restored.
+        :param integer use_all_page_space: `1` to use all space on data pages.
+        :param integer no_db_triggers: `1` to disable database triggers temporarily.
+        :param integer metadata_only: `1` to restore only database metadata.
+        """
+        self.__check_active()
+        # Begin parameter validation section.
+        dest_filenames = self._require_str_or_tuple_of_str(dest_filenames)
+
+        self._validate_companion_string_numeric_sequences(
+            dest_filenames, dest_file_pages,
+            'destination filenames', 'destination file page counts'
+            )
+        # End parameter validation section.
+
+        # Begin option bitmask setup section.
+        optionMask = 0
+        if replace:
+            optionMask |= ibase.isc_spb_res_replace
+        else:
+            optionMask |= ibase.isc_spb_res_create
+        if deactivate_indexes:
+            optionMask |= ibase.isc_spb_res_deactivate_idx
+        if do_not_restore_shadows:
+            optionMask |= ibase.isc_spb_res_no_shadow
+        if do_not_enforce_constraints:
+            optionMask |= ibase.isc_spb_res_no_validity
+        if commit_after_each_table:
+            optionMask |= ibase.isc_spb_res_one_at_a_time
+        if use_all_page_space:
+            optionMask |= ibase.isc_spb_res_use_all_space
+        if no_db_triggers:
+            optionMask |= ibase.isc_spb_bkp_no_triggers
+        if metadata_only:
+            optionMask |= ibase.isc_spb_bkp_metadata_only
+        # End option bitmask setup section.
+
+        # Construct the request buffer.
+        request = _ServiceActionRequestBuilder(ibase.isc_action_svc_restore)
+
+        # Backup stream:
+        request.add_string(ibase.isc_spb_bkp_file, 'stdin')
+
+        # Database filenames:
+        request.add_string_numeric_pairs_sequence(
+            ibase.isc_spb_dbname, dest_filenames,
+            ibase.isc_spb_res_length, dest_file_pages
+          )
+
+        # Page size of the restored database:
+        if page_size:
+            request.add_numeric(ibase.isc_spb_res_page_size, page_size)
+
+        # cacheBuffers is the number of default cache buffers to configure for
+        # attachments to the restored database:
+        if cache_buffers:
+            request.add_numeric(ibase.isc_spb_res_buffers, cache_buffers)
+
+        # accessModeReadOnly controls whether the restored database is
+        # "mounted" in read only or read-write mode:
+        if access_mode_read_only:
+            accessMode = ibase.isc_spb_prp_am_readonly
+        else:
+            accessMode = ibase.isc_spb_prp_am_readwrite
+        request.add_numeric(ibase.isc_spb_res_access_mode, accessMode,
+            numCType='B'
+          )
+
+        # This is necessary
+        request.add_code(ibase.isc_spb_verbose)
+
+        # Options bitmask:
+        request.add_numeric(ibase.isc_spb_options, optionMask)
+
+        # Done constructing the request buffer.
+        self._act(request)
+
+        request_length = 0
+        stop = False
+        pos = backup_stream.tell()
+        backup_stream.seek(0,2)
+        bytes_available = backup_stream.tell() - pos
+        backup_stream.seek(pos)
+        spb = ctypes.create_string_buffer(16)
+        spb[0] = chr(ibase.isc_info_svc_timeout)
+        spb[1:3] = fdb.uint_to_bytes(4, 2)
+        spb[3:7] = fdb.uint_to_bytes(1, 4)
+        spb[7] = chr(ibase.isc_info_end)
+        wait = True
+        while not stop:
+            if request_length > 0:
+                request_length = min([request_length, 65500])
+                raw = backup_stream.read(request_length)
+                spb = ctypes.create_string_buffer(1+2+request_length+1)
+                spb[0] = chr(ibase.isc_info_svc_line)
+                spb[1:3] = fdb.uint_to_bytes(len(raw), 2)
+                spb[3:3+len(raw)] = raw
+                spb[3+len(raw)] = chr(ibase.isc_info_end)
+                bytes_available -= len(raw)
+            req = fdb.bs([ibase.isc_info_svc_stdin,ibase.isc_info_svc_line])
+            api.isc_service_query(self._isc_status, self._svc_handle, None,
+                                  len(spb), spb,
+                                  len(req), req,
+                                  ibase.USHRT_MAX, self._result_buffer)
+            if fdb.db_api_error(self._isc_status):
+                raise fdb.exception_from_status(fdb.DatabaseError,
+                                      self._isc_status,
+                                      "Services/isc_service_query:")
+            i = 0
+            while self._result_buffer[i] != ibase.isc_info_end:
+                code = ibase.ord2(self._result_buffer[i])
+                i += 1
+                if code == ibase.isc_info_svc_stdin:
+                    (request_length, i) = self._extract_longint(self._result_buffer, i)
+                elif code == ibase.isc_info_svc_line:
+                    (line, i) = self._extract_string(self._result_buffer, i)
+                else:
+                    break
+            if not wait:
+                stop = (request_length == 0) and (len(line) == 0)
+            elif request_length != 0:
+                wait = False
+
     # nbackup methods:
     def nbackup(self, source_database,
                 dest_filename,
@@ -1835,12 +2078,16 @@ class _ServiceActionRequestBuilder(object):
     # using high-level, easily comprehensible syntax.
 
     def __init__(self, clusterIdentifier=None):
-        self._buffer = []
-        if clusterIdentifier:
-            self.add_code(clusterIdentifier)
+        self.ci = clusterIdentifier
+        self.clear()
 
     def __str__(self):
         return self.render()
+
+    def clear(self):
+        self._buffer = []
+        if self.ci:
+            self.add_code(self.ci)
 
     def extend(self, otherRequestBuilder):
         self._buffer.append(otherRequestBuilder.render())

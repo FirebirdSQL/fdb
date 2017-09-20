@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FDB Reference &mdash; FDB 1.7 documentation</title>
+    <title>FDB Reference &mdash; FDB 1.8 documentation</title>
     
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.7',
+        VERSION:     '1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.7 documentation" href="index.html" />
+    <link rel="top" title="FDB 1.8 documentation" href="index.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -50,7 +50,7 @@
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -2128,6 +2128,23 @@ the same command executed repeatedly will retain this setting.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.Cursor.set_stream_blob_treshold">
+<code class="descname">set_stream_blob_treshold</code><span class="sig-paren">(</span><em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.Cursor.set_stream_blob_treshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify max. blob size for materialized blobs.
+If size of particular blob exceeds this threshold, returns streamed blob
+(<a class="reference internal" href="#fdb.BlobReader" title="fdb.BlobReader"><code class="xref py py-class docutils literal"><span class="pre">BlobReader</span></code></a>) instead string. Value -1 means no size limit (use
+at your own risk). Default value is 64K</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>size</strong> (<em>integer</em>) &#8211; Max. size for materialized blob.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.Cursor.setinputsizes">
 <code class="descname">setinputsizes</code><span class="sig-paren">(</span><em>sizes</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.Cursor.setinputsizes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Required by Python DB API 2.0, but pointless for Firebird, so it
@@ -2608,14 +2625,14 @@ keeps it prepared for another execution.</p>
 
 <dl class="method">
 <dt id="fdb.PreparedStatement.set_stream_blob">
-<code class="descname">set_stream_blob</code><span class="sig-paren">(</span><em>blob_name</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.PreparedStatement.set_stream_blob" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_stream_blob</code><span class="sig-paren">(</span><em>blob_spec</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.PreparedStatement.set_stream_blob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specify a BLOB column(s) to work in <cite>stream</cite> mode instead classic,
 materialized mode.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<em>string or sequence</em>) &#8211; Single name or sequence of column names. Name must
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_spec</strong> (<em>string or sequence</em>) &#8211; Single name or sequence of column names. Name must
 be in format as it&#8217;s stored in database (refer
 to <a class="reference internal" href="#fdb.PreparedStatement.description" title="fdb.PreparedStatement.description"><code class="xref py py-attr docutils literal"><span class="pre">description</span></code></a> for real value).</td>
 </tr>
@@ -2630,7 +2647,24 @@ as <cite>stream</cite> BLOBs by this instance.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of BLOB column.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blob_spec</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of BLOB column.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.PreparedStatement.set_stream_blob_treshold">
+<code class="descname">set_stream_blob_treshold</code><span class="sig-paren">(</span><em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.PreparedStatement.set_stream_blob_treshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify max. blob size for materialized blobs.
+If size of particular blob exceeds this threshold, returns streamed blob
+(<a class="reference internal" href="#fdb.BlobReader" title="fdb.BlobReader"><code class="xref py py-class docutils literal"><span class="pre">BlobReader</span></code></a>) instead string. Value -1 means no size limit (use
+at your own risk). Default value is 64K</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>size</strong> (<em>integer</em>) &#8211; Max. size for materialized blob.</td>
 </tr>
 </tbody>
 </table>
@@ -3167,6 +3201,35 @@ BLOB access is requested via <a class="reference internal" href="#fdb.PreparedSt
 <code class="descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fdb.BlobReader.flush" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flush the internal buffer. Like <a class="reference external" href="http://docs.python.org/library/stdtypes.html#file.flush" title="(in Python v2.7)"><code class="xref py py-meth docutils literal"><span class="pre">file.flush()</span></code></a>. Does nothing as
 it&#8217;s pointless for reader.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.BlobReader.get_info">
+<code class="descname">get_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fdb.BlobReader.get_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return information about BLOB.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Tuple with values: blob_length, segment_size, num_segments, blob_type</td>
+</tr>
+</tbody>
+</table>
+<p>Meaning of individual values:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Blob_length:</th><td class="field-body">Total blob length in bytes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Segment_size:</th><td class="field-body">Size of largest segment</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Num_segments:</th><td class="field-body">Number of segments</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Blob_type:</th><td class="field-body">isc_bpb_type_segmented or isc_bpb_type_stream</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -3782,7 +3845,7 @@ external table to internal ones.</li>
 <li><strong>no_db_triggers</strong> (<em>integer</em>) &#8211; <cite>1</cite> to disable database triggers temporarily.</li>
 <li><strong>callback</strong> (<a class="reference internal" href="#fdb.schema.FunctionArgument.function" title="fdb.schema.FunctionArgument.function"><em>function</em></a>) &#8211; Function to call back with each output line.
 Function must accept only one parameter: line of output.</li>
-<li><strong>stats</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of arguments for run-time statistics, see STATS_* constants.</li>
+<li><strong>stats</strong> (<em>list</em>) &#8211; List of arguments for run-time statistics, see STATS_* constants.</li>
 </ul>
 </td>
 </tr>
@@ -4115,6 +4178,67 @@ no other async service could be started.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="fdb.services.Connection.local_backup">
+<code class="descname">local_backup</code><span class="sig-paren">(</span><em>source_database</em>, <em>backup_stream</em>, <em>ignore_checksums=0</em>, <em>ignore_limbo_transactions=0</em>, <em>metadata_only=0</em>, <em>collect_garbage=1</em>, <em>transportable=1</em>, <em>convert_external_tables_to_internal=0</em>, <em>compressed=1</em>, <em>no_db_triggers=0</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.services.Connection.local_backup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request logical (GBAK) database backup into local byte stream. <strong>(SYNC service)</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>source_database</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Source database specification.</li>
+<li><strong>backup_stream</strong> &#8211; Backup stream.</li>
+<li><strong>ignore_checksums</strong> (<em>integer</em>) &#8211; <cite>1</cite> to ignore checksums.</li>
+<li><strong>ignore_limbo_transactions</strong> (<em>integer</em>) &#8211; <cite>1</cite> to ignore limbo transactions.</li>
+<li><strong>metadata_only</strong> (<em>integer</em>) &#8211; <cite>1</cite> to create only metadata backup.</li>
+<li><strong>collect_garbage</strong> (<em>integer</em>) &#8211; <cite>0</cite> to skip garbage collection.</li>
+<li><strong>transportable</strong> (<em>integer</em>) &#8211; <cite>0</cite> to do not create transportable backup.</li>
+<li><strong>convert_external_tables_to_internal</strong> (<em>integer</em>) &#8211; <cite>1</cite> to convert
+external table to internal ones.</li>
+<li><strong>compressed</strong> (<em>integer</em>) &#8211; <cite>0</cite> to create uncompressed backup.</li>
+<li><strong>no_db_triggers</strong> (<em>integer</em>) &#8211; <cite>1</cite> to disable database triggers temporarily.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fdb.services.Connection.local_restore">
+<code class="descname">local_restore</code><span class="sig-paren">(</span><em>backup_stream</em>, <em>dest_filenames</em>, <em>dest_file_pages=()</em>, <em>page_size=None</em>, <em>cache_buffers=None</em>, <em>access_mode_read_only=0</em>, <em>replace=0</em>, <em>deactivate_indexes=0</em>, <em>do_not_restore_shadows=0</em>, <em>do_not_enforce_constraints=0</em>, <em>commit_after_each_table=0</em>, <em>use_all_page_space=0</em>, <em>no_db_triggers=0</em>, <em>metadata_only=0</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.services.Connection.local_restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request database restore from logical (GBAK) backup stored in local byte stream. <strong>(SYNC service)</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>backup_stream</strong> &#8211; Backup stream.</li>
+<li><strong>dest_filenames</strong> (<em>string or tuple of strings</em>) &#8211; Database file(s) specification.</li>
+<li><strong>dest_file_pages</strong> (<em>tuple of integers</em>) &#8211; (optional) specification of database file max.
+# of pages.</li>
+<li><strong>page_size</strong> (<em>integer</em>) &#8211; (optional) Page size.</li>
+<li><strong>cache_buffers</strong> (<em>integer</em>) &#8211; (optional) Size of page-cache for this
+database.</li>
+<li><strong>access_mode_read_only</strong> (<em>integer</em>) &#8211; <cite>1</cite> to create R/O database.</li>
+<li><strong>replace</strong> (<em>integer</em>) &#8211; <cite>1</cite> to replace existing database.</li>
+<li><strong>deactivate_indexes</strong> (<em>integer</em>) &#8211; <cite>1</cite> to do not activate indices.</li>
+<li><strong>do_not_restore_shadows</strong> (<em>integer</em>) &#8211; <cite>1</cite> to do not restore shadows.</li>
+<li><strong>do_not_enforce_constraints</strong> (<em>integer</em>) &#8211; <cite>1</cite> to do not enforce
+constraints during restore.</li>
+<li><strong>commit_after_each_table</strong> (<em>integer</em>) &#8211; <cite>1</cite> to commit after each table
+is restored.</li>
+<li><strong>use_all_page_space</strong> (<em>integer</em>) &#8211; <cite>1</cite> to use all space on data pages.</li>
+<li><strong>no_db_triggers</strong> (<em>integer</em>) &#8211; <cite>1</cite> to disable database triggers temporarily.</li>
+<li><strong>metadata_only</strong> (<em>integer</em>) &#8211; <cite>1</cite> to restore only database metadata.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="fdb.services.Connection.modify_user">
 <code class="descname">modify_user</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="headerlink" href="#fdb.services.Connection.modify_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modify user information.</p>
@@ -4315,7 +4439,7 @@ is restored.</li>
 <li><strong>metadata_only</strong> (<em>integer</em>) &#8211; <cite>1</cite> to restore only database metadata.</li>
 <li><strong>callback</strong> (<a class="reference internal" href="#fdb.schema.FunctionArgument.function" title="fdb.schema.FunctionArgument.function"><em>function</em></a>) &#8211; Function to call back with each output line.
 Function must accept only one parameter: line of output.</li>
-<li><strong>stats</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of arguments for run-time statistics, see STATS_* constants.</li>
+<li><strong>stats</strong> (<em>list</em>) &#8211; List of arguments for run-time statistics, see STATS_* constants.</li>
 </ul>
 </td>
 </tr>
@@ -5016,8 +5140,8 @@ specified privileges.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>privileges</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><code class="xref py py-class docutils literal"><span class="pre">Privilege</span></code></a> instances.</li>
-<li><strong>grantors</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of standard grantor names. Generates GRANTED BY
+<li><strong>privileges</strong> (<em>list</em>) &#8211; List of <a class="reference internal" href="#fdb.schema.Privilege" title="fdb.schema.Privilege"><code class="xref py py-class docutils literal"><span class="pre">Privilege</span></code></a> instances.</li>
+<li><strong>grantors</strong> (<em>list</em>) &#8211; List of standard grantor names. Generates GRANTED BY
 clause for privileges granted by user that&#8217;s not in list.</li>
 </ul>
 </td>
@@ -6837,6 +6961,12 @@ this character set.</p>
 <dt id="fdb.schema.TableColumn.generator">
 <code class="descname">generator</code><a class="headerlink" href="#fdb.schema.TableColumn.generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal flags.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fdb.schema.TableColumn.id">
+<code class="descname">id</code><a class="headerlink" href="#fdb.schema.TableColumn.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internam number ID for the column.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -11655,7 +11785,7 @@ API functions as member methods. Uses <a class="reference external" href="http:/
         <li class="right" >
           <a href="differences-from-kdb.html" title="Differences from KInterbasDB"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.7 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

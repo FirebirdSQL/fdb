@@ -1903,6 +1903,8 @@ class TableColumn(BaseSchemaItem):
             'NULL' if self.description is None else "'%s'" % escape_single_quotes(self.description))
     def _get_name(self):
         return self._attributes['RDB$FIELD_NAME']
+    def _get_id(self):
+        return self._attributes['RDB$FIELD_ID']
     def _get_table(self):
         return self.__table
     def _get_domain(self):
@@ -1934,6 +1936,7 @@ class TableColumn(BaseSchemaItem):
 
     #--- Properties
 
+    id = LateBindingProperty(_get_id,None,None,"Internam number ID for the column.")
     table = LateBindingProperty(_get_table,None,None,
                                 "The Table object this column belongs to.")
     domain = LateBindingProperty(_get_domain,None,None,
