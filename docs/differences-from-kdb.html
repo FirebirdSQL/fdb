@@ -1,29 +1,28 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Differences from KInterbasDB &mdash; FDB 1.8 documentation</title>
-    
+    <title>Differences from KInterbasDB &#8212; FDB 1.8 documentation</title>
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.8 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FDB Reference" href="reference.html" />
     <link rel="prev" title="Compliance to Python Database API 2.0" href="python-db-api-compliance.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -33,7 +32,7 @@
 <![endif]-->
 
   </head>
-  <body role="document">
+  <body>
 
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -50,7 +49,7 @@
         <li class="right" >
           <a href="python-db-api-compliance.html" title="Compliance to Python Database API 2.0"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -63,16 +62,16 @@
 <h1>Differences from KInterbasDB<a class="headerlink" href="#differences-from-kinterbasdb" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="no-need-for-initialization">
 <h2>No need for initialization<a class="headerlink" href="#no-need-for-initialization" title="Permalink to this headline">¶</a></h2>
-<p>FDB doesn&#8217;t support various configurations of automatic type translations like
-KDB, so it&#8217;s no longer necessary to initialize the driver before any feature is
+<p>FDB doesn’t support various configurations of automatic type translations like
+KDB, so it’s no longer necessary to initialize the driver before any feature is
 used.</p>
 </div>
 <div class="section" id="distributed-transactions">
 <h2>Distributed transactions<a class="headerlink" href="#distributed-transactions" title="Permalink to this headline">¶</a></h2>
-<p>Support for <a class="reference internal" href="usage-guide.html#distributed-transactions"><span>Distributed Transactions</span></a> works slightly differently than in KDB. FDB uses <a class="reference internal" href="reference.html#fdb.ConnectionGroup" title="fdb.ConnectionGroup"><code class="xref py py-class docutils literal"><span class="pre">ConnectionGroup</span></code></a> class like KDB with the same interface, but DT is not bound to main transaction of individual connections managed by group. That means that <a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><code class="xref py py-class docutils literal"><span class="pre">Cursor</span></code></a> instances obtained from <a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> don&#8217;t work in DT if connection is part of ConnectionGroup, but work normally in connection context. To get Cursor for specific connection that works in DT, use <a class="reference internal" href="reference.html#fdb.ConnectionGroup.cursor" title="fdb.ConnectionGroup.cursor"><code class="xref py py-meth docutils literal"><span class="pre">fdb.ConnectionGroup.cursor()</span></code></a> method and pass the connection as parameter. We believe that this arrangement is more logical and flexible than KDB&#8217;s way.</p>
+<p>Support for <a class="reference internal" href="usage-guide.html#distributed-transactions"><span class="std std-ref">Distributed Transactions</span></a> works slightly differently than in KDB. FDB uses <a class="reference internal" href="reference.html#fdb.ConnectionGroup" title="fdb.ConnectionGroup"><code class="xref py py-class docutils literal"><span class="pre">ConnectionGroup</span></code></a> class like KDB with the same interface, but DT is not bound to main transaction of individual connections managed by group. That means that <a class="reference internal" href="reference.html#fdb.Cursor" title="fdb.Cursor"><code class="xref py py-class docutils literal"><span class="pre">Cursor</span></code></a> instances obtained from <a class="reference internal" href="reference.html#fdb.Connection" title="fdb.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> don’t work in DT if connection is part of ConnectionGroup, but work normally in connection context. To get Cursor for specific connection that works in DT, use <a class="reference internal" href="reference.html#fdb.ConnectionGroup.cursor" title="fdb.ConnectionGroup.cursor"><code class="xref py py-meth docutils literal"><span class="pre">fdb.ConnectionGroup.cursor()</span></code></a> method and pass the connection as parameter. We believe that this arrangement is more logical and flexible than KDB’s way.</p>
 <p>Transaction context for cursor objects depends on how cursor is obtained/created:</p>
 <ol class="loweralpha simple">
-<li><a class="reference internal" href="reference.html#fdb.Connection.cursor" title="fdb.Connection.cursor"><code class="xref py py-meth docutils literal"><span class="pre">fdb.Connection.cursor()</span></code></a> - Works in context of &#8220;main&#8221; transaction for connection.</li>
+<li><a class="reference internal" href="reference.html#fdb.Connection.cursor" title="fdb.Connection.cursor"><code class="xref py py-meth docutils literal"><span class="pre">fdb.Connection.cursor()</span></code></a> - Works in context of “main” transaction for connection.</li>
 <li><a class="reference internal" href="reference.html#fdb.Transaction.cursor" title="fdb.Transaction.cursor"><code class="xref py py-meth docutils literal"><span class="pre">fdb.Transaction.cursor()</span></code></a> - Works in context of this transaction.</li>
 <li><a class="reference internal" href="reference.html#fdb.ConnectionGroup.cursor" title="fdb.ConnectionGroup.cursor"><code class="xref py py-meth docutils literal"><span class="pre">fdb.ConnectionGroup.cursor()</span></code></a> - Works in context of Distributed Transaction</li>
 </ol>
@@ -86,7 +85,7 @@ are stored as a continuous array of data bytes with no length indicators include
 Both types of BLOBs could be accessed by the same API functions, but only stream
 BLOBs support seek operation (via <cite>isc_seek_blob function</cite>).</p>
 <p>FDB implements stream BLOBs as file-like objects. On input, you can simply pass
-any file-like object (only &#8216;read&#8217; method is required) as parameter value for BLOB
+any file-like object (only ‘read’ method is required) as parameter value for BLOB
 column. For example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;filename.ext&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
 <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;insert into T (MyBLOB) values (?)&#39;</span><span class="p">,[</span><span class="n">f</span><span class="p">])</span>
@@ -97,7 +96,7 @@ column. For example:</p>
 request streamed access to BLOB, you have to use prepared statement for your query
 and call its <cite>set_stream_blob(column_name)</cite> method. Stream access is not allowed
 for cursors because it would lead to dangerous situations (BlobReader life-time
-management) and anomalies (stream access when it&#8217;s not required). Example:</p>
+management) and anomalies (stream access when it’s not required). Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">prep</span><span class="p">(</span><span class="s1">&#39;select first 1 MyBLOB from T&#39;</span><span class="p">)</span>
 <span class="n">p</span><span class="o">.</span><span class="n">set_stream_blob</span><span class="p">(</span><span class="s1">&#39;MyBLOB&#39;</span><span class="p">)</span>
 <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
@@ -110,9 +109,9 @@ management) and anomalies (stream access when it&#8217;s not required). Example:
 <p>Whenever you use stream access to BLOB, FDB opens or creates the underlying BLOB
 value as stream one. On input it means that true stream BLOB is created in database, but on output it depends on how BLOB value was actually created. If BLOB was created as stream one, you can use the seek method of BlobReader, but if it was
 created as regular BLOB, any call to seek will raise an error:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>SQLCODE: -685
-- invalid ARRAY or BLOB operation
-- invalid BLOB type for operation
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SQLCODE</span><span class="p">:</span> <span class="o">-</span><span class="mi">685</span>
+<span class="o">-</span> <span class="n">invalid</span> <span class="n">ARRAY</span> <span class="ow">or</span> <span class="n">BLOB</span> <span class="n">operation</span>
+<span class="o">-</span> <span class="n">invalid</span> <span class="n">BLOB</span> <span class="nb">type</span> <span class="k">for</span> <span class="n">operation</span>
 </pre></div>
 </div>
 <p>You can read BLOBs created as stream ones as fully materialized, and regular ones
@@ -120,8 +119,8 @@ in stream mode (without seek) without any problems, and that same apply for
 input - you can create values in the same column as stream or regular ones
 interchangeably. From your point of view, stream BLOBs are just different
 interface to BLOB values, with single exception - <cite>BlobReader.seek()</cite> will throw
-an exception if you&#8217;d call it on BLOB value that was not created as stream BLOB.</p>
-<p>To work with stream BLOBs, you don&#8217;t need to use <cite>cursor.set_type_trans_in/out</cite>
+an exception if you’d call it on BLOB value that was not created as stream BLOB.</p>
+<p>To work with stream BLOBs, you don’t need to use <cite>cursor.set_type_trans_in/out</cite>
 methods like in KDB, i.e. calls to:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cur</span><span class="o">.</span><span class="n">set_type_trans_in</span> <span class="p">({</span><span class="s1">&#39;BLOB&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="s1">&#39;stream&#39;</span><span class="p">}})</span>
 <span class="n">cur</span><span class="o">.</span><span class="n">set_type_trans_out</span><span class="p">({</span><span class="s1">&#39;BLOB&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;mode&#39;</span><span class="p">:</span> <span class="s1">&#39;stream&#39;</span><span class="p">}})</span>
@@ -135,11 +134,11 @@ instead fully materialized value via set_stream_blob() calls for each BLOB value
 <p><a class="reference internal" href="reference.html#fdb.BlobReader" title="fdb.BlobReader"><code class="xref py py-class docutils literal"><span class="pre">BlobReader</span></code></a> supports iteration protocol, and read(), readline(), readlines(),
 seek(), tell(), flush() (as noop) and close() methods. It does NOT support chunks()
 method of KInterbasDB.BlobReader.</p>
-<p>It is not strictly necessary to close BlobReader instances explicitly. A BlobReader object will be automatically closed by its __del__ method when it goes out of scope, or when its Connection, PreparedStatement closes, whichever comes first. However, it is always a better idea to close resources explicitly (via try...finally) than to rely on artifacts of the Python implementation. You will also encounter errors if BLOB value was deleted from database before BlobReader is closed, so the odds that this may happen are higher if you do not close it explicitly.</p>
+<p>It is not strictly necessary to close BlobReader instances explicitly. A BlobReader object will be automatically closed by its __del__ method when it goes out of scope, or when its Connection, PreparedStatement closes, whichever comes first. However, it is always a better idea to close resources explicitly (via try…finally) than to rely on artifacts of the Python implementation. You will also encounter errors if BLOB value was deleted from database before BlobReader is closed, so the odds that this may happen are higher if you do not close it explicitly.</p>
 </div>
 <div class="section" id="services-api">
 <h2>Services API<a class="headerlink" href="#services-api" title="Permalink to this headline">¶</a></h2>
-<p>Support for Firebird Services was <a class="reference internal" href="usage-guide.html#working-with-services"><span>completelly reworked</span></a> in FDB.</p>
+<p>Support for Firebird Services was <a class="reference internal" href="usage-guide.html#working-with-services"><span class="std std-ref">completelly reworked</span></a> in FDB.</p>
 </div>
 </div>
 
@@ -169,14 +168,11 @@ method of KInterbasDB.BlobReader.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -198,12 +194,12 @@ method of KInterbasDB.BlobReader.</p>
         <li class="right" >
           <a href="python-db-api-compliance.html" title="Compliance to Python Database API 2.0"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2009-2017, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2009-2017, David Rushby, Pavel Cisar.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

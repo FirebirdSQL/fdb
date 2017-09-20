@@ -1,29 +1,28 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Changelog &mdash; FDB 1.8 documentation</title>
-    
+    <title>Changelog &#8212; FDB 1.8 documentation</title>
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.8 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="LICENSE" href="license.html" />
     <link rel="prev" title="FDB Reference" href="reference.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -33,7 +32,7 @@
 <![endif]-->
 
   </head>
-  <body role="document">
+  <body>
 
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -50,7 +49,7 @@
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -97,7 +96,7 @@
 <div class="section" id="version-1-8">
 <h2>Version 1.8<a class="headerlink" href="#version-1-8" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>In relation to (<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-71">PYFB-71</a>) a better memory exhaustion safeguard was implemented for materialized blobs. See <a class="reference internal" href="usage-guide.html#working-with-blobs"><span>Working with BLOBs</span></a> for details.</li>
+<li>In relation to (<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-71">PYFB-71</a>) a better memory exhaustion safeguard was implemented for materialized blobs. See <a class="reference internal" href="usage-guide.html#working-with-blobs"><span class="std std-ref">Working with BLOBs</span></a> for details.</li>
 <li>Added service support for backup and restore from/to local byte stream. See <a class="reference internal" href="reference.html#fdb.services.Connection.local_backup" title="fdb.services.Connection.local_backup"><code class="xref py py-meth docutils literal"><span class="pre">local_backup()</span></code></a> and <a class="reference internal" href="reference.html#fdb.services.Connection.local_restore" title="fdb.services.Connection.local_restore"><code class="xref py py-meth docutils literal"><span class="pre">local_restore()</span></code></a> for details.</li>
 <li>Added attribute <a class="reference internal" href="reference.html#fdb.schema.TableColumn.id" title="fdb.schema.TableColumn.id"><code class="xref py py-attr docutils literal"><span class="pre">fdb.schema.TableColumn.id</span></code></a> (RDB$FIELD_ID)</li>
 <li>Added method <a class="reference internal" href="reference.html#fdb.BlobReader.get_info" title="fdb.BlobReader.get_info"><code class="xref py py-meth docutils literal"><span class="pre">fdb.BlobReader.get_info()</span></code></a>.</li>
@@ -107,7 +106,7 @@
 <h2>Version 1.7<a class="headerlink" href="#version-1-7" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-66">PYFB-66</a>) - Port parameter for connect and create_database is not used</li>
-<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-69">PYFB-69</a>) - Can not connect to FB services if set ISC_USER &amp; ISC_PASSWORD by os.environ[...]</li>
+<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-69">PYFB-69</a>) - Can not connect to FB services if set ISC_USER &amp; ISC_PASSWORD by os.environ[…]</li>
 <li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-70">PYFB-70</a>) - executemany(operation, seq_of_parameters) appears to run slower than it should</li>
 <li>Number of fixes to DDL generators in schema module</li>
 <li>Added support for <a class="reference internal" href="reference.html#fdb.schema.Filter" title="fdb.schema.Filter"><code class="xref py py-class docutils literal"><span class="pre">Filter</span></code></a> and <a class="reference internal" href="reference.html#fdb.schema.BackupHistory" title="fdb.schema.BackupHistory"><code class="xref py py-class docutils literal"><span class="pre">BackupHistory</span></code></a> in schema module.</li>
@@ -173,8 +172,8 @@
 <div class="section" id="version-1-4-9">
 <h2>Version 1.4.9<a class="headerlink" href="#version-1-4-9" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-51">PYFB-51</a>) &lt;procedure&gt;.get_sql_for(&#8216;&lt;re&gt;create&#8217;) returns invalid output parameters</li>
-<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-52">PYFB-52</a>) isc_info* types which are _DATABASE_INFO_CODES_WITH_COUNT_RESULTS raises TypeError: &#8216;float&#8217; object cannot be interpreted as an integer</li>
+<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-51">PYFB-51</a>) &lt;procedure&gt;.get_sql_for(‘&lt;re&gt;create’) returns invalid output parameters</li>
+<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-52">PYFB-52</a>) isc_info* types which are _DATABASE_INFO_CODES_WITH_COUNT_RESULTS raises TypeError: ‘float’ object cannot be interpreted as an integer</li>
 </ul>
 </div>
 <div class="section" id="version-1-4-8">
@@ -194,7 +193,7 @@
 <div class="section" id="bugs-fixed">
 <h3>Bugs Fixed<a class="headerlink" href="#bugs-fixed" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-50">PYFB-50</a>) Exception ReferenceError: &#8216;weakly-referenced object no longer exists&#8217; in PreparedStatement and Cursor</li>
+<li>(<a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-50">PYFB-50</a>) Exception ReferenceError: ‘weakly-referenced object no longer exists’ in PreparedStatement and Cursor</li>
 </ul>
 </div>
 </div>
@@ -238,12 +237,12 @@
 <h3>Improvements<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first">In relation to <a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-43">PYFB-43</a> I had to make a <strong>backward incompatible change</strong> to event processing API. Starting from this version
-<cite>EventConduit</cite> does not automatically starts collection of events upon creation, but it&#8217;s now necessary to call
+<cite>EventConduit</cite> does not automatically starts collection of events upon creation, but it’s now necessary to call
 <a class="reference internal" href="reference.html#fdb.EventConduit.begin" title="fdb.EventConduit.begin"><code class="xref py py-meth docutils literal"><span class="pre">begin()</span></code></a> method. To mitigate the inconvenience, EventConduit now supports context manager
 protocol that ensures calls to begin() and close() via <cite>with</cite> statement.</p>
 </li>
 <li><p class="first">In relation to <a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-39">PYFB-39</a> I have decided to drop support for implicitly cached and reused prepared statements. I never
-liked this feature as I think it&#8217;s a sneaky method how to put some performance to badly written applications that
+liked this feature as I think it’s a sneaky method how to put some performance to badly written applications that
 in worst case may lead to significant resource consumption on server side when developers are not only lazy but also stupid.
 It was implemented for the sake of compatibility with KInterbasDB.</p>
 <p><strong>This change has no impact on API, but may affect performance of your applications.</strong></p>
@@ -265,7 +264,7 @@ It was implemented for the sake of compatibility with KInterbasDB.</p>
 <h3>Improvements<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference external" href="http://tracker.firebirdsql.org/browse/PYFB-40">PYFB-40</a> - fbclient.dll is not found if not in path.
-Aside from registry lookup, client library isn&#8217;t loaded until first call to <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><code class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></code></a>, <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><code class="xref py py-func docutils literal"><span class="pre">fdb.create_database()</span></code></a>
+Aside from registry lookup, client library isn’t loaded until first call to <a class="reference internal" href="reference.html#fdb.connect" title="fdb.connect"><code class="xref py py-func docutils literal"><span class="pre">fdb.connect()</span></code></a>, <a class="reference internal" href="reference.html#fdb.create_database" title="fdb.create_database"><code class="xref py py-func docutils literal"><span class="pre">fdb.create_database()</span></code></a>
 or <a class="reference internal" href="reference.html#fdb.load_api" title="fdb.load_api"><code class="xref py py-func docutils literal"><span class="pre">fdb.load_api()</span></code></a> (which now supports optional specification of Firebird Client Library to load).</li>
 <li>Adjustments for Firebird 3.0 (Alpha1)</li>
 <li>Properties <a class="reference internal" href="reference.html#fdb.services.Connection.version" title="fdb.services.Connection.version"><code class="xref py py-attr docutils literal"><span class="pre">version</span></code></a> and <a class="reference internal" href="reference.html#fdb.services.Connection.engine_version" title="fdb.services.Connection.engine_version"><code class="xref py py-attr docutils literal"><span class="pre">engine_version</span></code></a> added to <a class="reference internal" href="reference.html#fdb.services.Connection" title="fdb.services.Connection"><code class="xref py py-class docutils literal"><span class="pre">fdb.services.Connection</span></code></a></li>
@@ -380,7 +379,7 @@ obtain instances of different class instead <cite>Connection</cite>.</p>
 <div class="section" id="id15">
 <h3>Bugs Fixed<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Unregistered: <cite>buffers</cite> parameter of <cite>fdb.connection</cite> doesn&#8217;t support values greater than 255.</li>
+<li>Unregistered: <cite>buffers</cite> parameter of <cite>fdb.connection</cite> doesn’t support values greater than 255.</li>
 <li>Unregistered: Lowercase character set name passed to <cite>fdb.connect</cite> may result in wrong funcion of automatic
 data conversions and other failures (exceptions raised).</li>
 </ul>
@@ -401,7 +400,7 @@ data conversions and other failures (exceptions raised).</li>
 <div class="section" id="id17">
 <h3>New Features<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><a class="reference internal" href="usage-guide.html#transaction-context-manager"><span>Context Manager</span></a> for transactions.</li>
+<li><a class="reference internal" href="usage-guide.html#transaction-context-manager"><span class="std std-ref">Context Manager</span></a> for transactions.</li>
 </ul>
 </div>
 <div class="section" id="id18">
@@ -664,14 +663,11 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -693,12 +689,12 @@ code wasn’t optimized for size and speed. In all other ways it’s ready for w
         <li class="right" >
           <a href="reference.html" title="FDB Reference"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2009-2017, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2009-2017, David Rushby, Pavel Cisar.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

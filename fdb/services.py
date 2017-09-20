@@ -573,7 +573,7 @@ class Connection(object):
         """Get list of remaining output lines from last service query.
 
         :returns list: Service output.
-        :raises ProgrammingError: When service is not in :attr:`fetching` mode.
+        :raises fdb.ProgrammingError: When service is not in :attr:`fetching` mode.
         """
         return [line for line in self]
     def isrunning(self):
@@ -712,7 +712,7 @@ class Connection(object):
 
         :param string database: Database filename or alias.
         :returns list: Transaction IDs.
-        :raises InternalError: When can't process the result buffer.
+        :raises fdb.InternalError: When can't process the result buffer.
         """
         self.__check_active()
         _checkString(database)
@@ -1429,7 +1429,7 @@ class Connection(object):
         :param string config: Trace session configuration.
         :param string name: (optional) Trace session name.
         :returns integer: Trace session ID.
-        :raises DatabaseError: When session ID is not returned on start.
+        :raises fdb.DatabaseError: When session ID is not returned on start.
 
         Trace session output could be retrieved through :meth:`readline`,
         :meth:`readlines`, iteration over `Connection` or ignored via call to
@@ -1466,8 +1466,8 @@ class Connection(object):
 
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was stopped.
-        :raises DatabaseError: When trace session is not stopped.
-        :raises OperationalError: When server can't perform requested operation.
+        :raises fdb.DatabaseError: When trace session is not stopped.
+        :raises fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1484,8 +1484,8 @@ class Connection(object):
 
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was paused.
-        :raises DatabaseError: When trace session is not paused.
-        :raises OperationalError: When server can't perform requested operation.
+        :raises fdb.DatabaseError: When trace session is not paused.
+        :raises fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1503,8 +1503,8 @@ class Connection(object):
 
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was resumed.
-        :raises DatabaseError: When trace session is not resumed.
-        :raises OperationalError: When server can't perform requested operation.
+        :raises fdb.DatabaseError: When trace session is not resumed.
+        :raises fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1529,7 +1529,7 @@ class Connection(object):
           :user:  (string) Trace user name.
           :flags: (list of strings) Session flags.
 
-        :raises OperationalError: When server can't perform requested operation.
+        :raises fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -2059,7 +2059,7 @@ class User(object):
         :type svc: :class:`Connection`
         :returns: True if information was successfuly retrieved, False otherwise.
 
-        :raises ProgrammingError: If user name is not defined.
+        :raises fdb.ProgrammingError: If user name is not defined.
         """
         if self.name is None:
             raise fdb.ProgrammingError("Can't load information about user without name.")

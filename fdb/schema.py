@@ -917,7 +917,7 @@ FROM RDB$FILTERS""")
 
         :param connection: :class:`~fdb.Connection` instance.
 
-        :raises ProgrammingError: If Schema object was set as internal (via
+        :raises fdb.ProgrammingError: If Schema object was set as internal (via
             :meth:`_set_as_internal`).
         """
         if self.__internal:
@@ -995,7 +995,7 @@ FROM RDB$FILTERS""")
     def close(self):
         """Sever link to :class:`~fdb.Connection`.
 
-        :raises ProgrammingError: If Schema object was set as internal (via
+        :raises fdb.ProgrammingError: If Schema object was set as internal (via
             :meth:`_set_as_internal`).
         """
         if self.__internal:
@@ -1045,7 +1045,7 @@ FROM RDB$FILTERS""")
         - backup_history
         - filters
 
-        :raises ProgrammingError: For undefined metadata category.
+        :raises fdb.ProgrammingError: For undefined metadata category.
 
         .. note:: Also commits query transaction.
         """
@@ -1369,7 +1369,7 @@ database objects.
             Numeric code for user type, see :attr:`Schema.enum_object_types`.
         :returns: List of :class:`Privilege` objects.
 
-        :raises ProgrammingError: For unknown `user_type` code.
+        :raises fdb.ProgrammingError: For unknown `user_type` code.
         """
         if isinstance(user,(fdb.StringType,fdb.UnicodeType)):
             if (user_type is None) or (user_type not in self.enum_object_types):
@@ -1478,7 +1478,7 @@ class BaseSchemaItem(object):
 
         Supported actions are defined by :attr:`actions` list.
 
-        :raises ProgrammingError: For unsupported action or wrong parameters passed.
+        :raises fdb.ProgrammingError: For unsupported action or wrong parameters passed.
         """
         _action = action.lower()
         if _action in self._actions:

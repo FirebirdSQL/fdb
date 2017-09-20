@@ -234,7 +234,7 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
 
         :param connection: :class:`~fdb.Connection` instance.
 
-        :raises ProgrammingError: If Monitor object was set as internal (via
+        :raises fdb.ProgrammingError: If Monitor object was set as internal (via
             :meth:`_set_as_internal`) or database has ODS lower than 11.1.
         """
         if self.__internal:
@@ -250,7 +250,7 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     def close(self):
         """Sever link to :class:`~fdb.Connection`.
 
-        :raises ProgrammingError: If Monitor object was set as internal (via
+        :raises fdb.ProgrammingError: If Monitor object was set as internal (via
             :meth:`_set_as_internal`).
         """
         if self.__internal:
@@ -573,7 +573,7 @@ class AttachmentInfo(BaseInfoItem):
     def terminate(self):
         """Terminates client session associated with this attachment.
 
-        :raises ProgrammingError: If database has ODS lower than 11.2 or
+        :raises fdb.ProgrammingError: If database has ODS lower than 11.2 or
             this attachement is current session.
         """
         if self.monitor._con.ods < fdb.ODS_FB_25:
@@ -752,7 +752,7 @@ class StatementInfo(BaseInfoItem):
     def terminate(self):
         """Terminates execution of statement.
 
-        :raises ProgrammingError: If this attachement is current session.
+        :raises fdb.ProgrammingError: If this attachement is current session.
         """
         if self.attachment == self.monitor.this_attachment:
             raise fdb.ProgrammingError("Can't terminate statement from current session.")

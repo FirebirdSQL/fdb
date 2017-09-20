@@ -92,7 +92,8 @@ pygments_style = 'sphinx'
 autoclass_content = 'both'
 
 # Intersphinx  options
-intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
+intersphinx_mapping = {'python': ('http://docs.python.org/2/', None)}
+
 
 # Options for HTML output
 # -----------------------

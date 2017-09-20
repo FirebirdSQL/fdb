@@ -1,29 +1,28 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Compliance to Python Database API 2.0 &mdash; FDB 1.8 documentation</title>
-    
+    <title>Compliance to Python Database API 2.0 &#8212; FDB 1.8 documentation</title>
     <link rel="stylesheet" href="_static/fdbtheme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="FDB 1.8 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Differences from KInterbasDB" href="differences-from-kdb.html" />
     <link rel="prev" title="Usage Guide" href="usage-guide.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -33,7 +32,7 @@
 <![endif]-->
 
   </head>
-  <body role="document">
+  <body>
 
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -50,7 +49,7 @@
         <li class="right" >
           <a href="usage-guide.html" title="Usage Guide"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -148,7 +147,7 @@ extended character sets with FDB.</td>
 <tr class="field-odd field"><th class="field-name">sql_dialect:</th><td class="field-body">The SQL dialect is feature for backward compatibility with Interbase® 5.5
 or earlier. The default dialect is <cite>3</cite> (the most featureful dialect, default
 for Firebird). If you want to connect to <cite>legacy</cite> databases, you must
-explicitly set this argument&#8217;s value to <cite>1</cite>. Dialect <cite>2</cite> is a transitional
+explicitly set this argument’s value to <cite>1</cite>. Dialect <cite>2</cite> is a transitional
 dialect that is normally used only during ports from IB &lt; 6 to IB &gt;= 6
 or Firebird. See Firebird documentation for more information about
 SQL Dialects.</td>
@@ -172,7 +171,7 @@ for information on handling extended character sets with FDB.</div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.Connection.sql_dialect" title="fdb.Connection.sql_dialect"><code class="xref py py-attr docutils literal"><span class="pre">sql_dialect</span></code></a></p>
 <blockquote>
 <div>This integer attribute indicates which SQL dialect the connection is using.
-You should not change a connection&#8217;s dialect; instead, discard the connection
+You should not change a connection’s dialect; instead, discard the connection
 and establish a new one with the desired dialect. For more information, see
 the documentation of the <cite>sql_dialect</cite> argument of the <cite>connect</cite> function.</div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.Connection.server_version" title="fdb.Connection.server_version"><code class="xref py py-attr docutils literal"><span class="pre">server_version</span></code></a></p>
@@ -183,9 +182,9 @@ is connected.</div></blockquote>
 <blockquote>
 <div><p>Executes a statement without caching its prepared form. The statement must <em>not</em> be
 of a type that returns a result set. In most cases (especially cases in which the same
-statement &#8211; perhaps a parameterized statement &#8211; is executed repeatedly),
-it is better to create a cursor using the connection&#8217;s <cite>cursor</cite> method, then execute
-the statement using one of the cursor&#8217;s execute methods.</p>
+statement – perhaps a parameterized statement – is executed repeatedly),
+it is better to create a cursor using the connection’s <cite>cursor</cite> method, then execute
+the statement using one of the cursor’s execute methods.</p>
 <p>Arguments:</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -239,9 +238,9 @@ the <a class="reference external" href="Python-DB-API-2.0.html">DB API Specifica
 </div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.Cursor.rowcount" title="fdb.Cursor.rowcount"><code class="xref py py-attr docutils literal"><span class="pre">rowcount</span></code></a></p>
 <blockquote>
-<div>Although FDB&#8217;s <cite>Cursor`s implement this
-attribute, the database engine&#8217;s own support for the determination of
-&#8220;rows affected&#8221;/&#8221;rows selected&#8221; is quirky. The database engine only
+<div>Although FDB’s <cite>Cursor`s implement this
+attribute, the database engine’s own support for the determination of
+“rows affected”/”rows selected” is quirky. The database engine only
 supports the determination of rowcount for `INSERT</cite>, <cite>UPDATE</cite>,
 <cite>DELETE</cite>, and <cite>SELECT</cite> statements. When stored procedures become
 involved, row count figures are usually not available to the client.
@@ -253,9 +252,9 @@ internally in batches of 1302, and will misreport the rowcount for
 result sets larger than 1302 rows until the 1303rd row is fetched,
 result sets larger than 2604 rows until the 2605th row is fetched, and
 so on, in increments of 1302. As required by the Python DB API Spec,
-the rowcount attribute &#8220;is -1 in case no executeXX() has been
+the rowcount attribute “is -1 in case no executeXX() has been
 performed on the cursor or the rowcount of the last operation is not
-determinable by the interface&#8221;.</div></blockquote>
+determinable by the interface”.</div></blockquote>
 <p><a class="reference internal" href="reference.html#fdb.Cursor.fetchone" title="fdb.Cursor.fetchone"><code class="xref py py-meth docutils literal"><span class="pre">fetchone()</span></code></a></p>
 <p><a class="reference internal" href="reference.html#fdb.Cursor.fetchmany" title="fdb.Cursor.fetchmany"><code class="xref py py-meth docutils literal"><span class="pre">fetchmany()</span></code></a></p>
 <p><a class="reference internal" href="reference.html#fdb.Cursor.fetchall" title="fdb.Cursor.fetchall"><code class="xref py py-meth docutils literal"><span class="pre">fetchall()</span></code></a></p>
@@ -298,14 +297,11 @@ being an instance of a particular class or type.</div></blockquote>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -327,12 +323,12 @@ being an instance of a particular class or type.</div></blockquote>
         <li class="right" >
           <a href="usage-guide.html" title="Usage Guide"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">FDB 1.8 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2009-2017, David Rushby, Pavel Cisar.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2009-2017, David Rushby, Pavel Cisar.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>
