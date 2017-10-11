@@ -1,6 +1,8 @@
 *.pyc
 build/
 dist/
+*.wpr
+*.wpu
 
 
 

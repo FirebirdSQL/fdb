@@ -4,19 +4,16 @@ PKG-INFO
 README
 setup.cfg
 setup.py
-docs/.buildinfo
 docs/changelog.html
 docs/differences-from-kdb.html
 docs/genindex.html
 docs/getting-started.html
 docs/index.html
 docs/license.html
-docs/listinv.py
 docs/objects.inv
 docs/py-modindex.html
 docs/python-db-api-compliance.html
 docs/reference.html
-docs/requirements.html
 docs/search.html
 docs/searchindex.js
 docs/usage-guide.html
@@ -80,7 +77,6 @@ sphinx/index.txt
 sphinx/license.txt
 sphinx/python-db-api-compliance.txt
 sphinx/reference.txt
-sphinx/requirements.txt
 sphinx/usage-guide.txt
 sphinx/fdbtheme/layout.html
 sphinx/fdbtheme/theme.conf
