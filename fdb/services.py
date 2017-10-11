@@ -1284,9 +1284,6 @@ class Connection(object):
             numCType='B'
           )
 
-        # This is necessary
-        request.add_code(ibase.isc_spb_verbose)
-
         # Options bitmask:
         request.add_numeric(ibase.isc_spb_options, optionMask)
 
@@ -1309,7 +1306,8 @@ class Connection(object):
             if request_length > 0:
                 request_length = min([request_length, 65500])
                 raw = backup_stream.read(request_length)
-                spb = ctypes.create_string_buffer(1+2+request_length+1)
+                if len(spb) < request_length+4:
+                    spb = ctypes.create_string_buffer(request_length+4)
                 spb[0] = chr(ibase.isc_info_svc_line)
                 spb[1:3] = fdb.uint_to_bytes(len(raw), 2)
                 spb[3:3+len(raw)] = raw
@@ -1325,7 +1323,8 @@ class Connection(object):
                                       self._isc_status,
                                       "Services/isc_service_query:")
             i = 0
-            while self._result_buffer[i] != ibase.isc_info_end:
+            request_length = 0
+            while self._result_buffer[i] != chr(ibase.isc_info_end):
                 code = ibase.ord2(self._result_buffer[i])
                 i += 1
                 if code == ibase.isc_info_svc_stdin:
@@ -1333,12 +1332,11 @@ class Connection(object):
                 elif code == ibase.isc_info_svc_line:
                     (line, i) = self._extract_string(self._result_buffer, i)
                 else:
-                    break
+                    pass
             if not wait:
                 stop = (request_length == 0) and (len(line) == 0)
             elif request_length != 0:
                 wait = False
-
     # nbackup methods:
     def nbackup(self, source_database,
                 dest_filename,
