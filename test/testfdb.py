@@ -1656,6 +1656,22 @@ class TestServices2(FDBTestBase):
                                     fdb.services.STATS_PAGE_READS,fdb.services.STATS_PAGE_WRITES])
             self.assertGreater(len(output),0)
             self.assertIn('gbak: time     delta  reads  writes ', output)
+    def test_local_backup(self):
+        self.svc.backup('employee', self.fbk)
+        self.svc.wait()
+        with open(self.fbk, mode='r') as f:
+            bkp = f.read()
+        backup_stream = cStringIO.StringIO()
+        self.svc.local_backup('employee', backup_stream)
+        backup_stream.seek(0)
+        self.assertEqual(bkp, backup_stream.read())
+    def test_local_restore(self):
+        backup_stream = cStringIO.StringIO()
+        self.svc.local_backup('employee', backup_stream)
+        backup_stream.seek(0)
+        self.svc.local_restore(backup_stream, self.rfdb, replace=1)
+        self.assertTrue(os.path.exists(self.rfdb))
+
     def test_nbackup(self):
         if self.con.engine_version < 2.5:
             return
@@ -6083,6 +6099,65 @@ class TestConnectionWithSchema(FDBTestBase):
         else:
             self.assertEqual(len(s.tables),16)
         self.assertEqual(s.get_table('JOB').name,'JOB')
+
+
+class TestHooks(FDBTestBase):
+    def setUp(self):
+        super(TestHooks,self).setUp()
+        self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
+    def __hook_service_attached(self, con):
+        self._svc = con
+        return con
+    def __hook_db_attached(self, con):
+        self._db = con
+        return con
+    def __hook_db_attach_request_a(self, dsn, user, password, host,
+                                   port, database, sql_dialect, role,
+                                   charset, buffers, force_write,
+                                   no_reserve, db_key_scope,
+                                   isolation_level, connection_class,
+                                   fb_library_name, no_gc,
+                                   no_db_triggers, no_linger):
+        return None
+    def __hook_db_attach_request_b(self, dsn, user, password, host,
+                                   port, database, sql_dialect, role,
+                                   charset, buffers, force_write,
+                                   no_reserve, db_key_scope,
+                                   isolation_level, connection_class,
+                                   fb_library_name, no_gc,
+                                   no_db_triggers, no_linger):
+        return self._hook_con
+    def test_hook_db_attached(self):
+        fdb.add_hook(fdb.HOOK_DATABASE_ATTACHED,
+                     self.__hook_db_attached)
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
+            self.assertEqual(con, self._db)
+        fdb.remove_hook(fdb.HOOK_DATABASE_ATTACHED,
+                        self.__hook_db_attached)
+    def test_hook_db_attach_request(self):
+        self._hook_con = fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD)
+        fdb.add_hook(fdb.HOOK_DATABASE_ATTACH_REQUEST,
+                     self.__hook_db_attach_request_a)
+        fdb.add_hook(fdb.HOOK_DATABASE_ATTACH_REQUEST,
+                     self.__hook_db_attach_request_b)
+        self.assertListEqual([self.__hook_db_attach_request_a,
+                              self.__hook_db_attach_request_b],
+                             fdb.get_hooks(fdb.HOOK_DATABASE_ATTACH_REQUEST))
+        with fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD) as con:
+            self.assertEqual(con, self._hook_con)
+        self._hook_con.close()
+        fdb.remove_hook(fdb.HOOK_DATABASE_ATTACH_REQUEST,
+                        self.__hook_db_attach_request_a)
+        fdb.remove_hook(fdb.HOOK_DATABASE_ATTACH_REQUEST,
+                        self.__hook_db_attach_request_b)
+    def test_hook_service_attached(self):
+        fdb.add_hook(fdb.HOOK_SERVICE_ATTACHED,
+                     self.__hook_service_attached)
+        svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
+        self.assertEqual(svc, self._svc)
+        svc.close()
+        fdb.remove_hook(fdb.HOOK_SERVICE_ATTACHED,
+                        self.__hook_service_attached)
 
 
 class TestBugs(FDBTestBase):
