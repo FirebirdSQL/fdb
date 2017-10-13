@@ -162,11 +162,54 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
-__version__ = '1.8'
+__version__ = '1.9'
 
 apilevel = '2.0'
 threadsafety = 1
 paramstyle = 'qmark'
+
+HOOK_API_LOADED = 1
+HOOK_DATABASE_ATTACHED = 2
+HOOK_DATABASE_ATTACH_REQUEST = 3
+HOOK_SERVICE_ATTACHED = 4
+
+hooks = {}
+
+def add_hook(hook_type, func):
+    """Instals hook function for specified hook_type.
+
+    :param hook_type: One from HOOK_* constants
+    :param func: Hook routine to be installed
+
+    .. important::
+
+        Routine must have a signature required for given hook type.
+        However it's not checked when hook is installed, and any
+        issue will lead to run-time error when hook routine is executed.
+    """
+    hooks.setdefault(hook_type, list()).append(func)
+
+def remove_hook(hook_type, func):
+    """Uninstalls previously installed hook function for
+    specified hook_type.
+
+    :param hook_type: One from HOOK_* constants
+    :param func: Hook routine to be uninstalled
+
+    If hook routine wasn't previously installed, it does nothing.
+    """
+    try:
+        hooks.get(hook_type, list()).remove(func)
+    except:
+        pass
+
+def get_hooks(hook_type):
+    """Returns list of installed hook routines for specified hook_type.
+
+    :param hook_type: One from HOOK_* constants
+    :returns: List of installed hook routines.
+    """
+    return hooks.get(hook_type, list())
 
 def load_api(fb_library_name=None):
     """Initializes bindings to Firebird Client Library unless they are already initialized.
@@ -176,9 +219,16 @@ def load_api(fb_library_name=None):
        When it's not specified, FDB does its best to locate appropriate client library.
 
     :returns: :class:`fdb.ibase.fbclient_API` instance.
+
+    Hooks:
+
+    Event HOOK_API_LOADED: Executed after api is initialized. Hook routine must
+    have signature: hook_func(api). Any value returned by hook is ignored.
     """
     if not hasattr(sys.modules[__name__],'api'):
         setattr(sys.modules[__name__],'api',fbclient_API(fb_library_name))
+        for hook in get_hooks(HOOK_API_LOADED):
+            hook(getattr(sys.modules[__name__],'api'))
     return getattr(sys.modules[__name__],'api')
 
 # Exceptions required by Python Database API
@@ -678,6 +728,23 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
 
        con = fdb.connect(dsn='host:/path/database.fdb', user='sysdba', password='pass', charset='UTF8')
        con = fdb.connect(host='myhost', database='/path/database.fdb', user='sysdba', password='pass', charset='UTF8')
+
+    Hooks:
+
+    Event HOOK_DATABASE_ATTACH_REQUEST: Executed after all parameters
+    are preprocessed and before :class:`Connection` is created. Hook
+    must have signature: hook_func(dsn, user,password, host, port,
+    database, sql_dialect, role, charset, buffers, force_write,
+    no_reserve, db_key_scope, isolation_level, connection_class,
+    fb_library_name, no_gc, no_db_triggers, no_linger).
+
+    Hook may return :class:`Connection` (or subclass) instance or None.
+    First instance returned by any hook will become the return value
+    of this function.
+
+    Event HOOK_DATABASE_ATTACHED: Executed before :class:`Connection`
+    (or subclass) instance is returned. Hook must have signature:
+    hook_func(connection). Any value returned by hook is ignored.
     """
     load_api(fb_library_name)
     if connection_class == None:
@@ -723,19 +790,42 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
     dsn = b(dsn,_FS_ENCODING)
     if charset:
         charset = charset.upper()
-    dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,force_write,
-                    no_reserve, db_key_scope, no_gc, no_db_triggers, no_linger)
+    #
+    # Pre-attcha hook
+    #
+    con = None
+    for hook in get_hooks(HOOK_DATABASE_ATTACH_REQUEST):
+        try:
+            con = hook(dsn, user, password, host, port, database,
+                       sql_dialect, role, charset, buffers,
+                       force_write, no_reserve, db_key_scope,
+                       isolation_level, connection_class,
+                       fb_library_name, no_gc, no_db_triggers,
+                       no_linger)
+        except Exception as e:
+            raise ProgrammingError("Error in DATABASE_ATTACH_REQUEST hook.", *e.args)
+        if con is not None:
+            break
+    #
+    if con is None:
+        dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,force_write,
+                        no_reserve, db_key_scope, no_gc, no_db_triggers, no_linger)
 
-    _isc_status = ISC_STATUS_ARRAY()
-    _db_handle = isc_db_handle(0)
+        _isc_status = ISC_STATUS_ARRAY()
+        _db_handle = isc_db_handle(0)
 
-    api.isc_attach_database(_isc_status, len(dsn), dsn, _db_handle, len(dpb),
-                              dpb)
-    if db_api_error(_isc_status):
-        raise exception_from_status(DatabaseError, _isc_status,
-                                    "Error while connecting to database:")
+        api.isc_attach_database(_isc_status, len(dsn), dsn, _db_handle, len(dpb),
+                                  dpb)
+        if db_api_error(_isc_status):
+            raise exception_from_status(DatabaseError, _isc_status,
+                                        "Error while connecting to database:")
 
-    return connection_class(_db_handle, dpb, sql_dialect, charset, isolation_level)
+        con = connection_class(_db_handle, dpb, sql_dialect, charset, isolation_level)
+    #
+    for hook in get_hooks(HOOK_DATABASE_ATTACHED):
+        hook(con)
+    #
+    return con
 
 def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
                     host=None, port=None, database=None,
@@ -848,8 +938,10 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
         raise exception_from_status(DatabaseError, isc_status,
                                     "Error while creating database:")
 
-    return connection_class(db_handle,sql_dialect=sql_dialect, charset=charset)
-
+    con = connection_class(db_handle,sql_dialect=sql_dialect, charset=charset)
+    for hook in get_hooks(HOOK_DATABASE_ATTACHED):
+        hook(HOOK_DATABASE_ATTACHED, con)
+    return con
 
 class _cursor_weakref_callback(object):
     """Wraps callback function used in weakrefs so it's called only if still exists.
