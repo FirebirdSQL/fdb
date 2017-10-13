@@ -178,6 +178,13 @@ def connect(host='service_mgr',user=None,password=None):
        By definition, a Services Manager connection is bound to a particular
        host.  Therefore, the database specified as a parameter to methods such as
        `getStatistics` MUST NOT include the host name of the database server.
+
+    Hooks:
+
+    Event HOOK_SERVICE_ATTACHED: Executed before :class:`Connection`
+    instance is returned. Hook must have signature:
+    hook_func(connection). Any value returned by hook is ignored.
+
     """
     setattr(sys.modules[__name__],'api',fdb.load_api())
     if not user:
@@ -216,8 +223,10 @@ def connect(host='service_mgr',user=None,password=None):
             host += ':'
         host += 'service_mgr'
 
-    return Connection(host, user, password)
-
+    con = Connection(host, user, password)
+    for hook in fdb.get_hooks(fdb.HOOK_SERVICE_ATTACHED):
+        hook(con)
+    return con
 
 class Connection(object):
     """
