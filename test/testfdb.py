@@ -116,6 +116,10 @@ class FDBTestBase(unittest.TestCase):
             self.version = FB30
         else:
             raise Exception("Unsupported Firebird version (%s)" % self.version)
+        #
+        self.cwd = os.getcwd()
+        self.dbpath = self.cwd if os.path.split(self.cwd)[1] == 'test' \
+            else os.path.join(self.cwd,'test')
     def clear_output(self):
         self.output.close()
         self.output = StringIO()
@@ -150,8 +154,6 @@ class FDBTestBase(unittest.TestCase):
 class TestCreateDrop(FDBTestBase):
     def setUp(self):
         super(TestCreateDrop,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,'droptest.fdb')
         if os.path.exists(self.dbfile):
             os.remove(self.dbfile)
@@ -178,8 +180,6 @@ class TestCreateDrop(FDBTestBase):
 class TestConnection(FDBTestBase):
     def setUp(self):
         super(TestConnection,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
     def tearDown(self):
         pass
@@ -337,8 +337,6 @@ class TestConnection(FDBTestBase):
 class TestTransaction(FDBTestBase):
     def setUp(self):
         super(TestTransaction,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -445,8 +443,6 @@ class TestTransaction(FDBTestBase):
 class TestDistributedTransaction(FDBTestBase):
     def setUp(self):
         super(TestDistributedTransaction,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.db1 = os.path.join(self.dbpath,'fbtest-1.fdb')
         self.db2 = os.path.join(self.dbpath,'fbtest-2.fdb')
@@ -684,8 +680,6 @@ class TestDistributedTransaction(FDBTestBase):
 class TestCursor(FDBTestBase):
     def setUp(self):
         super(TestCursor,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -1018,8 +1012,6 @@ class TestCursor(FDBTestBase):
 class TestPreparedStatement(FDBTestBase):
     def setUp(self):
         super(TestPreparedStatement,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -1061,8 +1053,6 @@ class TestPreparedStatement(FDBTestBase):
 class TestArrays(FDBTestBase):
     def setUp(self):
         super(TestArrays,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -1301,8 +1291,6 @@ class TestArrays(FDBTestBase):
 class TestInsertData(FDBTestBase):
     def setUp(self):
         super(TestInsertData,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -1439,8 +1427,6 @@ class TestInsertData(FDBTestBase):
 class TestStoredProc(FDBTestBase):
     def setUp(self):
         super(TestStoredProc,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -1462,8 +1448,6 @@ class TestStoredProc(FDBTestBase):
 class TestServices(FDBTestBase):
     def setUp(self):
         super(TestServices,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
     def test_attach(self):
         svc = fdb.services.connect(host=FBTEST_HOST,password=FBTEST_PASSWORD)
@@ -1520,8 +1504,6 @@ class TestServices(FDBTestBase):
 class TestServices2(FDBTestBase):
     def setUp(self):
         super(TestServices2,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.fbk = os.path.join(self.dbpath,'test_employee.fbk')
         self.fbk2 = os.path.join(self.dbpath,'test_employee.fbk2')
@@ -1888,8 +1870,6 @@ class TestServices2(FDBTestBase):
 class TestEvents(FDBTestBase):
     def setUp(self):
         super(TestEvents,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,'fbevents.fdb')
         if os.path.exists(self.dbfile):
             os.remove(self.dbfile)
@@ -1996,8 +1976,6 @@ END""")
 class TestStreamBLOBs(FDBTestBase):
     def setUp(self):
         super(TestStreamBLOBs,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -2108,8 +2086,6 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
 class TestCharsetConversion(FDBTestBase):
     def setUp(self):
         super(TestCharsetConversion,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD,
@@ -2212,8 +2188,6 @@ Porém você poderá trocar entre ambos com um mínimo de luta. """
 class TestSchema(FDBTestBase):
     def setUp(self):
         super(TestSchema,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         #self.dbfile = '/home/data/db/employee30.fdb'
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
@@ -4264,7 +4238,7 @@ END""")
         self.assertTupleEqual(cm.exception.args,
             ("Unsupported parameter(s) 'badparam'",))
         self.assertEqual(c.get_sql_for('declare'),
-"""DECLARE EXTERNAL FUNCTION STRLEN
+                         """DECLARE EXTERNAL FUNCTION STRLEN
   CSTRING(32767)
 RETURNS INTEGER BY VALUE
 ENTRY_POINT 'IB_UDF_strlen'
@@ -4284,7 +4258,7 @@ MODULE_NAME 'ib_udf'""")
         self.assertTrue(c.has_return_argument())
         #
         self.assertEqual(c.get_sql_for('declare'),
-"""DECLARE EXTERNAL FUNCTION STRING2BLOB
+                         """DECLARE EXTERNAL FUNCTION STRING2BLOB
   VARCHAR(300) BY DESCRIPTOR,
   BLOB
 RETURNS PARAMETER 2
@@ -4299,7 +4273,7 @@ MODULE_NAME 'fbudf'""")
         self.assertFalse(c.has_return_argument())
         #
         self.assertEqual(c.get_sql_for('declare'),
-"""DECLARE EXTERNAL FUNCTION LTRIM
+                         """DECLARE EXTERNAL FUNCTION LTRIM
   CSTRING(255)
 RETURNS CSTRING(255) FREE_IT
 ENTRY_POINT 'IB_UDF_ltrim'
@@ -4313,7 +4287,7 @@ MODULE_NAME 'ib_udf'""")
         self.assertFalse(c.has_return_argument())
         #
         self.assertEqual(c.get_sql_for('declare'),
-"""DECLARE EXTERNAL FUNCTION I64NVL
+                         """DECLARE EXTERNAL FUNCTION I64NVL
   NUMERIC(18, 0) BY DESCRIPTOR,
   NUMERIC(18, 0) BY DESCRIPTOR
 RETURNS NUMERIC(18, 0) BY DESCRIPTOR
@@ -4355,20 +4329,20 @@ MODULE_NAME 'fbudf'""")
             #
             self.assertEqual(c.get_sql_for('drop'),"DROP FUNCTION F2")
             self.assertEqual(c.get_sql_for('create'),
-    """CREATE FUNCTION F2 (X INTEGER)
+                             """CREATE FUNCTION F2 (X INTEGER)
     RETURNS INTEGER
     AS
     BEGIN
       RETURN X+1;
     END""")
             self.assertEqual(c.get_sql_for('create',no_code=True),
-    """CREATE FUNCTION F2 (X INTEGER)
+                             """CREATE FUNCTION F2 (X INTEGER)
     RETURNS INTEGER
     AS
     BEGIN
     END""")
             self.assertEqual(c.get_sql_for('recreate'),
-    """RECREATE FUNCTION F2 (X INTEGER)
+                             """RECREATE FUNCTION F2 (X INTEGER)
     RETURNS INTEGER
     AS
     BEGIN
@@ -4376,7 +4350,7 @@ MODULE_NAME 'fbudf'""")
     END""")
 
             self.assertEqual(c.get_sql_for('create_or_alter'),
-    """CREATE OR ALTER FUNCTION F2 (X INTEGER)
+                             """CREATE OR ALTER FUNCTION F2 (X INTEGER)
     RETURNS INTEGER
     AS
     BEGIN
@@ -4391,13 +4365,13 @@ MODULE_NAME 'fbudf'""")
             self.assertTupleEqual(cm.exception.args,
                 ("Missing required parameter: 'code'.",))
             self.assertEqual(c.get_sql_for('alter',returns='INTEGER',code=''),
-    """ALTER FUNCTION F2
+                             """ALTER FUNCTION F2
     RETURNS INTEGER
     AS
     BEGIN
     END""")
             self.assertEqual(c.get_sql_for('alter',arguments="IN1 integer",returns='INTEGER',code=''),
-    """ALTER FUNCTION F2 (IN1 integer)
+                             """ALTER FUNCTION F2 (IN1 integer)
     RETURNS INTEGER
     AS
     BEGIN
@@ -4405,7 +4379,7 @@ MODULE_NAME 'fbudf'""")
             self.assertEqual(c.get_sql_for('alter',returns='INTEGER',
                                            arguments=["IN1 integer","IN2 VARCHAR(10)"],
                                            code=''),
-    """ALTER FUNCTION F2 (
+                             """ALTER FUNCTION F2 (
       IN1 integer,
       IN2 VARCHAR(10)
     )
@@ -4416,7 +4390,7 @@ MODULE_NAME 'fbudf'""")
             #
             c = self.con.schema.get_function('FX')
             self.assertEqual(c.get_sql_for('create'),
-    """CREATE FUNCTION FX (
+                             """CREATE FUNCTION FX (
       F TYPE OF "FIRSTNAME",
       L TYPE OF COLUMN CUSTOMER.CONTACT_LAST
     )
@@ -5677,8 +5651,6 @@ DROP TABLE JOB
 class TestMonitor(FDBTestBase):
     def setUp(self):
         super(TestMonitor,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         self.con = fdb.connect(host=FBTEST_HOST,database=self.dbfile,
                                user=FBTEST_USER,password=FBTEST_PASSWORD)
@@ -6097,8 +6069,6 @@ class TestMonitor(FDBTestBase):
 class TestConnectionWithSchema(FDBTestBase):
     def setUp(self):
         super(TestConnectionWithSchema,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
         #self.con = fdb.connect(dsn=self.dbfile,user=FBTEST_USER,password=FBTEST_PASSWORD)
     def tearDown(self):
@@ -6118,8 +6088,6 @@ class TestConnectionWithSchema(FDBTestBase):
 class TestBugs(FDBTestBase):
     def setUp(self):
         super(TestBugs,self).setUp()
-        self.cwd = os.getcwd()
-        self.dbpath = os.path.join(self.cwd,'test')
         self.dbfile = os.path.join(self.dbpath,'fbbugs.fdb')
         if os.path.exists(self.dbfile):
             os.remove(self.dbfile)
