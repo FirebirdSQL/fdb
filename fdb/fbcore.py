@@ -618,68 +618,105 @@ def exception_from_status(error, status, preamble=None):
             break
     return error('\n'.join(msglist), sqlcode, error_code)
 
-def build_dpb(user, password, sql_dialect, role, charset, buffers, force_write,
-              no_reserve, db_key_scope, no_gc, no_db_triggers, no_linger):
-    params = [int2byte(isc_dpb_version1)]
 
-    def addString(codeAsByte, s):
-        if PYTHON_MAJOR_VER == 3 or isinstance(s,UnicodeType):
-            s = s.encode(charset_map.get(charset, charset))
-        sLen = len(s)
+class ParameterBuffer(object):
+    """Helper class for construction of Database (and other) parameter
+    buffers. Parameter are stored in insertion order."""
+    def __init__(self):
+        self.items = []
+    def add_code(self, code):
+        """Add parameter code to parameter buffer.
+
+        :param code: Firebird code for the parameter
+        """
+        self.items.append(struct.pack('c', int2byte(code)))
+    def add_string(self, code, value):
+        """Add string to parameter buffer.
+
+        :param code: Firebird code for the parameter
+        :param string value: Parameter value
+        """
+        if PYTHON_MAJOR_VER == 3 or isinstance(value, UnicodeType):
+            value = value.encode(charset_map.get(charset, charset))
+        sLen = len(value)
         if sLen >= 256:
             # Because the length is denoted in the DPB by a single byte.
-            raise ProgrammingError("Individual component of database"
+            raise ProgrammingError("Individual component of"
                                    " parameter buffer is too large.  Components must be less"
                                    " than 256 bytes."
                                    )
-        myformat = 'cc%ds' % sLen  # like 'cc50s' for a 50-byte string
-        newEntry = struct.pack(myformat, int2byte(codeAsByte),
-                               int2byte(sLen), s)
-        params.append(newEntry)
+        self.items.append(struct.pack('cc%ds' % sLen, int2byte(code),
+                                      int2byte(sLen), value))
+    def add_byte(self, code, value):
+        """Add byte value to parameter buffer.
 
-    def addByte(codeAsByte, value):
+        :param code: Firebird code for the parameter
+        :param value: Parameter value (0-255)
+        """
         if (not isinstance(value, (int, mylong))
             or value < 0 or value > 255):
-            raise ProgrammingError("The value for an integer DPB code must be"
+            raise ProgrammingError("The value for an integer PB code must be"
                                    " an int or long with a value between 0 and 255."
                                    )
-        newEntry = struct.pack('ccc', int2byte(codeAsByte),
-                               b('\x01'), int2byte(value))
-        params.append(newEntry)
-    def addInt(codeAsByte, value):
+        self.items.append(struct.pack('ccc', int2byte(code),
+                                      b('\x01'), int2byte(value)))
+    def add_int(self, code, value):
+        """Add integer value to parameter buffer.
+
+        :param code: Firebird code for the parameter
+        :param int value: Parameter value
+        """
         if not isinstance(value, (int, mylong)):
             raise ProgrammingError("The value for an integer DPB code must be"
                                    " an int or long."
                                    )
-        newEntry = struct.pack('=ccI', int2byte(codeAsByte),
-                               b('\x04'), value)
-        params.append(newEntry)
+        self.items.append(struct.pack('=ccI', int2byte(code),
+                                      b('\x04'), value))
+    def get_buffer(self):
+        """Get parameter buffer content.
 
+        :returns: Byte string with all inserted parameters.
+        """
+        return b('').join(self.items)
+    def clear(self):
+        "Clear all parameters stored in parameter buffer."
+        self.items = []
+    def get_length(self):
+        "Returns actual total length of parameter buffer."
+        return sum((len(x) for x in self.items))
+
+
+
+def build_dpb(user, password, sql_dialect, role, charset, buffers,
+              force_write, no_reserve, db_key_scope, no_gc,
+              no_db_triggers, no_linger):
+    dpb = ParameterBuffer()
+    dpb.add_code(isc_dpb_version1)
     if user:
-        addString(isc_dpb_user_name, user)
+        dpb.add_string(isc_dpb_user_name, user)
     if password:
-        addString(isc_dpb_password, password)
+        dpb.add_string(isc_dpb_password, password)
     if role:
-        addString(isc_dpb_sql_role_name, role)
+        dpb.add_string(isc_dpb_sql_role_name, role)
     if sql_dialect:
-        addByte(isc_dpb_sql_dialect, sql_dialect)
+        dpb.add_byte(isc_dpb_sql_dialect, sql_dialect)
     if charset:
-        addString(isc_dpb_lc_ctype, charset.upper())
+        dpb.add_string(isc_dpb_lc_ctype, charset.upper())
     if buffers:
-        addInt(isc_dpb_num_buffers, buffers)
+        dpb.add_int(isc_dpb_num_buffers, buffers)
     if force_write:
-        addByte(isc_dpb_force_write, force_write)
+        dpb.add_byte(isc_dpb_force_write, force_write)
     if no_reserve:
-        addByte(isc_dpb_no_reserve, no_reserve)
+        dpb.add_byte(isc_dpb_no_reserve, no_reserve)
     if db_key_scope:
-        addByte(isc_dpb_dbkey_scope, db_key_scope)
+        dpb.add_byte(isc_dpb_dbkey_scope, db_key_scope)
     if no_gc:
-        addByte(isc_dpb_no_garbage_collect, no_gc)
+        dpb.add_byte(isc_dpb_no_garbage_collect, no_gc)
     if no_db_triggers:
-        addByte(isc_dpb_no_db_triggers, no_db_triggers)
+        dpb.add_byte(isc_dpb_no_db_triggers, no_db_triggers)
     if no_linger:
-        addByte(isc_dpb_nolinger, no_linger)
-    return b('').join(params)
+        dpb.add_byte(isc_dpb_nolinger, no_linger)
+    return dpb
 
 def connect(dsn='', user=None, password=None, host=None, port=None, database=None,
             sql_dialect=3, role=None, charset=None, buffers=None,
@@ -735,10 +772,8 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
 
     Event HOOK_DATABASE_ATTACH_REQUEST: Executed after all parameters
     are preprocessed and before :class:`Connection` is created. Hook
-    must have signature: hook_func(dsn, user,password, host, port,
-    database, sql_dialect, role, charset, buffers, force_write,
-    no_reserve, db_key_scope, isolation_level, connection_class,
-    fb_library_name, no_gc, no_db_triggers, no_linger).
+    must have signature: hook_func(dsn, dpb) where `dpb` is
+    :class:`ParameterBuffer` instance.
 
     Hook may return :class:`Connection` (or subclass) instance or None.
     First instance returned by any hook will become the return value
@@ -793,36 +828,33 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
     if charset:
         charset = charset.upper()
     #
-    # Pre-attcha hook
+    dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,force_write,
+                    no_reserve, db_key_scope, no_gc, no_db_triggers, no_linger)
+    #
+    # Pre-attach hook
     #
     con = None
     for hook in get_hooks(HOOK_DATABASE_ATTACH_REQUEST):
         try:
-            con = hook(dsn, user, password, host, port, database,
-                       sql_dialect, role, charset, buffers,
-                       force_write, no_reserve, db_key_scope,
-                       isolation_level, connection_class,
-                       fb_library_name, no_gc, no_db_triggers,
-                       no_linger)
+            con = hook(dsn, dpb)
         except Exception as e:
             raise ProgrammingError("Error in DATABASE_ATTACH_REQUEST hook.", *e.args)
         if con is not None:
             break
     #
     if con is None:
-        dpb = build_dpb(user, password, sql_dialect, role, charset, buffers,force_write,
-                        no_reserve, db_key_scope, no_gc, no_db_triggers, no_linger)
 
         _isc_status = ISC_STATUS_ARRAY()
         _db_handle = isc_db_handle(0)
-
-        api.isc_attach_database(_isc_status, len(dsn), dsn, _db_handle, len(dpb),
-                                  dpb)
+        dpbuf = dpb.get_buffer()
+        api.isc_attach_database(_isc_status, len(dsn), dsn, _db_handle,
+                                len(dpbuf), dpbuf)
         if db_api_error(_isc_status):
             raise exception_from_status(DatabaseError, _isc_status,
                                         "Error while connecting to database:")
 
-        con = connection_class(_db_handle, dpb, sql_dialect, charset, isolation_level)
+        con = connection_class(_db_handle, dpbuf, sql_dialect,
+                               charset, isolation_level)
     #
     for hook in get_hooks(HOOK_DATABASE_ATTACHED):
         hook(con)

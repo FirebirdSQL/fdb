@@ -6111,21 +6111,9 @@ class TestHooks(FDBTestBase):
     def __hook_db_attached(self, con):
         self._db = con
         return con
-    def __hook_db_attach_request_a(self, dsn, user, password, host,
-                                   port, database, sql_dialect, role,
-                                   charset, buffers, force_write,
-                                   no_reserve, db_key_scope,
-                                   isolation_level, connection_class,
-                                   fb_library_name, no_gc,
-                                   no_db_triggers, no_linger):
+    def __hook_db_attach_request_a(self, dsn, dpb):
         return None
-    def __hook_db_attach_request_b(self, dsn, user, password, host,
-                                   port, database, sql_dialect, role,
-                                   charset, buffers, force_write,
-                                   no_reserve, db_key_scope,
-                                   isolation_level, connection_class,
-                                   fb_library_name, no_gc,
-                                   no_db_triggers, no_linger):
+    def __hook_db_attach_request_b(self, dsn, dpb):
         return self._hook_con
     def test_hook_db_attached(self):
         fdb.add_hook(fdb.HOOK_DATABASE_ATTACHED,
