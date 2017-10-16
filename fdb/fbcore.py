@@ -171,7 +171,9 @@ paramstyle = 'qmark'
 HOOK_API_LOADED = 1
 HOOK_DATABASE_ATTACHED = 2
 HOOK_DATABASE_ATTACH_REQUEST = 3
-HOOK_SERVICE_ATTACHED = 4
+HOOK_DATABASE_DETACH_REQUEST = 4
+HOOK_DATABASE_CLOSED = 5
+HOOK_SERVICE_ATTACHED = 6
 
 hooks = {}
 
@@ -740,7 +742,7 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
 
     Hook may return :class:`Connection` (or subclass) instance or None.
     First instance returned by any hook will become the return value
-    of this function.
+    of this function and other hooks are not called.
 
     Event HOOK_DATABASE_ATTACHED: Executed before :class:`Connection`
     (or subclass) instance is returned. Hook must have signature:
@@ -1097,6 +1099,10 @@ class Connection(object):
                     api.isc_detach_database(self._isc_status, self._db_handle)
             finally:
                 self._db_handle = None
+                for hook in get_hooks(HOOK_DATABASE_CLOSED):
+                    hook(self)
+                #
+
     def __enter__(self):
         return self
     def __exit__(self, *args):
@@ -1741,10 +1747,23 @@ class Connection(object):
         instances associated with this connection.
 
         :raises fdb.ProgrammingError: When connection is a member of a :class:`ConnectionGroup`.
+
+        Hooks:
+
+        Event HOOK_DATABASE_DETACH_REQUEST: Executed before connection
+        is closed. Hook must have signature: hook_func(connection).
+        If any hook function returns True, connection is not closed.
         """
         self.__ensure_group_membership(False, "Cannot close a connection that"
                                        " is a member of a ConnectionGroup.")
-        self.__close()
+        retain = False
+        for hook in get_hooks(HOOK_DATABASE_DETACH_REQUEST):
+            ret = hook(self)
+            if ret and not retain:
+                retain = True
+        #
+        if retain != True:
+            self.__close()
     def begin(self, tpb=None):
         """Starts a transaction explicitly.
         Operates on :attr:`main_transaction`.
