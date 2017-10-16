@@ -621,16 +621,16 @@ def exception_from_status(error, status, preamble=None):
 
 class ParameterBuffer(object):
     """Helper class for construction of Database (and other) parameter
-    buffers. Parameter are stored in insertion order."""
+    buffers. Parameters are stored in insertion order."""
     def __init__(self):
         self.items = []
-    def add_code(self, code):
+    def add_parameter_code(self, code):
         """Add parameter code to parameter buffer.
 
         :param code: Firebird code for the parameter
         """
         self.items.append(struct.pack('c', int2byte(code)))
-    def add_string(self, code, value):
+    def add_string_parameter(self, code, value):
         """Add string to parameter buffer.
 
         :param code: Firebird code for the parameter
@@ -647,7 +647,7 @@ class ParameterBuffer(object):
                                    )
         self.items.append(struct.pack('cc%ds' % sLen, int2byte(code),
                                       int2byte(sLen), value))
-    def add_byte(self, code, value):
+    def add_byte_parameter(self, code, value):
         """Add byte value to parameter buffer.
 
         :param code: Firebird code for the parameter
@@ -660,7 +660,7 @@ class ParameterBuffer(object):
                                    )
         self.items.append(struct.pack('ccc', int2byte(code),
                                       b('\x01'), int2byte(value)))
-    def add_int(self, code, value):
+    def add_integer_parameter(self, code, value):
         """Add integer value to parameter buffer.
 
         :param code: Firebird code for the parameter
@@ -672,6 +672,31 @@ class ParameterBuffer(object):
                                    )
         self.items.append(struct.pack('=ccI', int2byte(code),
                                       b('\x04'), value))
+    def add_byte(self, byte):
+        """Add byte value to buffer.
+
+        :param byte: Value to be added.
+        """
+        self.items.append(struct.pack('b', byte))
+    def add_word(self, word):
+        """Add two byte value to buffer.
+
+        :param word: Value to be added.
+        """
+        self.items.append(struct.pack('<h', word))
+    def add_string(self, value):
+        """Add string value to buffer.
+
+        :param value: String to be added.
+        """
+        sLen = len(value)
+        if sLen >= 256:
+            # Because the length is denoted in the DPB by a single byte.
+            raise ProgrammingError("Individual component of"
+                                   " parameter buffer is too large.  Components must be less"
+                                   " than 256 bytes."
+                                   )
+        self.items.append(struct.pack('cc%ds' % sLen, int2byte(sLen), value))
     def get_buffer(self):
         """Get parameter buffer content.
 
@@ -687,45 +712,13 @@ class ParameterBuffer(object):
 
 
 
-def build_dpb(user, password, sql_dialect, role, charset, buffers,
-              force_write, no_reserve, db_key_scope, no_gc,
-              no_db_triggers, no_linger):
-    dpb = ParameterBuffer()
-    dpb.add_code(isc_dpb_version1)
-    if user:
-        dpb.add_string(isc_dpb_user_name, user)
-    if password:
-        dpb.add_string(isc_dpb_password, password)
-    if role:
-        dpb.add_string(isc_dpb_sql_role_name, role)
-    if sql_dialect:
-        dpb.add_byte(isc_dpb_sql_dialect, sql_dialect)
-    if charset:
-        dpb.add_string(isc_dpb_lc_ctype, charset.upper())
-    if buffers:
-        dpb.add_int(isc_dpb_num_buffers, buffers)
-    if force_write:
-        dpb.add_byte(isc_dpb_force_write, force_write)
-    if no_reserve:
-        dpb.add_byte(isc_dpb_no_reserve, no_reserve)
-    if db_key_scope:
-        dpb.add_byte(isc_dpb_dbkey_scope, db_key_scope)
-    if no_gc:
-        dpb.add_byte(isc_dpb_no_garbage_collect, no_gc)
-    if no_db_triggers:
-        dpb.add_byte(isc_dpb_no_db_triggers, no_db_triggers)
-    if no_linger:
-        dpb.add_byte(isc_dpb_nolinger, no_linger)
-    return dpb
-
 def connect(dsn='', user=None, password=None, host=None, port=None, database=None,
             sql_dialect=3, role=None, charset=None, buffers=None,
             force_write=None, no_reserve=None, db_key_scope=None,
             isolation_level=ISOLATION_LEVEL_READ_COMMITED,
             connection_class=None, fb_library_name=None,
             no_gc=None, no_db_triggers=None, no_linger=None):
-    """
-    Establish a connection to database.
+    """Establish a connection to database.
 
     :param dsn: Connection string in format [host[/port]]:database
     :param string user: User name. If not specified, fdb attempts to use ISC_USER envar.
@@ -783,6 +776,37 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
     (or subclass) instance is returned. Hook must have signature:
     hook_func(connection). Any value returned by hook is ignored.
     """
+    def build_dpb(user, password, sql_dialect, role, charset, buffers,
+                  force_write, no_reserve, db_key_scope, no_gc,
+                  no_db_triggers, no_linger):
+        dpb = ParameterBuffer()
+        dpb.add_parameter_code(isc_dpb_version1)
+        if user:
+            dpb.add_string_parameter(isc_dpb_user_name, user)
+        if password:
+            dpb.add_string_parameter(isc_dpb_password, password)
+        if role:
+            dpb.add_string_parameter(isc_dpb_sql_role_name, role)
+        if sql_dialect:
+            dpb.add_byte_parameter(isc_dpb_sql_dialect, sql_dialect)
+        if charset:
+            dpb.add_string_parameter(isc_dpb_lc_ctype, charset.upper())
+        if buffers:
+            dpb.add_integer_parameter(isc_dpb_num_buffers, buffers)
+        if force_write:
+            dpb.add_byte_parameter(isc_dpb_force_write, force_write)
+        if no_reserve:
+            dpb.add_byte_parameter(isc_dpb_no_reserve, no_reserve)
+        if db_key_scope:
+            dpb.add_byte_parameter(isc_dpb_dbkey_scope, db_key_scope)
+        if no_gc:
+            dpb.add_byte_parameter(isc_dpb_no_garbage_collect, no_gc)
+        if no_db_triggers:
+            dpb.add_byte_parameter(isc_dpb_no_db_triggers, no_db_triggers)
+        if no_linger:
+            dpb.add_byte_parameter(isc_dpb_nolinger, no_linger)
+        return dpb
+
     load_api(fb_library_name)
     if connection_class == None:
         connection_class = Connection

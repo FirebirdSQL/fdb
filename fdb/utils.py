@@ -26,7 +26,7 @@ def update_meta (self, other):
     return self
 
 class LateBindingProperty (property):
-    """Peroperty class that binds to getter/setter/deleter methods when **instance**
+    """Property class that binds to getter/setter/deleter methods when **instance**
 of class that define the property is created. This allows you to override
 these methods in descendant classes (if they are not private) without
 necessity to redeclare the property itself in descendant class.

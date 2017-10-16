@@ -118,7 +118,7 @@ __all__ = (# Common with KInterbasDB
            'SQL_ARRAY', 'SQL_BLOB', 'SQL_DOUBLE', 'SQL_D_FLOAT', 'SQL_FLOAT',
            'SQL_INT64', 'SQL_LONG', 'SQL_QUAD', 'SQL_SHORT', 'SQL_TEXT',
            'SQL_TIMESTAMP', 'SQL_TYPE_DATE', 'SQL_TYPE_TIME', 'SQL_VARYING',
-           'SUBTYPE_DECIMAL', 'SUBTYPE_NUMERIC', 'SQL_BOOLEAN', 'build_dpb',
+           'SUBTYPE_DECIMAL', 'SUBTYPE_NUMERIC', 'SQL_BOOLEAN',
            'charset_map', 'load_api',
            'isc_info_end', 'isc_sqlcode', 'bs', 'ConnectionWithSchema',
            'ODS_FB_20','ODS_FB_21','ODS_FB_25','ODS_FB_30',
