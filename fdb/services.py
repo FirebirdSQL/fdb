@@ -2,7 +2,7 @@
 #
 #   PROGRAM/MODULE: fdb
 #   FILE:           services.py
-#   DESCRIPTION:    Python driver for Firebird
+#   DESCRIPTION:    Python driver for Firebird - Firebird services
 #   CREATED:        19.11.2011
 #
 #  Software distributed under the License is distributed AS IS,

@@ -12,7 +12,7 @@
 #
 #  The Original Code was created by Pavel Cisar
 #
-#  Copyright (c) 2011 Pavel Cisar <pcisar@users.sourceforge.net>
+#  Copyright (c) Pavel Cisar <pcisar@users.sourceforge.net>
 #  and all contributors signed below.
 #
 #  All Rights Reserved.
@@ -24,6 +24,7 @@ from fdb.fbcore import *
 from fdb.fbcore import __version__
 from fdb import services
 from fdb import blr
+from fdb import trace
 
 __all__ = (# Common with KInterbasDB
            'BINARY', 'Binary', 'BlobReader', 'Connection', 'ConnectionGroup',

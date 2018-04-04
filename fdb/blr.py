@@ -2,7 +2,7 @@
 #
 #   PROGRAM/MODULE: fdb
 #   FILE:           blr.py
-#   DESCRIPTION:    BLR-related definitions
+#   DESCRIPTION:    Python driver for Firebird - BLR-related definitions
 #   CREATED:        12.6.2013
 #
 #  Software distributed under the License is distributed AS IS,
@@ -12,7 +12,7 @@
 #
 #  The Original Code was created by Pavel Cisar
 #
-#  Copyright (c) 2011 Pavel Cisar <pcisar@users.sourceforge.net>
+#  Copyright (c) Pavel Cisar <pcisar@users.sourceforge.net>
 #  and all contributors signed below.
 #
 #  All Rights Reserved.

@@ -2,7 +2,7 @@
 #
 #   PROGRAM:     fdb
 #   MODULE:      utils.py
-#   DESCRIPTION: Various utility classes and functions
+#   DESCRIPTION: Python driver for Firebird - Various utility classes and functions
 #   CREATED:     10.5.2013
 #
 #  Software distributed under the License is distributed AS IS,
@@ -12,7 +12,7 @@
 #
 #  The Original Code was created by Pavel Cisar
 #
-#  Copyright (c) 2013 Pavel Cisar <pcisar@users.sourceforge.net>
+#  Copyright (c) Pavel Cisar <pcisar@users.sourceforge.net>
 #  and all contributors signed below.
 #
 #  All Rights Reserved.
