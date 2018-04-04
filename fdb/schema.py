@@ -2003,7 +2003,7 @@ class Index(BaseSchemaItem):
     Supported SQL actions:
 
     - User index: create, activate, deactivate, recompute, drop, comment
-    - System index: recompute, comment
+    - System index: activate, recompute, comment
     """
     def __init__(self,schema,attributes):
         super(Index,self).__init__(schema,attributes)
@@ -2015,9 +2015,9 @@ class Index(BaseSchemaItem):
         self._strip_attribute('RDB$RELATION_NAME')
         self._strip_attribute('RDB$FOREIGN_KEY')
 
-        self._actions = ['recompute','comment']
+        self._actions = ['activate','recompute','comment']
         if not self.issystemobject():
-            self._actions.extend(['create','activate','deactivate','drop'])
+            self._actions.extend(['create','deactivate','drop'])
 
     #--- Protected
 
