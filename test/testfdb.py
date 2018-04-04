@@ -57,13 +57,6 @@ FBTEST_PASSWORD = 'masterkey'
 def linesplit_iter(string):
     return (m.group(2) for m in finditer('((.*)\n|(.+)$)', string))
 
-class TestTraceWriter(object):
-    def __init__(self, test):
-        self.test = test
-    def write(self, obj):
-        self.test.printout(str(obj))
-        #print obj
-
 class SchemaVisitor(fdb.schema.SchemaVisitor):
     def __init__(self,test,action,follow='dependencies'):
         self.test = test
@@ -6341,7 +6334,6 @@ class TestParse(FDBTestBase):
     def setUp(self):
         super(TestParse,self).setUp()
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
-        self.writer = TestTraceWriter(self)
     def test_linesplit_iter(self):
         trace_lines = """2014-05-23T11:00:28.5840 (3720:0000000000EFD9E8) ATTACH_DATABASE
         /home/employee.fdb (ATT_8, SYSDBA:NONE, ISO88591, TCPv4:192.168.1.5)
