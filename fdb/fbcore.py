@@ -162,7 +162,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
-__version__ = '1.9'
+__version__ = '2.0'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -2554,7 +2554,13 @@ class PreparedStatement(object):
                     precision = 0
                     if vartype in [SQL_TEXT, SQL_VARYING]:
                         vtype = StringType
-                        dispsize = sqlvar.sqllen
+                        # CHAR with multibyte encoding requires special handling
+                        if sqlvar.sqlsubtype in (4, 69):  # UTF8 and GB18030
+                            dispsize = sqlvar.sqllen // 4
+                        elif sqlvar.sqlsubtype == 3:  # UNICODE_FSS
+                            dispsize = sqlvar.sqllen // 3
+                        else:
+                            dispsize = sqlvar.sqllen
                     elif (vartype in [SQL_SHORT, SQL_LONG,
                                       SQL_INT64]
                           and (sqlvar.sqlsubtype or scale)):
@@ -3723,8 +3729,7 @@ class Cursor(object):
 
         Closes any currently open :class:`PreparedStatement`. However, the cursor
         is still bound to :class:`Connection` and :class:`Transaction`, so it
-        could be still used to execute SQL statements. Also the cache with
-        prepared statements is left intact.
+        could be still used to execute SQL statements.
 
         .. warning::
 
