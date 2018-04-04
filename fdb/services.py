@@ -682,7 +682,7 @@ class Connection(object):
     def get_connection_count(self):
         """Get number of attachments to server.
 
-        :returns integer: Directory path.
+        :returns integer: Number of attachments.
         """
         self.__check_active()
         return self._get_isc_info_svc_svr_db_info()[0]
