@@ -1473,7 +1473,7 @@ class TestServices(FDBTestBase):
                           user=FBTEST_USER,password=FBTEST_PASSWORD)
         con2 = fdb.connect(host=FBTEST_HOST,database='employee',
                            user=FBTEST_USER,password=FBTEST_PASSWORD)
-        self.assertGreaterEqual(len(svc.get_attached_database_names()),2)
+        self.assertGreaterEqual(len(svc.get_attached_database_names()),2, "Should work for Superserver, may fail with value 0 for Classic")
         self.assertIn(self.dbfile.upper(),
                       [s.upper() for s in svc.get_attached_database_names()])
 
@@ -2925,7 +2925,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'RDB$INDEX_0')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['recompute','comment'])
+        self.assertListEqual(c.actions,['activate','recompute','comment'])
         self.assertTrue(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'RDB$INDEX_0')
         self.assertListEqual(c.get_dependents(),[])
@@ -2938,9 +2938,7 @@ class TestSchema(FDBTestBase):
         # common properties
         self.assertEqual(c.name,'MAXSALX')
         self.assertIsNone(c.description)
-        self.assertListEqual(c.actions,['recompute', 'comment',
-                                        'create', 'activate',
-                                        'deactivate', 'drop'])
+        self.assertListEqual(c.actions,['activate', 'recompute', 'comment', 'create', 'deactivate', 'drop'])
         self.assertFalse(c.issystemobject())
         self.assertEqual(c.get_quoted_name(),'MAXSALX')
         self.assertListEqual(c.get_dependents(),[])
@@ -3311,18 +3309,26 @@ class TestSchema(FDBTestBase):
                     ('ORG_CHART', 5), ('ORG_CHART', 5)])
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertListEqual([(x.dependent_name,x.dependent_type) for x in d],
-                    [('RDB$9', 3), ('RDB$9', 3), ('CHECK_3', 2),
-                     ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2),
-                     ('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2),
-                     ('CHECK_4', 2), ('SET_EMP_NO', 2),
-                     ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1),
-                     ('PHONE_LIST', 1), ('PHONE_LIST', 1),
-                     ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1),
-                     ('PHONE_LIST', 1), ('PHONE_LIST', 1),
-                     ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5),
-                     ('ORG_CHART', 5), ('ORG_CHART', 5),
-                     ('ORG_CHART', 5), ('ORG_CHART', 5),
-                     ('ORG_CHART', 5)])
+                    [('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1),
+                     ('PHONE_LIST', 1), ('PHONE_LIST', 1), ('CHECK_3', 2),
+                     ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_4', 2),
+                     ('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2), ('SET_EMP_NO', 2),
+                     ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1), ('PHONE_LIST', 1),
+                     ('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1), ('ORG_CHART', 5),
+                     ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5), ('ORG_CHART', 5),
+                     ('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5)])
+                    #[('RDB$9', 3), ('RDB$9', 3), ('CHECK_3', 2),
+                     #('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2),
+                     #('CHECK_4', 2), ('CHECK_4', 2), ('CHECK_4', 2),
+                     #('CHECK_4', 2), ('SET_EMP_NO', 2),
+                     #('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1),
+                     #('PHONE_LIST', 1), ('PHONE_LIST', 1),
+                     #('SAVE_SALARY_CHANGE', 2), ('PHONE_LIST', 1),
+                     #('PHONE_LIST', 1), ('PHONE_LIST', 1),
+                     #('DELETE_EMPLOYEE', 5), ('DELETE_EMPLOYEE', 5),
+                     #('ORG_CHART', 5), ('ORG_CHART', 5),
+                     #('ORG_CHART', 5), ('ORG_CHART', 5),
+                     #('ORG_CHART', 5)])
                    #[('RDB$9', 3), ('RDB$9', 3), ('PHONE_LIST', 1),
                     #('PHONE_LIST', 1), ('PHONE_LIST', 1), ('CHECK_3', 2),
                     #('CHECK_3', 2), ('CHECK_3', 2), ('CHECK_3', 2),
@@ -3717,7 +3723,7 @@ END""")
         self.assertIsNone(c.default)
         self.assertIsNone(c.collation)
         if self.con.ods <= fdb.ODS_FB_25:
-            self.assertIsNone(c.mechanism)
+            self.assertEqual(c.mechanism, 0)
         elif self.con.ods > fdb.ODS_FB_25:
             self.assertEqual(c.mechanism,0)
         self.assertIsNone(c.column)
@@ -3777,15 +3783,15 @@ END""")
         self.assertListEqual([x.name for x in c.input_params],['EMP_NO'])
         self.assertListEqual([x.name for x in c.output_params],['PROJ_ID'])
         if self.con.engine_version >= 3.0:
-            self.assertTrue(c.valid_blr)
+            self.assertIsNone(c.valid_blr)
             self.assertEqual(c.proc_type,1)
             self.assertIsNone(c.engine_name)
             self.assertIsNone(c.entrypoint)
             self.assertIsNone(c.package)
             self.assertIsNone(c.privacy)
         else:
-            self.assertTrue(c.valid_blr)
-            self.assertEqual(c.proc_type,1)
+            self.assertIsNone(c.valid_blr)
+            self.assertEqual(c.proc_type, 0)
         #
         self.assertEqual(c.get_param('EMP_NO').name,'EMP_NO')
         self.assertEqual(c.get_param('PROJ_ID').name,'PROJ_ID')
@@ -3807,7 +3813,6 @@ END""")
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
-  SUSPEND;
 END""")
         self.assertEqual(c.get_sql_for('recreate'),
 """RECREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
@@ -3826,7 +3831,6 @@ END""")
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
-  SUSPEND;
 END""")
         self.assertEqual(c.get_sql_for('create_or_alter'),
 """CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
@@ -3845,7 +3849,6 @@ END""")
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
-  SUSPEND;
 END""")
         self.assertEqual(c.get_sql_for('drop'),"DROP PROCEDURE GET_EMP_PROJ")
         self.assertEqual(c.get_sql_for('alter',code="  /* PASS */"),
@@ -5442,15 +5445,15 @@ DROP TABLE JOB
         script = s.get_metadata_ddl([sm.SCRIPT_FUNCTION_DEFS])
         self.assertListEqual(script,[])
         script = s.get_metadata_ddl([sm.SCRIPT_PROCEDURE_DEFS])
-        self.assertListEqual(script,['CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\n  SUSPEND;\nEND', 'CREATE PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE DELETE_EMPLOYEE (EMP_NUM INTEGER)\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE DEPT_BUDGET (DNO CHAR(3))\nRETURNS (TOT DECIMAL(12, 2))\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE ORG_CHART\nRETURNS (\n  HEAD_DEPT CHAR(25),\n  DEPARTMENT CHAR(25),\n  MNGR_NAME CHAR(20),\n  TITLE CHAR(5),\n  EMP_CNT INTEGER\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE MAIL_LABEL (CUST_NO INTEGER)\nRETURNS (\n  LINE1 CHAR(40),\n  LINE2 CHAR(40),\n  LINE3 CHAR(40),\n  LINE4 CHAR(40),\n  LINE5 CHAR(40),\n  LINE6 CHAR(40)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE SHIP_ORDER (PO_NUM CHAR(8))\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nBEGIN\n  SUSPEND;\nEND',
-                                     'CREATE PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\n  SUSPEND;\nEND'])
+        self.assertListEqual(script,['CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\nEND', 'CREATE PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE DELETE_EMPLOYEE (EMP_NUM INTEGER)\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE DEPT_BUDGET (DNO CHAR(3))\nRETURNS (TOT DECIMAL(12, 2))\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE ORG_CHART\nRETURNS (\n  HEAD_DEPT CHAR(25),\n  DEPARTMENT CHAR(25),\n  MNGR_NAME CHAR(20),\n  TITLE CHAR(5),\n  EMP_CNT INTEGER\n)\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE MAIL_LABEL (CUST_NO INTEGER)\nRETURNS (\n  LINE1 CHAR(40),\n  LINE2 CHAR(40),\n  LINE3 CHAR(40),\n  LINE4 CHAR(40),\n  LINE5 CHAR(40),\n  LINE6 CHAR(40)\n)\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE SHIP_ORDER (PO_NUM CHAR(8))\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nBEGIN\nEND',
+                                     'CREATE PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\nEND'])
         script = s.get_metadata_ddl([sm.SCRIPT_TABLES])
         self.assertListEqual(script,['CREATE TABLE COUNTRY (\n  COUNTRY COUNTRYNAME NOT NULL,\n  CURRENCY VARCHAR(10) NOT NULL\n)',
                                      'CREATE TABLE JOB (\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  JOB_TITLE VARCHAR(25) NOT NULL,\n  MIN_SALARY SALARY NOT NULL,\n  MAX_SALARY SALARY NOT NULL,\n  JOB_REQUIREMENT BLOB SUB_TYPE TEXT SEGMENT SIZE 400,\n  LANGUAGE_REQ VARCHAR(15)[5]\n)',
