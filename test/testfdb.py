@@ -26,11 +26,13 @@ import datetime, decimal, types
 import fdb
 import fdb.ibase as ibase
 import fdb.schema as sm
+import fdb.utils as u
 import sys, os
 import threading
 import time
 import cStringIO
 import struct
+import collections
 from decimal import Decimal
 from contextlib import closing
 from re import finditer
@@ -8261,6 +8263,103 @@ Yes, it could be very long!
 EventUnknown(event_id=2, timestamp=datetime.datetime(2018, 3, 22, 10, 6, 59, 509000), data='EVENT_FROM_THE_FUTURE\\nThis event may contain\\nvarious information\\nwhich could span\\nmultiple lines.\\nYes, it could be very long!')
 """
         self._check_events(trace_lines, output)
+
+class TestUtils(FDBTestBase):
+    def setUp(self):
+        super(TestUtils,self).setUp()
+        self.maxDiff = None
+    def test_object_collection(self):
+        Item = collections.namedtuple('Item', 'name,size,data')
+        Point = collections.namedtuple('Point', 'x,y')
+        data = [Item('A', 100, 'X' * 20),
+                Item('Aaa', 95, 'X' * 50),
+                Item('Abb', 90, 'Y' * 20),
+                Item('B', 85, 'Y' * 50),
+                Item('Baa', 80, 'Y' * 60),
+                Item('Bab', 75, 'Z' * 20),
+                Item('Bba', 65, 'Z' * 50),
+                Item('Bbb', 70, 'Z' * 50),
+                Item('C', 0, None),]
+        #
+        oc = u.ObjectCollection(data)
+        # basic list operations
+        self.assertEquals(len(data), len(oc))
+        self.assertItemsEqual(data, oc)
+        self.assertListEqual(data, list(oc))
+        self.assertEqual(oc[0], data[0])
+        self.assertEqual(oc.index(Item('B', 85, 'Y' * 50)), 3)
+        del oc[3]
+        self.assertEqual(len(oc), len(data) - 1)
+        oc.insert(3, Item('B', 85, 'Y' * 50))
+        self.assertEquals(len(data), len(oc))
+        self.assertListEqual(data, list(oc))
+        # sort
+        oc.sort(['name'], reverse=True)
+        self.assertListEqual(list(oc),[Item(name='C', size=0, data=None),
+                                       Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                       Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                       Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                       Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
+                                       Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX')])
+        oc.sort(['data'])
+        self.assertListEqual(list(oc),[Item(name='C', size=0, data=None),
+                                       Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX'),
+                                       Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
+                                       Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                       Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                       Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
+        oc.sort(['data', 'size'])
+        self.assertListEqual(list(oc),[Item(name='C', size=0, data=None),
+                                       Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX'),
+                                       Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
+                                       Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                       Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                       Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                       Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
+        oc.sort(['name'])
+        self.assertListEqual(data, list(oc))
+        # filter/ifilter
+        fc = oc.filter('item.name.startswith("A")')
+        self.assertIsInstance(fc, u.ObjectCollection)
+        self.assertItemsEqual([Item('A', 100, 'X' * 20),
+                               Item('Aaa', 95, 'X' * 50),
+                               Item('Abb', 90, 'Y' * 20)], fc)
+        self.assertItemsEqual([Item('A', 100, 'X' * 20),
+                               Item('Aaa', 95, 'X' * 50),
+                               Item('Abb', 90, 'Y' * 20)],
+                              oc.ifilter('item.name.startswith("A")'))
+        # extract/iextract
+        self.assertListEqual(oc.extract('item.name', 'item.size'),
+                             [('A', 100), ('Aaa', 95), ('Abb', 90), ('B', 85),
+                              ('Baa', 80), ('Bab', 75), ('Bba', 65), ('Bbb', 70), ('C', 0)])
+        self.assertListEqual(list(oc.iextract('item.name', 'item.size')),
+                             [('A', 100), ('Aaa', 95), ('Abb', 90), ('B', 85),
+                              ('Baa', 80), ('Bab', 75), ('Bba', 65), ('Bbb', 70), ('C', 0)])
+        self.assertListEqual(oc.extract('"name: %s, size: %d" % (item.name, item.size)'),
+                             ['name: A, size: 100', 'name: Aaa, size: 95', 'name: Abb, size: 90',
+                              'name: B, size: 85', 'name: Baa, size: 80', 'name: Bab, size: 75',
+                              'name: Bba, size: 65', 'name: Bbb, size: 70', 'name: C, size: 0'])
+        # ecount
+        self.assertEqual(oc.ecount('item.name.startswith("A")'), 3)
+        # Limist to class(es)
+        oc = u.ObjectCollection(data, Item)
+        oc = u.ObjectCollection(_cls = (Item, Point))
+        oc.append(Point(1, 1))
+        oc.insert(0, Item('A', 10, 'XXX'))
+        oc[1] = Point(2, 2)
+        self.assertListEqual(list(oc), [Item('A', 10, 'XXX'), Point(2, 2)])
+        with self.assertRaises(ValueError) as cm:
+            oc.append(list())
+        exc = cm.exception
+        self.assertEqual(exc.message, "Value is not an instance allowed class")
 
 if __name__ == '__main__':
     unittest.main()

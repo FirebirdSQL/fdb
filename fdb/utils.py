@@ -18,6 +18,10 @@
 #  All Rights Reserved.
 #  Contributor(s): ______________________________________.
 
+from collections import MutableSequence
+from operator import attrgetter
+import types
+
 def safe_int(str_value, base = 10):
     """Always returns integer value from string/None argument. Returns 0 if argument is None.
 """
@@ -208,8 +212,9 @@ def iter_class_variables(cls):
             yield varname
 
 def embed_attributes(from_class,attr):
-    """Class decorator that injects properties and non-callable attributes
-from another class instance embedded in class instances.
+    """Class decorator that injects properties and attributes
+from another class instance embedded in class instances. Only attributes and properties that are not already defined in decorated
+class are injected.
 
     :param class from_class: Class that should extend decorated class.
     :param string attr: Attribute name that holds instance of embedded class
@@ -224,3 +229,57 @@ from another class instance embedded in class instances.
         return class_
     return d
 
+class ObjectCollection(MutableSequence):
+    """Mutable sequence of objects with additional functionality.
+"""
+    def __init__(self, items = None, _cls = None):
+        """
+            :param iterable items: Sequence to initialize the collection.
+            :param _cls: Class or list/tuple of classes. Only instances of these classes would be allowed in collection.
+            :raises ValueError: When initialization sequence contains invalid instance.
+            """
+        self.__items = list()
+        self._cls = _cls
+        if items is not None:
+            for item in items:
+                self.append(item)
+    def __check_value(self, value):
+        if self._cls and not isinstance(value, self._cls):
+            raise ValueError("Value is not an instance allowed class")
+    def __getitem__(self, index):
+        return self.__items[index]
+    def __setitem__(self, index, value):
+        self.__check_value(value)
+        self.__items[index] = value
+    def __delitem__(self, index):
+        del self.__items[index]
+    def __len__(self):
+        return len(self.__items)
+    def insert(self, index, value):
+        self.__check_value(value)
+        'S.insert(index, object) -- insert object before index'
+        self.__items.insert(index, value)
+    def sort(self, attrs, reverse = False):
+        'S.sort(attrs, reverse = False) -- sort items in-place using attribute values as key. `attrs` is a list of attribute names.'
+        self.__items.sort(key=attrgetter(*attrs), reverse = reverse)
+    def filter(self, expr):
+        """S.filter(expr) -> ObjectCollection -- return new collection of items for which `expr` is evaluated to True.
+Items could be referred as `item`, for example `item.attribute_name`."""
+        return ObjectCollection(item for item in self if eval(expr))
+    def ifilter(self, expr):
+        """S.ifilter(expr) -> generator -- return generator that yields items for which `expr` is evaluated to True.
+Items could be referred as `item`, for example `item.attribute_name`."""
+        return (item for item in self if eval(expr))
+    def extract(self, *args):
+        """S.extract(expr[,expr...]) -> list -- return list of data produced by expression(s) evaluated on collection items.
+Items could be referred as `item`, for example `item.attribute_name`."""
+        attrs = "(%s)" % ",".join(args) if len(args) > 1 else args[0]
+        return [eval(attrs) for item in self]
+    def iextract(self, *args):
+        """S.iextract(expr[,expr...]) -> generator -- return generator that yields data produced by expression(s) evaluated
+on collection items. Items could be referred as `item`, for example `item.attribute_name`."""
+        attrs = "(%s)" % ",".join(args) if len(args) > 1 else args[0]
+        return (eval(attrs) for item in self)
+    def ecount(self, expr):
+        'S.ecount(expr) -> integer -- return number of items for which `expr` is evaluated to True'
+        return sum(1 for item in self if eval(expr))
