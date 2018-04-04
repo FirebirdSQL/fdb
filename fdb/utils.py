@@ -18,6 +18,22 @@
 #  All Rights Reserved.
 #  Contributor(s): ______________________________________.
 
+def safe_int(str_value, base = 10):
+    """Always returns integer value from string/None argument. Returns 0 if argument is None.
+"""
+    if str_value:
+        return int(str_value, base)
+    else:
+        return 0
+
+def safe_str(str_value):
+    """Always returns string value from string/None argument. Returns empty string if argument is None.
+"""
+    if str_value is None:
+        return ''
+    else:
+        return str_value
+
 def update_meta (self, other):
     "Helper function for :class:`LateBindingProperty` class."
     self.__name__ = other.__name__
