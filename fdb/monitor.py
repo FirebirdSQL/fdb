@@ -17,6 +17,8 @@
 #
 #  All Rights Reserved.
 #  Contributor(s): ______________________________________.
+#
+# See LICENSE.TXT for details.
 
 import sys
 import os
