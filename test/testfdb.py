@@ -26,7 +26,8 @@ import datetime, decimal, types
 import fdb
 import fdb.ibase as ibase
 import fdb.schema as sm
-import fdb.utils as u
+import fdb.utils as utils
+import fdb.gstat as gstat
 import sys, os
 import threading
 import time
@@ -36,6 +37,8 @@ import collections
 from decimal import Decimal
 from contextlib import closing
 from re import finditer
+from pprint import pprint
+from fdb.gstat import FillDistribution, Encryption
 
 if ibase.PYTHON_MAJOR_VER == 3:
     from io import StringIO, BytesIO
@@ -58,6 +61,21 @@ FBTEST_PASSWORD = 'masterkey'
 
 def linesplit_iter(string):
     return (m.group(2) for m in finditer('((.*)\n|(.+)$)', string))
+
+def get_object_data(obj, skip = []):
+    def add(item):
+        if item not in skip:
+            value = getattr(obj, item)
+            if isinstance(value, collections.Sized) and isinstance(value, (collections.MutableSequence, collections.Mapping)):
+                value = len(value)
+            data[item] = value
+
+    data = {}
+    for item in utils.iter_class_variables(obj):
+        add(item)
+    for item in utils.iter_class_properties(obj):
+        add(item)
+    return data
 
 class SchemaVisitor(fdb.schema.SchemaVisitor):
     def __init__(self,test,action,follow='dependencies'):
@@ -2492,7 +2510,7 @@ class TestSchema(FDBTestBase):
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(len(s.sysindices),72)
         elif self.con.ods == fdb.ODS_FB_25:
-            self.assertEqual(len(s.sysindices),76)
+            self.assertEqual(len(s.sysindices),75)
         elif self.con.ods == fdb.ODS_FB_30:
             self.assertEqual(len(s.sysindices),81)
         else:
@@ -2524,7 +2542,7 @@ class TestSchema(FDBTestBase):
             self.assertEqual(len(s.procedures),11)
         self.assertEqual(len(s.sysprocedures),0)
         if self.con.ods < fdb.ODS_FB_30:
-            self.assertEqual(len(s.constraints),82)
+            self.assertEqual(len(s.constraints),80)
         else:
             self.assertEqual(len(s.constraints),108)
         if self.con.ods <= fdb.ODS_FB_21:
@@ -5481,7 +5499,7 @@ DROP TABLE JOB
                                      'CREATE TABLE T3 (\n  C1 INTEGER,\n  C2 CHAR(10) CHARACTER SET UTF8,\n  C3 VARCHAR(10) CHARACTER SET UTF8,\n  C4 BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET UTF8,\n  C5 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
                                      'CREATE TABLE T2 (\n  C1 SMALLINT,\n  C2 INTEGER,\n  C3 BIGINT,\n  C4 CHAR(5),\n  C5 VARCHAR(10),\n  C6 DATE,\n  C7 TIME,\n  C8 TIMESTAMP,\n  C9 BLOB SUB_TYPE TEXT SEGMENT SIZE 80,\n  C10 NUMERIC(18, 2),\n  C11 DECIMAL(18, 2),\n  C12 FLOAT,\n  C13 DOUBLE PRECISION,\n  C14 NUMERIC(8, 4),\n  C15 DECIMAL(8, 4),\n  C16 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
                                      'CREATE TABLE AR (\n  C1 INTEGER,\n  C2 INTEGER[4, 0:3, 2],\n  C3 VARCHAR(15)[0:5, 2],\n  C4 CHAR(5)[5],\n  C5 TIMESTAMP[2],\n  C6 TIME[2],\n  C7 DECIMAL(10, 2)[2],\n  C8 NUMERIC(10, 2)[2],\n  C9 SMALLINT[2],\n  C10 BIGINT[2],\n  C11 FLOAT[2],\n  C12 DOUBLE PRECISION[2],\n  C13 DECIMAL(10, 1)[2],\n  C14 DECIMAL(10, 5)[2],\n  C15 DECIMAL(18, 5)[2]\n)',
-                                     'CREATE TABLE T (\n  C1 INTEGER NOT NULL\n)'])
+                                     'CREATE TABLE T (\n  C1 INTEGER\n)'])
         script = s.get_metadata_ddl([sm.SCRIPT_PRIMARY_KEYS])
         self.assertListEqual(script,['ALTER TABLE COUNTRY ADD PRIMARY KEY (COUNTRY)',
                                      'ALTER TABLE JOB ADD PRIMARY KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)',
@@ -5492,8 +5510,7 @@ DROP TABLE JOB
                                      'ALTER TABLE PROJ_DEPT_BUDGET ADD PRIMARY KEY (FISCAL_YEAR,PROJ_ID,DEPT_NO)',
                                      'ALTER TABLE SALARY_HISTORY ADD PRIMARY KEY (EMP_NO,CHANGE_DATE,UPDATER_ID)',
                                      'ALTER TABLE CUSTOMER ADD PRIMARY KEY (CUST_NO)',
-                                     'ALTER TABLE SALES ADD PRIMARY KEY (PO_NUMBER)',
-                                     'ALTER TABLE T ADD PRIMARY KEY (C1)'],)
+                                     'ALTER TABLE SALES ADD PRIMARY KEY (PO_NUMBER)'],)
         script = s.get_metadata_ddl([sm.SCRIPT_UNIQUE_CONSTRAINTS])
         self.assertListEqual(script,['ALTER TABLE DEPARTMENT ADD UNIQUE (DEPARTMENT)',
                                      'ALTER TABLE PROJECT ADD UNIQUE (PROJ_NAME)'])
@@ -6332,9 +6349,9 @@ class TestBugs(FDBTestBase):
 
 
 
-class TestParse(FDBTestBase):
+class TestTraceParse(FDBTestBase):
     def setUp(self):
-        super(TestParse,self).setUp()
+        super(TestTraceParse,self).setUp()
         self.dbfile = os.path.join(self.dbpath,self.FBTEST_DB)
     def test_linesplit_iter(self):
         trace_lines = """2014-05-23T11:00:28.5840 (3720:0000000000EFD9E8) ATTACH_DATABASE
@@ -8268,7 +8285,7 @@ class TestUtils(FDBTestBase):
     def setUp(self):
         super(TestUtils,self).setUp()
         self.maxDiff = None
-    def test_object_collection(self):
+    def test_objectlist(self):
         Item = collections.namedtuple('Item', 'name,size,data')
         Point = collections.namedtuple('Point', 'x,y')
         data = [Item('A', 100, 'X' * 20),
@@ -8281,21 +8298,21 @@ class TestUtils(FDBTestBase):
                 Item('Bbb', 70, 'Z' * 50),
                 Item('C', 0, None),]
         #
-        oc = u.ObjectCollection(data)
+        olist = utils.ObjectList(data)
         # basic list operations
-        self.assertEquals(len(data), len(oc))
-        self.assertItemsEqual(data, oc)
-        self.assertListEqual(data, list(oc))
-        self.assertEqual(oc[0], data[0])
-        self.assertEqual(oc.index(Item('B', 85, 'Y' * 50)), 3)
-        del oc[3]
-        self.assertEqual(len(oc), len(data) - 1)
-        oc.insert(3, Item('B', 85, 'Y' * 50))
-        self.assertEquals(len(data), len(oc))
-        self.assertListEqual(data, list(oc))
-        # sort
-        oc.sort(['name'], reverse=True)
-        self.assertListEqual(list(oc),[Item(name='C', size=0, data=None),
+        self.assertEquals(len(data), len(olist))
+        self.assertItemsEqual(data, olist)
+        self.assertListEqual(data, olist)
+        self.assertEqual(olist[0], data[0])
+        self.assertEqual(olist.index(Item('B', 85, 'Y' * 50)), 3)
+        del olist[3]
+        self.assertEqual(len(olist), len(data) - 1)
+        olist.insert(3, Item('B', 85, 'Y' * 50))
+        self.assertEquals(len(data), len(olist))
+        self.assertListEqual(data, olist)
+        # sort - attrs
+        olist.sort(['name'], reverse=True)
+        self.assertListEqual(olist,[Item(name='C', size=0, data=None),
                                        Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
                                        Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
                                        Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
@@ -8304,8 +8321,8 @@ class TestUtils(FDBTestBase):
                                        Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
                                        Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
                                        Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX')])
-        oc.sort(['data'])
-        self.assertListEqual(list(oc),[Item(name='C', size=0, data=None),
+        olist.sort(['data'])
+        self.assertListEqual(olist,[Item(name='C', size=0, data=None),
                                        Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX'),
                                        Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
                                        Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
@@ -8314,8 +8331,8 @@ class TestUtils(FDBTestBase):
                                        Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
                                        Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
                                        Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
-        oc.sort(['data', 'size'])
-        self.assertListEqual(list(oc),[Item(name='C', size=0, data=None),
+        olist.sort(['data', 'size'])
+        self.assertListEqual(olist,[Item(name='C', size=0, data=None),
                                        Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX'),
                                        Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
                                        Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
@@ -8324,42 +8341,2242 @@ class TestUtils(FDBTestBase):
                                        Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
                                        Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
                                        Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
-        oc.sort(['name'])
-        self.assertListEqual(data, list(oc))
+        olist.sort(['name'])
+        self.assertListEqual(data, olist)
+        # sort - expr
+        olist = utils.ObjectList(data)
+        olist.sort(expr = 'item.size * len(item.name)', reverse=True)
+        self.assertListEqual(olist, [Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
+                                     Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
+                                     Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                     Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                     Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                     Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                     Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX'),
+                                     Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                     Item(name='C', size=0, data=None)])
+        olist.sort(expr = lambda x: x.size * len(x.name), reverse=True)
+        self.assertListEqual(olist, [Item(name='Aaa', size=95, data='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'),
+                                     Item(name='Abb', size=90, data='YYYYYYYYYYYYYYYYYYYY'),
+                                     Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                     Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                     Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                     Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                     Item(name='A', size=100, data='XXXXXXXXXXXXXXXXXXXX'),
+                                     Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                     Item(name='C', size=0, data=None)])
         # filter/ifilter
-        fc = oc.filter('item.name.startswith("A")')
-        self.assertIsInstance(fc, u.ObjectCollection)
-        self.assertItemsEqual([Item('A', 100, 'X' * 20),
-                               Item('Aaa', 95, 'X' * 50),
-                               Item('Abb', 90, 'Y' * 20)], fc)
-        self.assertItemsEqual([Item('A', 100, 'X' * 20),
-                               Item('Aaa', 95, 'X' * 50),
-                               Item('Abb', 90, 'Y' * 20)],
-                              oc.ifilter('item.name.startswith("A")'))
-        # extract/iextract
-        self.assertListEqual(oc.extract('item.name', 'item.size'),
+        olist = utils.ObjectList(data)
+        fc = olist.filter('item.name.startswith("B")')
+        self.assertIsInstance(fc, utils.ObjectList)
+        self.assertItemsEqual(fc, [Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                   Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                   Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                   Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                   Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
+        fc = olist.filter(lambda x: x.name.startswith("B"))
+        self.assertItemsEqual(fc, [Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                   Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                   Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                   Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                   Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
+        self.assertItemsEqual(olist.ifilter('item.name.startswith("B")'),
+                              [Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                               Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                               Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                               Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                               Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
+        self.assertItemsEqual(olist.ifilter(lambda x: x.name.startswith("B")),
+                              [Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                               Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                               Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                               Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                               Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
+        # report/ireport
+        self.assertListEqual(olist.report('item.name', 'item.size'),
                              [('A', 100), ('Aaa', 95), ('Abb', 90), ('B', 85),
                               ('Baa', 80), ('Bab', 75), ('Bba', 65), ('Bbb', 70), ('C', 0)])
-        self.assertListEqual(list(oc.iextract('item.name', 'item.size')),
+        self.assertListEqual(olist.report(lambda x:  (x.name, x.size)),
                              [('A', 100), ('Aaa', 95), ('Abb', 90), ('B', 85),
                               ('Baa', 80), ('Bab', 75), ('Bba', 65), ('Bbb', 70), ('C', 0)])
-        self.assertListEqual(oc.extract('"name: %s, size: %d" % (item.name, item.size)'),
+        self.assertListEqual(list(olist.ireport('item.name', 'item.size')),
+                             [('A', 100), ('Aaa', 95), ('Abb', 90), ('B', 85),
+                              ('Baa', 80), ('Bab', 75), ('Bba', 65), ('Bbb', 70), ('C', 0)])
+        self.assertListEqual(olist.report('"name: %s, size: %d" % (item.name, item.size)'),
+                             ['name: A, size: 100', 'name: Aaa, size: 95', 'name: Abb, size: 90',
+                              'name: B, size: 85', 'name: Baa, size: 80', 'name: Bab, size: 75',
+                              'name: Bba, size: 65', 'name: Bbb, size: 70', 'name: C, size: 0'])
+        self.assertListEqual(olist.report(lambda x: "name: %s, size: %d" % (x.name, x.size)),
                              ['name: A, size: 100', 'name: Aaa, size: 95', 'name: Abb, size: 90',
                               'name: B, size: 85', 'name: Baa, size: 80', 'name: Bab, size: 75',
                               'name: Bba, size: 65', 'name: Bbb, size: 70', 'name: C, size: 0'])
         # ecount
-        self.assertEqual(oc.ecount('item.name.startswith("A")'), 3)
-        # Limist to class(es)
-        oc = u.ObjectCollection(data, Item)
-        oc = u.ObjectCollection(_cls = (Item, Point))
-        oc.append(Point(1, 1))
-        oc.insert(0, Item('A', 10, 'XXX'))
-        oc[1] = Point(2, 2)
-        self.assertListEqual(list(oc), [Item('A', 10, 'XXX'), Point(2, 2)])
-        with self.assertRaises(ValueError) as cm:
-            oc.append(list())
+        self.assertEqual(olist.ecount('item.name.startswith("B")'), 5)
+        self.assertEqual(olist.ecount(lambda x: x.name.startswith("B")), 5)
+        # split
+        truelist, falselist = olist.split('item.name.startswith("B")')
+        self.assertIsInstance(truelist, utils.ObjectList)
+        self.assertIsInstance(falselist, utils.ObjectList)
+        self.assertItemsEqual(list(truelist), [Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                               Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                               Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                               Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                               Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ')])
+        self.assertItemsEqual(list(falselist), [Item('A', 100, 'X' * 20), Item('Aaa', 95, 'X' * 50), Item('Abb', 90, 'Y' * 20),
+                                                Item(name='C', size=0, data=None)])
+        # extract
+        truelist = olist.extract('item.name.startswith("A")')
+        self.assertIsInstance(truelist, utils.ObjectList)
+        self.assertItemsEqual(list(truelist), [Item('A', 100, 'X' * 20), Item('Aaa', 95, 'X' * 50), Item('Abb', 90, 'Y' * 20)])
+        self.assertItemsEqual(olist, [Item(name='B', size=85, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                         Item(name='Baa', size=80, data='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'),
+                                         Item(name='Bab', size=75, data='ZZZZZZZZZZZZZZZZZZZZ'),
+                                         Item(name='Bba', size=65, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                         Item(name='Bbb', size=70, data='ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'),
+                                         Item(name='C', size=0, data=None)])
+        # clear
+        olist.clear()
+        self.assertEqual(len(olist), 0, 'list is not empty')
+        # get
+        olist.extend(data)
+        with self.assertRaises(TypeError) as cm:
+            item = olist.get('Baa')
         exc = cm.exception
-        self.assertEqual(exc.message, "Value is not an instance allowed class")
+        self.assertEqual(exc.message, "Key expression required")
+        self.assertIs(olist.get('Baa', 'item.name'), olist[4])
+        olist = utils.ObjectList(data, Item, 'item.name')
+        self.assertIs(olist.get('Baa'), olist[4])
+        self.assertIs(olist.get(80, 'item.size'), olist[4])
+        self.assertIs(olist.get(80, lambda x, value: x.size == value), olist[4])
+        olist.freeze()  # Frozen list uses O(1) access via dict!
+        self.assertIs(olist.get('Baa'), olist[4])
+        # contains
+        self.assertTrue(olist.contains('Baa'))
+        self.assertFalse(olist.contains('FX'))
+        self.assertTrue(olist.contains('Baa', 'item.name'))
+        self.assertTrue(olist.contains(80, 'item.size'))
+        self.assertTrue(olist.contains(80, lambda x, value: x.size == value))
+        # immutability
+        olist = utils.ObjectList(data)
+        self.assertFalse(olist.frozen, "list is frozen")
+        self.assertListEqual(olist, data)
+        olist.freeze()
+        self.assertTrue(olist.frozen, "list is not frozen")
+        with self.assertRaises(TypeError) as cm:
+            olist[0] = Point(1, 1)
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            olist[0:2] = [Point(1, 1)]
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            olist.append(Point(1, 1))
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            olist.insert(0, [Point(1, 1)])
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            olist.extend([Point(1, 1)])
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            olist.clear()
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            olist.extract('True')
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            del olist[0]
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        with self.assertRaises(TypeError) as cm:
+            del olist[0:2]
+        exc = cm.exception
+        self.assertEqual(exc.message, "list is frozen")
+        # Limit to class(es)
+        olist = utils.ObjectList(data, Item)
+        olist = utils.ObjectList(_cls = (Item, Point))
+        olist.append(Point(1, 1))
+        olist.insert(0, Item('A', 10, 'XXX'))
+        olist[1] = Point(2, 2)
+        self.assertListEqual(olist, [Item('A', 10, 'XXX'), Point(2, 2)])
+        with self.assertRaises(TypeError) as cm:
+            olist.append(list())
+        exc = cm.exception
+        self.assertEqual(exc.message, "Value is not an instance of allowed class")
+        # Key
+        olist = utils.ObjectList(data, Item, 'item.name')
+        self.assertEqual(olist.get('A'), Item('A', 100, 'X' * 20))
+        # any/all
+        self.assertFalse(olist.all('item.size > 0'))
+        self.assertTrue(olist.all('item.size < 200'))
+        self.assertTrue(olist.any('item.size > 0'))
+        self.assertFalse(olist.any('item.size < 200'))
+
+class TestGstat(FDBTestBase):
+    def setUp(self):
+        super(TestGstat,self).setUp()
+    def _parse_file(self, filename):
+        parser = gstat.StatParser()
+        with open(filename) as f:
+            return parser.parse(f)
+    def test_parse25_h(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat25-h.out'))
+        data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': None, 'bumped_transaction': 1,
+                'checksum': 12345, 'completed': None, 'continuation_file': None, 'continuation_files': 0,
+                'creation_date': datetime.datetime(2013, 5, 27, 23, 40, 53), 'database_dialect': 3,
+                'encrypted_blob_pages': None, 'encrypted_data_pages': None, 'encrypted_index_pages': None,
+                'executed': datetime.datetime(2018, 4, 4, 15, 29, 10), 'filename': '/home/fdb/test/fbtest25.fdb',
+                'flags': 0, 'generation': 2844, 'gstat_version': 2, 'implementation': None, 'implementation_id': 24,
+                'indices': 0, 'last_logical_page': None, 'next_attachment_id': 1067, 'next_header_page': 0, 'next_transaction': 1807,
+                'oat': 1807, 'ods_version': '11.2', 'oit': 204, 'ost': 1807, 'page_buffers': 0, 'page_size': 4096,
+                'replay_logging_file': None, 'root_filename': None, 'sequence_number': 0, 'shadow_count': 0, 'sweep_interval': 20000,
+                'system_change_number': None, 'tables': 0}
+        self.assertIsInstance(db, gstat.StatDatabase)
+        self.assertDictEqual(data, get_object_data(db), 'Unexpected output from parser (database hdr)')
+        #
+        self.assertFalse(db.has_table_stats())
+        self.assertFalse(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+    def test_parse25_a(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat25-a.out'))
+        # Database
+        data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': None, 'bumped_transaction': 1,
+                'checksum': 12345, 'completed': None, 'continuation_file': None, 'continuation_files': 0,
+                'creation_date': datetime.datetime(2013, 5, 27, 23, 40, 53), 'database_dialect': 3,
+                'encrypted_blob_pages': None, 'encrypted_data_pages': None, 'encrypted_index_pages': None,
+                'executed': datetime.datetime(2018, 4, 4, 15, 30, 10), 'filename': '/home/fdb/test/fbtest25.fdb',
+                'flags': 0, 'generation': 2844, 'gstat_version': 2, 'implementation': None, 'implementation_id': 24,
+                'indices': 39, 'last_logical_page': None, 'next_attachment_id': 1067, 'next_header_page': 0, 'next_transaction': 1807,
+                'oat': 1807, 'ods_version': '11.2', 'oit': 204, 'ost': 1807, 'page_buffers': 0, 'page_size': 4096,
+                'replay_logging_file': None, 'root_filename': None, 'sequence_number': 0, 'shadow_count': 0, 'sweep_interval': 20000,
+                'system_change_number': None, 'tables': 15}
+        self.assertDictEqual(data, get_object_data(db), 'Unexpected output from parser (database hdr)')
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+        # Tables
+        data = [{'avg_fill': 86, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 210, 'indices': 0,
+                 'max_versions': None, 'name': 'AR', 'primary_pointer_page': 209, 'table_id': 142, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 15, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 181, 'indices': 1,
+                 'max_versions': None, 'name': 'COUNTRY', 'primary_pointer_page': 180, 'table_id': 128, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 53, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 189, 'indices': 4,
+                 'max_versions': None, 'name': 'CUSTOMER', 'primary_pointer_page': 188, 'table_id': 132, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 47, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 185, 'indices': 5,
+                 'max_versions': None, 'name': 'DEPARTMENT', 'primary_pointer_page': 184, 'table_id': 130, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 44, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 2, 'data_pages': 2,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 187, 'indices': 4,
+                 'max_versions': None, 'name': 'EMPLOYEE', 'primary_pointer_page': 186, 'table_id': 131, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 20, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 196, 'indices': 3,
+                 'max_versions': None, 'name': 'EMPLOYEE_PROJECT', 'primary_pointer_page': 195, 'table_id': 135, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 73, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 3, 'data_pages': 3,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=2), 'index_root_page': 183, 'indices': 4,
+                 'max_versions': None, 'name': 'JOB', 'primary_pointer_page': 182, 'table_id': 129, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 29, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_root_page': 194, 'indices': 4,
+                 'max_versions': None, 'name': 'PROJECT', 'primary_pointer_page': 193, 'table_id': 134, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 80, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 198, 'indices': 3,
+                 'max_versions': None, 'name': 'PROJ_DEPT_BUDGET', 'primary_pointer_page': 197, 'table_id': 136, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 58, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 200, 'indices': 4,
+                 'max_versions': None, 'name': 'SALARY_HISTORY', 'primary_pointer_page': 199, 'table_id': 137, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 68, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 202, 'indices': 6,
+                 'max_versions': None, 'name': 'SALES', 'primary_pointer_page': 201, 'table_id': 138, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 282, 'indices': 1,
+                 'max_versions': None, 'name': 'T', 'primary_pointer_page': 205, 'table_id': 235, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 20, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 208, 'indices': 0,
+                 'max_versions': None, 'name': 'T2', 'primary_pointer_page': 207, 'table_id': 141, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 204, 'indices': 0,
+                 'max_versions': None, 'name': 'T3', 'primary_pointer_page': 203, 'table_id': 139, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 4, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 192, 'indices': 0,
+                 'max_versions': None, 'name': 'T4', 'primary_pointer_page': 191, 'table_id': 133, 'total_records': None,
+                 'total_versions': None}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        data = [{'avg_data_length': 6.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY1', 'nodes': 14, 'total_dup': 0},
+                {'avg_data_length': 15.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTNAMEX', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 17.27, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTREGION', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 4.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN23', 'nodes': 15, 'total_dup': 4},
+                {'avg_data_length': 1.13, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY22', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 5.38, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'BUDGETX', 'nodes': 21, 'total_dup': 7},
+                {'avg_data_length': 13.95, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$4', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 1.14, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'RDB$FOREIGN10', 'nodes': 21, 'total_dup': 3},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN6', 'nodes': 21, 'total_dup': 13},
+                {'avg_data_length': 1.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY5', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 15.52, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'NAMEX', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN8', 'nodes': 42, 'total_dup': 23},
+                {'avg_data_length': 6.79, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN9', 'nodes': 42, 'total_dup': 15},
+                {'avg_data_length': 1.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY7', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 1.04, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN15', 'nodes': 28, 'total_dup': 6},
+                {'avg_data_length': 0.86, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 9, 'name': 'RDB$FOREIGN16', 'nodes': 28, 'total_dup': 23},
+                {'avg_data_length': 9.11, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY14', 'nodes': 28, 'total_dup': 0},
+                {'avg_data_length': 10.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 1, 'name': 'MAXSALX', 'nodes': 31, 'total_dup': 5},
+                {'avg_data_length': 10.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'MINSALX', 'nodes': 31, 'total_dup': 7},
+                {'avg_data_length': 1.39, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 20, 'name': 'RDB$FOREIGN3', 'nodes': 31, 'total_dup': 24},
+                {'avg_data_length': 10.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY2', 'nodes': 31, 'total_dup': 0},
+                {'avg_data_length': 22.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'PRODTYPEX', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 13.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$11', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 1.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$FOREIGN13', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 4.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY12', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 0.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 5, 'name': 'RDB$FOREIGN18', 'nodes': 24, 'total_dup': 15},
+                {'avg_data_length': 1.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 8, 'name': 'RDB$FOREIGN19', 'nodes': 24, 'total_dup': 19},
+                {'avg_data_length': 6.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY17', 'nodes': 24, 'total_dup': 0},
+                {'avg_data_length': 0.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 21, 'name': 'CHANGEX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 0.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN21', 'nodes': 49, 'total_dup': 16},
+                {'avg_data_length': 18.29, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY20', 'nodes': 49, 'total_dup': 0},
+                {'avg_data_length': 0.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 28, 'name': 'UPDATERX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 2.55, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 6, 'name': 'NEEDX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 1.85, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'QTYX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 0.52, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN25', 'nodes': 33, 'total_dup': 18},
+                {'avg_data_length': 0.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 5,
+                 'leaf_buckets': 1, 'max_dup': 7, 'name': 'RDB$FOREIGN26', 'nodes': 33, 'total_dup': 25},
+                {'avg_data_length': 4.48, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY24', 'nodes': 33, 'total_dup': 0},
+                {'avg_data_length': 0.97, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 14, 'name': 'SALESTATX', 'nodes': 33, 'total_dup': 27},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY104', 'nodes': 0, 'total_dup': 0}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.indices[i], ['table']), 'Unexpected output from parser (indices)')
+            i += 1
+    def test_parse25_d(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat25-d.out'))
+        # Database
+        data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': None, 'bumped_transaction': 1,
+                'checksum': 12345, 'completed': None, 'continuation_file': None, 'continuation_files': 0,
+                'creation_date': datetime.datetime(2013, 5, 27, 23, 40, 53), 'database_dialect': 3,
+                'encrypted_blob_pages': None, 'encrypted_data_pages': None, 'encrypted_index_pages': None,
+                'executed': datetime.datetime(2018, 4, 4, 15, 32, 25), 'filename': '/home/fdb/test/fbtest25.fdb',
+                'flags': 0, 'generation': 2856, 'gstat_version': 2, 'implementation': None, 'implementation_id': 24,
+                'indices': 0, 'last_logical_page': None, 'next_attachment_id': 1071, 'next_header_page': 0, 'next_transaction': 1811,
+                'oat': 1811, 'ods_version': '11.2', 'oit': 204, 'ost': 1811, 'page_buffers': 0, 'page_size': 4096,
+                'replay_logging_file': None, 'root_filename': None, 'sequence_number': 0, 'shadow_count': 0, 'sweep_interval': 20000,
+                'system_change_number': None, 'tables': 15}
+        self.assertDictEqual(data, get_object_data(db), 'Unexpected output from parser (database hdr)')
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertFalse(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+        # Tables
+        data = [{'avg_fill': 86, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 210, 'indices': 0,
+                 'max_versions': None, 'name': 'AR', 'primary_pointer_page': 209, 'table_id': 142, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 15, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 181, 'indices': 0,
+                 'max_versions': None, 'name': 'COUNTRY', 'primary_pointer_page': 180, 'table_id': 128, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 53, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 189, 'indices': 0,
+                 'max_versions': None, 'name': 'CUSTOMER', 'primary_pointer_page': 188, 'table_id': 132, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 47, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 185, 'indices': 0,
+                 'max_versions': None, 'name': 'DEPARTMENT', 'primary_pointer_page': 184, 'table_id': 130, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 44, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 2, 'data_pages': 2,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 187, 'indices': 0,
+                 'max_versions': None, 'name': 'EMPLOYEE', 'primary_pointer_page': 186, 'table_id': 131, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 20, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 196, 'indices': 0,
+                 'max_versions': None, 'name': 'EMPLOYEE_PROJECT', 'primary_pointer_page': 195, 'table_id': 135, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 73, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 3, 'data_pages': 3,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=2), 'index_root_page': 183, 'indices': 0,
+                 'max_versions': None, 'name': 'JOB', 'primary_pointer_page': 182, 'table_id': 129, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 29, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_root_page': 194, 'indices': 0,
+                 'max_versions': None, 'name': 'PROJECT', 'primary_pointer_page': 193, 'table_id': 134, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 80, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 198, 'indices': 0,
+                 'max_versions': None, 'name': 'PROJ_DEPT_BUDGET', 'primary_pointer_page': 197, 'table_id': 136, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 58, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 200, 'indices': 0,
+                 'max_versions': None, 'name': 'SALARY_HISTORY', 'primary_pointer_page': 199, 'table_id': 137, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 68, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 202, 'indices': 0,
+                 'max_versions': None, 'name': 'SALES', 'primary_pointer_page': 201, 'table_id': 138, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 282, 'indices': 0,
+                 'max_versions': None, 'name': 'T', 'primary_pointer_page': 205, 'table_id': 235, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 20, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 208, 'indices': 0,
+                 'max_versions': None, 'name': 'T2', 'primary_pointer_page': 207, 'table_id': 141, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 204, 'indices': 0,
+                 'max_versions': None, 'name': 'T3', 'primary_pointer_page': 203, 'table_id': 139, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 4, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 192, 'indices': 0,
+                 'max_versions': None, 'name': 'T4', 'primary_pointer_page': 191, 'table_id': 133, 'total_records': None,
+                 'total_versions': None}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        self.assertEqual(len(db.indices), 0)
+    def test_parse25_f(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat25-f.out'))
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertTrue(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertTrue(db.has_system())
+        # Check system tables
+        data = ['RDB$BACKUP_HISTORY', 'RDB$CHARACTER_SETS', 'RDB$CHECK_CONSTRAINTS', 'RDB$COLLATIONS', 'RDB$DATABASE', 'RDB$DEPENDENCIES',
+                'RDB$EXCEPTIONS', 'RDB$FIELDS', 'RDB$FIELD_DIMENSIONS', 'RDB$FILES', 'RDB$FILTERS', 'RDB$FORMATS', 'RDB$FUNCTIONS',
+                'RDB$FUNCTION_ARGUMENTS', 'RDB$GENERATORS', 'RDB$INDEX_SEGMENTS', 'RDB$INDICES', 'RDB$LOG_FILES', 'RDB$PAGES',
+                'RDB$PROCEDURES', 'RDB$PROCEDURE_PARAMETERS', 'RDB$REF_CONSTRAINTS', 'RDB$RELATIONS', 'RDB$RELATION_CONSTRAINTS',
+                'RDB$RELATION_FIELDS', 'RDB$ROLES', 'RDB$SECURITY_CLASSES', 'RDB$TRANSACTIONS', 'RDB$TRIGGERS', 'RDB$TRIGGER_MESSAGES',
+                'RDB$TYPES', 'RDB$USER_PRIVILEGES', 'RDB$VIEW_RELATIONS']
+        for table in db.tables:
+            if table.name.startswith('RDB$'):
+                self.assertIn(table.name, data)
+        # check system indices
+        data = ['RDB$PRIMARY1', 'RDB$FOREIGN23', 'RDB$PRIMARY22', 'RDB$4', 'RDB$FOREIGN10', 'RDB$FOREIGN6', 'RDB$PRIMARY5', 'RDB$FOREIGN8',
+                'RDB$FOREIGN9', 'RDB$PRIMARY7', 'RDB$FOREIGN15', 'RDB$FOREIGN16', 'RDB$PRIMARY14', 'RDB$FOREIGN3', 'RDB$PRIMARY2', 'RDB$11',
+                'RDB$FOREIGN13', 'RDB$PRIMARY12', 'RDB$FOREIGN18', 'RDB$FOREIGN19', 'RDB$PRIMARY17', 'RDB$INDEX_44', 'RDB$INDEX_19',
+                'RDB$INDEX_25', 'RDB$INDEX_14', 'RDB$INDEX_40', 'RDB$INDEX_20', 'RDB$INDEX_26', 'RDB$INDEX_27', 'RDB$INDEX_28',
+                'RDB$INDEX_23', 'RDB$INDEX_24', 'RDB$INDEX_2', 'RDB$INDEX_36', 'RDB$INDEX_17', 'RDB$INDEX_45', 'RDB$INDEX_16', 'RDB$INDEX_9',
+                'RDB$INDEX_10', 'RDB$INDEX_11', 'RDB$INDEX_46', 'RDB$INDEX_6', 'RDB$INDEX_31', 'RDB$INDEX_41', 'RDB$INDEX_5', 'RDB$INDEX_21',
+                'RDB$INDEX_22', 'RDB$INDEX_18', 'RDB$INDEX_47', 'RDB$INDEX_48', 'RDB$INDEX_13', 'RDB$INDEX_0', 'RDB$INDEX_1', 'RDB$INDEX_12',
+                'RDB$INDEX_42', 'RDB$INDEX_43', 'RDB$INDEX_15', 'RDB$INDEX_3', 'RDB$INDEX_4', 'RDB$INDEX_39', 'RDB$INDEX_7', 'RDB$INDEX_32',
+                'RDB$INDEX_38', 'RDB$INDEX_8', 'RDB$INDEX_35', 'RDB$INDEX_37', 'RDB$INDEX_29', 'RDB$INDEX_30', 'RDB$INDEX_33', 'RDB$INDEX_34',
+                'RDB$FOREIGN21', 'RDB$PRIMARY20', 'RDB$FOREIGN25', 'RDB$FOREIGN26', 'RDB$PRIMARY24', 'RDB$PRIMARY104']
+        for index in db.indices:
+            if index.name.startswith('RDB$'):
+                self.assertIn(index.name, data)
+    def test_parse25_i(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat25-i.out'))
+        #
+        self.assertFalse(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        # Tables
+        data = [{'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 0, 'max_versions': None, 'name': 'AR',
+                 'primary_pointer_page': None, 'table_id': 142, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 1, 'max_versions': None, 'name': 'COUNTRY',
+                 'primary_pointer_page': None, 'table_id': 128, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 4, 'max_versions': None, 'name': 'CUSTOMER',
+                 'primary_pointer_page': None, 'table_id': 132, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 5, 'max_versions': None, 'name': 'DEPARTMENT',
+                 'primary_pointer_page': None, 'table_id': 130, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 4, 'max_versions': None, 'name': 'EMPLOYEE',
+                 'primary_pointer_page': None, 'table_id': 131, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 3, 'max_versions': None, 'name': 'EMPLOYEE_PROJECT',
+                 'primary_pointer_page': None, 'table_id': 135, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 4, 'max_versions': None, 'name': 'JOB',
+                 'primary_pointer_page': None, 'table_id': 129, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 4, 'max_versions': None, 'name': 'PROJECT',
+                 'primary_pointer_page': None, 'table_id': 134, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 3, 'max_versions': None, 'name': 'PROJ_DEPT_BUDGET',
+                 'primary_pointer_page': None, 'table_id': 136, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 4, 'max_versions': None, 'name': 'SALARY_HISTORY',
+                 'primary_pointer_page': None, 'table_id': 137, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 6, 'max_versions': None, 'name': 'SALES',
+                 'primary_pointer_page': None, 'table_id': 138, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 1, 'max_versions': None, 'name': 'T',
+                 'primary_pointer_page': None, 'table_id': 235, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 0, 'max_versions': None, 'name': 'T2',
+                 'primary_pointer_page': None, 'table_id': 141, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 0, 'max_versions': None, 'name': 'T3',
+                 'primary_pointer_page': None, 'table_id': 139, 'total_records': None, 'total_versions': None},
+                {'avg_fill': None, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': None, 'data_pages': None,
+                 'distribution': None, 'index_root_page': None, 'indices': 0, 'max_versions': None, 'name': 'T4',
+                 'primary_pointer_page': None, 'table_id': 133, 'total_records': None, 'total_versions': None}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        #data = []
+        #for t in db.indices:
+            #data.append(get_object_data(t, ['table']))
+        #pprint(data)
+        data = [{'avg_data_length': 6.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY1', 'nodes': 14, 'total_dup': 0},
+                {'avg_data_length': 15.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTNAMEX', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 17.27, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTREGION', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 4.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN23', 'nodes': 15, 'total_dup': 4},
+                {'avg_data_length': 1.13, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY22', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 5.38, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'BUDGETX', 'nodes': 21, 'total_dup': 7},
+                {'avg_data_length': 13.95, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$4', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 1.14, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'RDB$FOREIGN10', 'nodes': 21, 'total_dup': 3},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN6', 'nodes': 21, 'total_dup': 13},
+                {'avg_data_length': 1.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY5', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 15.52, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'NAMEX', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN8', 'nodes': 42, 'total_dup': 23},
+                {'avg_data_length': 6.79, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN9', 'nodes': 42, 'total_dup': 15},
+                {'avg_data_length': 1.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY7', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 1.04, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN15', 'nodes': 28, 'total_dup': 6},
+                {'avg_data_length': 0.86, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 9, 'name': 'RDB$FOREIGN16', 'nodes': 28, 'total_dup': 23},
+                {'avg_data_length': 9.11, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY14', 'nodes': 28, 'total_dup': 0},
+                {'avg_data_length': 10.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 1, 'name': 'MAXSALX', 'nodes': 31, 'total_dup': 5},
+                {'avg_data_length': 10.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'MINSALX', 'nodes': 31, 'total_dup': 7},
+                {'avg_data_length': 1.39, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 20, 'name': 'RDB$FOREIGN3', 'nodes': 31, 'total_dup': 24},
+                {'avg_data_length': 10.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY2', 'nodes': 31, 'total_dup': 0},
+                {'avg_data_length': 22.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'PRODTYPEX', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 13.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$11', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 1.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$FOREIGN13', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 4.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY12', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 0.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 5, 'name': 'RDB$FOREIGN18', 'nodes': 24, 'total_dup': 15},
+                {'avg_data_length': 1.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 8, 'name': 'RDB$FOREIGN19', 'nodes': 24, 'total_dup': 19},
+                {'avg_data_length': 6.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY17', 'nodes': 24, 'total_dup': 0},
+                {'avg_data_length': 0.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 21, 'name': 'CHANGEX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 0.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN21', 'nodes': 49, 'total_dup': 16},
+                {'avg_data_length': 18.29, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY20', 'nodes': 49, 'total_dup': 0},
+                {'avg_data_length': 0.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 28, 'name': 'UPDATERX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 2.55, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 6, 'name': 'NEEDX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 1.85, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'QTYX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 0.52, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN25', 'nodes': 33, 'total_dup': 18},
+                {'avg_data_length': 0.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 5,
+                 'leaf_buckets': 1, 'max_dup': 7, 'name': 'RDB$FOREIGN26', 'nodes': 33, 'total_dup': 25},
+                {'avg_data_length': 4.48, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY24', 'nodes': 33, 'total_dup': 0},
+                {'avg_data_length': 0.97, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 14, 'name': 'SALESTATX', 'nodes': 33, 'total_dup': 27},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY104', 'nodes': 0, 'total_dup': 0}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.indices[i], ['table']), 'Unexpected output from parser (indices)')
+            i += 1
+    def test_parse25_r(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat25-r.out'))
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertTrue(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+        # Tables
+        data = [{'avg_fill': 86, 'avg_record_length': 22.07, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 210, 'indices': 0,
+                 'max_versions': 0, 'name': 'AR', 'primary_pointer_page': 209, 'table_id': 142, 'total_records': 15, 'total_versions': 0},
+                {'avg_fill': 15, 'avg_record_length': 26.86, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 181, 'indices': 1,
+                 'max_versions': 0, 'name': 'COUNTRY', 'primary_pointer_page': 180, 'table_id': 128, 'total_records': 14, 'total_versions': 0},
+                {'avg_fill': 53, 'avg_record_length': 126.47, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 189, 'indices': 4,
+                 'max_versions': 0, 'name': 'CUSTOMER', 'primary_pointer_page': 188, 'table_id': 132, 'total_records': 15, 'total_versions': 0},
+                {'avg_fill': 47, 'avg_record_length': 73.62, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 185, 'indices': 5,
+                 'max_versions': 0, 'name': 'DEPARTMENT', 'primary_pointer_page': 184, 'table_id': 130, 'total_records': 21, 'total_versions': 0},
+                {'avg_fill': 44, 'avg_record_length': 68.86, 'avg_version_length': 0.0, 'data_page_slots': 2, 'data_pages': 2,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 187, 'indices': 4,
+                 'max_versions': 0, 'name': 'EMPLOYEE', 'primary_pointer_page': 186, 'table_id': 131, 'total_records': 42, 'total_versions': 0},
+                {'avg_fill': 20, 'avg_record_length': 12.0, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 196, 'indices': 3,
+                 'max_versions': 0, 'name': 'EMPLOYEE_PROJECT', 'primary_pointer_page': 195, 'table_id': 135, 'total_records': 28, 'total_versions': 0},
+                {'avg_fill': 73, 'avg_record_length': 67.13, 'avg_version_length': 0.0, 'data_page_slots': 3, 'data_pages': 3,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=2), 'index_root_page': 183, 'indices': 4,
+                 'max_versions': 0, 'name': 'JOB', 'primary_pointer_page': 182, 'table_id': 129, 'total_records': 31, 'total_versions': 0},
+                {'avg_fill': 29, 'avg_record_length': 48.83, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_root_page': 194, 'indices': 4,
+                 'max_versions': 0, 'name': 'PROJECT', 'primary_pointer_page': 193, 'table_id': 134, 'total_records': 6, 'total_versions': 0},
+                {'avg_fill': 80, 'avg_record_length': 30.96, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 198, 'indices': 3,
+                 'max_versions': 0, 'name': 'PROJ_DEPT_BUDGET', 'primary_pointer_page': 197, 'table_id': 136, 'total_records': 24,
+                 'total_versions': 0},
+                {'avg_fill': 58, 'avg_record_length': 31.51, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 200, 'indices': 4,
+                 'max_versions': 0, 'name': 'SALARY_HISTORY', 'primary_pointer_page': 199, 'table_id': 137, 'total_records': 49, 'total_versions': 0},
+                {'avg_fill': 68, 'avg_record_length': 67.24, 'avg_version_length': 0.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 202, 'indices': 6,
+                 'max_versions': 0, 'name': 'SALES', 'primary_pointer_page': 201, 'table_id': 138, 'total_records': 33, 'total_versions': 0},
+                {'avg_fill': 0, 'avg_record_length': 0.0, 'avg_version_length': 0.0, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 282, 'indices': 1,
+                 'max_versions': 0, 'name': 'T', 'primary_pointer_page': 205, 'table_id': 235, 'total_records': 0, 'total_versions': 0},
+                {'avg_fill': 20, 'avg_record_length': 0.0, 'avg_version_length': 17.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 208, 'indices': 0,
+                 'max_versions': 1, 'name': 'T2', 'primary_pointer_page': 207, 'table_id': 141, 'total_records': 2, 'total_versions': 2},
+                {'avg_fill': 0, 'avg_record_length': 0.0, 'avg_version_length': 0.0, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 204, 'indices': 0,
+                 'max_versions': 0, 'name': 'T3', 'primary_pointer_page': 203, 'table_id': 139, 'total_records': 0, 'total_versions': 0},
+                {'avg_fill': 4, 'avg_record_length': 0.0, 'avg_version_length': 129.0, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 192, 'indices': 0,
+                 'max_versions': 1, 'name': 'T4', 'primary_pointer_page': 191, 'table_id': 133, 'total_records': 1, 'total_versions': 1}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        data = [{'avg_data_length': 6.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY1', 'nodes': 14, 'total_dup': 0},
+                {'avg_data_length': 15.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTNAMEX', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 17.27, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTREGION', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 4.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN23', 'nodes': 15, 'total_dup': 4},
+                {'avg_data_length': 1.13, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY22', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 5.38, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'BUDGETX', 'nodes': 21, 'total_dup': 7},
+                {'avg_data_length': 13.95, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$4', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 1.14, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'RDB$FOREIGN10', 'nodes': 21, 'total_dup': 3},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN6', 'nodes': 21, 'total_dup': 13},
+                {'avg_data_length': 1.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY5', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 15.52, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'NAMEX', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN8', 'nodes': 42, 'total_dup': 23},
+                {'avg_data_length': 6.79, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN9', 'nodes': 42, 'total_dup': 15},
+                {'avg_data_length': 1.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY7', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 1.04, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN15', 'nodes': 28, 'total_dup': 6},
+                {'avg_data_length': 0.86, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 9, 'name': 'RDB$FOREIGN16', 'nodes': 28, 'total_dup': 23},
+                {'avg_data_length': 9.11, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY14', 'nodes': 28, 'total_dup': 0},
+                {'avg_data_length': 10.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 1, 'name': 'MAXSALX', 'nodes': 31, 'total_dup': 5},
+                {'avg_data_length': 10.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'MINSALX', 'nodes': 31, 'total_dup': 7},
+                {'avg_data_length': 1.39, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 20, 'name': 'RDB$FOREIGN3', 'nodes': 31, 'total_dup': 24},
+                {'avg_data_length': 10.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY2', 'nodes': 31, 'total_dup': 0},
+                {'avg_data_length': 22.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'PRODTYPEX', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 13.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$11', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 1.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$FOREIGN13', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 4.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY12', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 0.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 5, 'name': 'RDB$FOREIGN18', 'nodes': 24, 'total_dup': 15},
+                {'avg_data_length': 1.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 8, 'name': 'RDB$FOREIGN19', 'nodes': 24, 'total_dup': 19},
+                {'avg_data_length': 6.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY17', 'nodes': 24, 'total_dup': 0},
+                {'avg_data_length': 0.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 21, 'name': 'CHANGEX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 0.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN21', 'nodes': 49, 'total_dup': 16},
+                {'avg_data_length': 18.29, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY20', 'nodes': 49, 'total_dup': 0},
+                {'avg_data_length': 0.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 28, 'name': 'UPDATERX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 2.55, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1,
+                 'leaf_buckets': 1, 'max_dup': 6, 'name': 'NEEDX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 1.85, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3,
+                 'leaf_buckets': 1, 'max_dup': 3, 'name': 'QTYX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 0.52, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4,
+                 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN25', 'nodes': 33, 'total_dup': 18},
+                {'avg_data_length': 0.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 5,
+                 'leaf_buckets': 1, 'max_dup': 7, 'name': 'RDB$FOREIGN26', 'nodes': 33, 'total_dup': 25},
+                {'avg_data_length': 4.48, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY24', 'nodes': 33, 'total_dup': 0},
+                {'avg_data_length': 0.97, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,
+                 'leaf_buckets': 1, 'max_dup': 14, 'name': 'SALESTATX', 'nodes': 33, 'total_dup': 27},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,
+                 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY104', 'nodes': 0, 'total_dup': 0}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.indices[i], ['table']), 'Unexpected output from parser (indices)')
+            i += 1
+    def test_parse25_s(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat25-s.out'))
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertTrue(db.has_system())
+        # Tables
+        data = [{'avg_fill': 86, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 210, 'indices': 0,
+                 'max_versions': None, 'name': 'AR', 'primary_pointer_page': 209, 'table_id': 142, 'total_records': None, 'total_versions': None},
+                {'avg_fill': 15, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 181, 'indices': 1,
+                 'max_versions': None, 'name': 'COUNTRY', 'primary_pointer_page': 180, 'table_id': 128, 'total_records': None, 'total_versions': None},
+                {'avg_fill': 53, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 189, 'indices': 4,
+                 'max_versions': None, 'name': 'CUSTOMER', 'primary_pointer_page': 188, 'table_id': 132, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 47, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 185, 'indices': 5,
+                 'max_versions': None, 'name': 'DEPARTMENT', 'primary_pointer_page': 184, 'table_id': 130, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 44, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 2, 'data_pages': 2,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 187, 'indices': 4,
+                 'max_versions': None, 'name': 'EMPLOYEE', 'primary_pointer_page': 186, 'table_id': 131, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 20, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 196, 'indices': 3,
+                 'max_versions': None, 'name': 'EMPLOYEE_PROJECT', 'primary_pointer_page': 195, 'table_id': 135, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 73, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 3, 'data_pages': 3,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=2), 'index_root_page': 183, 'indices': 4,
+                 'max_versions': None, 'name': 'JOB', 'primary_pointer_page': 182, 'table_id': 129, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 29, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_root_page': 194, 'indices': 4,
+                 'max_versions': None, 'name': 'PROJECT', 'primary_pointer_page': 193, 'table_id': 134, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 80, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=1), 'index_root_page': 198, 'indices': 3,
+                 'max_versions': None, 'name': 'PROJ_DEPT_BUDGET', 'primary_pointer_page': 197, 'table_id': 136, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 69, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$BACKUP_HISTORY', 'primary_pointer_page': 68, 'table_id': 32, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 69, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 61, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$CHARACTER_SETS', 'primary_pointer_page': 60, 'table_id': 28, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 37, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 2, 'data_pages': 2,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 53, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$CHECK_CONSTRAINTS', 'primary_pointer_page': 52, 'table_id': 24, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 55, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 3, 'data_pages': 3,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=2, d100=0), 'index_root_page': 63, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$COLLATIONS', 'primary_pointer_page': 62, 'table_id': 29, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 1, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 7, 'indices': 0,
+                 'max_versions': None, 'name': 'RDB$DATABASE', 'primary_pointer_page': 6, 'table_id': 1, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 49, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 6, 'data_pages': 5,
+                 'distribution': FillDistribution(d20=1, d40=1, d50=1, d80=2, d100=0), 'index_root_page': 31, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$DEPENDENCIES', 'primary_pointer_page': 30, 'table_id': 13, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 12, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 65, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$EXCEPTIONS', 'primary_pointer_page': 64, 'table_id': 30, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 62, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 6, 'data_pages': 6,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=4, d100=1), 'index_root_page': 9, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$FIELDS', 'primary_pointer_page': 8, 'table_id': 2, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 19, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 47, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$FIELD_DIMENSIONS', 'primary_pointer_page': 46, 'table_id': 21, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 25, 'indices': 0,
+                 'max_versions': None, 'name': 'RDB$FILES', 'primary_pointer_page': 24, 'table_id': 10, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 37, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$FILTERS', 'primary_pointer_page': 36, 'table_id': 16, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 76, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 21, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$FORMATS', 'primary_pointer_page': 20, 'table_id': 8, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 4, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 33, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$FUNCTIONS', 'primary_pointer_page': 32, 'table_id': 14, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 9, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 35, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$FUNCTION_ARGUMENTS', 'primary_pointer_page': 34, 'table_id': 15, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 22, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_root_page': 45, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$GENERATORS', 'primary_pointer_page': 44, 'table_id': 20, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 79, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 3, 'data_pages': 3,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=2, d100=1), 'index_root_page': 11, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$INDEX_SEGMENTS', 'primary_pointer_page': 10, 'table_id': 3, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 48, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 4, 'data_pages': 4,
+                 'distribution': FillDistribution(d20=1, d40=1, d50=0, d80=2, d100=0), 'index_root_page': 13, 'indices': 3,
+                 'max_versions': None, 'name': 'RDB$INDICES', 'primary_pointer_page': 12, 'table_id': 4, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 55, 'indices': 0,
+                 'max_versions': None, 'name': 'RDB$LOG_FILES', 'primary_pointer_page': 54, 'table_id': 25, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 38, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 2, 'data_pages': 2,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 4, 'indices': 0,
+                 'max_versions': None, 'name': 'RDB$PAGES', 'primary_pointer_page': 3, 'table_id': 0, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 94, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 3, 'data_pages': 3,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=3), 'index_root_page': 57, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$PROCEDURES', 'primary_pointer_page': 56, 'table_id': 26, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 48, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 59, 'indices': 3,
+                 'max_versions': None, 'name': 'RDB$PROCEDURE_PARAMETERS', 'primary_pointer_page': 58, 'table_id': 27,
+                 'total_records': None, 'total_versions': None},
+                {'avg_fill': 25, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0), 'index_root_page': 51, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$REF_CONSTRAINTS', 'primary_pointer_page': 50, 'table_id': 23, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 71, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 6, 'data_pages': 5,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=2, d80=1, d100=2), 'index_root_page': 17, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$RELATIONS', 'primary_pointer_page': 16, 'table_id': 6, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 67, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 2, 'data_pages': 2,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=2, d100=0), 'index_root_page': 49, 'indices': 3,
+                 'max_versions': None, 'name': 'RDB$RELATION_CONSTRAINTS', 'primary_pointer_page': 48, 'table_id': 22,
+                 'total_records': None, 'total_versions': None},
+                {'avg_fill': 77, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 13, 'data_pages': 13,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=9, d100=3), 'index_root_page': 15, 'indices': 3,
+                 'max_versions': None, 'name': 'RDB$RELATION_FIELDS', 'primary_pointer_page': 14, 'table_id': 5, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 2, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 67, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$ROLES', 'primary_pointer_page': 66, 'table_id': 31, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 77, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 6, 'data_pages': 6,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=1, d100=4), 'index_root_page': 23, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$SECURITY_CLASSES', 'primary_pointer_page': 22, 'table_id': 9, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 43, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$TRANSACTIONS', 'primary_pointer_page': 42, 'table_id': 19, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 90, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 7, 'data_pages': 7,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=2, d100=5), 'index_root_page': 29, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$TRIGGERS', 'primary_pointer_page': 28, 'table_id': 12, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 68, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 39, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$TRIGGER_MESSAGES', 'primary_pointer_page': 38, 'table_id': 17, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 70, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 5, 'data_pages': 5,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=5, d100=0), 'index_root_page': 27, 'indices': 1,
+                 'max_versions': None, 'name': 'RDB$TYPES', 'primary_pointer_page': 26, 'table_id': 11, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 67, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 4, 'data_pages': 4,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=3, d100=0), 'index_root_page': 41, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$USER_PRIVILEGES', 'primary_pointer_page': 40, 'table_id': 18, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 3, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 19, 'indices': 2,
+                 'max_versions': None, 'name': 'RDB$VIEW_RELATIONS', 'primary_pointer_page': 18, 'table_id': 7, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 58, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0), 'index_root_page': 200, 'indices': 4,
+                 'max_versions': None, 'name': 'SALARY_HISTORY', 'primary_pointer_page': 199, 'table_id': 137, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 68, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0), 'index_root_page': 202, 'indices': 6,
+                 'max_versions': None, 'name': 'SALES', 'primary_pointer_page': 201, 'table_id': 138, 'total_records': None,
+                 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 282, 'indices': 1,
+                 'max_versions': None, 'name': 'T', 'primary_pointer_page': 205, 'table_id': 235, 'total_records': None, 'total_versions': None},
+                {'avg_fill': 20, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 208, 'indices': 0,
+                 'max_versions': None, 'name': 'T2', 'primary_pointer_page': 207, 'table_id': 141, 'total_records': None, 'total_versions': None},
+                {'avg_fill': 0, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 0, 'data_pages': 0,
+                 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 204, 'indices': 0,
+                 'max_versions': None, 'name': 'T3', 'primary_pointer_page': 203, 'table_id': 139, 'total_records': None, 'total_versions': None},
+                {'avg_fill': 4, 'avg_record_length': None, 'avg_version_length': None, 'data_page_slots': 1, 'data_pages': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_root_page': 192, 'indices': 0,
+                 'max_versions': None, 'name': 'T4', 'primary_pointer_page': 191, 'table_id': 133, 'total_records': None, 'total_versions': None}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        data = [{'avg_data_length': 6.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY1', 'nodes': 14, 'total_dup': 0},
+                {'avg_data_length': 15.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTNAMEX', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 17.27, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'CUSTREGION', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 4.87, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN23', 'nodes': 15, 'total_dup': 4},
+                {'avg_data_length': 1.13, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY22', 'nodes': 15, 'total_dup': 0},
+                {'avg_data_length': 5.38, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 3, 'name': 'BUDGETX', 'nodes': 21, 'total_dup': 7},
+                {'avg_data_length': 13.95, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$4', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 1.14, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 3, 'name': 'RDB$FOREIGN10', 'nodes': 21, 'total_dup': 3},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN6', 'nodes': 21, 'total_dup': 13},
+                {'avg_data_length': 1.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY5', 'nodes': 21, 'total_dup': 0},
+                {'avg_data_length': 15.52, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'NAMEX', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 0.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN8', 'nodes': 42, 'total_dup': 23},
+                {'avg_data_length': 6.79, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN9', 'nodes': 42, 'total_dup': 15},
+                {'avg_data_length': 1.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY7', 'nodes': 42, 'total_dup': 0},
+                {'avg_data_length': 1.04, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN15', 'nodes': 28, 'total_dup': 6},
+                {'avg_data_length': 0.86, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 9, 'name': 'RDB$FOREIGN16', 'nodes': 28, 'total_dup': 23},
+                {'avg_data_length': 9.11, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY14', 'nodes': 28, 'total_dup': 0},
+                {'avg_data_length': 10.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 1, 'name': 'MAXSALX', 'nodes': 31, 'total_dup': 5},
+                {'avg_data_length': 10.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2, 'name': 'MINSALX', 'nodes': 31, 'total_dup': 7},
+                {'avg_data_length': 1.39, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 20, 'name': 'RDB$FOREIGN3', 'nodes': 31, 'total_dup': 24},
+                {'avg_data_length': 10.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY2', 'nodes': 31, 'total_dup': 0},
+                {'avg_data_length': 22.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'PRODTYPEX', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 13.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$11', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 1.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$FOREIGN13', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 4.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY12', 'nodes': 6, 'total_dup': 0},
+                {'avg_data_length': 0.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 5, 'name': 'RDB$FOREIGN18', 'nodes': 24, 'total_dup': 15},
+                {'avg_data_length': 1.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 8, 'name': 'RDB$FOREIGN19', 'nodes': 24, 'total_dup': 19},
+                {'avg_data_length': 6.83, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY17', 'nodes': 24, 'total_dup': 0},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_44', 'nodes': 0, 'total_dup': 0},
+                {'avg_data_length': 2.98, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_19',   'nodes': 52, 'total_dup': 0},
+                {'avg_data_length': 1.04, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_25', 'nodes': 52, 'total_dup': 0},
+                {'avg_data_length': 0.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 1, 'name': 'RDB$INDEX_14', 'nodes': 70, 'total_dup': 14},
+                {'avg_data_length': 3.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$INDEX_40', 'nodes': 70, 'total_dup': 11},
+                {'avg_data_length': 3.77, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_20', 'nodes': 149, 'total_dup': 0},
+                {'avg_data_length': 1.79, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_26', 'nodes': 149, 'total_dup': 0},
+                {'avg_data_length': 1.18, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 13,   'name': 'RDB$INDEX_27',   'nodes': 163, 'total_dup': 118},
+                {'avg_data_length': 1.01, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 36, 'name': 'RDB$INDEX_28', 'nodes': 163, 'total_dup': 145},
+                {'avg_data_length': 14.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_23', 'nodes': 5, 'total_dup': 0},
+                {'avg_data_length': 1.2, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_24', 'nodes': 5, 'total_dup': 0},
+                {'avg_data_length': 4.58, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_2', 'nodes': 245, 'total_dup': 0},
+                {'avg_data_length': 1.26, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$INDEX_36', 'nodes': 19, 'total_dup': 3},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_17', 'nodes': 0, 'total_dup': 0},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_45', 'nodes': 0, 'total_dup': 0},
+                {'avg_data_length': 4.63, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_16', 'nodes': 19, 'total_dup': 0},
+                {'avg_data_length': 13.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_9', 'nodes': 2, 'total_dup': 0},
+                {'avg_data_length': 3.71, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 3, 'name': 'RDB$INDEX_10', 'nodes': 7, 'total_dup': 5},
+                {'avg_data_length': 11.91, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_11', 'nodes': 11, 'total_dup': 0},
+                {'avg_data_length': 1.09, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_46', 'nodes': 11, 'total_dup': 0},
+                {'avg_data_length': 1.5, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$INDEX_6', 'nodes': 150, 'total_dup': 24},
+                {'avg_data_length': 4.23, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 5, 'name': 'RDB$INDEX_31', 'nodes': 88, 'total_dup': 48},
+                {'avg_data_length': 0.19, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 73, 'name': 'RDB$INDEX_41', 'nodes': 88, 'total_dup': 81},
+                {'avg_data_length': 2.09, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_5', 'nodes': 88, 'total_dup': 0},
+                {'avg_data_length': 10.6, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_21', 'nodes': 10, 'total_dup': 0},
+                {'avg_data_length': 1.1, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_22', 'nodes': 10, 'total_dup': 0},
+                {'avg_data_length': 11.33, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_18', 'nodes': 33, 'total_dup': 0},
+                {'avg_data_length': 1.24, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_47', 'nodes': 33, 'total_dup': 0},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 32, 'name': 'RDB$INDEX_48', 'nodes': 33, 'total_dup': 32},
+                {'avg_data_length': 1.93, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_13', 'nodes': 14, 'total_dup': 0},
+                {'avg_data_length': 8.81, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_0', 'nodes': 58, 'total_dup': 0},
+                {'avg_data_length': 0.82, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 14, 'name': 'RDB$INDEX_1', 'nodes': 73, 'total_dup': 14},
+                {'avg_data_length': 1.07, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_12', 'nodes': 82, 'total_dup': 0},
+                {'avg_data_length': 6.43, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 8, 'name': 'RDB$INDEX_42', 'nodes': 82, 'total_dup': 43},
+                {'avg_data_length': 0.6, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 54, 'name': 'RDB$INDEX_43', 'nodes': 82, 'total_dup': 54},
+                {'avg_data_length': 20.92, 'depth': 2, 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=1, d100=2),
+                 'index_id': 2, 'leaf_buckets': 4, 'max_dup': 0, 'name': 'RDB$INDEX_15', 'nodes': 466, 'total_dup': 0},
+                {'avg_data_length': 2.33, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 31, 'name': 'RDB$INDEX_3', 'nodes': 466, 'total_dup': 255},
+                {'avg_data_length': 1.1, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 27, 'name': 'RDB$INDEX_4', 'nodes': 466, 'total_dup': 408},
+                {'avg_data_length': 9.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_39', 'nodes': 2, 'total_dup': 0},
+                {'avg_data_length': 1.06, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_7', 'nodes': 182, 'total_dup': 0},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_32', 'nodes': 0, 'total_dup': 0},
+                {'avg_data_length': 2.84, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 18, 'name': 'RDB$INDEX_38', 'nodes': 69, 'total_dup': 48},
+                {'avg_data_length': 2.09, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_8', 'nodes': 69, 'total_dup': 0},
+                {'avg_data_length': 1.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 5, 'name': 'RDB$INDEX_35', 'nodes': 36, 'total_dup': 12},
+                {'avg_data_length': 4.22, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 1, 'name': 'RDB$INDEX_37', 'nodes': 228, 'total_dup': 16},
+                {'avg_data_length': 1.24, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 9, 'name': 'RDB$INDEX_29', 'nodes': 173, 'total_dup': 144},
+                {'avg_data_length': 0.07, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 104, 'name': 'RDB$INDEX_30', 'nodes': 173, 'total_dup': 171},
+                {'avg_data_length': 5.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 1, 'name': 'RDB$INDEX_33', 'nodes': 2, 'total_dup': 1},
+                {'avg_data_length': 9.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$INDEX_34', 'nodes': 2, 'total_dup': 0},
+                {'avg_data_length': 0.31, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 21, 'name': 'CHANGEX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 0.9, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 2, 'name': 'RDB$FOREIGN21', 'nodes': 49, 'total_dup': 16},
+                {'avg_data_length': 18.29, 'depth': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY20', 'nodes': 49, 'total_dup': 0},
+                {'avg_data_length': 0.29, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 28, 'name': 'UPDATERX', 'nodes': 49, 'total_dup': 46},
+                {'avg_data_length': 2.55, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 6, 'name': 'NEEDX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 1.85, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 3, 'name': 'QTYX', 'nodes': 33, 'total_dup': 11},
+                {'avg_data_length': 0.52, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 4, 'name': 'RDB$FOREIGN25', 'nodes': 33, 'total_dup': 18},
+                {'avg_data_length': 0.45, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 5, 'leaf_buckets': 1, 'max_dup': 7, 'name': 'RDB$FOREIGN26', 'nodes': 33, 'total_dup': 25},
+                {'avg_data_length': 4.48, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY24', 'nodes': 33, 'total_dup': 0},
+                {'avg_data_length': 0.97, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 14, 'name': 'SALESTATX', 'nodes': 33, 'total_dup': 27},
+                {'avg_data_length': 0.0, 'depth': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0, 'name': 'RDB$PRIMARY104', 'nodes': 0, 'total_dup': 0}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.indices[i], ['table']), 'Unexpected output from parser (indices)')
+            i += 1
+    def test_parse30_h(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-h.out'))
+        data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': '{F978F787-7023-4C4A-F79D-8D86645B0487}',
+                'bumped_transaction': None, 'checksum': 12345, 'completed': datetime.datetime(2018, 4, 4, 15, 41, 34),
+                'continuation_file': None, 'continuation_files': 0, 'creation_date': datetime.datetime(2015, 11, 27, 11, 19, 39),
+                'database_dialect': 3, 'encrypted_blob_pages': None, 'encrypted_data_pages': None, 'encrypted_index_pages': None,
+                'executed': datetime.datetime(2018, 4, 4, 15, 41, 34), 'filename': '/home/fdb/test/FBTEST30.FDB', 'flags': 0,
+                'generation': 2176, 'gstat_version': 3, 'implementation': 'HW=AMD/Intel/x64 little-endian OS=Linux CC=gcc',
+                'implementation_id': 0, 'indices': 0, 'last_logical_page': None, 'next_attachment_id': 1199, 'next_header_page': 0,
+                'next_transaction': 2141, 'oat': 2140, 'ods_version': '12.0', 'oit': 179, 'ost': 2140, 'page_buffers': 0,
+                'page_size': 8192, 'replay_logging_file': None, 'root_filename': None, 'sequence_number': 0, 'shadow_count': 0,
+                'sweep_interval': None, 'system_change_number': 24, 'tables': 0}
+        self.assertIsInstance(db, gstat.StatDatabase)
+        self.assertDictEqual(data, get_object_data(db), 'Unexpected output from parser (database hdr)')
+        #
+        self.assertFalse(db.has_table_stats())
+        self.assertFalse(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+    def test_parse30_a(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-a.out'))
+        # Database
+        data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': '{F978F787-7023-4C4A-F79D-8D86645B0487}',
+                'bumped_transaction': None, 'checksum': 12345, 'completed': datetime.datetime(2018, 4, 4, 15, 42),
+                'continuation_file': None, 'continuation_files': 0, 'creation_date': datetime.datetime(2015, 11, 27, 11, 19, 39),
+                'database_dialect': 3, 'encrypted_blob_pages': None, 'encrypted_data_pages': None, 'encrypted_index_pages': None,
+                'executed': datetime.datetime(2018, 4, 4, 15, 42), 'filename': '/home/fdb/test/FBTEST30.FDB', 'flags': 0,
+                'generation': 2176, 'gstat_version': 3, 'implementation': 'HW=AMD/Intel/x64 little-endian OS=Linux CC=gcc',
+                'implementation_id': 0, 'indices': 39, 'last_logical_page': None, 'next_attachment_id': 1199, 'next_header_page': 0,
+                'next_transaction': 2141, 'oat': 2140, 'ods_version': '12.0', 'oit': 179, 'ost': 2140, 'page_buffers': 0,
+                'page_size': 8192, 'replay_logging_file': None, 'root_filename': None, 'sequence_number': 0, 'shadow_count': 0,
+                'sweep_interval': None, 'system_change_number': 24, 'tables': 16}
+        self.assertDictEqual(data, get_object_data(db), 'Unexpected output from parser (database hdr)')
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+        # Tables
+        data = [{'avg_fill': 86, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 3, 'data_pages': 3, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=2),
+                 'empty_pages': 0, 'full_pages': 1, 'index_root_page': 299, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'AR', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 297, 'secondary_pages': 2, 'swept_pages': 0, 'table_id': 140, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 8, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 183, 'indices': 1, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'COUNTRY', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 182, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 128, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 26, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 262, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'CUSTOMER', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 261, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 137, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 24, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 199, 'indices': 5, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'DEPARTMENT', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 198, 'secondary_pages': 0, 'swept_pages': 1, 'table_id': 130, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 44, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 213, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'EMPLOYEE', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 212, 'secondary_pages': 0, 'swept_pages': 1, 'table_id': 131, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 10, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 235, 'indices': 3, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'EMPLOYEE_PROJECT', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 234, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 134, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 54, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=1, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 190, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'JOB', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 189, 'secondary_pages': 1, 'swept_pages': 1, 'table_id': 129, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 7, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 221, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'PROJECT', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 220, 'secondary_pages': 1, 'swept_pages': 1, 'table_id': 133, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 20, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=1, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 248, 'indices': 3, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'PROJ_DEPT_BUDGET', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 239, 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 135, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 30, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 254, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'SALARY_HISTORY', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 253, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 136, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 35, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 268, 'indices': 6, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'SALES', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 267, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 138, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 0, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 0, 'data_pages': 0, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 324, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T', 'pointer_pages': 1, 'primary_pages': 0,
+                 'primary_pointer_page': 323, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 147, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 8, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 303, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T2', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 302, 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 142, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 3, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 306, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T3', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 305, 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 143, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 3, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 308, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T4', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 307, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 144, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 0, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 0, 'data_pages': 0, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 316, 'indices': 1, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T5', 'pointer_pages': 1, 'primary_pages': 0,
+                 'primary_pointer_page': 315, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 145, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        data = [{'avg_data_length': 6.44, 'avg_key_length': 8.63, 'avg_node_length': 10.44, 'avg_prefix_length': 0.44,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.8, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY1', 'nodes': 16, 'ratio': 0.06, 'root_page': 186, 'total_dup': 0},
+                {'avg_data_length': 15.87, 'avg_key_length': 18.27, 'avg_node_length': 19.87, 'avg_prefix_length': 0.6,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.9, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'CUSTNAMEX', 'nodes': 15, 'ratio': 0.07, 'root_page': 276, 'total_dup': 0},
+                {'avg_data_length': 17.27, 'avg_key_length': 20.2, 'avg_node_length': 21.27, 'avg_prefix_length': 2.33,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.97, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'CUSTREGION', 'nodes': 15, 'ratio': 0.07, 'root_page': 283, 'total_dup': 0},
+                {'avg_data_length': 4.87, 'avg_key_length': 6.93, 'avg_node_length': 8.6, 'avg_prefix_length': 0.87,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.83, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN23', 'nodes': 15, 'ratio': 0.07, 'root_page': 264, 'total_dup': 4},
+                {'avg_data_length': 1.13, 'avg_key_length': 3.13, 'avg_node_length': 4.2, 'avg_prefix_length': 1.87,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.96, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY22', 'nodes': 15, 'ratio': 0.07, 'root_page': 263, 'total_dup': 0},
+                {'avg_data_length': 5.38, 'avg_key_length': 8.0, 'avg_node_length': 9.05, 'avg_prefix_length': 3.62,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.13, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 3,
+                 'name': 'BUDGETX', 'nodes': 21, 'ratio': 0.05, 'root_page': 284, 'total_dup': 7},
+                {'avg_data_length': 13.95, 'avg_key_length': 16.57, 'avg_node_length': 17.95, 'avg_prefix_length': 5.29,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.16, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$4', 'nodes': 21, 'ratio': 0.05, 'root_page': 208, 'total_dup': 0},
+                {'avg_data_length': 1.14, 'avg_key_length': 3.24, 'avg_node_length': 4.29, 'avg_prefix_length': 0.81,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.6, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 3,
+                 'name': 'RDB$FOREIGN10', 'nodes': 21, 'ratio': 0.05, 'root_page': 219, 'total_dup': 3},
+                {'avg_data_length': 0.81, 'avg_key_length': 2.95, 'avg_node_length': 4.1, 'avg_prefix_length': 2.05,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.97, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN6', 'nodes': 21, 'ratio': 0.05, 'root_page': 210, 'total_dup': 13},
+                {'avg_data_length': 1.71, 'avg_key_length': 4.05, 'avg_node_length': 5.24, 'avg_prefix_length': 1.29,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.74, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY5', 'nodes': 21, 'ratio': 0.05, 'root_page': 209, 'total_dup': 0},
+                {'avg_data_length': 15.52, 'avg_key_length': 18.5, 'avg_node_length': 19.52, 'avg_prefix_length': 2.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.96, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'NAMEX', 'nodes': 42, 'ratio': 0.02, 'root_page': 285, 'total_dup': 0},
+                {'avg_data_length': 0.81, 'avg_key_length': 2.98,   'avg_node_length': 4.07, 'avg_prefix_length': 2.19,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.01, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN8', 'nodes': 42, 'ratio': 0.02, 'root_page': 215, 'total_dup': 23},
+                {'avg_data_length': 6.79, 'avg_key_length': 9.4, 'avg_node_length': 10.43,   'avg_prefix_length': 9.05,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.68, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN9', 'nodes': 42, 'ratio': 0.02, 'root_page': 216, 'total_dup': 15},
+                {'avg_data_length': 1.31, 'avg_key_length': 3.6, 'avg_node_length': 4.62, 'avg_prefix_length': 1.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.69, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY7', 'nodes': 42, 'ratio': 0.02, 'root_page': 214, 'total_dup': 0},
+                {'avg_data_length': 1.04, 'avg_key_length': 3.25, 'avg_node_length': 4.29, 'avg_prefix_length': 1.36,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.74, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2,
+                 'name': 'RDB$FOREIGN15', 'nodes': 28, 'ratio': 0.04, 'root_page': 237, 'total_dup': 6},
+                {'avg_data_length': 0.86, 'avg_key_length': 2.89, 'avg_node_length': 4.04, 'avg_prefix_length': 4.14,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.73, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 9,
+                 'name': 'RDB$FOREIGN16', 'nodes': 28, 'ratio': 0.04, 'root_page': 238, 'total_dup': 23},
+                {'avg_data_length': 9.11, 'avg_key_length': 12.07, 'avg_node_length': 13.11, 'avg_prefix_length': 2.89,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.99, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY14', 'nodes': 28, 'ratio': 0.04, 'root_page': 236, 'total_dup': 0},
+                {'avg_data_length': 10.9, 'avg_key_length': 13.71, 'avg_node_length': 14.74, 'avg_prefix_length': 7.87,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.37, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 1,
+                 'name': 'MAXSALX', 'nodes': 31, 'ratio': 0.03, 'root_page': 286, 'total_dup': 5},
+                {'avg_data_length': 10.29, 'avg_key_length': 13.03, 'avg_node_length': 14.06, 'avg_prefix_length': 8.48,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.44, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 2,
+                 'name': 'MINSALX', 'nodes': 31, 'ratio': 0.03, 'root_page': 287, 'total_dup': 7},
+                {'avg_data_length': 1.39, 'avg_key_length': 3.39, 'avg_node_length': 4.61, 'avg_prefix_length': 2.77,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.23, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 20,
+                 'name': 'RDB$FOREIGN3', 'nodes': 31, 'ratio': 0.03, 'root_page': 192, 'total_dup': 24},
+                {'avg_data_length': 10.45, 'avg_key_length': 13.42, 'avg_node_length': 14.45, 'avg_prefix_length': 6.19,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.24, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,   'leaf_buckets': 1,   'max_dup': 0,
+                 'name': 'RDB$PRIMARY2', 'nodes': 31, 'ratio': 0.03, 'root_page': 191, 'total_dup': 0},
+                {'avg_data_length': 22.5, 'avg_key_length': 25.33, 'avg_node_length': 26.5, 'avg_prefix_length': 4.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.05, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'PRODTYPEX', 'nodes': 6, 'ratio': 0.17, 'root_page': 288, 'total_dup': 0},
+                {'avg_data_length': 13.33, 'avg_key_length': 15.5, 'avg_node_length': 17.33, 'avg_prefix_length': 0.33,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.88, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$11', 'nodes': 6, 'ratio': 0.17, 'root_page': 222,   'total_dup': 0},
+                {'avg_data_length': 1.33, 'avg_key_length': 3.5,   'avg_node_length': 4.67, 'avg_prefix_length': 0.67,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.57, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,   'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$FOREIGN13',   'nodes': 6,   'ratio': 0.17, 'root_page': 232, 'total_dup': 0},
+                {'avg_data_length': 4.83, 'avg_key_length': 7.0, 'avg_node_length': 8.83, 'avg_prefix_length': 0.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.71, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY12', 'nodes': 6, 'ratio': 0.17, 'root_page': 223, 'total_dup': 0},
+                {'avg_data_length': 0.71, 'avg_key_length': 2.79, 'avg_node_length': 3.92, 'avg_prefix_length': 2.29,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.07, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 5,
+                 'name': 'RDB$FOREIGN18', 'nodes': 24, 'ratio': 0.04, 'root_page': 250, 'total_dup': 15},
+                {'avg_data_length': 1.0, 'avg_key_length': 3.04, 'avg_node_length': 4.21, 'avg_prefix_length': 4.0,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.64, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 8,
+                 'name': 'RDB$FOREIGN19', 'nodes': 24, 'ratio': 0.04, 'root_page': 251, 'total_dup': 19},
+                {'avg_data_length': 6.83, 'avg_key_length': 9.67, 'avg_node_length': 10.71,   'avg_prefix_length': 12.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.97, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY17', 'nodes': 24, 'ratio': 0.04, 'root_page': 249, 'total_dup': 0},
+                {'avg_data_length': 0.31, 'avg_key_length': 2.35, 'avg_node_length': 3.37, 'avg_prefix_length': 6.69,
+                 'clustering_factor': 1.0, 'compression_ratio': 2.98, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 21,
+                 'name': 'CHANGEX', 'nodes': 49, 'ratio': 0.02, 'root_page': 289, 'total_dup': 46},
+                {'avg_data_length': 0.9, 'avg_key_length': 3.1, 'avg_node_length': 4.12, 'avg_prefix_length': 1.43,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.75, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2,
+                 'name': 'RDB$FOREIGN21', 'nodes': 49, 'ratio': 0.02, 'root_page': 256, 'total_dup': 16},
+                {'avg_data_length': 18.29, 'avg_key_length': 21.27, 'avg_node_length': 22.29,   'avg_prefix_length': 4.31,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.06, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY20', 'nodes': 49, 'ratio': 0.02, 'root_page': 255, 'total_dup': 0},
+                {'avg_data_length': 0.29, 'avg_key_length': 2.29, 'avg_node_length': 3.35, 'avg_prefix_length': 5.39,
+                 'clustering_factor': 1.0, 'compression_ratio': 2.48, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 28,
+                 'name': 'UPDATERX', 'nodes': 49, 'ratio': 0.02, 'root_page': 290, 'total_dup': 46},
+                {'avg_data_length': 2.55, 'avg_key_length': 4.94, 'avg_node_length': 5.97, 'avg_prefix_length': 2.88,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.1, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 6,
+                 'name': 'NEEDX', 'nodes': 33, 'ratio': 0.03, 'root_page': 291, 'total_dup': 11},
+                {'avg_data_length': 1.85, 'avg_key_length': 4.03, 'avg_node_length': 5.06, 'avg_prefix_length': 11.18,
+                 'clustering_factor': 1.0, 'compression_ratio': 3.23, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 3,
+                 'name': 'QTYX', 'nodes': 33, 'ratio': 0.03, 'root_page': 292, 'total_dup': 11},
+                {'avg_data_length': 0.52, 'avg_key_length': 2.52, 'avg_node_length': 3.55, 'avg_prefix_length': 2.48,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.19, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1,   'max_dup': 4,
+                 'name': 'RDB$FOREIGN25', 'nodes': 33, 'ratio': 0.03, 'root_page': 270, 'total_dup': 18},
+                {'avg_data_length': 0.45, 'avg_key_length': 2.64, 'avg_node_length': 3.67, 'avg_prefix_length': 2.21,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.01, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 7,
+                 'name': 'RDB$FOREIGN26', 'nodes': 33, 'ratio': 0.03, 'root_page': 271, 'total_dup': 25},
+                {'avg_data_length': 4.48, 'avg_key_length': 7.42, 'avg_node_length': 8.45, 'avg_prefix_length': 3.52,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.08, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY24', 'nodes': 33, 'ratio': 0.03, 'root_page': 269, 'total_dup': 0},
+                {'avg_data_length': 0.97, 'avg_key_length': 3.03, 'avg_node_length': 4.06, 'avg_prefix_length': 9.82,
+                 'clustering_factor': 1.0, 'compression_ratio': 3.56, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 5, 'leaf_buckets': 1, 'max_dup': 14,
+                 'name': 'SALESTATX', 'nodes': 33, 'ratio': 0.03, 'root_page': 293, 'total_dup': 27},
+                {'avg_data_length': 0.0, 'avg_key_length': 0.0, 'avg_node_length': 0.0, 'avg_prefix_length': 0.0,
+                 'clustering_factor': 0.0, 'compression_ratio': 0.0, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,   'leaf_buckets': 1,   'max_dup': 0,
+                 'name': 'RDB$PRIMARY28', 'nodes': 0, 'ratio': 0.0, 'root_page': 317, 'total_dup': 0}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.indices[i], ['table']), 'Unexpected output from parser (indices)')
+            i += 1
+    def test_parse30_d(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-d.out'))
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertFalse(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+        # Tables
+        data = [{'avg_fill': 86, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 3, 'data_pages': 3, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=2),
+                 'empty_pages': 0, 'full_pages': 1, 'index_root_page': 299, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'AR', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 297, 'secondary_pages': 2, 'swept_pages': 0, 'table_id': 140, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 8, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 183, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'COUNTRY', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 182, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 128, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 26, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 262, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'CUSTOMER', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 261, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 137, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 24, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 199, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'DEPARTMENT', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 198, 'secondary_pages': 0, 'swept_pages': 1, 'table_id': 130, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 44, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 213, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'EMPLOYEE', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 212, 'secondary_pages': 0, 'swept_pages': 1, 'table_id': 131, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 10, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 235, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'EMPLOYEE_PROJECT', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 234, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 134, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 54, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=1, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 190, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'JOB', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 189, 'secondary_pages': 1, 'swept_pages': 1, 'table_id': 129, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 7, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 221, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'PROJECT', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 220, 'secondary_pages': 1, 'swept_pages': 1, 'table_id': 133, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 20, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=1, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 248, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'PROJ_DEPT_BUDGET', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 239, 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 135, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 30, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 254, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'SALARY_HISTORY', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 253, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 136, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 35, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 268, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'SALES', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 267, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 138, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 0, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 0, 'data_pages': 0, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 324, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T', 'pointer_pages': 1, 'primary_pages': 0,
+                 'primary_pointer_page': 323, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 147, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 8, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 303, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T2', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 302, 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 142, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 3, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 306, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T3', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 305, 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 143, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 3, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 308, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T4', 'pointer_pages': 1, 'primary_pages': 1,
+                 'primary_pointer_page': 307, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 144, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': 0, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': 0, 'data_pages': 0, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 316, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': None, 'max_versions': None, 'name': 'T5', 'pointer_pages': 1, 'primary_pages': 0,
+                 'primary_pointer_page': 315, 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 145, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        self.assertEqual(len(db.indices), 0)
+    def test_parse30_e(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-e.out'))
+        data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': '{F978F787-7023-4C4A-F79D-8D86645B0487}',
+                'bumped_transaction': None, 'checksum': 12345, 'completed': datetime.datetime(2018, 4, 4, 15, 45, 6),
+                'continuation_file': None, 'continuation_files': 0, 'creation_date': datetime.datetime(2015, 11, 27, 11, 19, 39),
+                'database_dialect': 3, 'encrypted_blob_pages': Encryption(pages=11, encrypted=0, unencrypted=11),
+                'encrypted_data_pages': Encryption(pages=121, encrypted=0, unencrypted=121),
+                'encrypted_index_pages': Encryption(pages=96, encrypted=0, unencrypted=96),
+                'executed': datetime.datetime(2018, 4, 4, 15, 45, 6), 'filename': '/home/fdb/test/FBTEST30.FDB', 'flags': 0,
+                'generation': 2181, 'gstat_version': 3, 'implementation': 'HW=AMD/Intel/x64 little-endian OS=Linux CC=gcc',
+                'implementation_id': 0, 'indices': 0, 'last_logical_page': None, 'next_attachment_id': 1214,
+                'next_header_page': 0, 'next_transaction': 2146, 'oat': 2146, 'ods_version': '12.0', 'oit': 179, 'ost': 2146,
+                'page_buffers': 0, 'page_size': 8192, 'replay_logging_file': None, 'root_filename': None, 'sequence_number': 0,
+                'shadow_count': 0, 'sweep_interval': None, 'system_change_number': 24, 'tables': 0}
+        self.assertIsInstance(db, gstat.StatDatabase)
+        self.assertDictEqual(data, get_object_data(db), 'Unexpected output from parser (database hdr)')
+        #
+        self.assertFalse(db.has_table_stats())
+        self.assertFalse(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertTrue(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+    def test_parse30_f(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-f.out'))
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertTrue(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertTrue(db.has_system())
+    def test_parse30_i(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-i.out'))
+        #
+        self.assertFalse(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        # Tables
+        data = [{'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'AR', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 140, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 1, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'COUNTRY', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 128, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'CUSTOMER', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 137, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 5, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'DEPARTMENT', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 130, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'EMPLOYEE', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 131, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 3, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'EMPLOYEE_PROJECT', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 134, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'JOB', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 129, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'PROJECT', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 133, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 3, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'PROJ_DEPT_BUDGET', 'pointer_pages': None, 'primary_pages': None,
+                 'primary_pointer_page': None, 'secondary_pages': None, 'swept_pages': None, 'table_id': 135, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'SALARY_HISTORY', 'pointer_pages': None, 'primary_pages': None,
+                 'primary_pointer_page': None, 'secondary_pages': None, 'swept_pages': None, 'table_id': 136, 'total_formats': None,
+                 'total_fragments': None, 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None,   'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None,   'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None,   'distribution': None, 'empty_pages': None,   'full_pages': None,
+                 'index_root_page': None, 'indices': 6, 'level_0': None, 'level_1': None,   'level_2': None,   'max_fragments': None,
+                 'max_versions': None, 'name': 'SALES', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 138, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'T', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 147, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'T2', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 142, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 0, 'level_0': None, 'level_1': None,   'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'T3', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 143, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,   'max_fragments': None,
+                 'max_versions': None, 'name': 'T4', 'pointer_pages': None, 'primary_pages': None, 'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 144, 'total_formats': None, 'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None},
+                {'avg_fill': None, 'avg_fragment_length': None, 'avg_record_length': None, 'avg_unpacked_length': None,
+                 'avg_version_length': None, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': None,
+                 'data_page_slots': None, 'data_pages': None, 'distribution': None, 'empty_pages': None, 'full_pages': None,
+                 'index_root_page': None, 'indices': 1, 'level_0': None, 'level_1': None, 'level_2': None, 'max_fragments': None,
+                 'max_versions': None, 'name': 'T5', 'pointer_pages': None, 'primary_pages': None,   'primary_pointer_page': None,
+                 'secondary_pages': None, 'swept_pages': None, 'table_id': 145, 'total_formats': None,   'total_fragments': None,
+                 'total_records': None, 'total_versions': None, 'used_formats': None}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+        # Indices
+        data = [{'avg_data_length': 6.44, 'avg_key_length': 8.63, 'avg_node_length': 10.44, 'avg_prefix_length': 0.44,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.8, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY1', 'nodes': 16, 'ratio': 0.06, 'root_page': 186, 'total_dup': 0},
+                {'avg_data_length': 15.87, 'avg_key_length': 18.27, 'avg_node_length': 19.87, 'avg_prefix_length': 0.6,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.9, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'CUSTNAMEX', 'nodes': 15, 'ratio': 0.07, 'root_page': 276, 'total_dup': 0},
+                {'avg_data_length': 17.27, 'avg_key_length': 20.2, 'avg_node_length': 21.27, 'avg_prefix_length': 2.33,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.97, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'CUSTREGION', 'nodes': 15, 'ratio': 0.07, 'root_page': 283, 'total_dup': 0},
+                {'avg_data_length': 4.87, 'avg_key_length': 6.93, 'avg_node_length': 8.6, 'avg_prefix_length': 0.87,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.83, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN23', 'nodes': 15, 'ratio': 0.07, 'root_page': 264, 'total_dup': 4},
+                {'avg_data_length': 1.13, 'avg_key_length': 3.13, 'avg_node_length': 4.2, 'avg_prefix_length': 1.87,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.96, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY22', 'nodes': 15, 'ratio': 0.07, 'root_page': 263, 'total_dup': 0},
+                {'avg_data_length': 5.38, 'avg_key_length': 8.0, 'avg_node_length': 9.05, 'avg_prefix_length': 3.62,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.13, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 3,
+                 'name': 'BUDGETX', 'nodes': 21, 'ratio': 0.05, 'root_page': 284, 'total_dup': 7},
+                {'avg_data_length': 13.95, 'avg_key_length': 16.57, 'avg_node_length': 17.95, 'avg_prefix_length': 5.29,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.16, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$4', 'nodes': 21, 'ratio': 0.05, 'root_page': 208, 'total_dup': 0},
+                {'avg_data_length': 1.14, 'avg_key_length': 3.24, 'avg_node_length': 4.29, 'avg_prefix_length': 0.81,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.6, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 3,
+                 'name': 'RDB$FOREIGN10', 'nodes': 21, 'ratio': 0.05, 'root_page': 219, 'total_dup': 3},
+                {'avg_data_length': 0.81, 'avg_key_length': 2.95, 'avg_node_length': 4.1, 'avg_prefix_length': 2.05,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.97, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN6', 'nodes': 21, 'ratio': 0.05, 'root_page': 210, 'total_dup': 13},
+                {'avg_data_length': 1.71, 'avg_key_length': 4.05, 'avg_node_length': 5.24, 'avg_prefix_length': 1.29,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.74, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY5', 'nodes': 21, 'ratio': 0.05, 'root_page': 209, 'total_dup': 0},
+                {'avg_data_length': 15.52, 'avg_key_length': 18.5, 'avg_node_length': 19.52, 'avg_prefix_length': 2.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.96, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'NAMEX', 'nodes': 42, 'ratio': 0.02, 'root_page': 285, 'total_dup': 0},
+                {'avg_data_length': 0.81, 'avg_key_length': 2.98,   'avg_node_length': 4.07, 'avg_prefix_length': 2.19,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.01, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN8', 'nodes': 42, 'ratio': 0.02, 'root_page': 215, 'total_dup': 23},
+                {'avg_data_length': 6.79, 'avg_key_length': 9.4, 'avg_node_length': 10.43,   'avg_prefix_length': 9.05,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.68, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 4,
+                 'name': 'RDB$FOREIGN9', 'nodes': 42, 'ratio': 0.02, 'root_page': 216, 'total_dup': 15},
+                {'avg_data_length': 1.31, 'avg_key_length': 3.6, 'avg_node_length': 4.62, 'avg_prefix_length': 1.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.69, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY7', 'nodes': 42, 'ratio': 0.02, 'root_page': 214, 'total_dup': 0},
+                {'avg_data_length': 1.04, 'avg_key_length': 3.25, 'avg_node_length': 4.29, 'avg_prefix_length': 1.36,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.74, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2,
+                 'name': 'RDB$FOREIGN15', 'nodes': 28, 'ratio': 0.04, 'root_page': 237, 'total_dup': 6},
+                {'avg_data_length': 0.86, 'avg_key_length': 2.89, 'avg_node_length': 4.04, 'avg_prefix_length': 4.14,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.73, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 9,
+                 'name': 'RDB$FOREIGN16', 'nodes': 28, 'ratio': 0.04, 'root_page': 238, 'total_dup': 23},
+                {'avg_data_length': 9.11, 'avg_key_length': 12.07, 'avg_node_length': 13.11, 'avg_prefix_length': 2.89,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.99, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY14', 'nodes': 28, 'ratio': 0.04, 'root_page': 236, 'total_dup': 0},
+                {'avg_data_length': 10.9, 'avg_key_length': 13.71, 'avg_node_length': 14.74, 'avg_prefix_length': 7.87,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.37, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 1,
+                 'name': 'MAXSALX', 'nodes': 31, 'ratio': 0.03, 'root_page': 286, 'total_dup': 5},
+                {'avg_data_length': 10.29, 'avg_key_length': 13.03, 'avg_node_length': 14.06, 'avg_prefix_length': 8.48,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.44, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 2,
+                 'name': 'MINSALX', 'nodes': 31, 'ratio': 0.03, 'root_page': 287, 'total_dup': 7},
+                {'avg_data_length': 1.39, 'avg_key_length': 3.39, 'avg_node_length': 4.61, 'avg_prefix_length': 2.77,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.23, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 20,
+                 'name': 'RDB$FOREIGN3', 'nodes': 31, 'ratio': 0.03, 'root_page': 192, 'total_dup': 24},
+                {'avg_data_length': 10.45, 'avg_key_length': 13.42, 'avg_node_length': 14.45, 'avg_prefix_length': 6.19,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.24, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,   'leaf_buckets': 1,   'max_dup': 0,
+                 'name': 'RDB$PRIMARY2', 'nodes': 31, 'ratio': 0.03, 'root_page': 191, 'total_dup': 0},
+                {'avg_data_length': 22.5, 'avg_key_length': 25.33, 'avg_node_length': 26.5, 'avg_prefix_length': 4.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.05, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'PRODTYPEX', 'nodes': 6, 'ratio': 0.17, 'root_page': 288, 'total_dup': 0},
+                {'avg_data_length': 13.33, 'avg_key_length': 15.5, 'avg_node_length': 17.33, 'avg_prefix_length': 0.33,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.88, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$11', 'nodes': 6, 'ratio': 0.17, 'root_page': 222,   'total_dup': 0},
+                {'avg_data_length': 1.33, 'avg_key_length': 3.5,   'avg_node_length': 4.67, 'avg_prefix_length': 0.67,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.57, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,   'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$FOREIGN13',   'nodes': 6,   'ratio': 0.17, 'root_page': 232, 'total_dup': 0},
+                {'avg_data_length': 4.83, 'avg_key_length': 7.0, 'avg_node_length': 8.83, 'avg_prefix_length': 0.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.71, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY12', 'nodes': 6, 'ratio': 0.17, 'root_page': 223, 'total_dup': 0},
+                {'avg_data_length': 0.71, 'avg_key_length': 2.79, 'avg_node_length': 3.92, 'avg_prefix_length': 2.29,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.07, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 5,
+                 'name': 'RDB$FOREIGN18', 'nodes': 24, 'ratio': 0.04, 'root_page': 250, 'total_dup': 15},
+                {'avg_data_length': 1.0, 'avg_key_length': 3.04, 'avg_node_length': 4.21, 'avg_prefix_length': 4.0,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.64, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 8,
+                 'name': 'RDB$FOREIGN19', 'nodes': 24, 'ratio': 0.04, 'root_page': 251, 'total_dup': 19},
+                {'avg_data_length': 6.83, 'avg_key_length': 9.67, 'avg_node_length': 10.71,   'avg_prefix_length': 12.17,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.97, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY17', 'nodes': 24, 'ratio': 0.04, 'root_page': 249, 'total_dup': 0},
+                {'avg_data_length': 0.31, 'avg_key_length': 2.35, 'avg_node_length': 3.37, 'avg_prefix_length': 6.69,
+                 'clustering_factor': 1.0, 'compression_ratio': 2.98, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 21,
+                 'name': 'CHANGEX', 'nodes': 49, 'ratio': 0.02, 'root_page': 289, 'total_dup': 46},
+                {'avg_data_length': 0.9, 'avg_key_length': 3.1, 'avg_node_length': 4.12, 'avg_prefix_length': 1.43,
+                 'clustering_factor': 1.0, 'compression_ratio': 0.75, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2,
+                 'name': 'RDB$FOREIGN21', 'nodes': 49, 'ratio': 0.02, 'root_page': 256, 'total_dup': 16},
+                {'avg_data_length': 18.29, 'avg_key_length': 21.27, 'avg_node_length': 22.29,   'avg_prefix_length': 4.31,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.06, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY20', 'nodes': 49, 'ratio': 0.02, 'root_page': 255, 'total_dup': 0},
+                {'avg_data_length': 0.29, 'avg_key_length': 2.29, 'avg_node_length': 3.35, 'avg_prefix_length': 5.39,
+                 'clustering_factor': 1.0, 'compression_ratio': 2.48, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 28,
+                 'name': 'UPDATERX', 'nodes': 49, 'ratio': 0.02, 'root_page': 290, 'total_dup': 46},
+                {'avg_data_length': 2.55, 'avg_key_length': 4.94, 'avg_node_length': 5.97, 'avg_prefix_length': 2.88,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.1, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 6,
+                 'name': 'NEEDX', 'nodes': 33, 'ratio': 0.03, 'root_page': 291, 'total_dup': 11},
+                {'avg_data_length': 1.85, 'avg_key_length': 4.03, 'avg_node_length': 5.06, 'avg_prefix_length': 11.18,
+                 'clustering_factor': 1.0, 'compression_ratio': 3.23, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 3,
+                 'name': 'QTYX', 'nodes': 33, 'ratio': 0.03, 'root_page': 292, 'total_dup': 11},
+                {'avg_data_length': 0.52, 'avg_key_length': 2.52, 'avg_node_length': 3.55, 'avg_prefix_length': 2.48,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.19, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1,   'max_dup': 4,
+                 'name': 'RDB$FOREIGN25', 'nodes': 33, 'ratio': 0.03, 'root_page': 270, 'total_dup': 18},
+                {'avg_data_length': 0.45, 'avg_key_length': 2.64, 'avg_node_length': 3.67, 'avg_prefix_length': 2.21,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.01, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 7,
+                 'name': 'RDB$FOREIGN26', 'nodes': 33, 'ratio': 0.03, 'root_page': 271, 'total_dup': 25},
+                {'avg_data_length': 4.48, 'avg_key_length': 7.42, 'avg_node_length': 8.45, 'avg_prefix_length': 3.52,
+                 'clustering_factor': 1.0, 'compression_ratio': 1.08, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                 'name': 'RDB$PRIMARY24', 'nodes': 33, 'ratio': 0.03, 'root_page': 269, 'total_dup': 0},
+                {'avg_data_length': 0.97, 'avg_key_length': 3.03, 'avg_node_length': 4.06, 'avg_prefix_length': 9.82,
+                 'clustering_factor': 1.0, 'compression_ratio': 3.56, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 5, 'leaf_buckets': 1, 'max_dup': 14,
+                 'name': 'SALESTATX', 'nodes': 33, 'ratio': 0.03, 'root_page': 293, 'total_dup': 27},
+                {'avg_data_length': 0.0, 'avg_key_length': 0.0, 'avg_node_length': 0.0, 'avg_prefix_length': 0.0,
+                 'clustering_factor': 0.0, 'compression_ratio': 0.0, 'depth': 1,
+                 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,   'leaf_buckets': 1,   'max_dup': 0,
+                 'name': 'RDB$PRIMARY28', 'nodes': 0, 'ratio': 0.0, 'root_page': 317, 'total_dup': 0}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.indices[i], ['table']), 'Unexpected output from parser (indices)')
+            i += 1
+    def test_parse30_r(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-r.out'))
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertTrue(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertFalse(db.has_system())
+        # Tables
+        data = [{'avg_fill': 86, 'avg_fragment_length': 0.0, 'avg_record_length': 2.79, 'avg_unpacked_length': 120.0,
+                 'avg_version_length': 16.61, 'blob_pages': 0, 'blobs': 125, 'blobs_total_length': 11237, 'compression_ratio': 42.99,
+                 'data_page_slots': 3, 'data_pages': 3, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=1, d100=2),
+                 'empty_pages': 0, 'full_pages': 1, 'index_root_page': 299, 'indices': 0, 'level_0': 125, 'level_1': 0, 'level_2': 0,
+                 'max_fragments': 0, 'max_versions': 1, 'name': 'AR', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 297,
+                 'secondary_pages': 2, 'swept_pages': 0, 'table_id': 140, 'total_formats': 1, 'total_fragments': 0, 'total_records': 120,
+                 'total_versions': 105, 'used_formats': 1},
+                {'avg_fill': 8, 'avg_fragment_length': 0.0, 'avg_record_length': 25.94, 'avg_unpacked_length': 34.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 1.31,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 183, 'indices': 1, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'COUNTRY', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 182,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 128, 'total_formats': 1, 'total_fragments': 0, 'total_records': 16,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 26, 'avg_fragment_length': 0.0, 'avg_record_length': 125.47, 'avg_unpacked_length': 241.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 1.92,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 262, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'CUSTOMER', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 261,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 137, 'total_formats': 1, 'total_fragments': 0, 'total_records': 15,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 24, 'avg_fragment_length': 0.0, 'avg_record_length': 74.62, 'avg_unpacked_length': 88.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 1.18,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 199, 'indices': 5, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'DEPARTMENT', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 198,
+                 'secondary_pages': 0, 'swept_pages': 1, 'table_id': 130, 'total_formats': 1, 'total_fragments': 0, 'total_records': 21,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 44, 'avg_fragment_length': 0.0, 'avg_record_length': 69.02, 'avg_unpacked_length': 39.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 0.57,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=0, d50=1, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 213, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'EMPLOYEE', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 212,
+                 'secondary_pages': 0, 'swept_pages': 1, 'table_id': 131, 'total_formats': 1, 'total_fragments': 0, 'total_records': 42,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 10, 'avg_fragment_length': 0.0, 'avg_record_length': 12.0, 'avg_unpacked_length': 11.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 0.92,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 235, 'indices': 3, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'EMPLOYEE_PROJECT', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 234,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 134, 'total_formats': 1, 'total_fragments': 0, 'total_records': 28,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 54, 'avg_fragment_length': 0.0, 'avg_record_length': 66.13, 'avg_unpacked_length': 96.0,
+                 'avg_version_length': 0.0, 'blob_pages': 0, 'blobs': 39, 'blobs_total_length': 4840, 'compression_ratio': 1.45,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=1, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 190, 'indices': 4, 'level_0': 39, 'level_1': 0, 'level_2': 0,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'JOB', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 189,
+                 'secondary_pages': 1, 'swept_pages': 1, 'table_id': 129, 'total_formats': 1, 'total_fragments': 0, 'total_records': 31,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 7, 'avg_fragment_length': 0.0, 'avg_record_length': 49.67, 'avg_unpacked_length': 56.0,
+                 'avg_version_length': 0.0, 'blob_pages': 0, 'blobs': 6, 'blobs_total_length': 548, 'compression_ratio': 1.13,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 221, 'indices': 4, 'level_0': 6, 'level_1': 0, 'level_2': 0,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'PROJECT', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 220,
+                 'secondary_pages': 1, 'swept_pages': 1, 'table_id': 133, 'total_formats': 1, 'total_fragments': 0, 'total_records': 6,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 20, 'avg_fragment_length': 0.0, 'avg_record_length': 30.58, 'avg_unpacked_length': 32.0,
+                 'avg_version_length': 0.0, 'blob_pages': 0, 'blobs': 24, 'blobs_total_length': 1344, 'compression_ratio': 1.05,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=1, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 248, 'indices': 3, 'level_0': 24, 'level_1': 0, 'level_2': 0,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'PROJ_DEPT_BUDGET', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 239,
+                 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 135, 'total_formats': 1, 'total_fragments': 0, 'total_records': 24,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 30, 'avg_fragment_length': 0.0, 'avg_record_length': 33.29, 'avg_unpacked_length': 8.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 0.24,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 254, 'indices': 4, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'SALARY_HISTORY', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 253,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 136, 'total_formats': 1, 'total_fragments': 0, 'total_records': 49,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 35, 'avg_fragment_length': 0.0, 'avg_record_length': 68.82, 'avg_unpacked_length': 8.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 0.12,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=0, d40=1, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 268, 'indices': 6, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'SALES', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 267,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 138, 'total_formats': 1, 'total_fragments': 0, 'total_records': 33,
+                 'total_versions': 0, 'used_formats': 1},
+                {'avg_fill': 0, 'avg_fragment_length': 0.0, 'avg_record_length': 0.0, 'avg_unpacked_length': 0.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 0.0,
+                 'data_page_slots': 0, 'data_pages': 0, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 324, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'T', 'pointer_pages': 1, 'primary_pages': 0, 'primary_pointer_page': 323,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 147, 'total_formats': 1, 'total_fragments': 0, 'total_records': 0,
+                 'total_versions': 0, 'used_formats': 0},
+                {'avg_fill': 8, 'avg_fragment_length': 0.0, 'avg_record_length': 0.0, 'avg_unpacked_length': 120.0,
+                 'avg_version_length': 14.25, 'blob_pages': 0, 'blobs': 3, 'blobs_total_length': 954, 'compression_ratio': 0.0,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 303, 'indices': 0, 'level_0': 3, 'level_1': 0, 'level_2': 0,
+                 'max_fragments': 0, 'max_versions': 1, 'name': 'T2', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 302,
+                 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 142, 'total_formats': 1, 'total_fragments': 0, 'total_records': 4,
+                 'total_versions': 4, 'used_formats': 1},
+                {'avg_fill': 3, 'avg_fragment_length': 0.0, 'avg_record_length': 0.0, 'avg_unpacked_length': 112.0,
+                 'avg_version_length': 22.67, 'blob_pages': 0, 'blobs': 2, 'blobs_total_length': 313, 'compression_ratio': 0.0,
+                 'data_page_slots': 2, 'data_pages': 2, 'distribution': FillDistribution(d20=2, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 306, 'indices': 0, 'level_0': 2, 'level_1': 0, 'level_2': 0,
+                 'max_fragments': 0, 'max_versions': 1, 'name': 'T3', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 305,
+                 'secondary_pages': 1, 'swept_pages': 0, 'table_id': 143, 'total_formats': 1, 'total_fragments': 0, 'total_records': 3,
+                 'total_versions': 3, 'used_formats': 1},
+                {'avg_fill': 3, 'avg_fragment_length': 0.0, 'avg_record_length': 0.0, 'avg_unpacked_length': 264.0,
+                 'avg_version_length': 75.0, 'blob_pages': None,   'blobs': None, 'blobs_total_length': None, 'compression_ratio': 0.0,
+                 'data_page_slots': 1, 'data_pages': 1, 'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 308, 'indices': 0, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 1, 'name': 'T4', 'pointer_pages': 1, 'primary_pages': 1, 'primary_pointer_page': 307,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 144, 'total_formats': 1, 'total_fragments': 0, 'total_records': 2,
+                 'total_versions': 2, 'used_formats': 1},
+                {'avg_fill': 0, 'avg_fragment_length': 0.0, 'avg_record_length': 0.0, 'avg_unpacked_length': 0.0,
+                 'avg_version_length': 0.0, 'blob_pages': None, 'blobs': None, 'blobs_total_length': None, 'compression_ratio': 0.0,
+                 'data_page_slots': 0, 'data_pages': 0, 'distribution': FillDistribution(d20=0, d40=0, d50=0, d80=0, d100=0),
+                 'empty_pages': 0, 'full_pages': 0, 'index_root_page': 316, 'indices': 1, 'level_0': None, 'level_1': None, 'level_2': None,
+                 'max_fragments': 0, 'max_versions': 0, 'name': 'T5', 'pointer_pages': 1, 'primary_pages': 0, 'primary_pointer_page': 315,
+                 'secondary_pages': 0, 'swept_pages': 0, 'table_id': 145, 'total_formats': 1, 'total_fragments': 0, 'total_records': 0,
+                 'total_versions': 0, 'used_formats': 0}]
+        i = 0
+        while i < len(db.tables):
+            self.assertDictEqual(data[i], get_object_data(db.tables[i]), 'Unexpected output from parser (tables)')
+            i += 1
+            # Indices
+            data = [{'avg_data_length': 6.44, 'avg_key_length': 8.63, 'avg_node_length': 10.44, 'avg_prefix_length': 0.44,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.8, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY1', 'nodes': 16, 'ratio': 0.06, 'root_page': 186, 'total_dup': 0},
+                    {'avg_data_length': 15.87, 'avg_key_length': 18.27, 'avg_node_length': 19.87, 'avg_prefix_length': 0.6,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.9, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'CUSTNAMEX', 'nodes': 15, 'ratio': 0.07, 'root_page': 276, 'total_dup': 0},
+                    {'avg_data_length': 17.27, 'avg_key_length': 20.2, 'avg_node_length': 21.27, 'avg_prefix_length': 2.33,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.97, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'CUSTREGION', 'nodes': 15, 'ratio': 0.07, 'root_page': 283, 'total_dup': 0},
+                    {'avg_data_length': 4.87, 'avg_key_length': 6.93, 'avg_node_length': 8.6, 'avg_prefix_length': 0.87,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.83, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 4,
+                     'name': 'RDB$FOREIGN23', 'nodes': 15, 'ratio': 0.07, 'root_page': 264, 'total_dup': 4},
+                    {'avg_data_length': 1.13, 'avg_key_length': 3.13, 'avg_node_length': 4.2, 'avg_prefix_length': 1.87,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.96, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY22', 'nodes': 15, 'ratio': 0.07, 'root_page': 263, 'total_dup': 0},
+                    {'avg_data_length': 5.38, 'avg_key_length': 8.0, 'avg_node_length': 9.05, 'avg_prefix_length': 3.62,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.13, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 3,
+                     'name': 'BUDGETX', 'nodes': 21, 'ratio': 0.05, 'root_page': 284, 'total_dup': 7},
+                    {'avg_data_length': 13.95, 'avg_key_length': 16.57, 'avg_node_length': 17.95, 'avg_prefix_length': 5.29,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.16, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$4', 'nodes': 21, 'ratio': 0.05, 'root_page': 208, 'total_dup': 0},
+                    {'avg_data_length': 1.14, 'avg_key_length': 3.24, 'avg_node_length': 4.29, 'avg_prefix_length': 0.81,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.6, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 3,
+                     'name': 'RDB$FOREIGN10', 'nodes': 21, 'ratio': 0.05, 'root_page': 219, 'total_dup': 3},
+                    {'avg_data_length': 0.81, 'avg_key_length': 2.95, 'avg_node_length': 4.1, 'avg_prefix_length': 2.05,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.97, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 4,
+                     'name': 'RDB$FOREIGN6', 'nodes': 21, 'ratio': 0.05, 'root_page': 210, 'total_dup': 13},
+                    {'avg_data_length': 1.71, 'avg_key_length': 4.05, 'avg_node_length': 5.24, 'avg_prefix_length': 1.29,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.74, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY5', 'nodes': 21, 'ratio': 0.05, 'root_page': 209, 'total_dup': 0},
+                    {'avg_data_length': 15.52, 'avg_key_length': 18.5, 'avg_node_length': 19.52, 'avg_prefix_length': 2.17,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.96, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'NAMEX', 'nodes': 42, 'ratio': 0.02, 'root_page': 285, 'total_dup': 0},
+                    {'avg_data_length': 0.81, 'avg_key_length': 2.98,   'avg_node_length': 4.07, 'avg_prefix_length': 2.19,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.01, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 4,
+                     'name': 'RDB$FOREIGN8', 'nodes': 42, 'ratio': 0.02, 'root_page': 215, 'total_dup': 23},
+                    {'avg_data_length': 6.79, 'avg_key_length': 9.4, 'avg_node_length': 10.43,   'avg_prefix_length': 9.05,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.68, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 4,
+                     'name': 'RDB$FOREIGN9', 'nodes': 42, 'ratio': 0.02, 'root_page': 216, 'total_dup': 15},
+                    {'avg_data_length': 1.31, 'avg_key_length': 3.6, 'avg_node_length': 4.62, 'avg_prefix_length': 1.17,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.69, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY7', 'nodes': 42, 'ratio': 0.02, 'root_page': 214, 'total_dup': 0},
+                    {'avg_data_length': 1.04, 'avg_key_length': 3.25, 'avg_node_length': 4.29, 'avg_prefix_length': 1.36,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.74, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2,
+                     'name': 'RDB$FOREIGN15', 'nodes': 28, 'ratio': 0.04, 'root_page': 237, 'total_dup': 6},
+                    {'avg_data_length': 0.86, 'avg_key_length': 2.89, 'avg_node_length': 4.04, 'avg_prefix_length': 4.14,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.73, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 9,
+                     'name': 'RDB$FOREIGN16', 'nodes': 28, 'ratio': 0.04, 'root_page': 238, 'total_dup': 23},
+                    {'avg_data_length': 9.11, 'avg_key_length': 12.07, 'avg_node_length': 13.11, 'avg_prefix_length': 2.89,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.99, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY14', 'nodes': 28, 'ratio': 0.04, 'root_page': 236, 'total_dup': 0},
+                    {'avg_data_length': 10.9, 'avg_key_length': 13.71, 'avg_node_length': 14.74, 'avg_prefix_length': 7.87,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.37, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 1,
+                     'name': 'MAXSALX', 'nodes': 31, 'ratio': 0.03, 'root_page': 286, 'total_dup': 5},
+                    {'avg_data_length': 10.29, 'avg_key_length': 13.03, 'avg_node_length': 14.06, 'avg_prefix_length': 8.48,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.44, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 2,
+                     'name': 'MINSALX', 'nodes': 31, 'ratio': 0.03, 'root_page': 287, 'total_dup': 7},
+                    {'avg_data_length': 1.39, 'avg_key_length': 3.39, 'avg_node_length': 4.61, 'avg_prefix_length': 2.77,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.23, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 20,
+                     'name': 'RDB$FOREIGN3', 'nodes': 31, 'ratio': 0.03, 'root_page': 192, 'total_dup': 24},
+                    {'avg_data_length': 10.45, 'avg_key_length': 13.42, 'avg_node_length': 14.45, 'avg_prefix_length': 6.19,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.24, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,   'leaf_buckets': 1,   'max_dup': 0,
+                     'name': 'RDB$PRIMARY2', 'nodes': 31, 'ratio': 0.03, 'root_page': 191, 'total_dup': 0},
+                    {'avg_data_length': 22.5, 'avg_key_length': 25.33, 'avg_node_length': 26.5, 'avg_prefix_length': 4.17,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.05, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'PRODTYPEX', 'nodes': 6, 'ratio': 0.17, 'root_page': 288, 'total_dup': 0},
+                    {'avg_data_length': 13.33, 'avg_key_length': 15.5, 'avg_node_length': 17.33, 'avg_prefix_length': 0.33,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.88, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$11', 'nodes': 6, 'ratio': 0.17, 'root_page': 222,   'total_dup': 0},
+                    {'avg_data_length': 1.33, 'avg_key_length': 3.5,   'avg_node_length': 4.67, 'avg_prefix_length': 0.67,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.57, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2,   'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$FOREIGN13',   'nodes': 6,   'ratio': 0.17, 'root_page': 232, 'total_dup': 0},
+                    {'avg_data_length': 4.83, 'avg_key_length': 7.0, 'avg_node_length': 8.83, 'avg_prefix_length': 0.17,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.71, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY12', 'nodes': 6, 'ratio': 0.17, 'root_page': 223, 'total_dup': 0},
+                    {'avg_data_length': 0.71, 'avg_key_length': 2.79, 'avg_node_length': 3.92, 'avg_prefix_length': 2.29,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.07, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 5,
+                     'name': 'RDB$FOREIGN18', 'nodes': 24, 'ratio': 0.04, 'root_page': 250, 'total_dup': 15},
+                    {'avg_data_length': 1.0, 'avg_key_length': 3.04, 'avg_node_length': 4.21, 'avg_prefix_length': 4.0,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.64, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 8,
+                     'name': 'RDB$FOREIGN19', 'nodes': 24, 'ratio': 0.04, 'root_page': 251, 'total_dup': 19},
+                    {'avg_data_length': 6.83, 'avg_key_length': 9.67, 'avg_node_length': 10.71,   'avg_prefix_length': 12.17,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.97, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY17', 'nodes': 24, 'ratio': 0.04, 'root_page': 249, 'total_dup': 0},
+                    {'avg_data_length': 0.31, 'avg_key_length': 2.35, 'avg_node_length': 3.37, 'avg_prefix_length': 6.69,
+                     'clustering_factor': 1.0, 'compression_ratio': 2.98, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 21,
+                     'name': 'CHANGEX', 'nodes': 49, 'ratio': 0.02, 'root_page': 289, 'total_dup': 46},
+                    {'avg_data_length': 0.9, 'avg_key_length': 3.1, 'avg_node_length': 4.12, 'avg_prefix_length': 1.43,
+                     'clustering_factor': 1.0, 'compression_ratio': 0.75, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1, 'max_dup': 2,
+                     'name': 'RDB$FOREIGN21', 'nodes': 49, 'ratio': 0.02, 'root_page': 256, 'total_dup': 16},
+                    {'avg_data_length': 18.29, 'avg_key_length': 21.27, 'avg_node_length': 22.29,   'avg_prefix_length': 4.31,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.06, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY20', 'nodes': 49, 'ratio': 0.02, 'root_page': 255, 'total_dup': 0},
+                    {'avg_data_length': 0.29, 'avg_key_length': 2.29, 'avg_node_length': 3.35, 'avg_prefix_length': 5.39,
+                     'clustering_factor': 1.0, 'compression_ratio': 2.48, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 28,
+                     'name': 'UPDATERX', 'nodes': 49, 'ratio': 0.02, 'root_page': 290, 'total_dup': 46},
+                    {'avg_data_length': 2.55, 'avg_key_length': 4.94, 'avg_node_length': 5.97, 'avg_prefix_length': 2.88,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.1, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 3, 'leaf_buckets': 1, 'max_dup': 6,
+                     'name': 'NEEDX', 'nodes': 33, 'ratio': 0.03, 'root_page': 291, 'total_dup': 11},
+                    {'avg_data_length': 1.85, 'avg_key_length': 4.03, 'avg_node_length': 5.06, 'avg_prefix_length': 11.18,
+                     'clustering_factor': 1.0, 'compression_ratio': 3.23, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 4, 'leaf_buckets': 1, 'max_dup': 3,
+                     'name': 'QTYX', 'nodes': 33, 'ratio': 0.03, 'root_page': 292, 'total_dup': 11},
+                    {'avg_data_length': 0.52, 'avg_key_length': 2.52, 'avg_node_length': 3.55, 'avg_prefix_length': 2.48,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.19, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 1, 'leaf_buckets': 1,   'max_dup': 4,
+                     'name': 'RDB$FOREIGN25', 'nodes': 33, 'ratio': 0.03, 'root_page': 270, 'total_dup': 18},
+                    {'avg_data_length': 0.45, 'avg_key_length': 2.64, 'avg_node_length': 3.67, 'avg_prefix_length': 2.21,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.01, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 2, 'leaf_buckets': 1, 'max_dup': 7,
+                     'name': 'RDB$FOREIGN26', 'nodes': 33, 'ratio': 0.03, 'root_page': 271, 'total_dup': 25},
+                    {'avg_data_length': 4.48, 'avg_key_length': 7.42, 'avg_node_length': 8.45, 'avg_prefix_length': 3.52,
+                     'clustering_factor': 1.0, 'compression_ratio': 1.08, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0, 'leaf_buckets': 1, 'max_dup': 0,
+                     'name': 'RDB$PRIMARY24', 'nodes': 33, 'ratio': 0.03, 'root_page': 269, 'total_dup': 0},
+                    {'avg_data_length': 0.97, 'avg_key_length': 3.03, 'avg_node_length': 4.06, 'avg_prefix_length': 9.82,
+                     'clustering_factor': 1.0, 'compression_ratio': 3.56, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 5, 'leaf_buckets': 1, 'max_dup': 14,
+                     'name': 'SALESTATX', 'nodes': 33, 'ratio': 0.03, 'root_page': 293, 'total_dup': 27},
+                    {'avg_data_length': 0.0, 'avg_key_length': 0.0, 'avg_node_length': 0.0, 'avg_prefix_length': 0.0,
+                     'clustering_factor': 0.0, 'compression_ratio': 0.0, 'depth': 1,
+                     'distribution': FillDistribution(d20=1, d40=0, d50=0, d80=0, d100=0), 'index_id': 0,   'leaf_buckets': 1,   'max_dup': 0,
+                     'name': 'RDB$PRIMARY28', 'nodes': 0, 'ratio': 0.0, 'root_page': 317, 'total_dup': 0}]
+            i = 0
+            while i < len(db.tables):
+                self.assertDictEqual(data[i], get_object_data(db.indices[i], ['table']), 'Unexpected output from parser (indices)')
+                i += 1
+    def test_parse30_s(self):
+        db = self._parse_file(os.path.join(self.dbpath, 'gstat30-s.out'))
+        #
+        self.assertTrue(db.has_table_stats())
+        self.assertTrue(db.has_index_stats())
+        self.assertFalse(db.has_row_stats())
+        self.assertFalse(db.has_encryption_stats())
+        self.assertTrue(db.has_system())
+        # Check system tables
+        data = ['RDB$AUTH_MAPPING', 'RDB$BACKUP_HISTORY', 'RDB$CHARACTER_SETS', 'RDB$CHECK_CONSTRAINTS', 'RDB$COLLATIONS', 'RDB$DATABASE',
+                'RDB$DB_CREATORS', 'RDB$DEPENDENCIES', 'RDB$EXCEPTIONS', 'RDB$FIELDS', 'RDB$FIELD_DIMENSIONS', 'RDB$FILES', 'RDB$FILTERS',
+                'RDB$FORMATS', 'RDB$FUNCTIONS', 'RDB$FUNCTION_ARGUMENTS', 'RDB$GENERATORS', 'RDB$INDEX_SEGMENTS', 'RDB$INDICES',
+                'RDB$LOG_FILES', 'RDB$PACKAGES', 'RDB$PAGES', 'RDB$PROCEDURES', 'RDB$PROCEDURE_PARAMETERS', 'RDB$REF_CONSTRAINTS',
+                'RDB$RELATIONS', 'RDB$RELATION_CONSTRAINTS', 'RDB$RELATION_FIELDS', 'RDB$ROLES', 'RDB$SECURITY_CLASSES', 'RDB$TRANSACTIONS',
+                'RDB$TRIGGERS', 'RDB$TRIGGER_MESSAGES', 'RDB$TYPES', 'RDB$USER_PRIVILEGES', 'RDB$VIEW_RELATIONS']
+        for table in db.tables:
+            if table.name.startswith('RDB$'):
+                self.assertIn(table.name, data)
+        # check system indices
+        data = ['RDB$PRIMARY1', 'RDB$FOREIGN23', 'RDB$PRIMARY22', 'RDB$4', 'RDB$FOREIGN10', 'RDB$FOREIGN6', 'RDB$PRIMARY5', 'RDB$FOREIGN8',
+                'RDB$FOREIGN9', 'RDB$PRIMARY7', 'RDB$FOREIGN15', 'RDB$FOREIGN16', 'RDB$PRIMARY14', 'RDB$FOREIGN3', 'RDB$PRIMARY2', 'RDB$11',
+                'RDB$FOREIGN13', 'RDB$PRIMARY12', 'RDB$FOREIGN18', 'RDB$FOREIGN19', 'RDB$PRIMARY17', 'RDB$INDEX_52', 'RDB$INDEX_44',
+                'RDB$INDEX_19', 'RDB$INDEX_25', 'RDB$INDEX_14', 'RDB$INDEX_40', 'RDB$INDEX_20', 'RDB$INDEX_26', 'RDB$INDEX_27',
+                'RDB$INDEX_28', 'RDB$INDEX_23', 'RDB$INDEX_24', 'RDB$INDEX_2', 'RDB$INDEX_36', 'RDB$INDEX_17', 'RDB$INDEX_45',
+                'RDB$INDEX_16', 'RDB$INDEX_53', 'RDB$INDEX_9', 'RDB$INDEX_10', 'RDB$INDEX_49', 'RDB$INDEX_51', 'RDB$INDEX_11',
+                'RDB$INDEX_46', 'RDB$INDEX_6', 'RDB$INDEX_31', 'RDB$INDEX_41', 'RDB$INDEX_5', 'RDB$INDEX_47', 'RDB$INDEX_21', 'RDB$INDEX_22',
+                'RDB$INDEX_18', 'RDB$INDEX_48', 'RDB$INDEX_50', 'RDB$INDEX_13', 'RDB$INDEX_0', 'RDB$INDEX_1', 'RDB$INDEX_12', 'RDB$INDEX_42',
+                'RDB$INDEX_43', 'RDB$INDEX_15', 'RDB$INDEX_3', 'RDB$INDEX_4', 'RDB$INDEX_39', 'RDB$INDEX_7', 'RDB$INDEX_32', 'RDB$INDEX_38',
+                'RDB$INDEX_8', 'RDB$INDEX_35', 'RDB$INDEX_37', 'RDB$INDEX_29', 'RDB$INDEX_30', 'RDB$INDEX_33', 'RDB$INDEX_34',
+                'RDB$FOREIGN21', 'RDB$PRIMARY20', 'RDB$FOREIGN25', 'RDB$FOREIGN26', 'RDB$PRIMARY24', 'RDB$PRIMARY28']
+        for index in db.indices:
+            if index.name.startswith('RDB$'):
+                self.assertIn(index.name, data)
 
 if __name__ == '__main__':
     unittest.main()
