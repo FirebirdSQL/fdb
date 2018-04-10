@@ -1,0 +1,29 @@
+
+Database "/home/fdb/test/FBTEST30.FDB"
+Gstat execution time Wed Apr 04 15:41:34 2018
+
+Database header page information:
+	Flags			0
+	Generation		2176
+	System Change Number	24
+	Page size		8192
+	ODS version		12.0
+	Oldest transaction	179
+	Oldest active		2140
+	Oldest snapshot		2140
+	Next transaction	2141
+	Sequence number		0
+	Next attachment ID	1199
+	Implementation		HW=AMD/Intel/x64 little-endian OS=Linux CC=gcc
+	Shadow count		0
+	Page buffers		0
+	Next header page	0
+	Database dialect	3
+	Creation date		Nov 27, 2015 11:19:39
+	Attributes		force write
+
+    Variable header data:
+	Database backup GUID:	{F978F787-7023-4C4A-F79D-8D86645B0487}
+	*END*
+Gstat completion time Wed Apr 04 15:41:34 2018
+

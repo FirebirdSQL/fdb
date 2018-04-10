@@ -1,0 +1,28 @@
+
+Database "/home/fdb/test/fbtest25.fdb"
+Gstat execution time Wed Apr  4 15:29:10 2018
+
+Database header page information:
+	Flags			0
+	Checksum		12345
+	Generation		2844
+	Page size		4096
+	ODS version		11.2
+	Oldest transaction	204
+	Oldest active		1807
+	Oldest snapshot		1807
+	Next transaction	1807
+	Bumped transaction	1
+	Sequence number		0
+	Next attachment ID	1067
+	Implementation ID	24
+	Shadow count		0
+	Page buffers		0
+	Next header page	0
+	Database dialect	3
+	Creation date		May 27, 2013 23:40:53
+	Attributes		force write
+
+    Variable header data:
+	Sweep interval:		20000
+	*END*

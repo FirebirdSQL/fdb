@@ -1,0 +1,2214 @@
+
+Database "/home/fdb/test/FBTEST30.FDB"
+Gstat execution time Wed Apr 04 15:46:31 2018
+
+Database header page information:
+	Flags			0
+	Generation		2181
+	System Change Number	24
+	Page size		8192
+	ODS version		12.0
+	Oldest transaction	179
+	Oldest active		2146
+	Oldest snapshot		2146
+	Next transaction	2146
+	Sequence number		0
+	Next attachment ID	1214
+	Implementation		HW=AMD/Intel/x64 little-endian OS=Linux CC=gcc
+	Shadow count		0
+	Page buffers		0
+	Next header page	0
+	Database dialect	3
+	Creation date		Nov 27, 2015 11:19:39
+	Attributes		force write
+
+    Variable header data:
+	Database backup GUID:	{F978F787-7023-4C4A-F79D-8D86645B0487}
+	*END*
+
+
+Database file sequence:
+File /home/fdb/test/FBTEST30.FDB is the only file
+
+Analyzing database pages ...
+AR (140)
+    Primary pointer page: 297, Index root page: 299
+    Total formats: 1, used formats: 1
+    Average record length: 2.79, total records: 120
+    Average version length: 16.61, total versions: 105, max versions: 1
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 120.00, compression ratio: 42.99
+    Pointer pages: 1, data page slots: 3
+    Data pages: 3, average fill: 86%
+    Primary pages: 1, secondary pages: 2, swept pages: 0
+    Empty pages: 0, full pages: 1
+    Blobs: 125, total length: 11237, blob pages: 0
+        Level 0: 125, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 2
+
+COUNTRY (128)
+    Primary pointer page: 182, Index root page: 183
+    Total formats: 1, used formats: 1
+    Average record length: 25.94, total records: 16
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 34.00, compression ratio: 1.31
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 8%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$PRIMARY1 (0)
+	Root page: 186, depth: 1, leaf buckets: 1, nodes: 16
+	Average node length: 10.44, total dup: 0, max dup: 0
+	Average key length: 8.63, compression ratio: 0.80
+	Average prefix length: 0.44, average data length: 6.44
+	Clustering factor: 1, ratio: 0.06
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+CUSTOMER (137)
+    Primary pointer page: 261, Index root page: 262
+    Total formats: 1, used formats: 1
+    Average record length: 125.47, total records: 15
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 241.00, compression ratio: 1.92
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 26%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index CUSTNAMEX (2)
+	Root page: 276, depth: 1, leaf buckets: 1, nodes: 15
+	Average node length: 19.87, total dup: 0, max dup: 0
+	Average key length: 18.27, compression ratio: 0.90
+	Average prefix length: 0.60, average data length: 15.87
+	Clustering factor: 1, ratio: 0.07
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index CUSTREGION (3)
+	Root page: 283, depth: 1, leaf buckets: 1, nodes: 15
+	Average node length: 21.27, total dup: 0, max dup: 0
+	Average key length: 20.20, compression ratio: 0.97
+	Average prefix length: 2.33, average data length: 17.27
+	Clustering factor: 1, ratio: 0.07
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN23 (1)
+	Root page: 264, depth: 1, leaf buckets: 1, nodes: 15
+	Average node length: 8.60, total dup: 4, max dup: 4
+	Average key length: 6.93, compression ratio: 0.83
+	Average prefix length: 0.87, average data length: 4.87
+	Clustering factor: 1, ratio: 0.07
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY22 (0)
+	Root page: 263, depth: 1, leaf buckets: 1, nodes: 15
+	Average node length: 4.20, total dup: 0, max dup: 0
+	Average key length: 3.13, compression ratio: 0.96
+	Average prefix length: 1.87, average data length: 1.13
+	Clustering factor: 1, ratio: 0.07
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+DEPARTMENT (130)
+    Primary pointer page: 198, Index root page: 199
+    Total formats: 1, used formats: 1
+    Average record length: 74.62, total records: 21
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 88.00, compression ratio: 1.18
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 24%
+    Primary pages: 1, secondary pages: 0, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index BUDGETX (3)
+	Root page: 284, depth: 1, leaf buckets: 1, nodes: 21
+	Average node length: 9.05, total dup: 7, max dup: 3
+	Average key length: 8.00, compression ratio: 1.13
+	Average prefix length: 3.62, average data length: 5.38
+	Clustering factor: 1, ratio: 0.05
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$4 (0)
+	Root page: 208, depth: 1, leaf buckets: 1, nodes: 21
+	Average node length: 17.95, total dup: 0, max dup: 0
+	Average key length: 16.57, compression ratio: 1.16
+	Average prefix length: 5.29, average data length: 13.95
+	Clustering factor: 1, ratio: 0.05
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN10 (4)
+	Root page: 219, depth: 1, leaf buckets: 1, nodes: 21
+	Average node length: 4.29, total dup: 3, max dup: 3
+	Average key length: 3.24, compression ratio: 0.60
+	Average prefix length: 0.81, average data length: 1.14
+	Clustering factor: 1, ratio: 0.05
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN6 (2)
+	Root page: 210, depth: 1, leaf buckets: 1, nodes: 21
+	Average node length: 4.10, total dup: 13, max dup: 4
+	Average key length: 2.95, compression ratio: 0.97
+	Average prefix length: 2.05, average data length: 0.81
+	Clustering factor: 1, ratio: 0.05
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY5 (1)
+	Root page: 209, depth: 1, leaf buckets: 1, nodes: 21
+	Average node length: 5.24, total dup: 0, max dup: 0
+	Average key length: 4.05, compression ratio: 0.74
+	Average prefix length: 1.29, average data length: 1.71
+	Clustering factor: 1, ratio: 0.05
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+EMPLOYEE (131)
+    Primary pointer page: 212, Index root page: 213
+    Total formats: 1, used formats: 1
+    Average record length: 69.02, total records: 42
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 39.00, compression ratio: 0.57
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 44%
+    Primary pages: 1, secondary pages: 0, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index NAMEX (3)
+	Root page: 285, depth: 1, leaf buckets: 1, nodes: 42
+	Average node length: 19.52, total dup: 0, max dup: 0
+	Average key length: 18.50, compression ratio: 0.96
+	Average prefix length: 2.17, average data length: 15.52
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN8 (1)
+	Root page: 215, depth: 1, leaf buckets: 1, nodes: 42
+	Average node length: 4.07, total dup: 23, max dup: 4
+	Average key length: 2.98, compression ratio: 1.01
+	Average prefix length: 2.19, average data length: 0.81
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN9 (2)
+	Root page: 216, depth: 1, leaf buckets: 1, nodes: 42
+	Average node length: 10.43, total dup: 15, max dup: 4
+	Average key length: 9.40, compression ratio: 1.68
+	Average prefix length: 9.05, average data length: 6.79
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY7 (0)
+	Root page: 214, depth: 1, leaf buckets: 1, nodes: 42
+	Average node length: 4.62, total dup: 0, max dup: 0
+	Average key length: 3.60, compression ratio: 0.69
+	Average prefix length: 1.17, average data length: 1.31
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+EMPLOYEE_PROJECT (134)
+    Primary pointer page: 234, Index root page: 235
+    Total formats: 1, used formats: 1
+    Average record length: 12.00, total records: 28
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 11.00, compression ratio: 0.92
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 10%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$FOREIGN15 (1)
+	Root page: 237, depth: 1, leaf buckets: 1, nodes: 28
+	Average node length: 4.29, total dup: 6, max dup: 2
+	Average key length: 3.25, compression ratio: 0.74
+	Average prefix length: 1.36, average data length: 1.04
+	Clustering factor: 1, ratio: 0.04
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN16 (2)
+	Root page: 238, depth: 1, leaf buckets: 1, nodes: 28
+	Average node length: 4.04, total dup: 23, max dup: 9
+	Average key length: 2.89, compression ratio: 1.73
+	Average prefix length: 4.14, average data length: 0.86
+	Clustering factor: 1, ratio: 0.04
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY14 (0)
+	Root page: 236, depth: 1, leaf buckets: 1, nodes: 28
+	Average node length: 13.11, total dup: 0, max dup: 0
+	Average key length: 12.07, compression ratio: 0.99
+	Average prefix length: 2.89, average data length: 9.11
+	Clustering factor: 1, ratio: 0.04
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+JOB (129)
+    Primary pointer page: 189, Index root page: 190
+    Total formats: 1, used formats: 1
+    Average record length: 66.13, total records: 31
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 96.00, compression ratio: 1.45
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 54%
+    Primary pages: 1, secondary pages: 1, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Blobs: 39, total length: 4840, blob pages: 0
+        Level 0: 39, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index MAXSALX (2)
+	Root page: 286, depth: 1, leaf buckets: 1, nodes: 31
+	Average node length: 14.74, total dup: 5, max dup: 1
+	Average key length: 13.71, compression ratio: 1.37
+	Average prefix length: 7.87, average data length: 10.90
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index MINSALX (3)
+	Root page: 287, depth: 1, leaf buckets: 1, nodes: 31
+	Average node length: 14.06, total dup: 7, max dup: 2
+	Average key length: 13.03, compression ratio: 1.44
+	Average prefix length: 8.48, average data length: 10.29
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN3 (1)
+	Root page: 192, depth: 1, leaf buckets: 1, nodes: 31
+	Average node length: 4.61, total dup: 24, max dup: 20
+	Average key length: 3.39, compression ratio: 1.23
+	Average prefix length: 2.77, average data length: 1.39
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY2 (0)
+	Root page: 191, depth: 1, leaf buckets: 1, nodes: 31
+	Average node length: 14.45, total dup: 0, max dup: 0
+	Average key length: 13.42, compression ratio: 1.24
+	Average prefix length: 6.19, average data length: 10.45
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+PROJECT (133)
+    Primary pointer page: 220, Index root page: 221
+    Total formats: 1, used formats: 1
+    Average record length: 49.67, total records: 6
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 56.00, compression ratio: 1.13
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 7%
+    Primary pages: 1, secondary pages: 1, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Blobs: 6, total length: 548, blob pages: 0
+        Level 0: 6, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index PRODTYPEX (3)
+	Root page: 288, depth: 1, leaf buckets: 1, nodes: 6
+	Average node length: 26.50, total dup: 0, max dup: 0
+	Average key length: 25.33, compression ratio: 1.05
+	Average prefix length: 4.17, average data length: 22.50
+	Clustering factor: 1, ratio: 0.17
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$11 (0)
+	Root page: 222, depth: 1, leaf buckets: 1, nodes: 6
+	Average node length: 17.33, total dup: 0, max dup: 0
+	Average key length: 15.50, compression ratio: 0.88
+	Average prefix length: 0.33, average data length: 13.33
+	Clustering factor: 1, ratio: 0.17
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN13 (2)
+	Root page: 232, depth: 1, leaf buckets: 1, nodes: 6
+	Average node length: 4.67, total dup: 0, max dup: 0
+	Average key length: 3.50, compression ratio: 0.57
+	Average prefix length: 0.67, average data length: 1.33
+	Clustering factor: 1, ratio: 0.17
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY12 (1)
+	Root page: 223, depth: 1, leaf buckets: 1, nodes: 6
+	Average node length: 8.83, total dup: 0, max dup: 0
+	Average key length: 7.00, compression ratio: 0.71
+	Average prefix length: 0.17, average data length: 4.83
+	Clustering factor: 1, ratio: 0.17
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+PROJ_DEPT_BUDGET (135)
+    Primary pointer page: 239, Index root page: 248
+    Total formats: 1, used formats: 1
+    Average record length: 30.58, total records: 24
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 32.00, compression ratio: 1.05
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 20%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 24, total length: 1344, blob pages: 0
+        Level 0: 24, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$FOREIGN18 (1)
+	Root page: 250, depth: 1, leaf buckets: 1, nodes: 24
+	Average node length: 3.92, total dup: 15, max dup: 5
+	Average key length: 2.79, compression ratio: 1.07
+	Average prefix length: 2.29, average data length: 0.71
+	Clustering factor: 1, ratio: 0.04
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN19 (2)
+	Root page: 251, depth: 1, leaf buckets: 1, nodes: 24
+	Average node length: 4.21, total dup: 19, max dup: 8
+	Average key length: 3.04, compression ratio: 1.64
+	Average prefix length: 4.00, average data length: 1.00
+	Clustering factor: 1, ratio: 0.04
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY17 (0)
+	Root page: 249, depth: 1, leaf buckets: 1, nodes: 24
+	Average node length: 10.71, total dup: 0, max dup: 0
+	Average key length: 9.67, compression ratio: 1.97
+	Average prefix length: 12.17, average data length: 6.83
+	Clustering factor: 1, ratio: 0.04
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$AUTH_MAPPING (45)
+    Primary pointer page: 72, Index root page: 73
+    Total formats: 0, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_52 (0)
+	Root page: 146, depth: 1, leaf buckets: 1, nodes: 0
+	Average node length: 0.00, total dup: 0, max dup: 0
+	Average key length: 0.00, compression ratio: 0.00
+	Average prefix length: 0.00, average data length: 0.00
+	Clustering factor: 0, ratio: 0.00
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$BACKUP_HISTORY (32)
+    Primary pointer page: 68, Index root page: 69
+    Total formats: 0, used formats: 0
+    Average record length: 128.63, total records: 8
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 14%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_44 (0)
+	Root page: 138, depth: 1, leaf buckets: 1, nodes: 8
+	Average node length: 5.13, total dup: 0, max dup: 0
+	Average key length: 4.00, compression ratio: 1.97
+	Average prefix length: 6.00, average data length: 1.88
+	Clustering factor: 1, ratio: 0.13
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$CHARACTER_SETS (28)
+    Primary pointer page: 60, Index root page: 61
+    Total formats: 0, used formats: 0
+    Average record length: 53.52, total records: 52
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 45%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_19 (0)
+	Root page: 113, depth: 1, leaf buckets: 1, nodes: 52
+	Average node length: 6.42, total dup: 0, max dup: 0
+	Average key length: 5.15, compression ratio: 1.31
+	Average prefix length: 3.79, average data length: 2.98
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_25 (1)
+	Root page: 119, depth: 1, leaf buckets: 1, nodes: 52
+	Average node length: 4.08, total dup: 0, max dup: 0
+	Average key length: 3.02, compression ratio: 0.75
+	Average prefix length: 1.23, average data length: 1.04
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$CHECK_CONSTRAINTS (24)
+    Primary pointer page: 52, Index root page: 53
+    Total formats: 0, used formats: 0
+    Average record length: 26.22, total records: 68
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 36%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_14 (0)
+	Root page: 106, depth: 1, leaf buckets: 1, nodes: 68
+	Average node length: 3.93, total dup: 14, max dup: 1
+	Average key length: 2.91, compression ratio: 2.71
+	Average prefix length: 6.99, average data length: 0.90
+	Clustering factor: 1, ratio: 0.01
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_40 (1)
+	Root page: 134, depth: 1, leaf buckets: 1, nodes: 68
+	Average node length: 7.37, total dup: 10, max dup: 2
+	Average key length: 6.16, compression ratio: 1.35
+	Average prefix length: 4.43, average data length: 3.91
+	Clustering factor: 1, ratio: 0.01
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$COLLATIONS (29)
+    Primary pointer page: 62, Index root page: 63
+    Total formats: 0, used formats: 0
+    Average record length: 45.36, total records: 150
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 3
+    Data pages: 3, average fill: 41%
+    Primary pages: 2, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 1
+    Blobs: 12, total length: 307, blob pages: 0
+        Level 0: 12, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 1
+
+    Index RDB$INDEX_20 (0)
+	Root page: 114, depth: 1, leaf buckets: 1, nodes: 150
+	Average node length: 7.58, total dup: 0, max dup: 0
+	Average key length: 6.47, compression ratio: 1.20
+	Average prefix length: 3.95, average data length: 3.79
+	Clustering factor: 24, ratio: 0.16
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_26 (1)
+	Root page: 120, depth: 1, leaf buckets: 1, nodes: 150
+	Average node length: 5.08, total dup: 0, max dup: 0
+	Average key length: 4.07, compression ratio: 2.03
+	Average prefix length: 6.46, average data length: 1.82
+	Clustering factor: 32, ratio: 0.21
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$DATABASE (1)
+    Primary pointer page: 6, Index root page: 7
+    Total formats: 0, used formats: 0
+    Average record length: 25.00, total records: 1
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 1%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$DB_CREATORS (47)
+    Primary pointer page: 74, Index root page: 75
+    Total formats: 0, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$DEPENDENCIES (13)
+    Primary pointer page: 30, Index root page: 31
+    Total formats: 0, used formats: 0
+    Average record length: 42.32, total records: 168
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 3
+    Data pages: 3, average fill: 43%
+    Primary pages: 3, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 2
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_27 (0)
+	Root page: 121, depth: 1, leaf buckets: 1, nodes: 168
+	Average node length: 4.30, total dup: 120, max dup: 13
+	Average key length: 3.23, compression ratio: 2.98
+	Average prefix length: 8.46, average data length: 1.18
+	Clustering factor: 15, ratio: 0.09
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_28 (1)
+	Root page: 122, depth: 1, leaf buckets: 1, nodes: 168
+	Average node length: 4.15, total dup: 147, max dup: 36
+	Average key length: 3.10, compression ratio: 2.55
+	Average prefix length: 6.85, average data length: 1.04
+	Clustering factor: 22, ratio: 0.13
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$EXCEPTIONS (30)
+    Primary pointer page: 64, Index root page: 65
+    Total formats: 0, used formats: 0
+    Average record length: 101.40, total records: 5
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 7%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_23 (0)
+	Root page: 117, depth: 1, leaf buckets: 1, nodes: 5
+	Average node length: 18.00, total dup: 0, max dup: 0
+	Average key length: 16.20, compression ratio: 0.98
+	Average prefix length: 1.80, average data length: 14.00
+	Clustering factor: 1, ratio: 0.20
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_24 (1)
+	Root page: 118, depth: 1, leaf buckets: 1, nodes: 5
+	Average node length: 4.40, total dup: 0, max dup: 0
+	Average key length: 3.00, compression ratio: 0.60
+	Average prefix length: 0.60, average data length: 1.20
+	Clustering factor: 1, ratio: 0.20
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FIELDS (2)
+    Primary pointer page: 8, Index root page: 9
+    Total formats: 0, used formats: 0
+    Average record length: 55.02, total records: 290
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 5
+    Data pages: 5, average fill: 57%
+    Primary pages: 4, secondary pages: 1, swept pages: 1
+    Empty pages: 0, full pages: 2
+    Blobs: 33, total length: 902, blob pages: 0
+        Level 0: 33, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 2
+	40 - 59% = 0
+	60 - 79% = 2
+	80 - 99% = 1
+
+    Index RDB$INDEX_2 (0)
+	Root page: 94, depth: 1, leaf buckets: 1, nodes: 290
+	Average node length: 8.20, total dup: 0, max dup: 0
+	Average key length: 7.16, compression ratio: 1.54
+	Average prefix length: 6.37, average data length: 4.63
+	Clustering factor: 71, ratio: 0.24
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FIELD_DIMENSIONS (21)
+    Primary pointer page: 46, Index root page: 47
+    Total formats: 0, used formats: 0
+    Average record length: 23.00, total records: 19
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 9%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_36 (0)
+	Root page: 130, depth: 1, leaf buckets: 1, nodes: 19
+	Average node length: 4.47, total dup: 3, max dup: 2
+	Average key length: 3.42, compression ratio: 1.74
+	Average prefix length: 4.68, average data length: 1.26
+	Clustering factor: 1, ratio: 0.05
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FILES (10)
+    Primary pointer page: 24, Index root page: 25
+    Total formats: 0, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$FILTERS (16)
+    Primary pointer page: 36, Index root page: 37
+    Total formats: 0, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_17 (0)
+	Root page: 111, depth: 1, leaf buckets: 1, nodes: 0
+	Average node length: 0.00, total dup: 0, max dup: 0
+	Average key length: 0.00, compression ratio: 0.00
+	Average prefix length: 0.00, average data length: 0.00
+	Clustering factor: 0, ratio: 0.00
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_45 (1)
+	Root page: 139, depth: 1, leaf buckets: 1, nodes: 0
+	Average node length: 0.00, total dup: 0, max dup: 0
+	Average key length: 0.00, compression ratio: 0.00
+	Average prefix length: 0.00, average data length: 0.00
+	Clustering factor: 0, ratio: 0.00
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FORMATS (8)
+    Primary pointer page: 20, Index root page: 21
+    Total formats: 0, used formats: 0
+    Average record length: 15.76, total records: 17
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 18%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 17, total length: 1818, blob pages: 0
+        Level 0: 17, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_16 (0)
+	Root page: 110, depth: 1, leaf buckets: 1, nodes: 17
+	Average node length: 9.29, total dup: 0, max dup: 0
+	Average key length: 8.24, compression ratio: 0.97
+	Average prefix length: 2.71, average data length: 5.29
+	Clustering factor: 1, ratio: 0.06
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FUNCTIONS (14)
+    Primary pointer page: 32, Index root page: 33
+    Total formats: 0, used formats: 0
+    Average record length: 68.33, total records: 6
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 12%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 15, total length: 933, blob pages: 0
+        Level 0: 15, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_53 (1)
+	Root page: 147, depth: 1, leaf buckets: 1, nodes: 6
+	Average node length: 4.67, total dup: 0, max dup: 0
+	Average key length: 3.33, compression ratio: 0.60
+	Average prefix length: 0.67, average data length: 1.33
+	Clustering factor: 1, ratio: 0.17
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_9 (0)
+	Root page: 101, depth: 1, leaf buckets: 1, nodes: 6
+	Average node length: 7.00, total dup: 0, max dup: 0
+	Average key length: 5.67, compression ratio: 1.09
+	Average prefix length: 2.67, average data length: 3.50
+	Clustering factor: 1, ratio: 0.17
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FUNCTION_ARGUMENTS (15)
+    Primary pointer page: 34, Index root page: 35
+    Total formats: 0, used formats: 0
+    Average record length: 38.58, total records: 12
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 10%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_10 (0)
+	Root page: 102, depth: 1, leaf buckets: 1, nodes: 12
+	Average node length: 5.00, total dup: 6, max dup: 2
+	Average key length: 3.83, compression ratio: 1.61
+	Average prefix length: 4.42, average data length: 1.75
+	Clustering factor: 1, ratio: 0.08
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_49 (1)
+	Root page: 143, depth: 1, leaf buckets: 1, nodes: 12
+	Average node length: 6.33, total dup: 0, max dup: 0
+	Average key length: 5.08, compression ratio: 1.43
+	Average prefix length: 4.33, average data length: 2.92
+	Clustering factor: 1, ratio: 0.08
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_51 (2)
+	Root page: 145, depth: 1, leaf buckets: 1, nodes: 12
+	Average node length: 4.25, total dup: 10, max dup: 10
+	Average key length: 3.17, compression ratio: 0.66
+	Average prefix length: 0.00, average data length: 2.08
+	Clustering factor: 1, ratio: 0.08
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$GENERATORS (20)
+    Primary pointer page: 44, Index root page: 45
+    Total formats: 0, used formats: 0
+    Average record length: 51.80, total records: 15
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 9%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 9, total length: 160, blob pages: 0
+        Level 0: 9, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_11 (0)
+	Root page: 103, depth: 1, leaf buckets: 1, nodes: 15
+	Average node length: 14.27, total dup: 0, max dup: 0
+	Average key length: 13.00, compression ratio: 1.03
+	Average prefix length: 3.00, average data length: 10.33
+	Clustering factor: 1, ratio: 0.07
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_46 (1)
+	Root page: 140, depth: 1, leaf buckets: 1, nodes: 15
+	Average node length: 4.13, total dup: 0, max dup: 0
+	Average key length: 3.00, compression ratio: 0.64
+	Average prefix length: 0.87, average data length: 1.07
+	Clustering factor: 1, ratio: 0.07
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$INDEX_SEGMENTS (3)
+    Primary pointer page: 10, Index root page: 11
+    Total formats: 0, used formats: 0
+    Average record length: 37.32, total records: 122
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 41%
+    Primary pages: 2, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 1
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index RDB$INDEX_6 (0)
+	Root page: 98, depth: 1, leaf buckets: 1, nodes: 122
+	Average node length: 4.68, total dup: 29, max dup: 2
+	Average key length: 3.61, compression ratio: 3.12
+	Average prefix length: 9.70, average data length: 1.54
+	Clustering factor: 12, ratio: 0.10
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$INDICES (4)
+    Primary pointer page: 12, Index root page: 13
+    Total formats: 0, used formats: 0
+    Average record length: 49.41, total records: 93
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 38%
+    Primary pages: 2, secondary pages: 0, swept pages: 1
+    Empty pages: 0, full pages: 1
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index RDB$INDEX_31 (1)
+	Root page: 125, depth: 1, leaf buckets: 1, nodes: 93
+	Average node length: 7.67, total dup: 51, max dup: 5
+	Average key length: 6.58, compression ratio: 2.02
+	Average prefix length: 9.09, average data length: 4.22
+	Clustering factor: 2, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_41 (2)
+	Root page: 135, depth: 1, leaf buckets: 1, nodes: 93
+	Average node length: 2.34, total dup: 86, max dup: 78
+	Average key length: 1.33, compression ratio: 1.38
+	Average prefix length: 1.66, average data length: 0.18
+	Clustering factor: 3, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_5 (0)
+	Root page: 97, depth: 1, leaf buckets: 1, nodes: 93
+	Average node length: 5.20, total dup: 0, max dup: 0
+	Average key length: 4.11, compression ratio: 2.76
+	Average prefix length: 9.30, average data length: 2.02
+	Clustering factor: 5, ratio: 0.05
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$LOG_FILES (25)
+    Primary pointer page: 54, Index root page: 55
+    Total formats: 0, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$PACKAGES (42)
+    Primary pointer page: 70, Index root page: 71
+    Total formats: 0, used formats: 0
+    Average record length: 50.50, total records: 2
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 6%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 6, total length: 584, blob pages: 0
+        Level 0: 6, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_47 (0)
+	Root page: 141, depth: 1, leaf buckets: 1, nodes: 2
+	Average node length: 6.00, total dup: 0, max dup: 0
+	Average key length: 4.50, compression ratio: 1.00
+	Average prefix length: 2.00, average data length: 2.50
+	Clustering factor: 1, ratio: 0.50
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$PAGES (0)
+    Primary pointer page: 3, Index root page: 4
+    Total formats: 0, used formats: 0
+    Average record length: 14.85, total records: 106
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 41%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$PROCEDURES (26)
+    Primary pointer page: 56, Index root page: 57
+    Total formats: 0, used formats: 0
+    Average record length: 81.09, total records: 11
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 3
+    Data pages: 3, average fill: 61%
+    Primary pages: 1, secondary pages: 2, swept pages: 0
+    Empty pages: 0, full pages: 1
+    Blobs: 32, total length: 12681, blob pages: 0
+        Level 0: 32, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 1
+
+    Index RDB$INDEX_21 (0)
+	Root page: 115, depth: 1, leaf buckets: 1, nodes: 11
+	Average node length: 16.45, total dup: 0, max dup: 0
+	Average key length: 15.27, compression ratio: 0.90
+	Average prefix length: 1.36, average data length: 12.45
+	Clustering factor: 1, ratio: 0.09
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_22 (1)
+	Root page: 116, depth: 1, leaf buckets: 1, nodes: 11
+	Average node length: 4.18, total dup: 0, max dup: 0
+	Average key length: 3.00, compression ratio: 0.64
+	Average prefix length: 0.82, average data length: 1.09
+	Clustering factor: 1, ratio: 0.09
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$PROCEDURE_PARAMETERS (27)
+    Primary pointer page: 58, Index root page: 59
+    Total formats: 0, used formats: 0
+    Average record length: 43.23, total records: 35
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 26%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_18 (0)
+	Root page: 112, depth: 1, leaf buckets: 1, nodes: 35
+	Average node length: 14.89, total dup: 0, max dup: 0
+	Average key length: 13.83, compression ratio: 1.71
+	Average prefix length: 12.66, average data length: 11.06
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_48 (1)
+	Root page: 142, depth: 1, leaf buckets: 1, nodes: 35
+	Average node length: 4.49, total dup: 0, max dup: 0
+	Average key length: 3.46, compression ratio: 1.75
+	Average prefix length: 4.74, average data length: 1.31
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_50 (2)
+	Root page: 144, depth: 1, leaf buckets: 1, nodes: 35
+	Average node length: 2.00, total dup: 34, max dup: 34
+	Average key length: 1.00, compression ratio: 0.00
+	Average prefix length: 0.00, average data length: 0.00
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$REF_CONSTRAINTS (23)
+    Primary pointer page: 50, Index root page: 51
+    Total formats: 0, used formats: 0
+    Average record length: 54.86, total records: 14
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 12%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_13 (0)
+	Root page: 105, depth: 1, leaf buckets: 1, nodes: 14
+	Average node length: 5.43, total dup: 0, max dup: 0
+	Average key length: 4.36, compression ratio: 1.84
+	Average prefix length: 6.07, average data length: 1.93
+	Clustering factor: 1, ratio: 0.07
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$RELATIONS (6)
+    Primary pointer page: 16, Index root page: 17
+    Total formats: 0, used formats: 0
+    Average record length: 79.91, total records: 67
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 3
+    Data pages: 3, average fill: 63%
+    Primary pages: 1, secondary pages: 2, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 28, total length: 6674, blob pages: 0
+        Level 0: 28, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 1
+
+    Index RDB$INDEX_0 (0)
+	Root page: 90, depth: 1, leaf buckets: 1, nodes: 67
+	Average node length: 12.87, total dup: 0, max dup: 0
+	Average key length: 11.72, compression ratio: 1.13
+	Average prefix length: 4.27, average data length: 8.94
+	Clustering factor: 1, ratio: 0.01
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_1 (1)
+	Root page: 93, depth: 1, leaf buckets: 1, nodes: 67
+	Average node length: 4.03, total dup: 0, max dup: 0
+	Average key length: 2.99, compression ratio: 0.78
+	Average prefix length: 1.30, average data length: 1.01
+	Clustering factor: 1, ratio: 0.01
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$RELATION_CONSTRAINTS (22)
+    Primary pointer page: 48, Index root page: 49
+    Total formats: 0, used formats: 0
+    Average record length: 54.02, total records: 108
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 47%
+    Primary pages: 2, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 1
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index RDB$INDEX_12 (0)
+	Root page: 104, depth: 1, leaf buckets: 1, nodes: 108
+	Average node length: 4.22, total dup: 0, max dup: 0
+	Average key length: 3.20, compression ratio: 2.77
+	Average prefix length: 7.69, average data length: 1.18
+	Clustering factor: 9, ratio: 0.08
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_42 (1)
+	Root page: 136, depth: 1, leaf buckets: 1, nodes: 108
+	Average node length: 12.20, total dup: 50, max dup: 8
+	Average key length: 11.19, compression ratio: 2.17
+	Average prefix length: 15.64, average data length: 8.67
+	Clustering factor: 6, ratio: 0.06
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_43 (2)
+	Root page: 137, depth: 1, leaf buckets: 1, nodes: 108
+	Average node length: 3.35, total dup: 53, max dup: 53
+	Average key length: 2.34, compression ratio: 2.55
+	Average prefix length: 5.20, average data length: 0.78
+	Clustering factor: 7, ratio: 0.06
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$RELATION_FIELDS (5)
+    Primary pointer page: 14, Index root page: 15
+    Total formats: 0, used formats: 0
+    Average record length: 69.66, total records: 583
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 16
+    Data pages: 16, average fill: 39%
+    Primary pages: 15, secondary pages: 1, swept pages: 1
+    Empty pages: 7, full pages: 7
+    Blobs: 20, total length: 219, blob pages: 0
+        Level 0: 20, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 8
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 7
+	80 - 99% = 1
+
+    Index RDB$INDEX_15 (2)
+	Root page: 109, depth: 2, leaf buckets: 3, nodes: 583
+	Average node length: 25.07, total dup: 0, max dup: 0
+	Average key length: 24.06, compression ratio: 1.49
+	Average prefix length: 14.84, average data length: 21.08
+	Clustering factor: 301, ratio: 0.52
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 2
+	    60 - 79% = 1
+	    80 - 99% = 0
+
+    Index RDB$INDEX_3 (0)
+	Root page: 95, depth: 1, leaf buckets: 1, nodes: 583
+	Average node length: 5.47, total dup: 341, max dup: 23
+	Average key length: 4.45, compression ratio: 2.90
+	Average prefix length: 10.71, average data length: 2.19
+	Clustering factor: 239, ratio: 0.41
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_4 (1)
+	Root page: 96, depth: 1, leaf buckets: 1, nodes: 583
+	Average node length: 4.13, total dup: 516, max dup: 29
+	Average key length: 3.12, compression ratio: 4.21
+	Average prefix length: 12.09, average data length: 1.03
+	Clustering factor: 51, ratio: 0.09
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$ROLES (31)
+    Primary pointer page: 66, Index root page: 67
+    Total formats: 0, used formats: 0
+    Average record length: 29.00, total records: 2
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 1%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_39 (0)
+	Root page: 133, depth: 1, leaf buckets: 1, nodes: 2
+	Average node length: 13.00, total dup: 0, max dup: 0
+	Average key length: 11.00, compression ratio: 0.82
+	Average prefix length: 0.00, average data length: 9.00
+	Clustering factor: 1, ratio: 0.50
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$SECURITY_CLASSES (9)
+    Primary pointer page: 22, Index root page: 23
+    Total formats: 0, used formats: 0
+    Average record length: 25.20, total records: 710
+    Average version length: 17.00, total versions: 6, max versions: 3
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 16
+    Data pages: 16, average fill: 54%
+    Primary pages: 10, secondary pages: 6, swept pages: 1
+    Empty pages: 4, full pages: 10
+    Blobs: 713, total length: 15892, blob pages: 0
+        Level 0: 713, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 4
+	20 - 39% = 1
+	40 - 59% = 1
+	60 - 79% = 5
+	80 - 99% = 5
+
+    Index RDB$INDEX_7 (0)
+	Root page: 99, depth: 1, leaf buckets: 1, nodes: 710
+	Average node length: 4.27, total dup: 0, max dup: 0
+	Average key length: 3.15, compression ratio: 2.39
+	Average prefix length: 6.38, average data length: 1.13
+	Clustering factor: 123, ratio: 0.17
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TRANSACTIONS (19)
+    Primary pointer page: 42, Index root page: 43
+    Total formats: 0, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_32 (0)
+	Root page: 126, depth: 1, leaf buckets: 1, nodes: 0
+	Average node length: 0.00, total dup: 0, max dup: 0
+	Average key length: 0.00, compression ratio: 0.00
+	Average prefix length: 0.00, average data length: 0.00
+	Clustering factor: 0, ratio: 0.00
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TRIGGERS (12)
+    Primary pointer page: 28, Index root page: 29
+    Total formats: 0, used formats: 0
+    Average record length: 62.52, total records: 63
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 4
+    Data pages: 4, average fill: 81%
+    Primary pages: 1, secondary pages: 3, swept pages: 0
+    Empty pages: 0, full pages: 2
+    Blobs: 103, total length: 18114, blob pages: 0
+        Level 0: 103, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 2
+	80 - 99% = 2
+
+    Index RDB$INDEX_38 (1)
+	Root page: 132, depth: 1, leaf buckets: 1, nodes: 63
+	Average node length: 5.84, total dup: 46, max dup: 18
+	Average key length: 4.75, compression ratio: 2.52
+	Average prefix length: 9.35, average data length: 2.60
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_8 (0)
+	Root page: 100, depth: 1, leaf buckets: 1, nodes: 63
+	Average node length: 5.32, total dup: 0, max dup: 0
+	Average key length: 4.24, compression ratio: 2.57
+	Average prefix length: 8.71, average data length: 2.19
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TRIGGER_MESSAGES (17)
+    Primary pointer page: 38, Index root page: 39
+    Total formats: 0, used formats: 0
+    Average record length: 60.29, total records: 35
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 33%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_35 (0)
+	Root page: 129, depth: 1, leaf buckets: 1, nodes: 35
+	Average node length: 4.03, total dup: 12, max dup: 5
+	Average key length: 3.00, compression ratio: 4.58
+	Average prefix length: 12.74, average data length: 1.00
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TYPES (11)
+    Primary pointer page: 26, Index root page: 27
+    Total formats: 0, used formats: 0
+    Average record length: 44.99, total records: 254
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 3
+    Data pages: 3, average fill: 64%
+    Primary pages: 3, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 2
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 2
+	80 - 99% = 0
+
+    Index RDB$INDEX_37 (0)
+	Root page: 131, depth: 1, leaf buckets: 1, nodes: 254
+	Average node length: 8.22, total dup: 15, max dup: 2
+	Average key length: 7.14, compression ratio: 1.18
+	Average prefix length: 3.85, average data length: 4.57
+	Clustering factor: 84, ratio: 0.33
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$USER_PRIVILEGES (18)
+    Primary pointer page: 40, Index root page: 41
+    Total formats: 0, used formats: 0
+    Average record length: 48.55, total records: 1026
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 16
+    Data pages: 16, average fill: 51%
+    Primary pages: 16, secondary pages: 0, swept pages: 0
+    Empty pages: 4, full pages: 11
+    Fill distribution:
+	 0 - 19% = 5
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 11
+	80 - 99% = 0
+
+    Index RDB$INDEX_29 (0)
+	Root page: 123, depth: 1, leaf buckets: 1, nodes: 1026
+	Average node length: 6.01, total dup: 448, max dup: 9
+	Average key length: 4.78, compression ratio: 2.30
+	Average prefix length: 8.54, average data length: 2.45
+	Clustering factor: 359, ratio: 0.35
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 1
+	    80 - 99% = 0
+
+    Index RDB$INDEX_30 (1)
+	Root page: 124, depth: 1, leaf buckets: 1, nodes: 1026
+	Average node length: 3.22, total dup: 1024, max dup: 910
+	Average key length: 2.01, compression ratio: 2.98
+	Average prefix length: 5.99, average data length: 0.01
+	Clustering factor: 18, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 1
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$VIEW_RELATIONS (7)
+    Primary pointer page: 18, Index root page: 19
+    Total formats: 0, used formats: 0
+    Average record length: 47.00, total records: 2
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 2%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_33 (0)
+	Root page: 127, depth: 1, leaf buckets: 1, nodes: 2
+	Average node length: 8.50, total dup: 1, max dup: 1
+	Average key length: 7.00, compression ratio: 1.43
+	Average prefix length: 5.00, average data length: 5.00
+	Clustering factor: 1, ratio: 0.50
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_34 (1)
+	Root page: 128, depth: 1, leaf buckets: 1, nodes: 2
+	Average node length: 13.00, total dup: 0, max dup: 0
+	Average key length: 11.00, compression ratio: 0.82
+	Average prefix length: 0.00, average data length: 9.00
+	Clustering factor: 1, ratio: 0.50
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+SALARY_HISTORY (136)
+    Primary pointer page: 253, Index root page: 254
+    Total formats: 1, used formats: 1
+    Average record length: 33.29, total records: 49
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 8.00, compression ratio: 0.24
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 30%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index CHANGEX (2)
+	Root page: 289, depth: 1, leaf buckets: 1, nodes: 49
+	Average node length: 3.37, total dup: 46, max dup: 21
+	Average key length: 2.35, compression ratio: 2.98
+	Average prefix length: 6.69, average data length: 0.31
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN21 (1)
+	Root page: 256, depth: 1, leaf buckets: 1, nodes: 49
+	Average node length: 4.12, total dup: 16, max dup: 2
+	Average key length: 3.10, compression ratio: 0.75
+	Average prefix length: 1.43, average data length: 0.90
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY20 (0)
+	Root page: 255, depth: 1, leaf buckets: 1, nodes: 49
+	Average node length: 22.29, total dup: 0, max dup: 0
+	Average key length: 21.27, compression ratio: 1.06
+	Average prefix length: 4.31, average data length: 18.29
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index UPDATERX (3)
+	Root page: 290, depth: 1, leaf buckets: 1, nodes: 49
+	Average node length: 3.35, total dup: 46, max dup: 28
+	Average key length: 2.29, compression ratio: 2.48
+	Average prefix length: 5.39, average data length: 0.29
+	Clustering factor: 1, ratio: 0.02
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+SALES (138)
+    Primary pointer page: 267, Index root page: 268
+    Total formats: 1, used formats: 1
+    Average record length: 68.82, total records: 33
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 8.00, compression ratio: 0.12
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 35%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index NEEDX (3)
+	Root page: 291, depth: 1, leaf buckets: 1, nodes: 33
+	Average node length: 5.97, total dup: 11, max dup: 6
+	Average key length: 4.94, compression ratio: 1.10
+	Average prefix length: 2.88, average data length: 2.55
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index QTYX (4)
+	Root page: 292, depth: 1, leaf buckets: 1, nodes: 33
+	Average node length: 5.06, total dup: 11, max dup: 3
+	Average key length: 4.03, compression ratio: 3.23
+	Average prefix length: 11.18, average data length: 1.85
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN25 (1)
+	Root page: 270, depth: 1, leaf buckets: 1, nodes: 33
+	Average node length: 3.55, total dup: 18, max dup: 4
+	Average key length: 2.52, compression ratio: 1.19
+	Average prefix length: 2.48, average data length: 0.52
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN26 (2)
+	Root page: 271, depth: 1, leaf buckets: 1, nodes: 33
+	Average node length: 3.67, total dup: 25, max dup: 7
+	Average key length: 2.64, compression ratio: 1.01
+	Average prefix length: 2.21, average data length: 0.45
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY24 (0)
+	Root page: 269, depth: 1, leaf buckets: 1, nodes: 33
+	Average node length: 8.45, total dup: 0, max dup: 0
+	Average key length: 7.42, compression ratio: 1.08
+	Average prefix length: 3.52, average data length: 4.48
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index SALESTATX (5)
+	Root page: 293, depth: 1, leaf buckets: 1, nodes: 33
+	Average node length: 4.06, total dup: 27, max dup: 14
+	Average key length: 3.03, compression ratio: 3.56
+	Average prefix length: 9.82, average data length: 0.97
+	Clustering factor: 1, ratio: 0.03
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+T (147)
+    Primary pointer page: 323, Index root page: 324
+    Total formats: 1, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T2 (142)
+    Primary pointer page: 302, Index root page: 303
+    Total formats: 1, used formats: 1
+    Average record length: 0.00, total records: 4
+    Average version length: 14.25, total versions: 4, max versions: 1
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 120.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 8%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 3, total length: 954, blob pages: 0
+        Level 0: 3, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T3 (143)
+    Primary pointer page: 305, Index root page: 306
+    Total formats: 1, used formats: 1
+    Average record length: 0.00, total records: 3
+    Average version length: 22.67, total versions: 3, max versions: 1
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 112.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 3%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Blobs: 2, total length: 313, blob pages: 0
+        Level 0: 2, Level 1: 0, Level 2: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T4 (144)
+    Primary pointer page: 307, Index root page: 308
+    Total formats: 1, used formats: 1
+    Average record length: 0.00, total records: 2
+    Average version length: 75.00, total versions: 2, max versions: 1
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 264.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 3%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T5 (145)
+    Primary pointer page: 315, Index root page: 316
+    Total formats: 1, used formats: 0
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Average fragment length: 0.00, total fragments: 0, max fragments: 0
+    Average unpacked length: 0.00, compression ratio: 0.00
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$PRIMARY28 (0)
+	Root page: 317, depth: 1, leaf buckets: 1, nodes: 0
+	Average node length: 0.00, total dup: 0, max dup: 0
+	Average key length: 0.00, compression ratio: 0.00
+	Average prefix length: 0.00, average data length: 0.00
+	Clustering factor: 0, ratio: 0.00
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+Gstat completion time Wed Apr 04 15:46:31 2018
+

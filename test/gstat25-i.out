@@ -1,0 +1,454 @@
+
+Database "/home/fdb/test/fbtest25.fdb"
+Gstat execution time Wed Apr  4 15:32:12 2018
+
+Database header page information:
+	Flags			0
+	Checksum		12345
+	Generation		2853
+	Page size		4096
+	ODS version		11.2
+	Oldest transaction	204
+	Oldest active		1810
+	Oldest snapshot		1810
+	Next transaction	1810
+	Bumped transaction	1
+	Sequence number		0
+	Next attachment ID	1070
+	Implementation ID	24
+	Shadow count		0
+	Page buffers		0
+	Next header page	0
+	Database dialect	3
+	Creation date		May 27, 2013 23:40:53
+	Attributes		force write
+
+    Variable header data:
+	Sweep interval:		20000
+	*END*
+
+
+Database file sequence:
+File /home/fdb/test/fbtest25.fdb is the only file
+
+Analyzing database pages ...
+AR (142)
+
+COUNTRY (128)
+
+    Index RDB$PRIMARY1 (0)
+	Depth: 1, leaf buckets: 1, nodes: 14
+	Average data length: 6.50, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+CUSTOMER (132)
+
+    Index CUSTNAMEX (1)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 15.87, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index CUSTREGION (2)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 17.27, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN23 (3)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 4.87, total dup: 4, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY22 (0)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 1.13, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+DEPARTMENT (130)
+
+    Index BUDGETX (2)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 5.38, total dup: 7, max dup: 3
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$4 (0)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 13.95, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN10 (4)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 1.14, total dup: 3, max dup: 3
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN6 (3)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 0.81, total dup: 13, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY5 (1)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 1.71, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+EMPLOYEE (131)
+
+    Index NAMEX (1)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 15.52, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN8 (2)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 0.81, total dup: 23, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN9 (3)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 6.79, total dup: 15, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY7 (0)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 1.31, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+EMPLOYEE_PROJECT (135)
+
+    Index RDB$FOREIGN15 (1)
+	Depth: 1, leaf buckets: 1, nodes: 28
+	Average data length: 1.04, total dup: 6, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN16 (2)
+	Depth: 1, leaf buckets: 1, nodes: 28
+	Average data length: 0.86, total dup: 23, max dup: 9
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY14 (0)
+	Depth: 1, leaf buckets: 1, nodes: 28
+	Average data length: 9.11, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+JOB (129)
+
+    Index MAXSALX (2)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 10.90, total dup: 5, max dup: 1
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index MINSALX (1)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 10.29, total dup: 7, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN3 (3)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 1.39, total dup: 24, max dup: 20
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY2 (0)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 10.45, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+PROJECT (134)
+
+    Index PRODTYPEX (2)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 22.50, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$11 (0)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 13.33, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN13 (3)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 1.33, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY12 (1)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 4.83, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+PROJ_DEPT_BUDGET (136)
+
+    Index RDB$FOREIGN18 (1)
+	Depth: 1, leaf buckets: 1, nodes: 24
+	Average data length: 0.71, total dup: 15, max dup: 5
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN19 (2)
+	Depth: 1, leaf buckets: 1, nodes: 24
+	Average data length: 1.00, total dup: 19, max dup: 8
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY17 (0)
+	Depth: 1, leaf buckets: 1, nodes: 24
+	Average data length: 6.83, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+SALARY_HISTORY (137)
+
+    Index CHANGEX (2)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 0.31, total dup: 46, max dup: 21
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN21 (3)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 0.90, total dup: 16, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY20 (0)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 18.29, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index UPDATERX (1)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 0.29, total dup: 46, max dup: 28
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+SALES (138)
+
+    Index NEEDX (1)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 2.55, total dup: 11, max dup: 6
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index QTYX (3)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 1.85, total dup: 11, max dup: 3
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN25 (4)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 0.52, total dup: 18, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN26 (5)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 0.45, total dup: 25, max dup: 7
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY24 (0)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 4.48, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index SALESTATX (2)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 0.97, total dup: 27, max dup: 14
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+T (235)
+
+    Index RDB$PRIMARY104 (0)
+	Depth: 1, leaf buckets: 1, nodes: 0
+	Average data length: 0.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+T2 (141)
+
+T3 (139)
+
+T4 (133)
+

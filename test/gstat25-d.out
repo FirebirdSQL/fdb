@@ -1,0 +1,184 @@
+
+Database "/home/fdb/test/fbtest25.fdb"
+Gstat execution time Wed Apr  4 15:32:25 2018
+
+Database header page information:
+	Flags			0
+	Checksum		12345
+	Generation		2856
+	Page size		4096
+	ODS version		11.2
+	Oldest transaction	204
+	Oldest active		1811
+	Oldest snapshot		1811
+	Next transaction	1811
+	Bumped transaction	1
+	Sequence number		0
+	Next attachment ID	1071
+	Implementation ID	24
+	Shadow count		0
+	Page buffers		0
+	Next header page	0
+	Database dialect	3
+	Creation date		May 27, 2013 23:40:53
+	Attributes		force write
+
+    Variable header data:
+	Sweep interval:		20000
+	*END*
+
+
+Database file sequence:
+File /home/fdb/test/fbtest25.fdb is the only file
+
+Analyzing database pages ...
+AR (142)
+    Primary pointer page: 209, Index root page: 210
+    Data pages: 1, data page slots: 1, average fill: 86%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 1
+
+COUNTRY (128)
+    Primary pointer page: 180, Index root page: 181
+    Data pages: 1, data page slots: 1, average fill: 15%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+CUSTOMER (132)
+    Primary pointer page: 188, Index root page: 189
+    Data pages: 1, data page slots: 1, average fill: 53%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+DEPARTMENT (130)
+    Primary pointer page: 184, Index root page: 185
+    Data pages: 1, data page slots: 1, average fill: 47%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+EMPLOYEE (131)
+    Primary pointer page: 186, Index root page: 187
+    Data pages: 2, data page slots: 2, average fill: 44%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+EMPLOYEE_PROJECT (135)
+    Primary pointer page: 195, Index root page: 196
+    Data pages: 1, data page slots: 1, average fill: 20%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+JOB (129)
+    Primary pointer page: 182, Index root page: 183
+    Data pages: 3, data page slots: 3, average fill: 73%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 2
+
+PROJECT (134)
+    Primary pointer page: 193, Index root page: 194
+    Data pages: 1, data page slots: 1, average fill: 29%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+PROJ_DEPT_BUDGET (136)
+    Primary pointer page: 197, Index root page: 198
+    Data pages: 1, data page slots: 1, average fill: 80%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 1
+
+SALARY_HISTORY (137)
+    Primary pointer page: 199, Index root page: 200
+    Data pages: 1, data page slots: 1, average fill: 58%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+SALES (138)
+    Primary pointer page: 201, Index root page: 202
+    Data pages: 1, data page slots: 1, average fill: 68%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+T (235)
+    Primary pointer page: 205, Index root page: 282
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T2 (141)
+    Primary pointer page: 207, Index root page: 208
+    Data pages: 1, data page slots: 1, average fill: 20%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T3 (139)
+    Primary pointer page: 203, Index root page: 204
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T4 (133)
+    Primary pointer page: 191, Index root page: 192
+    Data pages: 1, data page slots: 1, average fill: 4%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+

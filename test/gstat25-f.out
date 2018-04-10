@@ -1,0 +1,1490 @@
+
+Database "/home/fdb/test/fbtest25.fdb"
+Gstat execution time Wed Apr  4 15:47:01 2018
+
+Database header page information:
+	Flags			0
+	Checksum		12345
+	Generation		2859
+	Page size		4096
+	ODS version		11.2
+	Oldest transaction	204
+	Oldest active		1812
+	Oldest snapshot		1812
+	Next transaction	1812
+	Bumped transaction	1
+	Sequence number		0
+	Next attachment ID	1072
+	Implementation ID	24
+	Shadow count		0
+	Page buffers		0
+	Next header page	0
+	Database dialect	3
+	Creation date		May 27, 2013 23:40:53
+	Attributes		force write
+
+    Variable header data:
+	Sweep interval:		20000
+	*END*
+
+
+Database file sequence:
+File /home/fdb/test/fbtest25.fdb is the only file
+
+Analyzing database pages ...
+AR (142)
+    Primary pointer page: 209, Index root page: 210
+    Average record length: 22.07, total records: 15
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 86%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 1
+
+COUNTRY (128)
+    Primary pointer page: 180, Index root page: 181
+    Average record length: 26.86, total records: 14
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 15%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$PRIMARY1 (0)
+	Depth: 1, leaf buckets: 1, nodes: 14
+	Average data length: 6.50, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+CUSTOMER (132)
+    Primary pointer page: 188, Index root page: 189
+    Average record length: 126.47, total records: 15
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 53%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index CUSTNAMEX (1)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 15.87, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index CUSTREGION (2)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 17.27, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN23 (3)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 4.87, total dup: 4, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY22 (0)
+	Depth: 1, leaf buckets: 1, nodes: 15
+	Average data length: 1.13, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+DEPARTMENT (130)
+    Primary pointer page: 184, Index root page: 185
+    Average record length: 73.62, total records: 21
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 47%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index BUDGETX (2)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 5.38, total dup: 7, max dup: 3
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$4 (0)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 13.95, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN10 (4)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 1.14, total dup: 3, max dup: 3
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN6 (3)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 0.81, total dup: 13, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY5 (1)
+	Depth: 1, leaf buckets: 1, nodes: 21
+	Average data length: 1.71, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+EMPLOYEE (131)
+    Primary pointer page: 186, Index root page: 187
+    Average record length: 68.86, total records: 42
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 2, data page slots: 2, average fill: 44%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index NAMEX (1)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 15.52, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN8 (2)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 0.81, total dup: 23, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN9 (3)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 6.79, total dup: 15, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY7 (0)
+	Depth: 1, leaf buckets: 1, nodes: 42
+	Average data length: 1.31, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+EMPLOYEE_PROJECT (135)
+    Primary pointer page: 195, Index root page: 196
+    Average record length: 12.00, total records: 28
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 20%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$FOREIGN15 (1)
+	Depth: 1, leaf buckets: 1, nodes: 28
+	Average data length: 1.04, total dup: 6, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN16 (2)
+	Depth: 1, leaf buckets: 1, nodes: 28
+	Average data length: 0.86, total dup: 23, max dup: 9
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY14 (0)
+	Depth: 1, leaf buckets: 1, nodes: 28
+	Average data length: 9.11, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+JOB (129)
+    Primary pointer page: 182, Index root page: 183
+    Average record length: 67.13, total records: 31
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 3, data page slots: 3, average fill: 73%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 2
+
+    Index MAXSALX (2)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 10.90, total dup: 5, max dup: 1
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index MINSALX (1)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 10.29, total dup: 7, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN3 (3)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 1.39, total dup: 24, max dup: 20
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY2 (0)
+	Depth: 1, leaf buckets: 1, nodes: 31
+	Average data length: 10.45, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+PROJECT (134)
+    Primary pointer page: 193, Index root page: 194
+    Average record length: 48.83, total records: 6
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 29%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index PRODTYPEX (2)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 22.50, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$11 (0)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 13.33, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN13 (3)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 1.33, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY12 (1)
+	Depth: 1, leaf buckets: 1, nodes: 6
+	Average data length: 4.83, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+PROJ_DEPT_BUDGET (136)
+    Primary pointer page: 197, Index root page: 198
+    Average record length: 30.96, total records: 24
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 80%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 1
+
+    Index RDB$FOREIGN18 (1)
+	Depth: 1, leaf buckets: 1, nodes: 24
+	Average data length: 0.71, total dup: 15, max dup: 5
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN19 (2)
+	Depth: 1, leaf buckets: 1, nodes: 24
+	Average data length: 1.00, total dup: 19, max dup: 8
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY17 (0)
+	Depth: 1, leaf buckets: 1, nodes: 24
+	Average data length: 6.83, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$BACKUP_HISTORY (32)
+    Primary pointer page: 68, Index root page: 69
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_44 (0)
+	Depth: 1, leaf buckets: 1, nodes: 0
+	Average data length: 0.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$CHARACTER_SETS (28)
+    Primary pointer page: 60, Index root page: 61
+    Average record length: 35.67, total records: 52
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 69%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index RDB$INDEX_19 (0)
+	Depth: 1, leaf buckets: 1, nodes: 52
+	Average data length: 2.98, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_25 (1)
+	Depth: 1, leaf buckets: 1, nodes: 52
+	Average data length: 1.04, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$CHECK_CONSTRAINTS (24)
+    Primary pointer page: 52, Index root page: 53
+    Average record length: 25.77, total records: 70
+    Average version length: 21.00, total versions: 1, max versions: 1
+    Data pages: 2, data page slots: 2, average fill: 37%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index RDB$INDEX_14 (0)
+	Depth: 1, leaf buckets: 1, nodes: 70
+	Average data length: 0.90, total dup: 14, max dup: 1
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_40 (1)
+	Depth: 1, leaf buckets: 1, nodes: 70
+	Average data length: 3.81, total dup: 11, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$COLLATIONS (29)
+    Primary pointer page: 62, Index root page: 63
+    Average record length: 25.87, total records: 149
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 3, data page slots: 3, average fill: 55%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 2
+	80 - 99% = 0
+
+    Index RDB$INDEX_20 (0)
+	Depth: 1, leaf buckets: 1, nodes: 149
+	Average data length: 3.77, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_26 (1)
+	Depth: 1, leaf buckets: 1, nodes: 149
+	Average data length: 1.79, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$DATABASE (1)
+    Primary pointer page: 6, Index root page: 7
+    Average record length: 15.00, total records: 1
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 1%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$DEPENDENCIES (13)
+    Primary pointer page: 30, Index root page: 31
+    Average record length: 42.63, total records: 163
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 5, data page slots: 6, average fill: 49%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 1
+	40 - 59% = 1
+	60 - 79% = 2
+	80 - 99% = 0
+
+    Index RDB$INDEX_27 (0)
+	Depth: 1, leaf buckets: 1, nodes: 163
+	Average data length: 1.18, total dup: 118, max dup: 13
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_28 (1)
+	Depth: 1, leaf buckets: 1, nodes: 163
+	Average data length: 1.01, total dup: 145, max dup: 36
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$EXCEPTIONS (30)
+    Primary pointer page: 64, Index root page: 65
+    Average record length: 82.40, total records: 5
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 12%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_23 (0)
+	Depth: 1, leaf buckets: 1, nodes: 5
+	Average data length: 14.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_24 (1)
+	Depth: 1, leaf buckets: 1, nodes: 5
+	Average data length: 1.20, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FIELDS (2)
+    Primary pointer page: 8, Index root page: 9
+    Average record length: 35.91, total records: 245
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 6, data page slots: 6, average fill: 62%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 4
+	80 - 99% = 1
+
+    Index RDB$INDEX_2 (0)
+	Depth: 1, leaf buckets: 1, nodes: 245
+	Average data length: 4.58, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 1
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FIELD_DIMENSIONS (21)
+    Primary pointer page: 46, Index root page: 47
+    Average record length: 23.84, total records: 19
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 19%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_36 (0)
+	Depth: 1, leaf buckets: 1, nodes: 19
+	Average data length: 1.26, total dup: 3, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FILES (10)
+    Primary pointer page: 24, Index root page: 25
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$FILTERS (16)
+    Primary pointer page: 36, Index root page: 37
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_17 (0)
+	Depth: 1, leaf buckets: 1, nodes: 0
+	Average data length: 0.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_45 (1)
+	Depth: 1, leaf buckets: 1, nodes: 0
+	Average data length: 0.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FORMATS (8)
+    Primary pointer page: 20, Index root page: 21
+    Average record length: 15.79, total records: 19
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 76%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index RDB$INDEX_16 (0)
+	Depth: 1, leaf buckets: 1, nodes: 19
+	Average data length: 4.63, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FUNCTIONS (14)
+    Primary pointer page: 32, Index root page: 33
+    Average record length: 63.00, total records: 2
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 4%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_9 (0)
+	Depth: 1, leaf buckets: 1, nodes: 2
+	Average data length: 13.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$FUNCTION_ARGUMENTS (15)
+    Primary pointer page: 34, Index root page: 35
+    Average record length: 37.00, total records: 7
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 9%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_10 (0)
+	Depth: 1, leaf buckets: 1, nodes: 7
+	Average data length: 3.71, total dup: 5, max dup: 3
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$GENERATORS (20)
+    Primary pointer page: 44, Index root page: 45
+    Average record length: 31.91, total records: 11
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 22%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_11 (0)
+	Depth: 1, leaf buckets: 1, nodes: 11
+	Average data length: 11.91, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_46 (1)
+	Depth: 1, leaf buckets: 1, nodes: 11
+	Average data length: 1.09, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$INDEX_SEGMENTS (3)
+    Primary pointer page: 10, Index root page: 11
+    Average record length: 29.14, total records: 150
+    Average version length: 27.11, total versions: 38, max versions: 1
+    Data pages: 3, data page slots: 3, average fill: 79%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 2
+	80 - 99% = 1
+
+    Index RDB$INDEX_6 (0)
+	Depth: 1, leaf buckets: 1, nodes: 150
+	Average data length: 1.50, total dup: 24, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$INDICES (4)
+    Primary pointer page: 12, Index root page: 13
+    Average record length: 49.20, total records: 88
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 4, data page slots: 4, average fill: 48%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 2
+	80 - 99% = 0
+
+    Index RDB$INDEX_31 (1)
+	Depth: 1, leaf buckets: 1, nodes: 88
+	Average data length: 4.23, total dup: 48, max dup: 5
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_41 (2)
+	Depth: 1, leaf buckets: 1, nodes: 88
+	Average data length: 0.19, total dup: 81, max dup: 73
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_5 (0)
+	Depth: 1, leaf buckets: 1, nodes: 88
+	Average data length: 2.09, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$LOG_FILES (25)
+    Primary pointer page: 54, Index root page: 55
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$PAGES (0)
+    Primary pointer page: 3, Index root page: 4
+    Average record length: 14.84, total records: 98
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 2, data page slots: 2, average fill: 38%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+RDB$PROCEDURES (26)
+    Primary pointer page: 56, Index root page: 57
+    Average record length: 62.20, total records: 10
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 3, data page slots: 3, average fill: 94%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 3
+
+    Index RDB$INDEX_21 (0)
+	Depth: 1, leaf buckets: 1, nodes: 10
+	Average data length: 10.60, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_22 (1)
+	Depth: 1, leaf buckets: 1, nodes: 10
+	Average data length: 1.10, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$PROCEDURE_PARAMETERS (27)
+    Primary pointer page: 58, Index root page: 59
+    Average record length: 41.73, total records: 33
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 48%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_18 (0)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 11.33, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_47 (1)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 1.24, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_48 (2)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 0.00, total dup: 32, max dup: 32
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$REF_CONSTRAINTS (23)
+    Primary pointer page: 50, Index root page: 51
+    Average record length: 54.86, total records: 14
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 25%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_13 (0)
+	Depth: 1, leaf buckets: 1, nodes: 14
+	Average data length: 1.93, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$RELATIONS (6)
+    Primary pointer page: 16, Index root page: 17
+    Average record length: 62.38, total records: 58
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 5, data page slots: 6, average fill: 71%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 2
+	60 - 79% = 1
+	80 - 99% = 2
+
+    Index RDB$INDEX_0 (0)
+	Depth: 1, leaf buckets: 1, nodes: 58
+	Average data length: 8.81, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_1 (1)
+	Depth: 1, leaf buckets: 1, nodes: 73
+	Average data length: 0.82, total dup: 14, max dup: 14
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$RELATION_CONSTRAINTS (22)
+    Primary pointer page: 48, Index root page: 49
+    Average record length: 49.76, total records: 82
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 2, data page slots: 2, average fill: 67%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 2
+	80 - 99% = 0
+
+    Index RDB$INDEX_12 (0)
+	Depth: 1, leaf buckets: 1, nodes: 82
+	Average data length: 1.07, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_42 (1)
+	Depth: 1, leaf buckets: 1, nodes: 82
+	Average data length: 6.43, total dup: 43, max dup: 8
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_43 (2)
+	Depth: 1, leaf buckets: 1, nodes: 82
+	Average data length: 0.60, total dup: 54, max dup: 54
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$RELATION_FIELDS (5)
+    Primary pointer page: 14, Index root page: 15
+    Average record length: 68.27, total records: 466
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 13, data page slots: 13, average fill: 77%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 9
+	80 - 99% = 3
+
+    Index RDB$INDEX_15 (2)
+	Depth: 2, leaf buckets: 4, nodes: 466
+	Average data length: 20.92, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 1
+	    60 - 79% = 1
+	    80 - 99% = 2
+
+    Index RDB$INDEX_3 (0)
+	Depth: 1, leaf buckets: 1, nodes: 466
+	Average data length: 2.33, total dup: 255, max dup: 31
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 1
+	    80 - 99% = 0
+
+    Index RDB$INDEX_4 (1)
+	Depth: 1, leaf buckets: 1, nodes: 466
+	Average data length: 1.10, total dup: 408, max dup: 27
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 1
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$ROLES (31)
+    Primary pointer page: 66, Index root page: 67
+    Average record length: 28.50, total records: 2
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 2%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_39 (0)
+	Depth: 1, leaf buckets: 1, nodes: 2
+	Average data length: 9.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$SECURITY_CLASSES (9)
+    Primary pointer page: 22, Index root page: 23
+    Average record length: 22.54, total records: 182
+    Average version length: 24.43, total versions: 42, max versions: 1
+    Data pages: 6, data page slots: 6, average fill: 77%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 1
+	80 - 99% = 4
+
+    Index RDB$INDEX_7 (0)
+	Depth: 1, leaf buckets: 1, nodes: 182
+	Average data length: 1.06, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TRANSACTIONS (19)
+    Primary pointer page: 42, Index root page: 43
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_32 (0)
+	Depth: 1, leaf buckets: 1, nodes: 0
+	Average data length: 0.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TRIGGERS (12)
+    Primary pointer page: 28, Index root page: 29
+    Average record length: 56.72, total records: 69
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 7, data page slots: 7, average fill: 90%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 2
+	80 - 99% = 5
+
+    Index RDB$INDEX_38 (1)
+	Depth: 1, leaf buckets: 1, nodes: 69
+	Average data length: 2.84, total dup: 48, max dup: 18
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_8 (0)
+	Depth: 1, leaf buckets: 1, nodes: 69
+	Average data length: 2.09, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TRIGGER_MESSAGES (17)
+    Primary pointer page: 38, Index root page: 39
+    Average record length: 60.11, total records: 36
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 68%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index RDB$INDEX_35 (0)
+	Depth: 1, leaf buckets: 1, nodes: 36
+	Average data length: 1.00, total dup: 12, max dup: 5
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$TYPES (11)
+    Primary pointer page: 26, Index root page: 27
+    Average record length: 45.56, total records: 228
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 5, data page slots: 5, average fill: 70%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 5
+	80 - 99% = 0
+
+    Index RDB$INDEX_37 (0)
+	Depth: 1, leaf buckets: 1, nodes: 228
+	Average data length: 4.22, total dup: 16, max dup: 1
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 0
+	    40 - 59% = 1
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$USER_PRIVILEGES (18)
+    Primary pointer page: 40, Index root page: 41
+    Average record length: 45.69, total records: 173
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 4, data page slots: 4, average fill: 67%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 3
+	80 - 99% = 0
+
+    Index RDB$INDEX_29 (0)
+	Depth: 1, leaf buckets: 1, nodes: 173
+	Average data length: 1.24, total dup: 144, max dup: 9
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_30 (1)
+	Depth: 1, leaf buckets: 1, nodes: 173
+	Average data length: 0.07, total dup: 171, max dup: 104
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+RDB$VIEW_RELATIONS (7)
+    Primary pointer page: 18, Index root page: 19
+    Average record length: 45.00, total records: 2
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 3%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$INDEX_33 (0)
+	Depth: 1, leaf buckets: 1, nodes: 2
+	Average data length: 5.00, total dup: 1, max dup: 1
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$INDEX_34 (1)
+	Depth: 1, leaf buckets: 1, nodes: 2
+	Average data length: 9.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+SALARY_HISTORY (137)
+    Primary pointer page: 199, Index root page: 200
+    Average record length: 31.51, total records: 49
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 58%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index CHANGEX (2)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 0.31, total dup: 46, max dup: 21
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN21 (3)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 0.90, total dup: 16, max dup: 2
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY20 (0)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 18.29, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 0
+	    20 - 39% = 1
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index UPDATERX (1)
+	Depth: 1, leaf buckets: 1, nodes: 49
+	Average data length: 0.29, total dup: 46, max dup: 28
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+SALES (138)
+    Primary pointer page: 201, Index root page: 202
+    Average record length: 67.24, total records: 33
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 1, data page slots: 1, average fill: 68%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+    Index NEEDX (1)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 2.55, total dup: 11, max dup: 6
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index QTYX (3)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 1.85, total dup: 11, max dup: 3
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN25 (4)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 0.52, total dup: 18, max dup: 4
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$FOREIGN26 (5)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 0.45, total dup: 25, max dup: 7
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index RDB$PRIMARY24 (0)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 4.48, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+    Index SALESTATX (2)
+	Depth: 1, leaf buckets: 1, nodes: 33
+	Average data length: 0.97, total dup: 27, max dup: 14
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+T (235)
+    Primary pointer page: 205, Index root page: 282
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+    Index RDB$PRIMARY104 (0)
+	Depth: 1, leaf buckets: 1, nodes: 0
+	Average data length: 0.00, total dup: 0, max dup: 0
+	Fill distribution:
+	     0 - 19% = 1
+	    20 - 39% = 0
+	    40 - 59% = 0
+	    60 - 79% = 0
+	    80 - 99% = 0
+
+T2 (141)
+    Primary pointer page: 207, Index root page: 208
+    Average record length: 0.00, total records: 2
+    Average version length: 17.00, total versions: 2, max versions: 1
+    Data pages: 1, data page slots: 1, average fill: 20%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T3 (139)
+    Primary pointer page: 203, Index root page: 204
+    Average record length: 0.00, total records: 0
+    Average version length: 0.00, total versions: 0, max versions: 0
+    Data pages: 0, data page slots: 0, average fill: 0%
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T4 (133)
+    Primary pointer page: 191, Index root page: 192
+    Average record length: 0.00, total records: 1
+    Average version length: 129.00, total versions: 1, max versions: 1
+    Data pages: 1, data page slots: 1, average fill: 4%
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
