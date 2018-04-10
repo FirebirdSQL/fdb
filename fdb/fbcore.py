@@ -300,6 +300,9 @@ class NotSupportedError(DatabaseError):
 class TransactionConflict(DatabaseError):
     pass
 
+class ParseError(Exception):
+    pass
+
 # Named positional constants to be used as indices into the description
 # attribute of a cursor (these positions are defined by the DB API spec).
 # For example:
@@ -922,6 +925,12 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
 
        con = fdb.create_database("create database '/temp/db.fdb' user 'sysdba' password 'pass'")
        con = fdb.create_database(dsn='/temp/db.fdb',user='sysdba',password='pass',page_size=8192)
+
+    Hooks:
+
+    Event HOOK_DATABASE_ATTACHED: Executed before :class:`Connection`
+    (or subclass) instance is returned. Hook must have signature:
+    hook_func(connection). Any value returned by hook is ignored.
     """
     load_api(fb_library_name)
     if connection_class == None:
@@ -1809,6 +1818,10 @@ class Connection(object):
         Event HOOK_DATABASE_DETACH_REQUEST: Executed before connection
         is closed. Hook must have signature: hook_func(connection).
         If any hook function returns True, connection is not closed.
+
+        Event HOOK_DATABASE_CLOSED: Executed after connection
+        is closed. Hook must have signature: hook_func(connection).
+        Any value returned by hook is ignored.
         """
         self.__ensure_group_membership(False, "Cannot close a connection that"
                                        " is a member of a ConnectionGroup.")

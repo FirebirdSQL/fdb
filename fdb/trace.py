@@ -146,10 +146,6 @@ EventDYNExecute = collections.namedtuple('EventDYNExecute', 'event_id,timestamp,
 #
 EventUnknown = collections.namedtuple('EventUnknown', 'event_id,timestamp,data')
 
-class ParseError(Exception):
-    "General exception raised by parser."
-    pass
-
 class TraceParser(object):
     """Parser for standard textual trace log. Produces named tuples describing individual trace log entries/events.
 
@@ -280,7 +276,7 @@ class TraceParser(object):
 
     :returns: Tuple with items: (timestamp, status, trace_entry_type_id)
 
-    :raises fdb.trace.ParseError: When event is not recognized
+    :raises fdb.ParseError: When event is not recognized
 """
         items = line.split()
         timestamp = datetime.datetime.strptime(items[0],'%Y-%m-%dT%H:%M:%S.%f')
@@ -294,7 +290,7 @@ class TraceParser(object):
             elif items[2] == 'Unknown':
                 return (timestamp, STATUS_UNKNOWN, EVENT_UNKNOWN)  # ' '.join(items[3:]))
             else:
-                raise ParseError('Unrecognized event header: "%s"' % line)
+                raise fdb.ParseError('Unrecognized event header: "%s"' % line)
     def _parse_attachment_info(self, values, check = True):
         line = self.__current_block.popleft()
         database, sep, attachment = line.partition(' (')
@@ -366,7 +362,7 @@ class TraceParser(object):
                 elif 'mark' in val_type:
                     self.__event_values['marks'] = int(value)
                 else:
-                    raise ParseError("Unhandled performance parameter %s" % val_type)
+                    raise fdb.ParseError("Unhandled performance parameter %s" % val_type)
     def _parse_attachment_and_transaction(self):
         # Attachment
         att_values = {}
@@ -383,7 +379,7 @@ class TraceParser(object):
         pad, s = self.__current_block.popleft().split()
         self.__event_values['statement_id'] = int(s[:-1])
         if self.__current_block.popleft() != '-'*79:
-            raise ParseError("Separator '-'*79 line expected")
+            raise fdb.ParseError("Separator '-'*79 line expected")
     def _parse_blr_statement_id(self):
         line = self.__current_block[0].strip()
         if line.startswith('Statement ') and line[-1] == ':':
@@ -439,7 +435,7 @@ class TraceParser(object):
             self.__current_block.appendleft(line)
             return
         if not self.is_plan_separator(line):
-            raise ParseError("Separator '^'*79 line expected")
+            raise fdb.ParseError("Separator '^'*79 line expected")
         line = self.__current_block.popleft()
         plan = []
         while line and not (self.is_perf_start(line) or self.is_param_start(line)):
@@ -512,13 +508,13 @@ class TraceParser(object):
             elif 'mark' in val_type:
                 self.__event_values['marks'] = int(value)
             else:
-                raise ParseError("Unhandled performance parameter %s" % val_type)
+                raise fdb.ParseError("Unhandled performance parameter %s" % val_type)
         if self.__current_block:
             self.__event_values['access'] = []
             if self.__current_block.popleft() != "Table                             Natural     Index    Update    Insert    Delete   Backout     Purge   Expunge":
-                raise ParseError("Performance table header expected")
+                raise fdb.ParseError("Performance table header expected")
             if self.__current_block.popleft() != "*"*111:
-                raise ParseError("Performance table header separator expected")
+                raise fdb.ParseError("Performance table header separator expected")
             while self.__current_block:
                 entry = self.__current_block.popleft()
                 self.__event_values['access'].append(AccessTuple._make((intern(entry[:32].strip()),
@@ -559,7 +555,7 @@ class TraceParser(object):
     def _parse_service(self):
         line = self.__current_block.popleft()
         if 'service_mgr' not in line:
-            raise ParseError("Service connection description expected.")
+            raise fdb.ParseError("Service connection description expected.")
         pad, sep, s = line.partition(' (')
         svc_id, user, protocol_address, remote_process_id = s.strip('()').split(',')
         pad, svc_id = svc_id.split(' ')
@@ -617,7 +613,7 @@ class TraceParser(object):
         if not line:
             line = self.__current_block.popleft()
         if 'Transaction counters:' not in line:
-            raise ParseError("Transaction counters expected")
+            raise fdb.ParseError("Transaction counters expected")
         while len(self.__current_block) > 0:
             line = self.__current_block.popleft()
             if 'Oldest interesting' in line:
@@ -961,12 +957,12 @@ class TraceParser(object):
             record_parser = self.__parse_map[trace_event]
         #
         return self._parse_block(record_parser)
-    def parse(self, trace_log_iter):
+    def parse(self, lines):
         """Parse output from Firebird trace session and yields named tuples describing individual trace log entries/events.
 
-        :param trace_log_iter: Iterator that returns lines produced by firebird trace session.
+        :param lines: Iterable that returns lines produced by firebird trace session.
 """
-        for rec in (self.parse_event(x) for x in self._iter_trace_blocks(trace_log_iter)):
+        for rec in (self.parse_event(x) for x in self._iter_trace_blocks(lines)):
             while len(self.__buffer) > 0:
                 yield self.__buffer.pop(0)
             yield rec
