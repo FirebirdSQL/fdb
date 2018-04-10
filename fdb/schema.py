@@ -23,8 +23,7 @@
 import sys
 import os
 import fdb
-#from . import fbcore as fdb
-from fdb.utils import LateBindingProperty
+from fdb.utils import LateBindingProperty, ObjectList
 import string
 import weakref
 from itertools import groupby
@@ -451,8 +450,6 @@ class Schema(object):
     def __del__(self):
         if not self.closed:
             self._close()
-    def __get_closed(self):
-        return self._con is None
     def __fail_if_closed(self):
         if self.closed:
             raise fdb.ProgrammingError("Schema is not binded to connection.")
@@ -580,31 +577,28 @@ order by r.RDB$DIMENSION""" % field.name)]
 
     #--- special attribute access methods
 
-    def _get_description(self):
-        return self.__description
     def _get_default_character_set(self):
         return self.get_character_set(self._default_charset_name)
-    def _get_owner_name(self):
-        return self.__owner
-    def _get_security_class(self):
-        return self.__security_class
     def _get_collations(self):
         if self.__collations is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$collations")
-            self.__collations = [Collation(self,row) for row in self._ic.itermap()]
+            self.__collations = ObjectList((Collation(self,row) for row in self._ic.itermap()), Collation, 'item.name')
+            self.__collations.freeze()
         return self.__collations
     def _get_character_sets(self):
         if self.__character_sets is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$character_sets")
-            self.__character_sets = [CharacterSet(self,row) for row in self._ic.itermap()]
+            self.__character_sets = ObjectList((CharacterSet(self,row) for row in self._ic.itermap()), CharacterSet, 'item.name')
+            self.__character_sets.freeze()
         return self.__character_sets
     def _get_exceptions(self):
         if self.__exceptions is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$exceptions")
-            self.__exceptions = [DatabaseException(self,row) for row in self._ic.itermap()]
+            self.__exceptions = ObjectList((DatabaseException(self,row) for row in self._ic.itermap()), DatabaseException, 'item.name')
+            self.__exceptions.freeze()
         return self.__exceptions
     def _get_all_domains(self):
         if self.__domains is None:
@@ -619,38 +613,41 @@ order by r.RDB$DIMENSION""" % field.name)]
             if self._con.ods >= fdb.ODS_FB_30:
                 cols.extend(['RDB$SECURITY_CLASS', 'RDB$OWNER_NAME'])
             self._ic.execute("""select %s from RDB$FIELDS""" % ','.join(cols))
-            self.__domains = [Domain(self,row) for row in self._ic.itermap()]
+            self.__domains = ObjectList((Domain(self,row) for row in self._ic.itermap()), Domain, 'item.name')
+            self.__domains.freeze()
         return self.__domains
     def _get_domains(self):
-        return [d for d in self._get_all_domains() if not d.issystemobject()]
+        return self._get_all_domains().filter(lambda item: not item.issystemobject())
     def _get_sysdomains(self):
-        return [d for d in self._get_all_domains() if d.issystemobject()]
+        return self._get_all_domains().filter(lambda item: item.issystemobject())
     def _get_all_tables(self):
         if self.__tables is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$relations where rdb$view_blr is null")
-            self.__tables = [Table(self,row) for row in self._ic.itermap()]
+            self.__tables = ObjectList((Table(self,row) for row in self._ic.itermap()), Table, 'item.name')
+            self.__tables.freeze()
         return self.__tables
     def _get_tables(self):
-        return [t for t in self._get_all_tables() if not t.issystemobject()]
+        return self._get_all_tables().filter(lambda item: not item.issystemobject())
     def _get_systables(self):
-        return [t for t in self._get_all_tables() if t.issystemobject()]
+        return self._get_all_tables().filter(lambda item: item.issystemobject())
     def _get_all_views(self):
         if self.__views is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$relations where rdb$view_blr is not null")
-            self.__views = [View(self,row) for row in self._ic.itermap()]
+            self.__views = ObjectList((View(self,row) for row in self._ic.itermap()), View, 'item.name')
+            self.__views.freeze()
         return self.__views
     def _get_views(self):
-        return [v for v in self._get_all_views() if not v.issystemobject()]
+        return self._get_all_views().filter(lambda item: not item.issystemobject())
     def _get_sysviews(self):
-        return [v for v in self._get_all_views() if v.issystemobject()]
+        return self._get_all_views().filter(lambda item: item.issystemobject())
     def _get_constraint_indices(self):
         if self.__constraint_indices is None:
             self.__fail_if_closed()
             self._ic.execute("""select RDB$INDEX_NAME, RDB$CONSTRAINT_NAME
 from RDB$RELATION_CONSTRAINTS where RDB$INDEX_NAME is not null""")
-            self.__constraint_indices = dict([(key.strip(),value.strip()) for key, value in self._ic])
+            self.__constraint_indices = dict((key.strip(),value.strip()) for key, value in self._ic)
         return self.__constraint_indices
     def _get_all_indices(self):
         if self.__indices is None:
@@ -663,12 +660,13 @@ from RDB$RELATION_CONSTRAINTS where RDB$INDEX_NAME is not null""")
 RDB$INDEX_ID, RDB$UNIQUE_FLAG, RDB$DESCRIPTION, RDB$SEGMENT_COUNT,
 RDB$INDEX_INACTIVE, RDB$INDEX_TYPE, RDB$FOREIGN_KEY, RDB$SYSTEM_FLAG,
 RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
-            self.__indices = [Index(self,row) for row in self._ic.itermap()]
+            self.__indices = ObjectList((Index(self,row) for row in self._ic.itermap()), Index, 'item.name')
+            self.__indices.freeze()
         return self.__indices
     def _get_indices(self):
-        return [i for i in self._get_all_indices() if not i.issystemobject()]
+        return self._get_all_indices().filter(lambda item: not item.issystemobject())
     def _get_sysindices(self):
-        return [i for i in self._get_all_indices() if i.issystemobject()]
+        return self._get_all_indices().filter(lambda item: item.issystemobject())
     def _get_all_generators(self):
         if self.__generators is None:
             self.__fail_if_closed()
@@ -678,12 +676,13 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
                 cols.extend(['RDB$SECURITY_CLASS','RDB$OWNER_NAME','RDB$INITIAL_VALUE',
                              'RDB$GENERATOR_INCREMENT'])
             self._ic.execute("select %s from rdb$generators" % ','.join(cols))
-            self.__generators = [Sequence(self,row) for row in self._ic.itermap()]
+            self.__generators = ObjectList((Sequence(self,row) for row in self._ic.itermap()), Sequence, 'item.name')
+            self.__generators.freeze()
         return self.__generators
     def _get_generators(self):
-        return [g for g in self._get_all_generators() if not g.issystemobject()]
+        return self._get_all_generators().filter(lambda item: not item.issystemobject())
     def _get_sysgenerators(self):
-        return [g for g in self._get_all_generators() if g.issystemobject()]
+        return self._get_all_generators().filter(lambda item: item.issystemobject())
     def _get_all_triggers(self):
         if self.__triggers is None:
             self.__fail_if_closed()
@@ -693,12 +692,13 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
             if self._con.ods >= fdb.ODS_FB_30:
                 cols.extend(['RDB$VALID_BLR', 'RDB$ENGINE_NAME', 'RDB$ENTRYPOINT'])
             self._ic.execute("select %s from RDB$TRIGGERS" % ','.join(cols))
-            self.__triggers = [Trigger(self,row) for row in self._ic.itermap()]
+            self.__triggers = ObjectList((Trigger(self,row) for row in self._ic.itermap()), Trigger, 'item.name')
+            self.__triggers.freeze()
         return self.__triggers
     def _get_triggers(self):
-        return [g for g in self._get_all_triggers() if not g.issystemobject()]
+        return self._get_all_triggers().filter(lambda item: not item.issystemobject())
     def _get_systriggers(self):
-        return [g for g in self._get_all_triggers() if g.issystemobject()]
+        return self._get_all_triggers().filter(lambda item: item.issystemobject())
     def _get_all_procedures(self):
         if self.__procedures is None:
             self.__fail_if_closed()
@@ -711,12 +711,13 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
                 cols.extend(['RDB$ENGINE_NAME', 'RDB$ENTRYPOINT',
                              'RDB$PACKAGE_NAME', 'RDB$PRIVATE_FLAG'])
             self._ic.execute("select %s from rdb$procedures" % ','.join(cols))
-            self.__procedures = [Procedure(self,row) for row in self._ic.itermap()]
+            self.__procedures = ObjectList((Procedure(self,row) for row in self._ic.itermap()), Procedure, 'item.name')
+            self.__procedures.freeze()
         return self.__procedures
     def _get_procedures(self):
-        return [p for p in self._get_all_procedures() if not p.issystemobject()]
+        return self._get_all_procedures().filter(lambda item: not item.issystemobject())
     def _get_sysprocedures(self):
-        return [p for p in self._get_all_procedures() if p.issystemobject()]
+        return self._get_all_procedures().filter(lambda item: item.issystemobject())
     def _get_constraints(self):
         if self.__constraints is None:
             self.__fail_if_closed()
@@ -731,11 +732,10 @@ r.RDB$MATCH_OPTION,r.RDB$UPDATE_RULE,r.RDB$DELETE_RULE,
 k.RDB$TRIGGER_NAME from rdb$relation_constraints C
 left outer join rdb$ref_constraints R on C.rdb$constraint_name = R.rdb$constraint_name
 left outer join rdb$check_constraints K on (C.rdb$constraint_name = K.rdb$constraint_name) and (c.RDB$CONSTRAINT_TYPE in ('CHECK','NOT NULL'))""")
-            self.__constraints = [Constraint(self,row) for row in self._ic.itermap()]
+            self.__constraints = ObjectList((Constraint(self,row) for row in self._ic.itermap()), Constraint, 'item.name')
             # Check constrains need special care because they're doubled
             # (select above returns two records for them with different trigger names)
-            checks = [c for c in self.__constraints if c.ischeck()]
-            self.__constraints = [c for c in self.__constraints if not c.ischeck()]
+            checks = self.__constraints.extract(lambda item: item.ischeck())
             dchecks = {}
             for check in checks:
                 dchecks.setdefault(check.name,list()).append(check)
@@ -744,18 +744,20 @@ left outer join rdb$check_constraints K on (C.rdb$constraint_name = K.rdb$constr
                 check = checklist[0]
                 check._attributes['RDB$TRIGGER_NAME'] = names
                 self.__constraints.append(check)
+            self.__constraints.freeze()
         return self.__constraints
     def _get_roles(self):
         if self.__roles is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$roles")
-            self.__roles = [Role(self,row) for row in self._ic.itermap()]
+            self.__roles = ObjectList((Role(self,row) for row in self._ic.itermap()), Role, 'item.name')
+            self.__roles.freeze()
         return self.__roles
     def _get_dependencies(self):
         if self.__dependencies is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$dependencies")
-            self.__dependencies = [Dependency(self,row) for row in self._ic.itermap()]
+            self.__dependencies = ObjectList((Dependency(self,row) for row in self._ic.itermap()), Dependency)
         return self.__dependencies
     def _get_all_functions(self):
         if self.__functions is None:
@@ -769,12 +771,13 @@ left outer join rdb$check_constraints K on (C.rdb$constraint_name = K.rdb$constr
                              'RDB$SECURITY_CLASS','RDB$OWNER_NAME','RDB$LEGACY_FLAG',
                              'RDB$DETERMINISTIC_FLAG'])
             self._ic.execute("select %s from rdb$functions" % ','.join(cols))
-            self.__functions = [Function(self,row) for row in self._ic.itermap()]
+            self.__functions = ObjectList((Function(self,row) for row in self._ic.itermap()), Function, 'item.name')
+            self.__functions.freeze()
         return self.__functions
     def _get_functions(self):
-        return [p for p in self._get_all_functions() if not p.issystemobject()]
+        return self._get_all_functions().filter(lambda item: not item.issystemobject())
     def _get_sysfunctions(self):
-        return [p for p in self._get_all_functions() if p.issystemobject()]
+        return self._get_all_functions().filter(lambda item: item.issystemobject())
     def _get_files(self):
         if self.__files is None:
             self.__fail_if_closed()
@@ -782,7 +785,8 @@ left outer join rdb$check_constraints K on (C.rdb$constraint_name = K.rdb$constr
 RDB$FILE_START, RDB$FILE_LENGTH from RDB$FILES
 where RDB$SHADOW_NUMBER = 0
 order by RDB$FILE_SEQUENCE""")
-            self.__files = [DatabaseFile(self,row) for row in self._ic.itermap()]
+            self.__files = ObjectList((DatabaseFile(self,row) for row in self._ic.itermap()), DatabaseFile, 'item.name')
+            self.__files.freeze()
         return self.__files
     def _get_shadows(self):
         if self.__shadows is None:
@@ -791,7 +795,8 @@ order by RDB$FILE_SEQUENCE""")
 from RDB$FILES
 where RDB$SHADOW_NUMBER > 0 AND RDB$FILE_SEQUENCE = 0
 order by RDB$SHADOW_NUMBER""")
-            self.__shadows = [Shadow(self,row) for row in self._ic.itermap()]
+            self.__shadows = ObjectList((Shadow(self,row) for row in self._ic.itermap()), Shadow, 'item.name')
+            self.__shadows.freeze()
         return self.__shadows
     def _get_privileges(self):
         if self.__privileges is None:
@@ -799,7 +804,7 @@ order by RDB$SHADOW_NUMBER""")
             self._ic.execute("""select RDB$USER, RDB$GRANTOR, RDB$PRIVILEGE,
 RDB$GRANT_OPTION, RDB$RELATION_NAME, RDB$FIELD_NAME, RDB$USER_TYPE, RDB$OBJECT_TYPE
 FROM RDB$USER_PRIVILEGES""")
-            self.__privileges = [Privilege(self,row) for row in self._ic.itermap()]
+            self.__privileges = ObjectList((Privilege(self,row) for row in self._ic.itermap()), Privilege)
         return self.__privileges
     def _get_backup_history(self):
         if self.__backup_history is None:
@@ -807,7 +812,8 @@ FROM RDB$USER_PRIVILEGES""")
             self._ic.execute("""SELECT RDB$BACKUP_ID, RDB$TIMESTAMP,
 RDB$BACKUP_LEVEL, RDB$GUID, RDB$SCN, RDB$FILE_NAME
 FROM RDB$BACKUP_HISTORY""")
-            self.__backup_history = [BackupHistory(self,row) for row in self._ic.itermap()]
+            self.__backup_history = ObjectList((BackupHistory(self,row) for row in self._ic.itermap()), BackupHistory, 'item.name')
+            self.__backup_history.freeze()
         return self.__backup_history
     def _get_filters(self):
         if self.__filters is None:
@@ -815,13 +821,14 @@ FROM RDB$BACKUP_HISTORY""")
             self._ic.execute("""SELECT RDB$FUNCTION_NAME, RDB$DESCRIPTION,
 RDB$MODULE_NAME, RDB$ENTRYPOINT, RDB$INPUT_SUB_TYPE, RDB$OUTPUT_SUB_TYPE, RDB$SYSTEM_FLAG
 FROM RDB$FILTERS""")
-            self.__filters = [Filter(self,row) for row in self._ic.itermap()]
+            self.__filters = ObjectList((Filter(self,row) for row in self._ic.itermap()), Filter, 'item.name')
+            self.__filters.freeze()
         return self.__filters
     def _get_users(self):
         if self.__users is None:
             self.__fail_if_closed()
             self._ic.execute("select distinct(RDB$USER) FROM RDB$USER_PRIVILEGES")
-            self.__users = [fdb.services.User(row[0].strip()) for row in self._ic]
+            self.__users = ObjectList((fdb.services.User(row[0].strip()) for row in self._ic), fdb.services.User, 'item.name')
         return self.__users
     def _get_packages(self):
         if self.__packages is None:
@@ -831,86 +838,85 @@ FROM RDB$FILTERS""")
     RDB$PACKAGE_BODY_SOURCE, RDB$VALID_BODY_FLAG, RDB$SECURITY_CLASS, RDB$OWNER_NAME,
     RDB$SYSTEM_FLAG, RDB$DESCRIPTION
                 FROM RDB$PACKAGES""")
-                self.__packages = [Package(self,row) for row in self._ic.itermap()]
+                self.__packages = ObjectList((Package(self,row) for row in self._ic.itermap()), Package, 'item.name')
             else:
-                self.__packages = []
+                self.__packages = ObjectList(_cls=Package, key_expr= 'item.name')
+            self.__packages.freeze()
         return self.__packages
-    def _get_linger(self):
-        return self.__linger
+    #def _get_linger(self):
+        #return self.__linger
 
     #--- Properties
 
     #: True if link to :class:`~fdb.Connection` is closed.
-    closed = property(__get_closed)
-    description = LateBindingProperty(_get_description,None,None,
-        "Database description or None if it doesn't have a description.")
-    owner_name = LateBindingProperty(_get_owner_name,None,None,"Database owner name.")
-    default_character_set = LateBindingProperty(_get_default_character_set,None,None,
-        "Default :class:`CharacterSet` for database")
-    security_class = LateBindingProperty(_get_security_class,None,None,
+    closed = property(lambda self: self._con is None)
+    description = property(lambda self: self.__description,None,None, "Database description or None if it doesn't have a description.")
+    owner_name = property(lambda self: self.__owner,None,None,"Database owner name.")
+    default_character_set = LateBindingProperty(_get_default_character_set,None,None, "Default :class:`CharacterSet` for database")
+    security_class = property(lambda self: self.__security_class,None,None,
         "Can refer to the security class applied as databasewide access control limits.")
     collations = LateBindingProperty(_get_collations,None,None,
-        "List of all collations in database.\nItems are :class:`Collation` objects.")
+        ":class:`ObjectList` of all collations in database.\nItems are :class:`Collation` objects.")
     character_sets = LateBindingProperty(_get_character_sets,None,None,
-        "List of all character sets in database.\nItems are :class:`CharacterSet` objects.")
+        ":class:`ObjectList` of all character sets in database.\nItems are :class:`CharacterSet` objects.")
     exceptions = LateBindingProperty(_get_exceptions,None,None,
-        "List of all exceptions in database.\nItems are :class:`DatabaseException` objects.")
+        ":class:`ObjectList` of all exceptions in database.\nItems are :class:`DatabaseException` objects.")
     generators = LateBindingProperty(_get_generators,None,None,
-        "List of all user generators in database.\nItems are :class:`Sequence` objects.")
+        ":class:`ObjectList` of all user generators in database.\nItems are :class:`Sequence` objects.")
     sysgenerators = LateBindingProperty(_get_sysgenerators,None,None,
-        "List of all system generators in database.\nItems are :class:`Sequence` objects.")
+        ":class:`ObjectList` of all system generators in database.\nItems are :class:`Sequence` objects.")
     sequences = LateBindingProperty(_get_generators,None,None,
-        "List of all user generators in database.\nItems are :class:`Sequence` objects.")
+        ":class:`ObjectList` of all user generators in database.\nItems are :class:`Sequence` objects.")
     syssequences = LateBindingProperty(_get_sysgenerators,None,None,
-        "List of all system generators in database.\nItems are :class:`Sequence` objects.")
+        ":class:`ObjectList` of all system generators in database.\nItems are :class:`Sequence` objects.")
     domains = LateBindingProperty(_get_domains,None,None,
-        "List of all user domains in database.\nItems are :class:`Domain` objects.")
+        ":class:`ObjectList` of all user domains in database.\nItems are :class:`Domain` objects.")
     sysdomains = LateBindingProperty(_get_sysdomains,None,None,
-        "List of all system domains in database.\nItems are :class:`Domain` objects.")
+        ":class:`ObjectList` of all system domains in database.\nItems are :class:`Domain` objects.")
     indices = LateBindingProperty(_get_indices,None,None,
-        "List of all user indices in database.\nItems are :class:`Index` objects.")
+        ":class:`ObjectList` of all user indices in database.\nItems are :class:`Index` objects.")
     sysindices = LateBindingProperty(_get_sysindices,None,None,
-        "List of all system indices in database.\nItems are :class:`Index` objects.")
+        ":class:`ObjectList` of all system indices in database.\nItems are :class:`Index` objects.")
     tables = LateBindingProperty(_get_tables,None,None,
-        "List of all user tables in database.\nItems are :class:`Table` objects.")
+        ":class:`ObjectList` of all user tables in database.\nItems are :class:`Table` objects.")
     systables = LateBindingProperty(_get_systables,None,None,
-        "List of all system tables in database.\nItems are :class:`Table` objects.")
+        ":class:`ObjectList` of all system tables in database.\nItems are :class:`Table` objects.")
     views = LateBindingProperty(_get_views,None,None,
-        "List of all user views in database.\nItems are :class:`View` objects.")
+        ":class:`ObjectList` of all user views in database.\nItems are :class:`View` objects.")
     sysviews = LateBindingProperty(_get_sysviews,None,None,
-        "List of all system views in database.\nItems are :class:`View` objects.")
+        ":class:`ObjectList` of all system views in database.\nItems are :class:`View` objects.")
     triggers = LateBindingProperty(_get_triggers,None,None,
-        "List of all user triggers in database.\nItems are :class:`Trigger` objects.")
+        ":class:`ObjectList` of all user triggers in database.\nItems are :class:`Trigger` objects.")
     systriggers = LateBindingProperty(_get_systriggers,None,None,
-        "List of all system triggers in database.\nItems are :class:`Trigger` objects.")
+        ":class:`ObjectList` of all system triggers in database.\nItems are :class:`Trigger` objects.")
     procedures = LateBindingProperty(_get_procedures,None,None,
-        "List of all user procedures in database.\nItems are :class:`Procedure` objects.")
+        ":class:`ObjectList` of all user procedures in database.\nItems are :class:`Procedure` objects.")
     sysprocedures = LateBindingProperty(_get_sysprocedures,None,None,
-        "List of all system procedures in database.\nItems are :class:`Procedure` objects.")
+        ":class:`ObjectList` of all system procedures in database.\nItems are :class:`Procedure` objects.")
     constraints = LateBindingProperty(_get_constraints,None,None,
-        "List of all constraints in database.\nItems are :class:`Constraint` objects.")
+        ":class:`ObjectList` of all constraints in database.\nItems are :class:`Constraint` objects.")
     roles = LateBindingProperty(_get_roles,None,None,
-        "List of all roles in database.\nItems are :class:`Role` objects.")
+        ":class:`ObjectList` of all roles in database.\nItems are :class:`Role` objects.")
     dependencies = LateBindingProperty(_get_dependencies,None,None,
-        "List of all dependencies in database.\nItems are :class:`Dependency` objects.")
+        ":class:`ObjectList` of all dependencies in database.\nItems are :class:`Dependency` objects.")
     functions = LateBindingProperty(_get_functions,None,None,
-        "List of all user functions defined in database.\nItems are :class:`Function` objects.")
+        ":class:`ObjectList` of all user functions defined in database.\nItems are :class:`Function` objects.")
     sysfunctions = LateBindingProperty(_get_sysfunctions,None,None,
-        "List of all system functions defined in database.\nItems are :class:`Function` objects.")
+        ":class:`ObjectList` of all system functions defined in database.\nItems are :class:`Function` objects.")
     files = LateBindingProperty(_get_files,None,None,
-        "List of all extension files defined for database.\nItems are :class:`DatabaseFile` objects.")
+        ":class:`ObjectList` of all extension files defined for database.\nItems are :class:`DatabaseFile` objects.")
     shadows = LateBindingProperty(_get_shadows,None,None,
-        "List of all shadows defined for database.\nItems are :class:`Shadow` objects.")
+        ":class:`ObjectList` of all shadows defined for database.\nItems are :class:`Shadow` objects.")
     privileges = LateBindingProperty(_get_privileges,None,None,
-        "List of all privileges defined for database.\nItems are :class:`Privilege` objects.")
+        ":class:`ObjectList` of all privileges defined for database.\nItems are :class:`Privilege` objects.")
     backup_history = LateBindingProperty(_get_backup_history,None,None,
-        "List of all nbackup hisotry records.\nItems are :class:`BackupHistory` objects.")
+        ":class:`ObjectList` of all nbackup hisotry records.\nItems are :class:`BackupHistory` objects.")
     filters = LateBindingProperty(_get_filters,None,None,
-        "List of all user-defined BLOB filters.\nItems are :class:`Filter` objects.")
+        ":class:`ObjectList` of all user-defined BLOB filters.\nItems are :class:`Filter` objects.")
     # FB 3
     packages = LateBindingProperty(_get_packages,None,None,
-        "List of all packages defined for database.\nItems are :class:`Package` objects.")
-    linger = LateBindingProperty(_get_linger,None,None,"Database linger value.")
+        ":class:`ObjectList` of all packages defined for database.\nItems are :class:`Package` objects.")
+    linger = property(lambda self: self.__linger,None,None,"Database linger value.")
 
     #--- Public
 
@@ -1238,7 +1244,7 @@ database objects.
 
         :returns: :class:`Collation` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_collations(),name)
+        return self.collations.get(name)
     def get_character_set(self,name):
         """Get :class:`CharacterSet` by name.
 
@@ -1246,7 +1252,7 @@ database objects.
 
         :returns: :class:`CharacterSet` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_character_sets(),name)
+        return self.character_sets.get(name)
     def get_exception(self,name):
         """Get :class:`DatabaseException` by name.
 
@@ -1254,7 +1260,7 @@ database objects.
 
         :returns: :class:`DatabaseException` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_exceptions(),name)
+        return self.exceptions.get(name)
     def get_generator(self,name):
         """Get :class:`Sequence` by name.
 
@@ -1262,7 +1268,7 @@ database objects.
 
         :returns: :class:`Sequence` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_generators(),name)
+        return self._get_all_generators().get(name)
     get_sequence = get_generator
     def get_index(self,name):
         """Get :class:`Index` by name.
@@ -1271,7 +1277,7 @@ database objects.
 
         :returns: :class:`Index` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_indices(),name)
+        return self._get_all_indices().get(name)
     def get_domain(self,name):
         """Get :class:`Domain` by name.
 
@@ -1279,7 +1285,7 @@ database objects.
 
         :returns: :class:`Domain` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_domains(),name)
+        return self._get_all_domains().get(name)
     def get_table(self,name):
         """Get :class:`Table` by name.
 
@@ -1287,7 +1293,7 @@ database objects.
 
         :returns: :class:`Table` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_tables(),name)
+        return self._get_all_tables().get(name)
     def get_view(self,name):
         """Get :class:`View` by name.
 
@@ -1295,7 +1301,7 @@ database objects.
 
         :returns: :class:`View` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_views(),name)
+        return self._get_all_views().get(name)
     def get_trigger(self,name):
         """Get :class:`Trigger` by name.
 
@@ -1303,7 +1309,7 @@ database objects.
 
         :returns: :class:`Trigger` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_triggers(),name)
+        return self._get_all_triggers().get(name)
     def get_procedure(self,name):
         """Get :class:`Procedure` by name.
 
@@ -1311,7 +1317,7 @@ database objects.
 
         :returns: :class:`Procedure` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_procedures(),name)
+        return self._get_all_procedures().get(name)
     def get_constraint(self,name):
         """Get :class:`Constraint` by name.
 
@@ -1319,7 +1325,7 @@ database objects.
 
         :returns: :class:`Constraint` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_constraints(),name)
+        return self.constraints.get(name)
     def get_role(self,name):
         """Get :class:`Role` by name.
 
@@ -1327,7 +1333,7 @@ database objects.
 
         :returns: :class:`Role` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_roles(),name)
+        return self.roles.get(name)
     def get_function(self,name):
         """Get :class:`Function` by name.
 
@@ -1335,7 +1341,7 @@ database objects.
 
         :returns: :class:`Function` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_all_functions(),name)
+        return self._get_all_functions().get(name)
     def get_collation_by_id(self,charset_id,collation_id):
         """Get :class:`Collation` by ID.
 
@@ -1344,7 +1350,7 @@ database objects.
 
         :returns: :class:`Collation` with specified ID or `None`.
         """
-        for collation in self._get_collations():
+        for collation in self.collations:
             if (collation._attributes['RDB$CHARACTER_SET_ID'] == charset_id) and (collation.id == collation_id):
                 return collation
         else:
@@ -1356,12 +1362,12 @@ database objects.
 
         :returns: :class:`CharacterSet` with specified ID or `None`.
         """
-        for charset in self._get_character_sets():
+        for charset in self.character_sets:
             if charset.id == id:
                 return charset
         else:
             return None
-    def get_privileges_of(self,user, user_type=None):
+    def get_privileges_of(self, user, user_type=None):
         """Get list of all privileges granted to user/database object.
 
         :param user: User name or instance of class that represents possible user.
@@ -1394,7 +1400,7 @@ database objects.
 
         :returns: :class:`Package` with specified name or `None`.
         """
-        return self.__object_by_name(self._get_packages(),name)
+        return self.packages.get(name)
 
 class BaseSchemaItem(object):
     """Base class for all database schema objects."""
@@ -1636,9 +1642,7 @@ class CharacterSet(BaseSchemaItem):
     def _get_default_collate(self):
         return self.get_collation(self._attributes['RDB$DEFAULT_COLLATE_NAME'])
     def _get_collations(self):
-        r = [c for c in self.schema.collations
-             if c._attributes['RDB$CHARACTER_SET_ID'] == self.id]
-        return r
+        return self.schema.collations.filter(lambda item: item._attributes['RDB$CHARACTER_SET_ID'] == self.id)
     def _get_security_class(self):
         return self._attributes.get('RDB$SECURITY_CLASS')
     def _get_owner_name(self):
@@ -1647,15 +1651,11 @@ class CharacterSet(BaseSchemaItem):
     #--- properties
 
     id = LateBindingProperty(_get_id,None,None,"Character set ID.")
-    bytes_per_character = LateBindingProperty(_get_bytes_per_character,None,None,
-                            "Size of characters in bytes.")
-    default_collate = LateBindingProperty(_get_default_collate,None,None,
-                            "Collate object of default collate.")
-    collations = LateBindingProperty(_get_collations,None,None,
-                            "List of Collations associated with character set.")
+    bytes_per_character = LateBindingProperty(_get_bytes_per_character,None,None, "Size of characters in bytes.")
+    default_collate = LateBindingProperty(_get_default_collate,None,None, "Collate object of default collate.")
+    collations = LateBindingProperty(_get_collations,None,None, ":class:`ObjectList` of Collations associated with character set.")
     # FB 3.0
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                         "Security class name or None.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
 
     #--- Public
@@ -1670,10 +1670,7 @@ class CharacterSet(BaseSchemaItem):
         """Return :class:`Collation` object with specified name that belongs to
 this character set.
         """
-        for col in self.collations:
-            if col.name == name:
-                return col
-        return None
+        return self.collations.get(name)
     def get_collation_by_id(self,id):
         """Return :class:`Collation` object with specified id that belongs to
 this character set.
@@ -1738,12 +1735,10 @@ class DatabaseException(BaseSchemaItem):
 
     #--- Properties
 
-    id = LateBindingProperty(_get_id,None,None,
-                             "System-assigned unique exception number.")
+    id = LateBindingProperty(_get_id,None,None, "System-assigned unique exception number.")
     message = LateBindingProperty(_get_message,None,None,"Custom message text.")
     # FB 3.0
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                         "Security class name or None.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
 
     #--- Public
@@ -1818,8 +1813,7 @@ class Sequence(BaseSchemaItem):
     id = LateBindingProperty(_get_id,None,None,"Internal ID number of the sequence.")
     value = LateBindingProperty(_get_value,None,None,"Current sequence value.")
     # FB 3.0
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                         "Security class name or None.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
     inital_value = LateBindingProperty(_get_inital_value,None,None,"Initial sequence value.")
     increment = LateBindingProperty(_get_increment,None,None,"Sequence increment.")
@@ -1927,10 +1921,9 @@ class TableColumn(BaseSchemaItem):
     def _get_datatype(self):
         return self.domain.datatype
     def _get_privileges(self):
-        return [p for p in self.schema.privileges
-                if (p.subject_name == self.table.name and
-                    p.field_name == self.name and
-                    p.subject_type in self.table._type_code)]
+        return self.schema.privileges.filter(lambda p: (p.subject_name == self.table.name and
+                                                        p.field_name == self.name and
+                                                        p.subject_type in self.table._type_code))
     def _get_generator(self):
         return self.schema.get_generator(self._attributes.get('RDB$GENERATOR_NAME'))
     def _get_identity_type(self):
@@ -1939,22 +1932,14 @@ class TableColumn(BaseSchemaItem):
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,"Internam number ID for the column.")
-    table = LateBindingProperty(_get_table,None,None,
-                                "The Table object this column belongs to.")
-    domain = LateBindingProperty(_get_domain,None,None,
-                                "Domain object this column is based on.")
-    position = LateBindingProperty(_get_position,None,None,
-                                "Column's sequence number in row.")
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                "Security class name or None.")
-    default = LateBindingProperty(_get_default,None,None,
-                                "Default value for column or None.")
-    collation = LateBindingProperty(_get_collation,None,None,
-                                "Collation object or None.")
-    datatype = LateBindingProperty(_get_datatype,None,None,
-                                "Comlete SQL datatype definition.")
-    privileges = LateBindingProperty(_get_privileges,None,None,
-        "List of :class:`Privilege` objects granted to this object.")
+    table = LateBindingProperty(_get_table,None,None, "The Table object this column belongs to.")
+    domain = LateBindingProperty(_get_domain,None,None, "Domain object this column is based on.")
+    position = LateBindingProperty(_get_position,None,None, "Column's sequence number in row.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
+    default = LateBindingProperty(_get_default,None,None, "Default value for column or None.")
+    collation = LateBindingProperty(_get_collation,None,None, "Collation object or None.")
+    datatype = LateBindingProperty(_get_datatype,None,None, "Comlete SQL datatype definition.")
+    privileges = LateBindingProperty(_get_privileges,None,None, ":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
     # FB 3.0
     generator = LateBindingProperty(_get_generator,None,None,"Internal flags.")
     identity_type = LateBindingProperty(_get_identity_type,None,None,"Internal flags.")
@@ -2061,7 +2046,7 @@ class Index(BaseSchemaItem):
     def _get_statistics(self):
         return self._attributes['RDB$STATISTICS']
     def _get_segments(self):
-        return [self.table.get_column(colname) for colname in self.segment_names]
+        return ObjectList(self.table.get_column(colname) for colname in self.segment_names)
     def _get_segment_names(self):
         if self.__segment_names is None:
             if self._attributes['RDB$SEGMENT_COUNT'] > 0:
@@ -2092,26 +2077,16 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
 
     #--- Properties
 
-    table = LateBindingProperty(_get_table,None,None,
-                "The :class:`Table` instance the index applies to.")
-    id = LateBindingProperty(_get_id,None,None,
-                "Internal number ID of the index.")
-    index_type = LateBindingProperty(_get_index_type,None,None,
-                "ASCENDING or DESCENDING.")
-    partner_index = LateBindingProperty(_get_partner_index,None,None,
-                "Associated unique/primary key :class:`Index` instance, or None.")
-    expression = LateBindingProperty(_get_expression,None,None,
-                "Source of an expression or None.")
-    statistics = LateBindingProperty(_get_statistics,None,None,
-                "Latest selectivity of the index.")
-    segment_names = LateBindingProperty(_get_segment_names,None,None,
-                "List of index segment names.")
-    segment_statistics = LateBindingProperty(_get_segment_statistics,None,None,
-                "List of index segment statistics (for ODS 11.1 and higher).")
-    segments = LateBindingProperty(_get_segments,None,None,
-                "List of index segments as :class:`TableColumn` instances.")
-    constraint = LateBindingProperty(_get_constraint,None,None,
-                ":class:`Constraint` instance that uses this index or None.")
+    table = LateBindingProperty(_get_table,None,None, "The :class:`Table` instance the index applies to.")
+    id = LateBindingProperty(_get_id,None,None, "Internal number ID of the index.")
+    index_type = LateBindingProperty(_get_index_type,None,None, "ASCENDING or DESCENDING.")
+    partner_index = LateBindingProperty(_get_partner_index,None,None, "Associated unique/primary key :class:`Index` instance, or None.")
+    expression = LateBindingProperty(_get_expression,None,None, "Source of an expression or None.")
+    statistics = LateBindingProperty(_get_statistics,None,None, "Latest selectivity of the index.")
+    segment_names = LateBindingProperty(_get_segment_names,None,None, "List of index segment names.")
+    segment_statistics = LateBindingProperty(_get_segment_statistics,None,None, "List of index segment statistics (for ODS 11.1 and higher).")
+    segments = LateBindingProperty(_get_segments,None,None, ":class:`ObjectList` of index segments as :class:`TableColumn` instances.")
+    constraint = LateBindingProperty(_get_constraint,None,None, ":class:`Constraint` instance that uses this index or None.")
 
     #--- Public
 
@@ -2194,10 +2169,9 @@ class ViewColumn(BaseSchemaItem):
     def _get_datatype(self):
         return self.domain.datatype
     def _get_privileges(self):
-        return [p for p in self.schema.privileges
-                if (p.subject_name == self.view.name and
-                    p.field_name == self.name and
-                    p.subject_type == 0)] # Views are logged as Tables in RDB$USER_PRIVILEGES
+        return self.schema.privileges.filter(lambda p: (p.subject_name == self.view.name and
+                                             p.field_name == self.name and
+                                             p.subject_type == 0)) # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
 
@@ -2205,20 +2179,13 @@ class ViewColumn(BaseSchemaItem):
         "The source column from the base relation. Result could be either "
         ":class:`TableColumn`, :class:`ViewColumn` or :class:`ProcedureParameter` "
         "instance or None.")
-    view = LateBindingProperty(_get_view,None,None,
-                                "View object this column belongs to.")
-    domain = LateBindingProperty(_get_domain,None,None,
-                                "Domain object this column is based on.")
-    position = LateBindingProperty(_get_position,None,None,
-                                "Column's sequence number in row.")
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                "Security class name or None.")
-    collation = LateBindingProperty(_get_collation,None,None,
-                                "Collation object or None.")
-    datatype = LateBindingProperty(_get_datatype,None,None,
-                                "Comlete SQL datatype definition.")
-    privileges = LateBindingProperty(_get_privileges,None,None,
-        "List of :class:`Privilege` objects granted to this object.")
+    view = LateBindingProperty(_get_view,None,None, "View object this column belongs to.")
+    domain = LateBindingProperty(_get_domain,None,None, "Domain object this column is based on.")
+    position = LateBindingProperty(_get_position,None,None, "Column's sequence number in row.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
+    collation = LateBindingProperty(_get_collation,None,None, "Collation object or None.")
+    datatype = LateBindingProperty(_get_datatype,None,None, "Comlete SQL datatype definition.")
+    privileges = LateBindingProperty(_get_privileges,None,None, ":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
 
     #--- Public
 
@@ -2395,42 +2362,25 @@ class Domain(BaseSchemaItem):
 
     #--- Properties
 
-    expression = LateBindingProperty(_get_expression,None,None,
-        "Expression that defines the COMPUTED BY column or None.")
-    validation = LateBindingProperty(_get_validation,None,None,
-        "CHECK constraint for the domain or None.")
-    default = LateBindingProperty(_get_default,None,None,
-        "Expression that defines the default value or None.")
-    length = LateBindingProperty(_get_length,None,None,
-        "Length of the column in bytes.")
-    scale = LateBindingProperty(_get_scale,None,None,
-        "Negative number representing the scale of NUMBER and DECIMAL column.")
-    field_type = LateBindingProperty(_get_field_type,None,None,
-        "Number code of the data type defined for the column.")
+    expression = LateBindingProperty(_get_expression,None,None, "Expression that defines the COMPUTED BY column or None.")
+    validation = LateBindingProperty(_get_validation,None,None, "CHECK constraint for the domain or None.")
+    default = LateBindingProperty(_get_default,None,None, "Expression that defines the default value or None.")
+    length = LateBindingProperty(_get_length,None,None, "Length of the column in bytes.")
+    scale = LateBindingProperty(_get_scale,None,None, "Negative number representing the scale of NUMBER and DECIMAL column.")
+    field_type = LateBindingProperty(_get_field_type,None,None, "Number code of the data type defined for the column.")
     sub_type = LateBindingProperty(_get_sub_type,None,None,"BLOB subtype.")
-    segment_length = LateBindingProperty(_get_segment_length,None,None,
-        "For BLOB columns, a suggested length for BLOB buffers.")
-    external_length = LateBindingProperty(_get_external_length,None,None,
-        "Length of field as it is in an external table. Always 0 for regular tables.")
-    external_scale = LateBindingProperty(_get_external_scale,None,None,
-        "Scale factor of an integer field as it is in an external table.")
-    external_type = LateBindingProperty(_get_external_type,None,None,
-        "Data type of the field as it is in an external table.")
-    dimensions = LateBindingProperty(_get_dimensions,None,None,
-        "List of dimension definition pairs if column is an array type. Always empty for non-array columns.")
-    character_length = LateBindingProperty(_get_character_length,None,None,
-        "Length of CHAR and VARCHAR column, in characters (not bytes).")
-    collation = LateBindingProperty(_get_collation,None,None,
-        "Collation object for a character column or None.")
-    character_set = LateBindingProperty(_get_character_set,None,None,
-        "CharacterSet object for a character or text BLOB column, or None.")
-    precision = LateBindingProperty(_get_precision,None,None,
-        "Indicates the number of digits of precision available to the data type of the column.")
-    datatype = LateBindingProperty(_get_datatype,None,None,
-        "Comlete SQL datatype definition.")
+    segment_length = LateBindingProperty(_get_segment_length,None,None, "For BLOB columns, a suggested length for BLOB buffers.")
+    external_length = LateBindingProperty(_get_external_length,None,None, "Length of field as it is in an external table. Always 0 for regular tables.")
+    external_scale = LateBindingProperty(_get_external_scale,None,None, "Scale factor of an integer field as it is in an external table.")
+    external_type = LateBindingProperty(_get_external_type,None,None, "Data type of the field as it is in an external table.")
+    dimensions = LateBindingProperty(_get_dimensions,None,None, "List of dimension definition pairs if column is an array type. Always empty for non-array columns.")
+    character_length = LateBindingProperty(_get_character_length,None,None, "Length of CHAR and VARCHAR column, in characters (not bytes).")
+    collation = LateBindingProperty(_get_collation,None,None, "Collation object for a character column or None.")
+    character_set = LateBindingProperty(_get_character_set,None,None, "CharacterSet object for a character or text BLOB column, or None.")
+    precision = LateBindingProperty(_get_precision,None,None, "Indicates the number of digits of precision available to the data type of the column.")
+    datatype = LateBindingProperty(_get_datatype,None,None, "Comlete SQL datatype definition.")
     # FB 3.0
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                         "Security class name or None.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,"Creator user name.")
 
     #--- Public
@@ -2584,23 +2534,15 @@ class Dependency(BaseSchemaItem):
 
     #--- Properties
 
-    dependent = LateBindingProperty(_get_dependent,None,None,
-                                    "Dependent database object.")
-    dependent_name = LateBindingProperty(_get_dependent_name,None,None,
-                                    "Dependent database object name.")
-    dependent_type = LateBindingProperty(_get_dependent_type,None,None,
-                                    "Dependent database object type.")
-    field_name = LateBindingProperty(_get_field_name,None,None,
-                                    "Name of one column in `depended on` object.")
-    depended_on = LateBindingProperty(_get_depended_on,None,None,
-                                    "Database object on which dependent depends.")
-    depended_on_name = LateBindingProperty(_get_depended_on_name,None,None,
-                                    "Name of db object on which dependent depends.")
-    depended_on_type = LateBindingProperty(_get_depended_on_type,None,None,
-                                    "Type of db object on which dependent depends.")
+    dependent = LateBindingProperty(_get_dependent,None,None, "Dependent database object.")
+    dependent_name = LateBindingProperty(_get_dependent_name,None,None, "Dependent database object name.")
+    dependent_type = LateBindingProperty(_get_dependent_type,None,None, "Dependent database object type.")
+    field_name = LateBindingProperty(_get_field_name,None,None, "Name of one column in `depended on` object.")
+    depended_on = LateBindingProperty(_get_depended_on,None,None, "Database object on which dependent depends.")
+    depended_on_name = LateBindingProperty(_get_depended_on_name,None,None, "Name of db object on which dependent depends.")
+    depended_on_type = LateBindingProperty(_get_depended_on_type,None,None, "Type of db object on which dependent depends.")
     # FB 3.0
-    package = LateBindingProperty(_get_package,None,None,
-        ":class:`Package` instance if dependent depends on object in package or None.")
+    package = LateBindingProperty(_get_package,None,None, ":class:`Package` instance if dependent depends on object in package or None.")
 
     #--- Public
 
@@ -2714,26 +2656,16 @@ class Constraint(BaseSchemaItem):
 
     #--- Properties
 
-    constraint_type = LateBindingProperty(_get_constraint_type,None,None,
-        "primary key/unique/foreign key/check/not null.")
-    table = LateBindingProperty(_get_table,None,None,
-        ":class:`Table` instance this constraint applies to.")
-    index = LateBindingProperty(_get_index,None,None,
-        ":class:`Index` instance that enforces the constraint.\n`None` if constraint is not primary key/unique or foreign key.")
-    trigger_names = LateBindingProperty(_get_trigger_names,None,None,
-        "For a CHECK constraint contains trigger names that enforce the constraint.")
-    triggers = LateBindingProperty(_get_triggers,None,None,
-        "For a CHECK constraint contains :class:`Trigger` instances that enforce the constraint.")
-    column_name = LateBindingProperty(_get_column_name,None,None,
-        "For a NOT NULL constraint, this is the name of the column to which the constraint applies.")
-    partner_constraint = LateBindingProperty(_get_partner_constraint,None,None,
-        "For a FOREIGN KEY constraint, this is the unique or primary key :class:`Constraint` referred.")
-    match_option = LateBindingProperty(_get_match_option,None,None,
-        "For a FOREIGN KEY constraint only. Current value is FULL in all cases.")
-    update_rule = LateBindingProperty(_get_update_rule,None,None,
-        "For a FOREIGN KEY constraint, this is the action applicable to when primary key is updated.")
-    delete_rule = LateBindingProperty(_get_delete_rule,None,None,
-        "For a FOREIGN KEY constraint, this is the action applicable to when primary key is deleted.")
+    constraint_type = LateBindingProperty(_get_constraint_type,None,None, "primary key/unique/foreign key/check/not null.")
+    table = LateBindingProperty(_get_table,None,None, ":class:`Table` instance this constraint applies to.")
+    index = LateBindingProperty(_get_index,None,None, ":class:`Index` instance that enforces the constraint.\n`None` if constraint is not primary key/unique or foreign key.")
+    trigger_names = LateBindingProperty(_get_trigger_names,None,None, "For a CHECK constraint contains trigger names that enforce the constraint.")
+    triggers = LateBindingProperty(_get_triggers,None,None, "For a CHECK constraint contains :class:`Trigger` instances that enforce the constraint.")
+    column_name = LateBindingProperty(_get_column_name,None,None, "For a NOT NULL constraint, this is the name of the column to which the constraint applies.")
+    partner_constraint = LateBindingProperty(_get_partner_constraint,None,None, "For a FOREIGN KEY constraint, this is the unique or primary key :class:`Constraint` referred.")
+    match_option = LateBindingProperty(_get_match_option,None,None, "For a FOREIGN KEY constraint only. Current value is FULL in all cases.")
+    update_rule = LateBindingProperty(_get_update_rule,None,None, "For a FOREIGN KEY constraint, this is the action applicable to when primary key is updated.")
+    delete_rule = LateBindingProperty(_get_delete_rule,None,None, "For a FOREIGN KEY constraint, this is the action applicable to when primary key is deleted.")
 
     #--- Public
 
@@ -2891,14 +2823,11 @@ class Table(BaseSchemaItem):
     def _get_flags(self):
         return self._attributes['RDB$FLAGS']
     def _get_indices(self):
-        return [i for i in self.schema._get_all_indices()
-                if i._attributes['RDB$RELATION_NAME'] == self.name]
+        return self.schema._get_all_indices().filter(lambda i: i._attributes['RDB$RELATION_NAME'] == self.name)
     def _get_triggers(self):
-        return [t for t in self.schema.triggers
-                if t._attributes['RDB$RELATION_NAME'] == self.name]
+        return self.schema.triggers.filter(lambda t: t._attributes['RDB$RELATION_NAME'] == self.name)
     def _get_constraints(self):
-        return [c for c in self.schema.constraints
-                if c._attributes['RDB$RELATION_NAME'] == self.name]
+        return self.schema.constraints.filter(lambda c: c._attributes['RDB$RELATION_NAME'] == self.name)
     def _get_columns(self):
         if self.__columns is None:
             cols = ['RDB$FIELD_NAME','RDB$RELATION_NAME','RDB$FIELD_SOURCE',
@@ -2907,9 +2836,10 @@ class Table(BaseSchemaItem):
                     'RDB$NULL_FLAG','RDB$DEFAULT_SOURCE','RDB$COLLATION_ID']
             if self.schema._con.ods >= fdb.ODS_FB_30:
                 cols.extend(['RDB$GENERATOR_NAME', 'RDB$IDENTITY_TYPE'])
-            self.__columns = [TableColumn(self.schema,self,row) for row in
+            self.__columns = ObjectList((TableColumn(self.schema,self,row) for row in
                 self.schema._select("""select %s from RDB$RELATION_FIELDS
-where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""" % ','.join(cols),(self.name,))]
+where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""" % ','.join(cols),(self.name,))), TableColumn, 'item.name')
+            self.__columns.freeze()
         return self.__columns
     def _get_primary_key(self):
         for const in self.constraints:
@@ -2917,43 +2847,29 @@ where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""" % ','.join(cols),(sel
                 return const
         return None
     def _get_foreign_keys(self):
-        return [c for c in self.constraints if c.isfkey()]
+        return self.constraints.filter(lambda c: c.isfkey())
     def _get_privileges(self):
-        return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and
-                    (p.subject_type in self._type_code))]
+        return self.schema.privileges.filter(lambda p: ((p.subject_name == self.name) and
+                                                        (p.subject_type in self._type_code)))
 
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,"Internam number ID for the table.")
-    dbkey_length = LateBindingProperty(_get_dbkey_length,None,None,
-            "Length of the RDB$DB_KEY column in bytes.")
-    format = LateBindingProperty(_get_format,None,None,
-            "Internal format ID for the table.")
+    dbkey_length = LateBindingProperty(_get_dbkey_length,None,None, "Length of the RDB$DB_KEY column in bytes.")
+    format = LateBindingProperty(_get_format,None,None, "Internal format ID for the table.")
     table_type = LateBindingProperty(_get_table_type,None,None,"Table type.")
-    security_class = LateBindingProperty(_get_security_class,None,None,
-            "Security class that define access limits to the table.")
-    external_file = LateBindingProperty(_get_external_file,None,None,
-            "Full path to the external data file, if any.")
-    owner_name = LateBindingProperty(_get_owner_name,None,None,
-            "User name of table's creator.")
-    default_class = LateBindingProperty(_get_default_class,None,None,
-            "Default security class.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class that define access limits to the table.")
+    external_file = LateBindingProperty(_get_external_file,None,None, "Full path to the external data file, if any.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None, "User name of table's creator.")
+    default_class = LateBindingProperty(_get_default_class,None,None, "Default security class.")
     flags = LateBindingProperty(_get_flags,None,None,"Internal flags.")
-    primary_key = LateBindingProperty(_get_primary_key,None,None,
-            "PRIMARY KEY :class:`Constraint` for this table or None.")
-    foreign_keys = LateBindingProperty(_get_foreign_keys,None,None,
-            "List of FOREIGN KEY :class:`Constraint` instances for this table.")
-    columns = LateBindingProperty(_get_columns,None,None,
-        "Returns list of columns defined for table.\nItems are :class:`TableColumn` objects.")
-    constraints = LateBindingProperty(_get_constraints,None,None,
-        "Returns list of constraints defined for table.\nItems are :class:`Constraint` objects.")
-    indices = LateBindingProperty(_get_indices,None,None,
-        "Returns list of indices defined for table.\nItems are :class:`Index` objects.")
-    triggers = LateBindingProperty(_get_triggers,None,None,
-        "Returns list of triggers defined for table.\nItems are :class:`Trigger` objects.")
-    privileges = LateBindingProperty(_get_privileges,None,None,
-        "List of :class:`Privilege` objects granted to this object.")
+    primary_key = LateBindingProperty(_get_primary_key,None,None, "PRIMARY KEY :class:`Constraint` for this table or None.")
+    foreign_keys = LateBindingProperty(_get_foreign_keys,None,None, ":class:`ObjectList` of FOREIGN KEY :class:`Constraint` instances for this table.")
+    columns = LateBindingProperty(_get_columns,None,None, "Returns :class:`ObjectList` of columns defined for table.\nItems are :class:`TableColumn` objects.")
+    constraints = LateBindingProperty(_get_constraints,None,None, "Returns :class:`ObjectList` of constraints defined for table.\nItems are :class:`Constraint` objects.")
+    indices = LateBindingProperty(_get_indices,None,None, "Returns :class:`ObjectList` of indices defined for table.\nItems are :class:`Index` objects.")
+    triggers = LateBindingProperty(_get_triggers,None,None, "Returns :class:`ObjectList` of triggers defined for table.\nItems are :class:`Trigger` objects.")
+    privileges = LateBindingProperty(_get_privileges,None,None, ":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
     # FB 3.0
 
     #--- Public
@@ -3061,11 +2977,10 @@ class View(BaseSchemaItem):
     def _get_flags(self):
         return self._attributes['RDB$FLAGS']
     def _get_triggers(self):
-        return [t for t in self.schema.triggers
-                if t._attributes['RDB$RELATION_NAME'] == self.name]
+        return self.schema.triggers.filter(lambda t: t._attributes['RDB$RELATION_NAME'] == self.name)
     def _get_columns(self):
         if self.__columns is None:
-            self.__columns = [ViewColumn(self.schema,self,row) for row in
+            self.__columns = ObjectList((ViewColumn(self.schema,self,row) for row in
                 self.schema._select("""select r.RDB$FIELD_NAME, r.RDB$RELATION_NAME,
 r.RDB$FIELD_SOURCE, r.RDB$FIELD_POSITION, r.RDB$UPDATE_FLAG, r.RDB$FIELD_ID,
 r.RDB$DESCRIPTION, r.RDB$SYSTEM_FLAG, r.RDB$SECURITY_CLASS, r.RDB$NULL_FLAG,
@@ -3074,32 +2989,27 @@ v.RDB$RELATION_NAME as BASE_RELATION
     from RDB$RELATION_FIELDS r
     left join RDB$VIEW_RELATIONS v on r.RDB$VIEW_CONTEXT = v.RDB$VIEW_CONTEXT and v.rdb$view_name = ?
     where r.RDB$RELATION_NAME = ?
-    order by RDB$FIELD_POSITION""",(self.name,self.name))]
+    order by RDB$FIELD_POSITION""",(self.name,self.name))), ViewColumn, 'item.name')
+            self.__columns.freeze()
         return self.__columns
     def _get_privileges(self):
-        return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and
-                    (p.subject_type == 0))] # Views are logged as Tables in RDB$USER_PRIVILEGES
+        return self.schema.privileges.filter(lambda p: ((p.subject_name == self.name) and
+                                                        (p.subject_type == 0))) # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
 
     id = LateBindingProperty(_get_id,None,None,"Internal number ID for the view.")
     sql= LateBindingProperty(_get_sql,None,None,"The query specification.")
-    dbkey_length = LateBindingProperty(_get_dbkey_length,None,None,
-        "Length of the RDB$DB_KEY column in bytes.")
+    dbkey_length = LateBindingProperty(_get_dbkey_length,None,None, "Length of the RDB$DB_KEY column in bytes.")
     format = LateBindingProperty(_get_format,None,None,"Internal format ID for the view.")
-    security_class = LateBindingProperty(_get_security_class,None,None,
-        "Security class that define access limits to the view.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class that define access limits to the view.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,"User name of view's creator.")
     default_class = LateBindingProperty(_get_default_class,None,None,"Default security class.")
     flags = LateBindingProperty(_get_flags,None,None,"Internal flags.")
 
-    columns = LateBindingProperty(_get_columns,None,None,
-        "Returns list of columns defined for view.\nItems are :class:`ViewColumn` objects.")
-    triggers = LateBindingProperty(_get_triggers,None,None,
-        "Returns list of triggers defined for view.\nItems are :class:`Trigger` objects.")
-    privileges = LateBindingProperty(_get_privileges,None,None,
-        "List of :class:`Privilege` objects granted to this object.")
+    columns = LateBindingProperty(_get_columns,None,None, "Returns :class:`ObjectList` of columns defined for view.\nItems are :class:`ViewColumn` objects.")
+    triggers = LateBindingProperty(_get_triggers,None,None, "Returns :class:`ObjectList` of triggers defined for view.\nItems are :class:`Trigger` objects.")
+    privileges = LateBindingProperty(_get_privileges,None,None, ":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
 
     #--- Public
 
@@ -3255,16 +3165,12 @@ class Trigger(BaseSchemaItem):
 
     #--- Properties
 
-    relation = LateBindingProperty(_get_relation,None,None,
-        ":class:`Table` or :class:`View` that the trigger is for, or None for database triggers")
-    sequence = LateBindingProperty(_get_sequence,None,None,
-        "Sequence (position) of trigger. Zero usually means no sequence defined.")
-    trigger_type = LateBindingProperty(_get_trigger_type,None,None,
-        "Numeric code for trigger type that define what event and when are covered by trigger.")
+    relation = LateBindingProperty(_get_relation,None,None, ":class:`Table` or :class:`View` that the trigger is for, or None for database triggers")
+    sequence = LateBindingProperty(_get_sequence,None,None, "Sequence (position) of trigger. Zero usually means no sequence defined.")
+    trigger_type = LateBindingProperty(_get_trigger_type,None,None, "Numeric code for trigger type that define what event and when are covered by trigger.")
     source = LateBindingProperty(_get_source,None,None,"PSQL source code.")
     flags = LateBindingProperty(_get_flags,None,None,"Internal flags.")
-    valid_blr = LateBindingProperty(_get_valid_blr,None,None,
-                                    "Trigger BLR invalidation flag. Coul be True/False or None.")
+    valid_blr = LateBindingProperty(_get_valid_blr,None,None, "Trigger BLR invalidation flag. Coul be True/False or None.")
     # FB 3
     engine_name = LateBindingProperty(_get_engine_name,None,None,"Engine name.")
     entrypoint = LateBindingProperty(_get_entrypoint,None,None,"Entrypoint.")
@@ -3397,18 +3303,15 @@ class ProcedureParameter(BaseSchemaItem):
     sequence = LateBindingProperty(_get_sequence,None,None,"Sequence (position) of parameter.")
     domain = LateBindingProperty(_get_domain,None,None,":class:`Domain` for this parameter.")
     datatype = LateBindingProperty(_get_datatype,None,None,"Comlete SQL datatype definition.")
-    type_from = LateBindingProperty(_get_type_from,None,None,
-                                "Numeric code. See :attr:`Schema.enum_param_type_from`.`")
+    type_from = LateBindingProperty(_get_type_from,None,None, "Numeric code. See :attr:`Schema.enum_param_type_from`.`")
     # FB 2.1
     default = LateBindingProperty(_get_default,None,None,"Default value.")
-    collation = LateBindingProperty(_get_collation,None,None,
-                                    ":class:`collation` for this parameter.")
+    collation = LateBindingProperty(_get_collation,None,None, ":class:`collation` for this parameter.")
     mechanism = LateBindingProperty(_get_mechanism,None,None,"Parameter mechanism code.")
     # FB 2.5
     column = LateBindingProperty(_get_column,None,None,":class:`TableColumn` for this parameter.")
     # FB 3.0
-    package = LateBindingProperty(_get_package,None,None,
-        "Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
+    package = LateBindingProperty(_get_package,None,None, "Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
 
     #--- Public
 
@@ -3604,24 +3507,26 @@ class Procedure(BaseSchemaItem):
     def _get_input_params(self):
         if self.__inputParams is None:
             if self.has_input():
-                self.__inputParams = [ProcedureParameter(self.schema,self,row) for row in
+                self.__inputParams = ObjectList((ProcedureParameter(self.schema,self,row) for row in
                     self.schema._select("""select %s from rdb$procedure_parameters
 where rdb$procedure_name = ?
 and rdb$parameter_type = 0
-order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
+order by rdb$parameter_number""" % self.__param_columns(),(self.name,))), ProcedureParameter, 'item.name')
             else:
-                self.__inputParams = []
+                self.__inputParams = ObjectList()
+            self.__inputParams.freeze()
         return self.__inputParams
     def _get_output_params(self):
         if self.__outputParams is None:
             if self.has_output():
-                self.__outputParams = [ProcedureParameter(self.schema,self,row) for row in
+                self.__outputParams = ObjectList((ProcedureParameter(self.schema,self,row) for row in
                     self.schema._select("""select %s from rdb$procedure_parameters
 where rdb$procedure_name = ?
 and rdb$parameter_type = 1
-order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
+order by rdb$parameter_number""" % self.__param_columns(),(self.name,))), ProcedureParameter, 'item.name')
             else:
-                self.__outputParams = []
+                self.__outputParams = ObjectList()
+            self.__outputParams.freeze()
         return self.__outputParams
     def _get_proc_type(self):
         return self._attributes.get('RDB$PROCEDURE_TYPE',0)
@@ -3629,9 +3534,8 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
         result = self._attributes.get('RDB$VALID_BLR')
         return bool(result) if result is not None else None
     def _get_privileges(self):
-        return [p for p in self.schema.privileges
-                if ((p.subject_name == self.name) and
-                    (p.subject_type in self._type_code))]
+        return self.schema.privileges.filter(lambda p: ((p.subject_name == self.name) and
+                                                        (p.subject_type in self._type_code)))
     def _get_engine_name(self):
         return self._attributes.get('RDB$ENGINE_NAME')
     def _get_entrypoint(self):
@@ -3645,26 +3549,18 @@ order by rdb$parameter_number""" % self.__param_columns(),(self.name,))]
 
     id = LateBindingProperty(_get_id,None,None,"Internal unique ID number.")
     source = LateBindingProperty(_get_source,None,None,"PSQL source code.")
-    security_class  = LateBindingProperty(_get_security_class,None,None,
-        "Security class that define access limits to the procedure.")
-    owner_name = LateBindingProperty(_get_owner_name,None,None,
-        "User name of procedure's creator.")
-    input_params = LateBindingProperty(_get_input_params,None,None,
-        "List of input parameters.\nInstances are :class:`ProcedureParameter` instances.")
-    output_params = LateBindingProperty(_get_output_params,None,None,
-        "List of output parameters.\nInstances are :class:`ProcedureParameter` instances.")
-    privileges = LateBindingProperty(_get_privileges,None,None,
-        "List of :class:`Privilege` objects granted to this object.")
+    security_class  = LateBindingProperty(_get_security_class,None,None, "Security class that define access limits to the procedure.")
+    owner_name = LateBindingProperty(_get_owner_name,None,None, "User name of procedure's creator.")
+    input_params = LateBindingProperty(_get_input_params,None,None, ":class:`ObjectList` of input parameters.\nInstances are :class:`ProcedureParameter` instances.")
+    output_params = LateBindingProperty(_get_output_params,None,None, ":class:`ObjectList` of output parameters.\nInstances are :class:`ProcedureParameter` instances.")
+    privileges = LateBindingProperty(_get_privileges,None,None, ":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
     # FB 2.1
-    proc_type = LateBindingProperty(_get_proc_type,None,None,
-        "Procedure type code. See :attr:`fdb.Connection.enum_procedure_types`.")
-    valid_blr = LateBindingProperty(_get_valid_blr,None,None,
-        "Procedure BLR invalidation flag. Coul be True/False or None.")
+    proc_type = LateBindingProperty(_get_proc_type,None,None, "Procedure type code. See :attr:`fdb.Connection.enum_procedure_types`.")
+    valid_blr = LateBindingProperty(_get_valid_blr,None,None, "Procedure BLR invalidation flag. Coul be True/False or None.")
     # FB 3.0
     engine_name = LateBindingProperty(_get_engine_name,None,None,"Engine name.")
     entrypoint = LateBindingProperty(_get_entrypoint,None,None,"Entrypoint.")
-    package = LateBindingProperty(_get_package,None,None,
-        "Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
+    package = LateBindingProperty(_get_package,None,None, "Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
     privacy = LateBindingProperty(_get_privacy,None,None,"Privacy flag.")
 
     #--- Public
@@ -3732,17 +3628,14 @@ class Role(BaseSchemaItem):
     def _get_security_class(self):
         return self._attributes.get('RDB$SECURITY_CLASS')
     def _get_privileges(self):
-        return [p for p in self.schema.privileges
-                if ((p.user_name == self.name) and
-                    (p.user_type in self._type_code))]
+        return self.schema.privileges.filter(lambda p: ((p.user_name == self.name) and
+                                                        (p.user_type in self._type_code)))
 
     #--- Properties
 
     owner_name = LateBindingProperty(_get_owner_name,None,None,"User name of role owner.")
-    privileges = LateBindingProperty(_get_privileges,None,None,
-        "List of :class:`Privilege` objects granted to this object.")
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                         "Security class name or None.")
+    privileges = LateBindingProperty(_get_privileges,None,None, ":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
 
     #--- Public
 
@@ -3876,38 +3769,26 @@ class FunctionArgument(BaseSchemaItem):
 
     #--- Properties
 
-    function = LateBindingProperty(_get_function,None,None,
-        ":class:`Function` to which this argument belongs.")
+    function = LateBindingProperty(_get_function,None,None, ":class:`Function` to which this argument belongs.")
     position = LateBindingProperty(_get_position,None,None,"Argument position.")
     mechanism = LateBindingProperty(_get_mechanism,None,None,"How argument is passed.")
-    field_type = LateBindingProperty(_get_field_type,None,None,
-        "Number code of the data type defined for the argument.")
-    length = LateBindingProperty(_get_length,None,None,
-        "Length of the argument in bytes.")
-    scale = LateBindingProperty(_get_scale,None,None,
-        "Negative number representing the scale of NUMBER and DECIMAL argument.")
-    precision = LateBindingProperty(_get_precision,None,None,
-        "Indicates the number of digits of precision available to the data type of the argument.")
+    field_type = LateBindingProperty(_get_field_type,None,None, "Number code of the data type defined for the argument.")
+    length = LateBindingProperty(_get_length,None,None, "Length of the argument in bytes.")
+    scale = LateBindingProperty(_get_scale,None,None, "Negative number representing the scale of NUMBER and DECIMAL argument.")
+    precision = LateBindingProperty(_get_precision,None,None, "Indicates the number of digits of precision available to the data type of the argument.")
     sub_type = LateBindingProperty(_get_sub_type,None,None,"BLOB subtype.")
-    character_length = LateBindingProperty(_get_character_length,None,None,
-        "Length of CHAR and VARCHAR column, in characters (not bytes).")
-    character_set = LateBindingProperty(_get_character_set,None,None,
-        ":class:`CharacterSet` for a character/text BLOB argument, or None.")
-    datatype = LateBindingProperty(_get_datatype,None,None,
-        "Comlete SQL datatype definition.")
+    character_length = LateBindingProperty(_get_character_length,None,None, "Length of CHAR and VARCHAR column, in characters (not bytes).")
+    character_set = LateBindingProperty(_get_character_set,None,None, ":class:`CharacterSet` for a character/text BLOB argument, or None.")
+    datatype = LateBindingProperty(_get_datatype,None,None, "Comlete SQL datatype definition.")
     # FB 3.0
     argument_name = LateBindingProperty(_get_argument_name,None,None,"Argument name.")
     domain = LateBindingProperty(_get_domain,None,None,":class:`Domain` for this parameter.")
     default = LateBindingProperty(_get_default,None,None,"Default value.")
-    collation = LateBindingProperty(_get_collation,None,None,
-                                    ":class:`collation` for this parameter.")
-    argument_mechanism = LateBindingProperty(_get_argument_mechanism,None,None,
-                                             "Argiment mechanism.")
+    collation = LateBindingProperty(_get_collation,None,None, ":class:`Collation` for this parameter.")
+    argument_mechanism = LateBindingProperty(_get_argument_mechanism,None,None, "Argument mechanism.")
     column = LateBindingProperty(_get_column,None,None,":class:`TableColumn` for this parameter.")
-    type_from = LateBindingProperty(_get_type_from,None,None,
-                                "Numeric code. See :attr:`Schema.enum_param_type_from`.`")
-    package = LateBindingProperty(_get_package,None,None,
-        "Package this function belongs to. \nObject is :class:`Package` instance or None.")
+    type_from = LateBindingProperty(_get_type_from,None,None, "Numeric code. See :attr:`Schema.enum_param_type_from`.`")
+    package = LateBindingProperty(_get_package,None,None, "Package this function belongs to. \nObject is :class:`Package` instance or None.")
 
     #--- Public
 
@@ -4110,10 +3991,11 @@ class Function(BaseSchemaItem):
                          'RDB$DEFAULT_SOURCE','RDB$COLLATION_ID','RDB$NULL_FLAG',
                          'RDB$ARGUMENT_MECHANISM','RDB$FIELD_NAME','RDB$RELATION_NAME',
                          'RDB$SYSTEM_FLAG','RDB$DESCRIPTION'])
-        self.__arguments = [FunctionArgument(self.schema,self,row) for row in
+        self.__arguments = ObjectList((FunctionArgument(self.schema,self,row) for row in
                             (mock if mock else
                             self.schema._select("""select %s from rdb$function_arguments
-where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols),(self.name,)))]
+where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols),(self.name,)))), FunctionArgument)
+        self.__arguments.freeze()
         rarg = self._attributes['RDB$RETURN_ARGUMENT']
         if rarg is not None:
             for a in self.__arguments:
@@ -4132,7 +4014,7 @@ where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols),(
     def _get_arguments(self):
         if self.__arguments is None:
             self._load_arguments()
-        return [a for a in self.__arguments if a.position != 0]
+        return self.__arguments.filter(lambda a: a.position != 0)
     def _get_engine_mame(self):
         return self._attributes.get('RDB$ENGINE_NAME')
     def _get_package(self):
@@ -4159,14 +4041,11 @@ where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols),(
 
     module_name = LateBindingProperty(_get_module_name,None,None,"Module name.")
     entrypoint = LateBindingProperty(_get_entrypoint,None,None,"Entrypoint in module.")
-    returns = LateBindingProperty(_get_returns,None,None,
-                                  "Returning :class:`FunctionArgument` or None.")
-    arguments = LateBindingProperty(_get_arguments,None,None,
-        "List of function arguments. Items are :class:`FunctionArgument` instances.")
+    returns = LateBindingProperty(_get_returns,None,None, "Returning :class:`FunctionArgument` or None.")
+    arguments = LateBindingProperty(_get_arguments,None,None, ":class:`ObjectList` of function arguments. Items are :class:`FunctionArgument` instances.")
     # Firebird 3.0
     engine_mame = LateBindingProperty(_get_engine_mame,None,None,"Engine name.")
-    package = LateBindingProperty(_get_package,None,None,
-        "Package this function belongs to. \nObject is :class:`Package` instance or None.")
+    package = LateBindingProperty(_get_package,None,None, "Package this function belongs to. \nObject is :class:`Package` instance or None.")
     private_flag = LateBindingProperty(_get_private_flag,None,None,"Private flag.")
     source = LateBindingProperty(_get_source,None,None,"Function source.")
     id = LateBindingProperty(_get_id,None,None,"Function ID.")
@@ -4174,8 +4053,7 @@ where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols),(
     security_class = LateBindingProperty(_get_security_class,None,None,"Security class.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,"Owner name.")
     legacy_flag = LateBindingProperty(_get_legacy_flag,None,None,"Legacy flag.")
-    deterministic_flag = LateBindingProperty(_get_deterministic_flag,None,None,
-                                             "Deterministic flag.")
+    deterministic_flag = LateBindingProperty(_get_deterministic_flag,None,None, "Deterministic flag.")
 
     #--- Public
 
@@ -4303,8 +4181,7 @@ order by RDB$FILE_SEQUENCE""",(self._attributes['RDB$SHADOW_NUMBER'],))]
 
     id = LateBindingProperty(_get_id,None,None,"Shadow ID number.")
     flags = LateBindingProperty(_get_flags,None,None,"Shadow flags.")
-    files = LateBindingProperty(_get_files,None,None,
-        "List of shadow files. Items are :class:`DatabaseFile` instances.")
+    files = LateBindingProperty(_get_files,None,None, "List of shadow files. Items are :class:`DatabaseFile` instances.")
 
     #--- Public
 
@@ -4436,14 +4313,11 @@ class Privilege(BaseSchemaItem):
 
     #--- Properties
 
-    user = LateBindingProperty(_get_user,None,None,
-        "Grantee. Either :class:`~fdb.services.User`, :class:`Role`, " \
+    user = LateBindingProperty(_get_user,None,None, "Grantee. Either :class:`~fdb.services.User`, :class:`Role`, " \
         ":class:`Procedure`, :class:`Trigger` or :class:`View` object.")
-    grantor = LateBindingProperty(_get_grantor,None,None,
-        "Grantor :class:`~fdb.services.User` object.")
+    grantor = LateBindingProperty(_get_grantor,None,None, "Grantor :class:`~fdb.services.User` object.")
     privilege = LateBindingProperty(_get_privilege,None,None,"Privilege code.")
-    subject = LateBindingProperty(_get_subject,None,None,
-        "Priviledge subject. Either :class:`Role`, :class:`Table`, :class:`View` " \
+    subject = LateBindingProperty(_get_subject,None,None, "Priviledge subject. Either :class:`Role`, :class:`Table`, :class:`View` " \
         "or :class:`Procedure` object.")
     user_name = LateBindingProperty(_get_user_name,None,None,"User name.")
     user_type = LateBindingProperty(_get_user_type,None,None,"User type.")
@@ -4532,23 +4406,18 @@ class Package(BaseSchemaItem):
     def _get_body(self):
         return self._attributes['RDB$PACKAGE_BODY_SOURCE']
     def _get_functions(self):
-        return [fn for fn in self.schema.functions
-                if fn._attributes['RDB$PACKAGE_NAME'] == self.name]
+        return self.schema.functions.filter(lambda fb: fn._attributes['RDB$PACKAGE_NAME'] == self.name)
     def _get_procedures(self):
-        return [proc for proc in self.schema.procedures
-                if proc._attributes['RDB$PACKAGE_NAME'] == self.name]
+        return self.schema.procedures.filter(lambda proc: proc._attributes['RDB$PACKAGE_NAME'] == self.name)
 
     #--- Properties
 
     header = LateBindingProperty(_get_header,None,None,"Package header source.")
     body = LateBindingProperty(_get_body,None,None,"Package body source.")
-    security_class = LateBindingProperty(_get_security_class,None,None,
-                                         "Security class name or None.")
+    security_class = LateBindingProperty(_get_security_class,None,None, "Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name,None,None,"User name of package creator.")
-    functions = LateBindingProperty(_get_functions,None,None,
-        "List of package functions. Items are :class:`Function` instances.")
-    procedures = LateBindingProperty(_get_procedures,None,None,
-        "List of package procedures. Items are :class:`Procedure` instances.")
+    functions = LateBindingProperty(_get_functions,None,None, ":class:`ObjectList` of package functions. Items are :class:`Function` instances.")
+    procedures = LateBindingProperty(_get_procedures,None,None, ":class:`ObjectList` of package procedures. Items are :class:`Procedure` instances.")
 
     #--- Public
 
@@ -4662,14 +4531,10 @@ class Filter(BaseSchemaItem):
 
     #--- Properties
 
-    module_name = LateBindingProperty(_get_module_name,None,None,
-        "The name of the dynamic library or shared object where the code of the BLOB filter is located.")
-    entrypoint = LateBindingProperty(_get_entrypoint,None,None,
-        "The exported name of the BLOB filter in the filter library.")
-    input_sub_type = LateBindingProperty(_get_input_sub_type,None,None,
-        "The BLOB subtype of the data to be converted by the function.")
-    output_sub_type = LateBindingProperty(_get_output_sub_type,None,None,
-        "The BLOB subtype of the converted data.")
+    module_name = LateBindingProperty(_get_module_name,None,None, "The name of the dynamic library or shared object where the code of the BLOB filter is located.")
+    entrypoint = LateBindingProperty(_get_entrypoint,None,None, "The exported name of the BLOB filter in the filter library.")
+    input_sub_type = LateBindingProperty(_get_input_sub_type,None,None, "The BLOB subtype of the data to be converted by the function.")
+    output_sub_type = LateBindingProperty(_get_output_sub_type,None,None, "The BLOB subtype of the converted data.")
 
     #--- Public
 
@@ -4733,6 +4598,14 @@ class SchemaVisitor(object):
         self.default_action(dbfile)
     def visitShadow(self,shadow):
         self.default_action(shadow)
+    def visitPrivilege(self, privilege):
+        self.default_action(privilege)
     def visitPackage(self,package):
         self.default_action(package)
+
+    def visitBackupHistory(self,backup_history):
+        self.default_action(backup_history)
+    def visitFilter(self, _filter):
+        self.default_action(_filter)
+
 

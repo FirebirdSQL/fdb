@@ -4612,7 +4612,7 @@ MODULE_NAME 'fbudf'""")
         def get_privilege(obj,privilege):
             x = [x for x in obj.privileges if x.privilege == privilege]
             return x[0]
-        p = []
+        p = utils.ObjectList()
         p.append(sm.Privilege(self.con.schema,{'RDB$USER': 'SYSDBA',
                                                'RDB$PRIVILEGE': 'X',
                                                'RDB$RELATION_NAME': 'ALL_LANGS',
