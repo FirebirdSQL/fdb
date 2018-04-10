@@ -18,7 +18,6 @@
 #  All Rights Reserved.
 #  Contributor(s): ______________________________________.
 
-from collections import MutableSequence
 from operator import attrgetter
 import types
 
@@ -208,7 +207,7 @@ def iter_class_variables(cls):
     :param class cls: Class object."""
     for varname in vars(cls):
         value = getattr(cls, varname)
-        if not (isinstance(value, property) or callable(value)):
+        if not (isinstance(value, property) or callable(value)) and not varname.startswith('_'):
             yield varname
 
 def embed_attributes(from_class,attr):
@@ -229,57 +228,328 @@ class are injected.
         return class_
     return d
 
-class ObjectCollection(MutableSequence):
+def make_lambda(expr, params = 'item', context = None):
+    if context:
+        return eval('lambda %s:%s' % (params, expr), context)
+    else:
+        return eval('lambda %s:%s' % (params, expr))
+
+class ObjectList(list):
     """Mutable sequence of objects with additional functionality.
 """
-    def __init__(self, items = None, _cls = None):
+    def __init__(self, items = None, _cls = None, key_expr = None):
         """
             :param iterable items: Sequence to initialize the collection.
             :param _cls: Class or list/tuple of classes. Only instances of these classes would be allowed in collection.
+            :param str key_expr: Key expression. Must contain item referrence as `item`, for example `item.attribute_name`.
+
             :raises ValueError: When initialization sequence contains invalid instance.
             """
-        self.__items = list()
+        if items:
+            super(ObjectList, self).__init__(items)
+        else:
+            super(ObjectList, self).__init__()
+        self.__key_expr = key_expr
+        self.__frozen = False
         self._cls = _cls
-        if items is not None:
-            for item in items:
-                self.append(item)
+        self.__map = None
     def __check_value(self, value):
         if self._cls and not isinstance(value, self._cls):
-            raise ValueError("Value is not an instance allowed class")
-    def __getitem__(self, index):
-        return self.__items[index]
+            raise TypeError("Value is not an instance of allowed class")
+    def __check_mutability(self):
+        if self.__frozen:
+            raise TypeError("list is frozen")
     def __setitem__(self, index, value):
+        self.__check_mutability()
         self.__check_value(value)
-        self.__items[index] = value
+        super(ObjectList, self).__setitem__(index, value)
+    def __setslice__(self, i, j, y):
+        self.__check_mutability()
+        super(ObjectList, self).__setslice__(i, j, y)
     def __delitem__(self, index):
-        del self.__items[index]
-    def __len__(self):
-        return len(self.__items)
-    def insert(self, index, value):
-        self.__check_value(value)
-        'S.insert(index, object) -- insert object before index'
-        self.__items.insert(index, value)
-    def sort(self, attrs, reverse = False):
-        'S.sort(attrs, reverse = False) -- sort items in-place using attribute values as key. `attrs` is a list of attribute names.'
-        self.__items.sort(key=attrgetter(*attrs), reverse = reverse)
+        self.__check_mutability()
+        super(ObjectList, self).__delitem__(index)
+    def __delslice__(self, i, j):
+        self.__check_mutability()
+        super(ObjectList, self).__delslice__(i, j)
+    def insert(self, index, item):
+        """Insert item before index.
+
+        :raises TypeError: When list is frozen or item is not an instance of allowed class"""
+        self.__check_mutability()
+        self.__check_value(item)
+        super(ObjectList, self).insert(index, item)
+    def append(self, item):
+        """Add an item to the end of the list.
+
+        :raises TypeError: When list is frozen or item is not an instance of allowed class"""
+        self.__check_mutability()
+        self.__check_value(item)
+        super(ObjectList, self).append(item)
+    def extend(self, iterable):
+        """Extend the list by appending all the items in the given iterable.
+
+        :raises TypeError: When list is frozen or item is not an instance of allowed class"""
+        for item in iterable:
+            self.append(item)
+    def sort(self, attrs = None, expr = None, reverse = False):
+        """Sort items in-place, optionaly using attribute values as key or key expression.
+
+        :param list attrs: List of attribute names.
+        :param expr:       Key expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        .. important::
+
+           Only one parameter (`attrs` or `expr`) could be specified. If none is present then uses default list sorting rule.
+
+        :raises TypeError: When list is frozen.
+
+        Examples::
+
+            sort(attrs=['name','degree'])       # Sort by item.name, item.degree
+            sort(expr=lambda x: x.name.upper()) # Sort by upper item.name
+            sort(expr='item.name.upper()')      # Sort by upper item.name
+    """
+        self.__check_mutability()
+        if attrs:
+            super(ObjectList, self).sort(key=attrgetter(*attrs), reverse = reverse)
+        elif expr:
+            super(ObjectList, self).sort(key=expr if callable(expr) else make_lambda(expr), reverse = reverse)
+        else:
+            super(ObjectList, self).sort(reverse = reverse)
+    def reverse(self):
+        """Reverse the elements of the list, in place.
+
+        :raises TypeError: When list is frozen."""
+        self.__check_mutability()
+        super(ObjectList, self).reverse()
+    def clear(self):
+        """Remove all items from the list.
+
+        :raises TypeError: When list is frozen."""
+        self.__check_mutability()
+        while len(self) > 0:
+            del self[0]
+    def freeze(self):
+        """Set list to immutable (frozen) state."""
+        self.__frozen = True
+        if self.__key_expr:
+            fce = make_lambda(self.__key_expr)
+            self.__map = dict(((key, index) for index, key in enumerate((fce(item) for item in self))))
     def filter(self, expr):
-        """S.filter(expr) -> ObjectCollection -- return new collection of items for which `expr` is evaluated to True.
-Items could be referred as `item`, for example `item.attribute_name`."""
-        return ObjectCollection(item for item in self if eval(expr))
+        """Return new ObjectList of items for which `expr` is evaluated as True.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        Example::
+
+            filter(lambda x: x.name.startswith("ABC"))
+            filter('item.name.startswith("ABC")')
+"""
+        fce = expr if callable(expr) else make_lambda(expr)
+        return ObjectList(self.ifilter(expr), self._cls, self.__key_expr)
     def ifilter(self, expr):
-        """S.ifilter(expr) -> generator -- return generator that yields items for which `expr` is evaluated to True.
-Items could be referred as `item`, for example `item.attribute_name`."""
-        return (item for item in self if eval(expr))
-    def extract(self, *args):
-        """S.extract(expr[,expr...]) -> list -- return list of data produced by expression(s) evaluated on collection items.
-Items could be referred as `item`, for example `item.attribute_name`."""
-        attrs = "(%s)" % ",".join(args) if len(args) > 1 else args[0]
-        return [eval(attrs) for item in self]
-    def iextract(self, *args):
-        """S.iextract(expr[,expr...]) -> generator -- return generator that yields data produced by expression(s) evaluated
-on collection items. Items could be referred as `item`, for example `item.attribute_name`."""
-        attrs = "(%s)" % ",".join(args) if len(args) > 1 else args[0]
-        return (eval(attrs) for item in self)
+        """Return generator that yields items for which `expr` is evaluated as True.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        Example::
+
+            ifilter(lambda x: x.name.startswith("ABC"))
+            ifilter('item.name.startswith("ABC")')
+"""
+        fce = expr if callable(expr) else make_lambda(expr)
+        return (item for item in self if fce(item))
+    def ifilterfalse(self, expr):
+        """Return generator that yields items for which `expr` is evaluated as False.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        Example::
+
+            ifilter(lambda x: x.name.startswith("ABC"))
+            ifilter('item.name.startswith("ABC")')
+"""
+        fce = expr if callable(expr) else make_lambda(expr)
+        return (item for item in self if not fce(item))
+    def report(self, *args):
+        """Return list of data produced by expression(s) evaluated on list items.
+
+        Parameter(s) could be one from:
+
+        - A callable accepting one parameter and returning data for output
+        - One or more expressions as string referencing item as `item`.
+
+        Examples::
+
+            # returns list of tuples with item.name and item.size
+
+            report(lambda x: (x.name, x.size))
+            report('item.name','item.size')
+
+            # returns list of item names
+
+            report(lambda x: x.name)
+            report('item.name')
+"""
+        if len(args) == 1 and callable(args[0]):
+            fce = args[0]
+        else:
+            attrs = "(%s)" % ",".join(args) if len(args) > 1 else args[0]
+            fce = make_lambda(attrs)
+        return [fce(item) for item in self]
+    def ireport(self, *args):
+        """Return generator that yields data produced by expression(s) evaluated
+on list items.
+
+        Parameter(s) could be one from:
+
+        - A callable accepting one parameter and returning data for output
+        - One or more expressions as string referencing item as `item`.
+
+        Examples::
+
+            # generator of tuples with item.name and item.size
+
+            report(lambda x: (x.name, x.size))
+            report('item.name','item.size')
+
+            # generator of item names
+
+            report(lambda x: x.name)
+            report('item.name')
+"""
+        if len(args) == 1 and callable(args[0]):
+            fce = args[0]
+        else:
+            attrs = "(%s)" % ",".join(args) if len(args) > 1 else args[0]
+            fce = make_lambda(attrs)
+        return (fce(item) for item in self)
     def ecount(self, expr):
-        'S.ecount(expr) -> integer -- return number of items for which `expr` is evaluated to True'
-        return sum(1 for item in self if eval(expr))
+        """Return number of items for which `expr` is evaluated as True.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        Example::
+
+            ecount(lambda x: x.name.startswith("ABC"))
+            ecount('item.name.startswith("ABC")')
+"""
+        return sum(1 for item in self.ifilter(expr))
+    def split(self, expr):
+        """Return two new ObjectLists, first with items for which `expr` is evaluated as True and second for `expr` evaluated as False.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        Example::
+
+            split(lambda x: x.size > 100)
+            split('item.size > 100')
+"""
+        return ObjectList(self.ifilter(expr), self._cls, self.__key_expr), ObjectList(self.ifilterfalse(expr), self._cls, self.__key_expr)
+    def extract(self, expr):
+        """Move items for which `expr` is evaluated as True into new ObjectLists.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        :raises TypeError: When list is frozen.
+
+        Example::
+
+            extract(lambda x: x.name.startswith("ABC"))
+            extract('item.name.startswith("ABC")')
+"""
+        self.__check_mutability()
+        fce = expr if callable(expr) else make_lambda(expr)
+        l = ObjectList(_cls=self._cls, key_expr=self.__key_expr)
+        i = 0
+        while len(self) > i:
+            item = self[i]
+            if fce(item):
+                l.append(item)
+                del self[i]
+            else:
+                i += 1
+        return l
+    def get(self, value, expr = None):
+        """Return item with given key value using default or specified key expression, or None if there is no such item.
+
+        Uses very fast method to look up value of default key expression in `frozen` list, otherwise it uses slower list traversal.
+
+        :param value:  Searched value.
+        :param expr:   Key value expression, a callable accepting two parameters (item,value) or expression as string referencing list item as `item`.
+
+        :raises TypeError: If key expression is not defined.
+
+        Examples::
+
+            # Search using default key expression
+            get('ITEM_NAME')
+            # Search using callable key expression
+            get('ITEM_NAME',lambda x: x.name.upper())
+            # Search using string key expression
+            get('ITEM_NAME','item.name.upper()')
+"""
+        if self.__map and not expr:
+            i = self.__map.get(value)
+            return self[i] if i is not None else None
+        if not (self.__key_expr or expr):
+            raise TypeError("Key expression required")
+        if callable(expr):
+            fce = expr
+        else:
+            s = '%s == value' % (self.__key_expr if expr is None else expr)
+            fce = make_lambda(s, 'item,value')
+        for item in self:
+            if fce(item, value):
+                return item
+        return None
+    def contains(self, value, expr = None):
+        """Return True if list has any item with default or specified key expression equal to given value.
+
+        :param value:  Tested key value.
+        :param expr:   Key value expression, a callable accepting two parameters (item,value) or expression as string referencing list item as `item`.
+
+        Examples::
+
+            # Search using default key expression
+            contains('ITEM_NAME')
+            # Search using callable key expression
+            contains('ITEM_NAME',lambda x: x.name.upper())
+            # Search using string key expression
+            contains('ITEM_NAME','item.name.upper()')
+"""
+        return False if self.get(value, expr) is None else True
+    def all(self, expr):
+        """Return True if `expr` is evaluated as True for all list elements.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        Example::
+
+            all(lambda x: x.name.startswith("ABC"))
+            all('item.name.startswith("ABC")')
+"""
+        fce = expr if callable(expr) else make_lambda(expr)
+        for item in self:
+            if not fce(item):
+                return False
+        return True
+    def any(self, expr):
+        """Return True if `expr` is evaluated as True for all list elements.
+
+        :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
+
+        Example::
+
+            any(lambda x: x.name.startswith("ABC"))
+            any('item.name.startswith("ABC")')
+"""
+        fce = expr if callable(expr) else make_lambda(expr)
+        for item in self:
+            if not fce(item):
+                return True
+        return False
+    #
+    frozen = property(fget=lambda self: self.__frozen, doc= 'True if list is immutable')
+    key = property(fget=lambda self: self.__key, doc= 'Key expression')
