@@ -23,7 +23,7 @@
 import sys
 import os
 import fdb
-from fdb.utils import LateBindingProperty
+from fdb.utils import LateBindingProperty, ObjectList
 import weakref
 
 # Current shutdown mode
@@ -100,17 +100,16 @@ class Monitor(object):
             if self._con.ods >= fdb.ODS_FB_21:
                 self._ic.execute("select * from mon$database")
                 self.__database = DatabaseInfo(self,self._ic.fetchonemap())
-            else:
-                self.__database = []
         return self.__database
     def _get_attachments(self):
         if self.__attachments is None:
             self.__fail_if_closed()
             if self._con.ods >= fdb.ODS_FB_21:
                 self._ic.execute("select * from mon$attachments")
-                self.__attachments = [AttachmentInfo(self,row) for row in self._ic.itermap()]
+                self.__attachments = ObjectList((AttachmentInfo(self,row) for row in self._ic.itermap()), AttachmentInfo, 'item.id')
             else:
-                self.__attachments = []
+                self.__attachments = ObjectList()
+            self.__attachments.freeze()
         return self.__attachments
     def _get_this_attachment(self):
         return self.get_attachment(self._con.db_info(fdb.isc_info_attachment_id))
@@ -119,27 +118,30 @@ class Monitor(object):
             self.__fail_if_closed()
             if self._con.ods >= fdb.ODS_FB_21:
                 self._ic.execute("select * from mon$transactions")
-                self.__transactions = [TransactionInfo(self,row) for row in self._ic.itermap()]
+                self.__transactions = ObjectList((TransactionInfo(self,row) for row in self._ic.itermap()), TransactionInfo, 'item.id')
             else:
-                self.__transactions = []
+                self.__transactions = ObjectList()
+            self.__transactions.freeze()
         return self.__transactions
     def _get_statements(self):
         if self.__statements is None:
             self.__fail_if_closed()
             if self._con.ods >= fdb.ODS_FB_21:
                 self._ic.execute("select * from mon$statements")
-                self.__statements = [StatementInfo(self,row) for row in self._ic.itermap()]
+                self.__statements = ObjectList((StatementInfo(self,row) for row in self._ic.itermap()), StatementInfo, 'item.id')
             else:
-                self.__statements = []
+                self.__statements = ObjectList()
+            self.__statements.freeze()
         return self.__statements
     def _get_callstack(self):
         if self.__callstack is None:
             self.__fail_if_closed()
             if self._con.ods >= fdb.ODS_FB_21:
                 self._ic.execute("select * from mon$call_stack")
-                self.__callstack = [CallStackInfo(self,row) for row in self._ic.itermap()]
+                self.__callstack = ObjectList((CallStackInfo(self,row) for row in self._ic.itermap()), CallStackInfo, 'item.id')
             else:
-                self.__callstack = []
+                self.__callstack = ObjectList()
+            self.__callstack.freeze()
         return self.__callstack
     def _get_iostats(self):
         if self.__iostats is None:
@@ -176,18 +178,20 @@ io.MON$PAGE_MARKS, io.MON$PAGE_READS, io.MON$PAGE_WRITES
 FROM MON$RECORD_STATS r join MON$IO_STATS io
 on r.MON$STAT_ID = io.MON$STAT_ID and r.MON$STAT_GROUP = io.MON$STAT_GROUP""")
             if self._con.ods >= fdb.ODS_FB_21:
-                self.__iostats = [IOStatsInfo(self,row) for row in self._ic.itermap()]
+                self.__iostats = ObjectList((IOStatsInfo(self,row) for row in self._ic.itermap()), IOStatsInfo, 'item.stat_id')
             else:
-                self.__iostats = []
+                self.__iostats = ObjectList()
+            self.__iostats.freeze()
         return self.__iostats
     def _get_variables(self):
         if self.__variables is None:
             self.__fail_if_closed()
             if self._con.ods >= fdb.ODS_FB_25:
                 self._ic.execute("select * from mon$context_variables")
-                self.__variables = [ContextVariableInfo(self,row) for row in self._ic.itermap()]
+                self.__variables = ObjectList((ContextVariableInfo(self,row) for row in self._ic.itermap()), ContextVariableInfo, 'item.stat_id')
             else:
-                self.__variables = []
+                self.__variables = ObjectList()
+            self.__variables.freeze()
         return self.__variables
     def _get_tablestats(self):
         if self.__tablestats is None:
@@ -200,34 +204,26 @@ r.MON$RECORD_PURGES, r.MON$RECORD_EXPUNGES, r.MON$RECORD_LOCKS, r.MON$RECORD_WAI
 r.MON$RECORD_CONFLICTS, r.MON$BACKVERSION_READS, r.MON$FRAGMENT_READS, r.MON$RECORD_RPT_READS
 FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
   on ts.MON$RECORD_STAT_ID = r.MON$STAT_ID""")
-                self.__tablestats = [TableStatsInfo(self,row) for row in self._ic.itermap()]
+                self.__tablestats = ObjectList((TableStatsInfo(self,row) for row in self._ic.itermap()), TableStatsInfo, 'item.stat_id')
             else:
-                self.__tablestats = []
+                self.__tablestats = ObjectList()
+            self.__tablestats.freeze()
         return self.__tablestats
 
     #--- Properties
 
     #: True if link to :class:`~fdb.Connection` is closed.
     closed = property(__get_closed)
-    db = LateBindingProperty(_get_database,None,None,
-        ":class:`DatabaseInfo` object for attached database.")
-    attachments = LateBindingProperty(_get_attachments,None,None,
-        "List of all attachments.\nItems are :class:`AttachmentInfo` objects.")
-    this_attachment = LateBindingProperty(_get_this_attachment,None,None,
-        ":class:`AttachmentInfo` object for current connection.")
-    transactions = LateBindingProperty(_get_transactions,None,None,
-        "List of all transactions.\nItems are :class:`TransactionInfo` objects.")
-    statements = LateBindingProperty(_get_statements,None,None,
-        "List of all statements.\nItems are :class:`StatementInfo` objects.")
-    callstack = LateBindingProperty(_get_callstack,None,None,
-        "List with complete call stack.\nItems are :class:`CallStackInfo` objects.")
-    iostats = LateBindingProperty(_get_iostats,None,None,
-        "List of all I/O statistics.\nItems are :class:`IOStatsInfo` objects.")
-    variables = LateBindingProperty(_get_variables,None,None,
-        "List of all context variables.\nItems are :class:`ContextVariableInfo` objects.")
+    db = LateBindingProperty(_get_database,None,None, ":class:`DatabaseInfo` object for attached database.")
+    attachments = LateBindingProperty(_get_attachments,None,None, ":class:`ObjectList` of all attachments.\nItems are :class:`AttachmentInfo` objects.")
+    this_attachment = LateBindingProperty(_get_this_attachment,None,None, ":class:`AttachmentInfo` object for current connection.")
+    transactions = LateBindingProperty(_get_transactions,None,None, ":class:`ObjectList` of all transactions.\nItems are :class:`TransactionInfo` objects.")
+    statements = LateBindingProperty(_get_statements,None,None, ":class:`ObjectList` of all statements.\nItems are :class:`StatementInfo` objects.")
+    callstack = LateBindingProperty(_get_callstack,None,None, ":class:`ObjectList` with complete call stack.\nItems are :class:`CallStackInfo` objects.")
+    iostats = LateBindingProperty(_get_iostats,None,None, ":class:`ObjectList` of all I/O statistics.\nItems are :class:`IOStatsInfo` objects.")
+    variables = LateBindingProperty(_get_variables,None,None, ":class:`ObjectList` of all context variables.\nItems are :class:`ContextVariableInfo` objects.")
     # FB 3.0
-    tablestats = LateBindingProperty(_get_tablestats,None,None,
-        "List of all table record I/O statistics.\nItems are :class:`TableStatsInfo` objects.")
+    tablestats = LateBindingProperty(_get_tablestats,None,None, ":class:`ObjectList` of all table record I/O statistics.\nItems are :class:`TableStatsInfo` objects.")
 
     #--- Public
 
@@ -408,50 +404,34 @@ class DatabaseInfo(BaseInfoItem):
     def __get_security_database(self):
         return self._attributes.get('MON$SEC_DATABASE')
     def __get_tablestats(self):
-        res = {}
-        for io in self.monitor.tablestats:
-            if (io.stat_id == self.stat_id) and (io.group == STAT_DATABASE):
-                res[io.table_name] = io
-        return res
+        return dict(((io.table_name, io) for io in self.monitor.tablestats if (io.stat_id == self.stat_id) and (io.group == STAT_DATABASE)))
 
     #--- properties
 
     name = property(__get_name,None,None,"Database pathname or alias.")
     page_size = property(__get_page_size,None,None,"Size of database page in bytes.")
     ods = property(__get_ods,None,None,"On-Disk Structure (ODS) version number.")
-    oit = property(__get_oit,None,None,
-                   "Transaction ID of the oldest [interesting] transaction.")
+    oit = property(__get_oit,None,None, "Transaction ID of the oldest [interesting] transaction.")
     oat = property(__get_oat,None,None,"Transaction ID of the oldest active transaction.")
-    ost = property(__get_ost,None,None,
-        "Transaction ID of the Oldest Snapshot, i.e., the number of the OAT " \
-        "when the last garbage collection was done.")
-    next_transaction = property(__get_next_transaction,None,None,
-        "Transaction ID of the next transaction that will be started.")
-    cache_size = property(__get_cache_size,None,None,
-        "Number of pages allocated in the page cache.")
+    ost = property(__get_ost,None,None, "Transaction ID of the Oldest Snapshot, i.e., the number of the OAT when the last garbage collection was done.")
+    next_transaction = property(__get_next_transaction,None,None, "Transaction ID of the next transaction that will be started.")
+    cache_size = property(__get_cache_size,None,None, "Number of pages allocated in the page cache.")
     sql_dialect = property(__get_sql_dialect,None,None,"SQL dialect of the database.")
     shutdown_mode = property(__get_shutdown_mode,None,None,"Current shutdown mode.")
-    sweep_interval = property(__get_sweep_interval,None,None,
-        "The sweep interval configured in the database header. " \
+    sweep_interval = property(__get_sweep_interval,None,None, "The sweep interval configured in the database header. " \
         "Value 0 indicates that sweeping is disabled.")
     read_only = property(__get_read_only,None,None,"True if database is Read Only.")
-    forced_writes = property(__get_forced_writes,None,None,
-                             "True if database uses synchronous writes.")
-    reserve_space = property(__get_reserve_space,None,None,
-        "True if database reserves space on data pages.")
-    created = property(__get_created,None,None,
-        "Creation date and time, i.e., when the database was created or last restored.")
+    forced_writes = property(__get_forced_writes,None,None, "True if database uses synchronous writes.")
+    reserve_space = property(__get_reserve_space,None,None, "True if database reserves space on data pages.")
+    created = property(__get_created,None,None, "Creation date and time, i.e., when the database was created or last restored.")
     pages = property(__get_pages,None,None,"Number of pages allocated on disk.")
-    backup_state = property(__get_backup_state,None,None,
-        "Current state of database with respect to nbackup physical backup.")
+    backup_state = property(__get_backup_state,None,None, "Current state of database with respect to nbackup physical backup.")
     iostats = property(__get_iostats,None,None,":class:`IOStatsInfo` for this object.")
     # FB 3.0
     crypt_page = property(__get_crypt_page,None,None,"Number of page being encrypted.")
     owner = property(__get_owner,None,None,"User name of database owner.")
-    security_database = property(__get_security_database,None,None,
-        "TYpe of security database (Default, Self or Other).")
-    tablestats = property(__get_tablestats,None,None,
-        "Dictionary of :class:`TableStatsInfo` instances for this object.")
+    security_database = property(__get_security_database,None,None, "Type of security database (Default, Self or Other).")
+    tablestats = property(__get_tablestats,None,None, "Dictionary of :class:`TableStatsInfo` instances for this object.")
 
 class AttachmentInfo(BaseInfoItem):
     "Information about attachment (connection) to database."
@@ -497,14 +477,11 @@ class AttachmentInfo(BaseInfoItem):
     def __get_timestamp(self):
         return self._attributes['MON$TIMESTAMP']
     def _get_transactions(self):
-        return [t for t in self.monitor.transactions
-                if t._attributes['MON$ATTACHMENT_ID'] == self.id]
+        return self.monitor.transactions.filter(lambda s: s._attributes['MON$ATTACHMENT_ID'] == self.id)
     def _get_statements(self):
-        return [s for s in self.monitor.statements
-                if s._attributes['MON$ATTACHMENT_ID'] == self.id]
+        return self.monitor.statements.filter(lambda s: s._attributes['MON$ATTACHMENT_ID'] == self.id)
     def _get_variables(self):
-        return [s for s in self.monitor.variables
-                if s._attributes['MON$ATTACHMENT_ID'] == self.id]
+        return self.monitor.variables.filter(lambda s: s._attributes['MON$ATTACHMENT_ID'] == self.id)
     def __get_iostats(self):
         for io in self.monitor.iostats:
             if (io.stat_id == self.stat_id) and (io.group == STAT_ATTACHMENT):
@@ -520,12 +497,10 @@ class AttachmentInfo(BaseInfoItem):
         return self._attributes.get('MON$REMOTE_OS_USER')
     def __get_remote_host(self):
         return self._attributes.get('MON$REMOTE_HOST')
+    def __get_system(self):
+        return bool(self._attributes.get('MON$SYSTEM_FLAG'))
     def __get_tablestats(self):
-        res = {}
-        for io in self.monitor.tablestats:
-            if (io.stat_id == self.stat_id) and (io.group == STAT_ATTACHMENT):
-                res[io.table_name] = io
-        return res
+        return dict(((io.table_name, io) for io in self.monitor.tablestats if (io.stat_id == self.stat_id) and (io.group == STAT_ATTACHMENT)))
 
     #--- properties
 
@@ -539,15 +514,11 @@ class AttachmentInfo(BaseInfoItem):
     remote_address = property(__get_remote_address,None,None,"Remote address.")
     remote_pid = property(__get_remote_pid,None,None,"Remote client process ID.")
     remote_process = property(__get_remote_process,None,None,"Remote client process pathname.")
-    character_set = property(__get_character_set,None,None,
-        ":class:`~fdb.schema.CharacterSet` for this attachment.")
+    character_set = property(__get_character_set,None,None, ":class:`~fdb.schema.CharacterSet` for this attachment.")
     timestamp = property(__get_timestamp,None,None,"Attachment date/time.")
-    transactions = LateBindingProperty(_get_transactions,None,None,
-        "List of transactions associated with attachment.\nItems are :class:`TransactionInfo` objects.")
-    statements = LateBindingProperty(_get_statements,None,None,
-        "List of statements associated with attachment.\nItems are :class:`StatementInfo` objects.")
-    variables = LateBindingProperty(_get_variables,None,None,
-        "List of variables associated with attachment.\nItems are :class:`ContextVariableInfo` objects.")
+    transactions = LateBindingProperty(_get_transactions,None,None, ":class:`ObjectList` of transactions associated with attachment.\nItems are :class:`TransactionInfo` objects.")
+    statements = LateBindingProperty(_get_statements,None,None, ":class:`ObjectList` of statements associated with attachment.\nItems are :class:`StatementInfo` objects.")
+    variables = LateBindingProperty(_get_variables,None,None, ":class:`ObjectList` of variables associated with attachment.\nItems are :class:`ContextVariableInfo` objects.")
     iostats = property(__get_iostats,None,None,":class:`IOStatsInfo` for this object.")
     # FB 3.0
     auth_method = property(__get_auth_method,None,None,"Authentication method.")
@@ -555,8 +526,8 @@ class AttachmentInfo(BaseInfoItem):
     remote_version = property(__get_remote_version,None,None,"Remote protocol version.")
     remote_os_user = property(__get_remote_os_user,None,None,"OS user name of client process.")
     remote_host = property(__get_remote_host,None,None,"Name of remote host.")
-    tablestats = property(__get_tablestats,None,None,
-        "Dictionary of :class:`TableStatsInfo` instances for this object.")
+    system = property(__get_system, None, None, "True for system attachments.")
+    tablestats = property(__get_tablestats,None,None, "Dictionary of :class:`TableStatsInfo` instances for this object.")
 
     #--- Public
 
@@ -614,28 +585,21 @@ class TransactionInfo(BaseInfoItem):
     def __get_lock_timeout(self):
         return self._attributes['MON$LOCK_TIMEOUT']
     def _get_statements(self):
-        return [s for s in self.monitor.statements
-                if s._attributes['MON$TRANSACTION_ID'] == self.id]
+        return self.monitor.statements.filter(lambda s: s._attributes['MON$TRANSACTION_ID'] == self.id)
     def _get_variables(self):
-        return [s for s in self.monitor.variables
-                if s._attributes['MON$TRANSACTION_ID'] == self.id]
+        return self.monitor.variables.filter(lambda s: s._attributes['MON$TRANSACTION_ID'] == self.id)
     def __get_iostats(self):
         for io in self.monitor.iostats:
             if (io.stat_id == self.stat_id) and (io.group == STAT_TRANSACTION):
                 return io
         return None
     def __get_tablestats(self):
-        res = {}
-        for io in self.monitor.tablestats:
-            if (io.stat_id == self.stat_id) and (io.group == STAT_TRANSACTION):
-                res[io.table_name] = io
-        return res
+        return dict(((io.table_name, io) for io in self.monitor.tablestats if (io.stat_id == self.stat_id) and (io.group == STAT_TRANSACTION)))
 
     #--- properties
 
     id = property(__get_id,None,None,"Transaction ID.")
-    attachment = property(__get_attachment,None,None,
-        ":class:`AttachmentInfo` instance to which this transaction belongs.")
+    attachment = property(__get_attachment,None,None, ":class:`AttachmentInfo` instance to which this transaction belongs.")
     state = property(__get_state,None,None,"Transaction state (idle/active).")
     timestamp = property(__get_timestamp,None,None,"Transaction start date/time.")
     top = property(__get_top,None,None,"Top transaction.")
@@ -643,14 +607,11 @@ class TransactionInfo(BaseInfoItem):
     oldest_active = property(__get_oldest_active,None,None,"Oldest active transaction (local OAT).")
     isolation_mode = property(__get_isolation_mode,None,None,"Transaction isolation mode code.")
     lock_timeout = property(__get_lock_timeout,None,None,"Lock timeout.")
-    statements = LateBindingProperty(_get_statements,None,None,
-        "List of statements associated with transaction.\nItems are :class:`StatementInfo` objects.")
-    variables = LateBindingProperty(_get_variables,None,None,
-        "List of variables associated with transaction.\nItems are :class:`ContextVariableInfo` objects.")
+    statements = LateBindingProperty(_get_statements,None,None, ":class:`ObjectList` of statements associated with transaction.\nItems are :class:`StatementInfo` objects.")
+    variables = LateBindingProperty(_get_variables,None,None, ":class:`ObjectList` of variables associated with transaction.\nItems are :class:`ContextVariableInfo` objects.")
     iostats = property(__get_iostats,None,None,":class:`IOStatsInfo` for this object.")
     # FB 3.0
-    tablestats = property(__get_tablestats,None,None,
-        "Dictionary of :class:`TableStatsInfo` instances for this object.")
+    tablestats = property(__get_tablestats,None,None, "Dictionary of :class:`TableStatsInfo` instances for this object.")
 
     #--- Public
 
@@ -697,9 +658,8 @@ class StatementInfo(BaseInfoItem):
     def __get_sql_text(self):
         return self._attributes['MON$SQL_TEXT']
     def __get_callstack(self):
-        callstack = [x for x in self.monitor.callstack
-                  if ((x._attributes['MON$STATEMENT_ID'] == self.id) and
-                      (x._attributes['MON$CALLER_ID'] is None))]
+        callstack = self.monitor.callstack.filter(lambda x: ((x._attributes['MON$STATEMENT_ID'] == self.id) and
+                                                             (x._attributes['MON$CALLER_ID'] is None)))
         if len(callstack) > 0:
             item = callstack[0]
             while item is not None:
@@ -719,29 +679,21 @@ class StatementInfo(BaseInfoItem):
     def __get_plan(self):
         return self._attributes.get('MON$EXPLAINED_PLAN')
     def __get_tablestats(self):
-        res = {}
-        for io in self.monitor.tablestats:
-            if (io.stat_id == self.stat_id) and (io.group == STAT_STATEMENT):
-                res[io.table_name] = io
-        return res
+        return dict(((io.table_name, io) for io in self.monitor.tablestats if (io.stat_id == self.stat_id) and (io.group == STAT_STATEMENT)))
 
     #--- properties
 
     id = property(__get_id,None,None,"Statement ID.")
-    attachment = property(__get_attachment,None,None,
-        ":class:`AttachmentInfo` instance to which this statement belongs.")
-    transaction = property(__get_transaction,None,None,
-        ":class:`TransactionInfo` instance to which this statement belongs or None.")
+    attachment = property(__get_attachment,None,None, ":class:`AttachmentInfo` instance to which this statement belongs.")
+    transaction = property(__get_transaction,None,None, ":class:`TransactionInfo` instance to which this statement belongs or None.")
     state = property(__get_state,None,None,"Statement state (idle/active).")
     timestamp = property(__get_timestamp,None,None,"Statement start date/time.")
     sql_text = property(__get_sql_text,None,None,"Statement text, if appropriate.")
-    callstack = property(__get_callstack,None,None,
-        "List with call stack for statement.\nItems are :class:`CallStackInfo` objects.")
+    callstack = property(__get_callstack,None,None, ":class:`ObjectList` with call stack for statement.\nItems are :class:`CallStackInfo` objects.")
     iostats = property(__get_iostats,None,None,":class:`IOStatsInfo` for this object.")
     # FB 3.0
     plan = property(__get_plan,None,None,"Explained execution plan.")
-    tablestats = property(__get_tablestats,None,None,
-        "Dictionary of :class:`TableStatsInfo` instances for this object.")
+    tablestats = property(__get_tablestats,None,None, "Dictionary of :class:`TableStatsInfo` instances for this object.")
 
     #--- Public
 
@@ -804,12 +756,9 @@ class CallStackInfo(BaseInfoItem):
     #--- properties
 
     id = property(__get_id,None,None,"Call ID.")
-    statement = property(__get_statement,None,None,
-        "Top-level :class:`StatementInfo` instance to which this call stack entry belongs.")
-    caller = property(__get_caller,None,None,
-        "Call stack entry (:class:`CallStackInfo`) of the caller.")
-    dbobject = property(__get_dbobject,None,None,
-        "PSQL object. :class:`~fdb.schema.Procedure` or :class:`~fdb.schema.Trigger` instance.")
+    statement = property(__get_statement,None,None, "Top-level :class:`StatementInfo` instance to which this call stack entry belongs.")
+    caller = property(__get_caller,None,None, "Call stack entry (:class:`CallStackInfo`) of the caller.")
+    dbobject = property(__get_dbobject,None,None, "PSQL object. :class:`~fdb.schema.Procedure` or :class:`~fdb.schema.Trigger` instance.")
     timestamp = property(__get_timestamp,None,None,"Request start date/time.")
     line = property(__get_line,None,None,"SQL source line number.")
     column = property(__get_column,None,None,"SQL source column number.")
@@ -909,29 +858,22 @@ class IOStatsInfo(BaseInfoItem):
     inserts = property(__get_inserts,None,None,"Number of inserted records.")
     updates = property(__get_updates,None,None,"Number of updated records.")
     deletes = property(__get_deletes,None,None,"Number of deleted records.")
-    backouts = property(__get_backouts,None,None,
-        "Number of records where a new primary record version or a change to " \
+    backouts = property(__get_backouts,None,None,"Number of records where a new primary record version or a change to " \
         "an existing primary record version is backed out due to rollback or " \
         "savepoint undo.")
-    purges = property(__get_purges,None,None,
-        "Number of records where record version chain is being purged of " \
+    purges = property(__get_purges,None,None,"Number of records where record version chain is being purged of " \
         "versions no longer needed by OAT or younger transactions.")
-    expunges = property(__get_expunges,None,None,
-        "Number of records where record version chain is being deleted due to " \
+    expunges = property(__get_expunges,None,None, "Number of records where record version chain is being deleted due to " \
         "deletions by transactions older than OAT.")
     memory_used = property(__get_memory_used,None,None,"Number of bytes currently in use.")
-    memory_allocated = property(__get_memory_allocated,None,None,
-        "Number of bytes currently allocated at the OS level.")
-    max_memory_used = property(__get_max_memory_used,None,None,
-        "Maximum number of bytes used by this object.")
-    max_memory_allocated = property(__get_max_memory_allocated,None,None,
-        "Maximum number of bytes allocated from the operating system by this object.")
+    memory_allocated = property(__get_memory_allocated,None,None, "Number of bytes currently allocated at the OS level.")
+    max_memory_used = property(__get_max_memory_used,None,None, "Maximum number of bytes used by this object.")
+    max_memory_allocated = property(__get_max_memory_allocated,None,None, "Maximum number of bytes allocated from the operating system by this object.")
     # FB 3.0
     locks = property(__get_locks,None,None,"Number of record locks.")
     waits = property(__get_waits,None,None,"Number of record waits.")
     conflits = property(__get_conflits,None,None,"Number of record conflits.")
-    backversion_reads = property(__get_backversion_reads,None,None,
-        "Number of record backversion reads.")
+    backversion_reads = property(__get_backversion_reads,None,None, "Number of record backversion reads.")
     fragment_reads = property(__get_fragment_reads,None,None,"Number of record fragment reads.")
     repeated_reads = property(__get_repeated_reads,None,None,"Number of repeated record reads.")
 
@@ -1014,21 +956,16 @@ class TableStatsInfo(BaseInfoItem):
     inserts = property(__get_inserts,None,None,"Number of inserted records.")
     updates = property(__get_updates,None,None,"Number of updated records.")
     deletes = property(__get_deletes,None,None,"Number of deleted records.")
-    backouts = property(__get_backouts,None,None,
-        "Number of records where a new primary record version or a change to " \
+    backouts = property(__get_backouts,None,None, "Number of records where a new primary record version or a change to " \
         "an existing primary record version is backed out due to rollback or " \
         "savepoint undo.")
-    purges = property(__get_purges,None,None,
-        "Number of records where record version chain is being purged of " \
+    purges = property(__get_purges,None,None, "Number of records where record version chain is being purged of " \
         "versions no longer needed by OAT or younger transactions.")
-    expunges = property(__get_expunges,None,None,
-        "Number of records where record version chain is being deleted due to " \
-        "deletions by transactions older than OAT.")
+    expunges = property(__get_expunges,None,None, "Number of records where record version chain is being deleted due to deletions by transactions older than OAT.")
     locks = property(__get_locks,None,None,"Number of record locks.")
     waits = property(__get_waits,None,None,"Number of record waits.")
     conflits = property(__get_conflits,None,None,"Number of record conflits.")
-    backversion_reads = property(__get_backversion_reads,None,None,
-        "Number of record backversion reads.")
+    backversion_reads = property(__get_backversion_reads,None,None,"Number of record backversion reads.")
     fragment_reads = property(__get_fragment_reads,None,None,"Number of record fragment reads.")
     repeated_reads = property(__get_repeated_reads,None,None,"Number of repeated record reads.")
 
@@ -1056,10 +993,8 @@ class ContextVariableInfo(BaseInfoItem):
 
     #--- properties
 
-    attachment = property(__get_attachment,None,None,
-        ":class:`AttachmentInfo` instance to which this context variable belongs or None.")
-    transaction = property(__get_transaction,None,None,
-        ":class:`TransactionInfo` instance to which this context variable belongs or None.")
+    attachment = property(__get_attachment,None,None,":class:`AttachmentInfo` instance to which this context variable belongs or None.")
+    transaction = property(__get_transaction,None,None,":class:`TransactionInfo` instance to which this context variable belongs or None.")
     name = property(__get_name,None,None,"Context variable name.")
     value = property(__get_value,None,None,"Value of context variable.")
 

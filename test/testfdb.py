@@ -5948,7 +5948,7 @@ class TestMonitor(FDBTestBase):
         else:
             self.assertEqual(s.plan,'Select Expression\n    -> Table "MON$DATABASE" Full Scan')
         # We have to use mocks for callstack
-        stack = []
+        stack = utils.ObjectList()
         stack.append(fdb.monitor.CallStackInfo(m,
             {'MON$CALL_ID':1, 'MON$STATEMENT_ID':s.id-1, 'MON$CALLER_ID':None,
              'MON$OBJECT_NAME':'TRIGGER_1', 'MON$OBJECT_TYPE':2, 'MON$TIMESTAMP':datetime.datetime.now(),
@@ -5988,7 +5988,7 @@ class TestMonitor(FDBTestBase):
         m.refresh()
         stmt = m.this_attachment.statements[0]
         # We have to use mocks for callstack
-        stack = []
+        stack = utils.ObjectList()
         stack.append(fdb.monitor.CallStackInfo(m,
             {'MON$CALL_ID':1, 'MON$STATEMENT_ID':stmt.id-1, 'MON$CALLER_ID':None,
              'MON$OBJECT_NAME':'POST_NEW_ORDER', 'MON$OBJECT_TYPE':2, 'MON$TIMESTAMP':datetime.datetime.now(),
@@ -6013,6 +6013,7 @@ class TestMonitor(FDBTestBase):
         data = m.iostats[0]._attributes
         data['MON$STAT_ID'] = stmt.stat_id+101
         data['MON$STAT_GROUP'] = fdb.monitor.STAT_CALL
+        m.__dict__['_Monitor__iostats'] = utils.ObjectList(m.iostats)
         m.__dict__['_Monitor__iostats'].append(fdb.monitor.IOStatsInfo(m,data))
         #
         s = m.get_call(2)
