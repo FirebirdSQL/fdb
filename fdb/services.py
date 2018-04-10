@@ -34,38 +34,34 @@ import time
 
 api = None
 
-# The following SHUT_* constants are to be passed as the `shutdown_mode`
-# parameter to Connection.shutdown:
+#: The following SHUT_* constants are to be passed as the `shutdown_mode` parameter to Connection.shutdown:
 SHUT_LEGACY = -1
 SHUT_NORMAL = ibase.isc_spb_prp_sm_normal
 SHUT_MULTI = ibase.isc_spb_prp_sm_multi
 SHUT_SINGLE = ibase.isc_spb_prp_sm_single
 SHUT_FULL = ibase.isc_spb_prp_sm_full
 
-# The following SHUT_* constants are to be passed as the `shutdown_method`
-# parameter to Connection.shutdown:
+#: The following SHUT_* constants are to be passed as the `shutdown_method` parameter to Connection.shutdown:
 SHUT_FORCE = ibase.isc_spb_prp_shutdown_db
 SHUT_DENY_NEW_TRANSACTIONS = ibase.isc_spb_prp_deny_new_transactions
 SHUT_DENY_NEW_ATTACHMENTS = ibase.isc_spb_prp_deny_new_attachments
 
-# The following WRITE_* constants are to be passed as the `mode` parameter
-# to Connection.set_write_mode:
+#: The following WRITE_* constants are to be passed as the `mode` parameter to Connection.set_write_mode:
 WRITE_FORCED = ibase.isc_spb_prp_wm_sync
 WRITE_BUFFERED = ibase.isc_spb_prp_wm_async
 
-# The following ACCESS_* constants are to be passed as the `mode` parameter
-# to Connection.set_access_mode:
+#: The following ACCESS_* constants are to be passed as the `mode` parameter to Connection.set_access_mode:
 ACCESS_READ_WRITE = ibase.isc_spb_prp_am_readwrite
 ACCESS_READ_ONLY = ibase.isc_spb_prp_am_readonly
 
-# The following CAPABILITY_* constants are return values of `get_server_capabilities`
+#: The following CAPABILITY_* constants are return values of `get_server_capabilities`
 CAPABILITY_MULTI_CLIENT = 0x2
 CAPABILITY_REMOTE_HOP = 0x4
 CAPABILITY_SERVER_CONFIG = 0x200
 CAPABILITY_QUOTED_FILENAME = 0x400
 CAPABILITY_NO_SERVER_SHUTDOWN = 0x100
 
-# The following STATS_* constants are options for backup/restore 'stats' parameter.
+#: The following STATS_* constants are options for backup/restore 'stats' parameter.
 STATS_TOTAL_TIME = 'T'
 STATS_TIME_DELTA = 'D'
 STATS_PAGE_READS = 'R'
