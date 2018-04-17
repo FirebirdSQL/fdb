@@ -81,9 +81,7 @@ EVENTS = ['TRACE_INIT', 'TRACE_SUSPENDED', 'TRACE_FINI',
           'SET_CONTEXT', 'ERROR', 'WARNING',
           'SWEEP_START', 'SWEEP_PROGRESS', 'SWEEP_FINISH', 'SWEEP_FAILED',
           'COMPILE_BLR', 'EXECUTE_BLR', 'EXECUTE_DYN',
-          'UNKNOWN'
-          ]
-
+          'UNKNOWN']
 
 #
 # Named tuples for individual trace events
@@ -209,8 +207,7 @@ class TraceParser(object):
                             EVENT_BLR_COMPILE: self.__parser_blr_compile,
                             EVENT_BLR_EXECUTE: self.__parser_blr_execute,
                             EVENT_DYN_EXECUTE: self.__parser_dyn_execute,
-                            EVENT_UNKNOWN: self.__parser_unknown
-                            }
+                            EVENT_UNKNOWN: self.__parser_unknown}
     def is_entry_header(self, line):
         """Returns True if parameter is trace log entry header. This version only checks that first item is a timestamp in valid format.
 
@@ -218,7 +215,7 @@ class TraceParser(object):
 """
         items = line.split()
         try:
-            timestamp = datetime.datetime.strptime(items[0],'%Y-%m-%dT%H:%M:%S.%f')
+            timestamp = datetime.datetime.strptime(items[0], '%Y-%m-%dT%H:%M:%S.%f')
             return True
         except:
             return False
@@ -279,7 +276,7 @@ class TraceParser(object):
     :raises fdb.ParseError: When event is not recognized
 """
         items = line.split()
-        timestamp = datetime.datetime.strptime(items[0],'%Y-%m-%dT%H:%M:%S.%f')
+        timestamp = datetime.datetime.strptime(items[0], '%Y-%m-%dT%H:%M:%S.%f')
         if (len(items) == 3) or (items[2] in ['ERROR', 'WARNING']):
             return (timestamp, STATUS_OK, EVENTS.index(items[2]) if items[2] in EVENTS else EVENT_UNKNOWN)
         else:
@@ -291,7 +288,7 @@ class TraceParser(object):
                 return (timestamp, STATUS_UNKNOWN, EVENT_UNKNOWN)  # ' '.join(items[3:]))
             else:
                 raise fdb.ParseError('Unrecognized event header: "%s"' % line)
-    def _parse_attachment_info(self, values, check = True):
+    def _parse_attachment_info(self, values, check=True):
         line = self.__current_block.popleft()
         database, sep, attachment = line.partition(' (')
         values['database'] = database
@@ -331,7 +328,7 @@ class TraceParser(object):
         if check and values['attachment_id'] not in self.seen_attachments:
             self.__buffer.append(AttachmentInfo(**values))
         self.seen_attachments.add(values['attachment_id'])
-    def _parse_transaction_info(self, values, check = True):
+    def _parse_transaction_info(self, values, check=True):
         # Transaction parameters
         transaction_id, transaction_options = self.__current_block.popleft().strip('\t ()').split(',')
         pad, s = transaction_id.split('_')
@@ -447,7 +444,7 @@ class TraceParser(object):
         if line:
             self.__current_block.appendleft(line)
         self.__event_values['plan'] = '\n'.join(plan)
-    def _parse_parameters(self, for_procedure = False):
+    def _parse_parameters(self, for_procedure=False):
         parameters = []
         while self.__current_block and self.__current_block[0].startswith('param'):
             line = self.__current_block.popleft()
@@ -466,7 +463,7 @@ class TraceParser(object):
                 param_value = datetime.datetime.strptime(param_value, '%H:%M:%S.%f')
             elif param_type in ['float', 'double precision']:
                 param_value = decimal.Decimal(param_value)
-            parameters.append((param_type,param_value,))
+            parameters.append((param_type, param_value,))
         while self.__current_block and self.__current_block[0].endswith('more arguments skipped...'):
             self.__current_block.popleft()
         #
@@ -518,14 +515,14 @@ class TraceParser(object):
             while self.__current_block:
                 entry = self.__current_block.popleft()
                 self.__event_values['access'].append(AccessTuple._make((intern(entry[:32].strip()),
-                                                     utils.safe_int(entry[32:41].strip()),
-                                                     utils.safe_int(entry[41:51].strip()),
-                                                     utils.safe_int(entry[51:61].strip()),
-                                                     utils.safe_int(entry[61:71].strip()),
-                                                     utils.safe_int(entry[71:81].strip()),
-                                                     utils.safe_int(entry[81:91].strip()),
-                                                     utils.safe_int(entry[91:101].strip()),
-                                                     utils.safe_int(entry[101:111].strip()))))
+                                                                        utils.safe_int(entry[32:41].strip()),
+                                                                        utils.safe_int(entry[41:51].strip()),
+                                                                        utils.safe_int(entry[51:61].strip()),
+                                                                        utils.safe_int(entry[61:71].strip()),
+                                                                        utils.safe_int(entry[71:81].strip()),
+                                                                        utils.safe_int(entry[81:91].strip()),
+                                                                        utils.safe_int(entry[91:101].strip()),
+                                                                        utils.safe_int(entry[101:111].strip()))))
     def _parse_sql_info(self):
         plan = self.__event_values['plan']
         sql = self.__event_values['sql']
@@ -640,7 +637,7 @@ class TraceParser(object):
         self.__event_values['timestamp'] = self.__last_timestamp
         self.__event_values['event_id'] = self.next_event_id
         session_name = line[4:line.find(' is suspended')]
-        self.__event_values['session_name'] = session_name.replace(' ','_').upper()
+        self.__event_values['session_name'] = session_name.replace(' ', '_').upper()
         self.next_event_id += 1
         return EventTraceSuspend(**self.__event_values)
     def __parser_trace_init(self):
@@ -660,7 +657,7 @@ class TraceParser(object):
         self._parse_attachment_info(values)
         self.__event_values['attachment_id'] = values['attachment_id']
         # Transaction parameters
-        self._parse_transaction_info(self.__event_values, check = False)
+        self._parse_transaction_info(self.__event_values, check=False)
         return EventTransactionStart(**self.__event_values)
     def __parser_commit_transaction(self):
         self.__parse_trace_header()
@@ -669,7 +666,7 @@ class TraceParser(object):
         self._parse_attachment_info(values)
         self.__event_values['attachment_id'] = values['attachment_id']
         # Transaction parameters
-        self._parse_transaction_info(self.__event_values, check = False)
+        self._parse_transaction_info(self.__event_values, check=False)
         self._parse_transaction_performance()
         return EventCommit(**self.__event_values)
     def __parser_rollback_transaction(self):
@@ -679,7 +676,7 @@ class TraceParser(object):
         self._parse_attachment_info(values)
         self.__event_values['attachment_id'] = values['attachment_id']
         # Transaction parameters
-        self._parse_transaction_info(self.__event_values, check = False)
+        self._parse_transaction_info(self.__event_values, check=False)
         self._parse_transaction_performance()
         return EventRollback(**self.__event_values)
     def __parser_commit_retaining(self):
@@ -689,7 +686,7 @@ class TraceParser(object):
         self._parse_attachment_info(values)
         self.__event_values['attachment_id'] = values['attachment_id']
         # Transaction parameters
-        self._parse_transaction_info(self.__event_values, check = False)
+        self._parse_transaction_info(self.__event_values, check=False)
         self._parse_transaction_performance()
         return EventCommitRetaining(**self.__event_values)
     def __parser_rollback_retaining(self):
@@ -699,7 +696,7 @@ class TraceParser(object):
         self._parse_attachment_info(values)
         self.__event_values['attachment_id'] = values['attachment_id']
         # Transaction parameters
-        self._parse_transaction_info(self.__event_values, check = False)
+        self._parse_transaction_info(self.__event_values, check=False)
         self._parse_transaction_performance()
         return EventRollbackRetaining(**self.__event_values)
     def __parser_prepare_statement(self):
@@ -765,49 +762,47 @@ class TraceParser(object):
         self._parse_attachment_and_transaction()
         pad, s = self.__current_block.popleft().split()
         self.__event_values['procedure'] = s[:-1]
-        self._parse_parameters(for_procedure = True)
+        self._parse_parameters(for_procedure=True)
         return EventProcedureStart(**self.__event_values)
     def __parser_procedure_finish(self):
         self.__parse_trace_header()
         self._parse_attachment_and_transaction()
         pad, s = self.__current_block.popleft().split()
         self.__event_values['procedure'] = s[:-1]
-        self._parse_parameters(for_procedure = True)
+        self._parse_parameters(for_procedure=True)
         self._parse_performance()
         return EventProcedureFinish(**self.__event_values)
     def __parser_create_db(self):
         self.__parse_trace_header()
         # Attachment parameters
-        self._parse_attachment_info(self.__event_values, check = False)
-        #self.__event_values['unauthorized'] = False
+        self._parse_attachment_info(self.__event_values, check=False)
         return EventCreate(**self.__event_values)
     def __parser_drop_db(self):
         self.__parse_trace_header()
         # Attachment parameters
-        self._parse_attachment_info(self.__event_values, check = False)
-        #self.__event_values['unauthorized'] = False
+        self._parse_attachment_info(self.__event_values, check=False)
         return EventDrop(**self.__event_values)
     def __parser_attach(self):
         self.__parse_trace_header()
         # Attachment parameters
-        self._parse_attachment_info(self.__event_values, check = False)
+        self._parse_attachment_info(self.__event_values, check=False)
         #self.__event_values['unauthorized'] = False
         return EventAttach(**self.__event_values)
     def __parser_detach(self):
         self.__parse_trace_header()
         # Attachment parameters
-        self._parse_attachment_info(self.__event_values, check = False)
+        self._parse_attachment_info(self.__event_values, check=False)
         return EventDetach(**self.__event_values)
     def __parser_service_start(self):
         self.__parse_trace_header()
         self._parse_service()
         # service parameters
         action = self.__current_block.popleft().strip('"')
-        self.__event_values['action']  = action
+        self.__event_values['action'] = action
         parameters = []
         while len(self.__current_block) > 0:
             parameters.append(self.__current_block.popleft())
-        self.__event_values['parameters']  = parameters
+        self.__event_values['parameters'] = parameters
         #
         return EventServiceStart(**self.__event_values)
     def __parser_service_attach(self):
@@ -825,13 +820,13 @@ class TraceParser(object):
         line = self.__current_block.popleft().strip()
         if line[0] == '"' and line[-1] == '"':
             action = line.strip('"')
-            self.__event_values['action']  = action
+            self.__event_values['action'] = action
         else:
-            self.__event_values['action']  = None
+            self.__event_values['action'] = None
         parameters = []
         while len(self.__current_block) > 0:
             parameters.append(self.__current_block.popleft())
-        self.__event_values['parameters']  = parameters
+        self.__event_values['parameters'] = parameters
         #
         return EventServiceQuery(**self.__event_values)
     def __parser_set_context(self):
@@ -966,4 +961,3 @@ class TraceParser(object):
             while len(self.__buffer) > 0:
                 yield self.__buffer.pop(0)
             yield rec
-

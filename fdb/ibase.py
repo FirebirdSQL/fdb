@@ -21,7 +21,10 @@
 #
 # See LICENSE.TXT for details.
 
-from ctypes import *
+#from ctypes import *
+from ctypes import c_char_p, c_wchar_p, c_char, c_byte, c_ubyte, c_int, c_uint, c_short, c_ushort, \
+     c_long, c_ulong, c_longlong, c_ulonglong, c_void_p, c_int8, c_int16, c_int32, c_int64, c_uint8, \
+     c_uint16, c_uint32, c_uint64, POINTER, Structure, CFUNCTYPE, CDLL
 from ctypes.util import find_library
 import sys
 import locale
@@ -36,15 +39,15 @@ PYTHON_MAJOR_VER = sys.version_info[0]
 
 if PYTHON_MAJOR_VER == 3:
     from queue import PriorityQueue
-    def nativestr(st,charset="latin-1"):
-        if st == None:
+    def nativestr(st, charset="latin-1"):
+        if st is None:
             return st
         elif isinstance(st, bytes):
             return st.decode(charset)
         else:
             return st
-    def b(st,charset="latin-1"):
-        if st == None:
+    def b(st, charset="latin-1"):
+        if st is None:
             return st
         elif isinstance(st, bytes):
             return st
@@ -57,7 +60,7 @@ if PYTHON_MAJOR_VER == 3:
     def s(st):
         return st
 
-    ord2 = lambda x: x if type(x) == IntType else ord(x)
+    ord2 = lambda x: x if isinstance(x, IntType) else ord(x)
 
     if sys.version_info[1] <= 1:
         def int2byte(i):
@@ -83,15 +86,15 @@ if PYTHON_MAJOR_VER == 3:
 
 else:
     from Queue import PriorityQueue
-    def nativestr(st,charset="latin-1"):
-        if st == None:
+    def nativestr(st, charset="latin-1"):
+        if st is None:
             return st
         elif isinstance(st, unicode):
             return st.encode(charset)
         else:
             return st
-    def b(st,charset="latin-1"):
-        if st == None:
+    def b(st, charset="latin-1"):
+        if st is None:
             return st
         elif isinstance(st, types.StringType):
             return st
@@ -131,7 +134,7 @@ else:
 # typechecked, and will be converted to c_void_p.
 def UNCHECKED(type):
     if (hasattr(type, "_type_") and isinstance(type._type_, str)
-        and type._type_ != "P"):
+            and type._type_ != "P"):
         return type
     else:
         return c_void_p
@@ -143,7 +146,7 @@ MAX_BLOB_SEGMENT_SIZE = 65535
 
 # Event queue operation (and priority) codes
 
-OP_DIE      = 1
+OP_DIE = 1
 OP_RECORD_AND_REREGISTER = 2
 
 charset_map = {
@@ -581,25 +584,25 @@ isc_tpb_no_auto_undo = 20
 isc_tpb_lock_timeout = 21
 
 # BLOB parameter buffer
-isc_bpb_version1          = 1
-isc_bpb_source_type       = 1
-isc_bpb_target_type       = 2
-isc_bpb_type              = 3
-isc_bpb_source_interp     = 4
-isc_bpb_target_interp     = 5
-isc_bpb_filter_parameter  = 6
+isc_bpb_version1 = 1
+isc_bpb_source_type = 1
+isc_bpb_target_type = 2
+isc_bpb_type = 3
+isc_bpb_source_interp = 4
+isc_bpb_target_interp = 5
+isc_bpb_filter_parameter = 6
 # Added in FB 2.1
-isc_bpb_storage           = 7
+isc_bpb_storage = 7
 
-isc_bpb_type_segmented    = 0
-isc_bpb_type_stream       = 1
+isc_bpb_type_segmented = 0
+isc_bpb_type_stream = 1
 # Added in FB 2.1
-isc_bpb_storage_main      = 0
-isc_bpb_storage_temp      = 2
+isc_bpb_storage_main = 0
+isc_bpb_storage_temp = 2
 
 # BLOB codes
 
-isc_segment    = 335544366
+isc_segment = 335544366
 isc_segstr_eof = 335544367
 
 # Services API
@@ -624,7 +627,7 @@ isc_spb_process_name = 112
 # Added in FB 2.5
 isc_spb_trusted_role = 113
 # Added in FB 3.0
-isc_spb_verbint  = 114
+isc_spb_verbint = 114
 isc_spb_auth_block = 115
 isc_spb_auth_plugin_name = 116
 isc_spb_auth_plugin_list = 117
@@ -1277,9 +1280,6 @@ XSQLDA._fields_ = [
 
 XSQLDA_PTR = POINTER(XSQLDA)
 
-def portable_int (buf):
-    pass
-
 class USER_SEC_DATA(Structure):
     pass
 USER_SEC_DATA._fields_ = [
@@ -1354,7 +1354,7 @@ class fbclient_API(object):
     """Firebird Client API interface object. Loads Firebird Client Library and exposes
     API functions as member methods. Uses :ref:`ctypes <python:module-ctypes>` for bindings.
     """
-    def __init__(self,fb_library_name=None):
+    def __init__(self, fb_library_name=None):
 
         def get_key(key, sub_key):
             try:
@@ -1378,12 +1378,12 @@ class fbclient_API(object):
 
                     # try find via installed Firebird server
                     key = get_key(winreg.HKEY_LOCAL_MACHINE,
-                                  'SOFTWARE\Firebird Project\Firebird Server\Instances')
+                                  'SOFTWARE\\Firebird Project\\Firebird Server\\Instances')
                     if not key:
                         key = get_key(winreg.HKEY_LOCAL_MACHINE,
-                                      'SOFTWARE\Wow6432Node\Firebird Project\Firebird Server\Instances')
+                                      'SOFTWARE\\Wow6432Node\\Firebird Project\\Firebird Server\\Instances')
                     if key:
-                        instFold = winreg.QueryValueEx(key,'DefaultInstance')
+                        instFold = winreg.QueryValueEx(key, 'DefaultInstance')
                         fb_library_name = os.path.join(os.path.join(instFold[0], 'bin'), 'fbclient.dll')
             else:
                 fb_library_name = find_library('fbclient')
@@ -1397,7 +1397,7 @@ class fbclient_API(object):
             if not fb_library_name:
                 raise Exception("The location of Firebird Client Library could not be determined.")
         elif not os.path.exists(fb_library_name):
-            path,file_name = os.path.split(fb_library_name)
+            path, file_name = os.path.split(fb_library_name)
             file_name = find_library(file_name)
             if not file_name:
                 raise Exception("Firebird Client Library '%s' not found" % fb_library_name)
@@ -1660,7 +1660,7 @@ class fbclient_API(object):
         self.isc_event_counts = fb_library.isc_event_counts
         self.isc_event_counts.restype = None
         self.isc_event_counts.argtypes = [POINTER(RESULT_VECTOR), c_short, POINTER(ISC_UCHAR),
-                                     POINTER(ISC_UCHAR)]
+                                          POINTER(ISC_UCHAR)]
 
         self.isc_expand_dpb = fb_library.isc_expand_dpb
         self.isc_expand_dpb.restype = None
@@ -1764,8 +1764,7 @@ class fbclient_API(object):
                                                 POINTER(isc_tr_handle), c_short,
                                                 POINTER(isc_db_handle), c_short,
                                                 STRING)
-            self.isc_start_transaction = P_isc_start_transaction(('isc_start_transaction',
-                                                             fb_library))
+            self.isc_start_transaction = P_isc_start_transaction(('isc_start_transaction', fb_library))
         else:
             self.isc_start_transaction = fb_library.isc_start_transaction
             self.isc_start_transaction.restype = ISC_STATUS
@@ -2211,19 +2210,19 @@ class fbclient_API(object):
         #self.wcstoumax.restype = uintmax_t
         #self.wcstoumax.argtypes = [WSTRING, POINTER(WSTRING), c_int]
 
-        self.P_isc_event_block = CFUNCTYPE(ISC_LONG,POINTER(POINTER(ISC_UCHAR)),
-                                    POINTER(POINTER(ISC_UCHAR)), ISC_USHORT)
-        self.C_isc_event_block = self.P_isc_event_block(('isc_event_block',fb_library))
+        self.P_isc_event_block = CFUNCTYPE(ISC_LONG, POINTER(POINTER(ISC_UCHAR)),
+                                           POINTER(POINTER(ISC_UCHAR)), ISC_USHORT)
+        self.C_isc_event_block = self.P_isc_event_block(('isc_event_block', fb_library))
         self.P_isc_event_block_args = self.C_isc_event_block.argtypes
 
-    def isc_event_block(self,event_buffer,result_buffer,*args):
+    def isc_event_block(self, event_buffer, result_buffer, *args):
         if len(args) > 15:
             raise Exception("isc_event_block takes no more than 15 event names")
         newargs = list(self.P_isc_event_block_args)
         for x in args:
             newargs.append(STRING)
         self.C_isc_event_block.argtypes = newargs
-        result = self.C_isc_event_block(event_buffer,result_buffer,len(args),*args)
+        result = self.C_isc_event_block(event_buffer, result_buffer, len(args), *args)
         return result
 
 

@@ -19,9 +19,8 @@
 #  Contributor(s): ______________________________________.
 
 from operator import attrgetter
-import types
 
-def safe_int(str_value, base = 10):
+def safe_int(str_value, base=10):
     """Always returns integer value from string/None argument. Returns 0 if argument is None.
 """
     if str_value:
@@ -30,21 +29,22 @@ def safe_int(str_value, base = 10):
         return 0
 
 def safe_str(str_value):
-    """Always returns string value from string/None argument. Returns empty string if argument is None.
+    """Always returns string value from string/None argument.
+Returns empty string if argument is None.
 """
     if str_value is None:
         return ''
     else:
         return str_value
 
-def update_meta (self, other):
+def update_meta(self, other):
     "Helper function for :class:`LateBindingProperty` class."
     self.__name__ = other.__name__
     self.__doc__ = other.__doc__
     self.__dict__.update(other.__dict__)
     return self
 
-class LateBindingProperty (property):
+class LateBindingProperty(property):
     """Property class that binds to getter/setter/deleter methods when **instance**
 of class that define the property is created. This allows you to override
 these methods in descendant classes (if they are not private) without
@@ -108,7 +108,7 @@ d. It's shorter ;)
 e. If you inspect the property you will get back functions with the correct __name__, __doc__, etc.
 
     """
-    def __new__(self, fget=None, fset=None, fdel=None, doc=None):
+    def __new__(cls, fget=None, fset=None, fdel=None, doc=None):
         if fget is not None:
             def __get__(obj, objtype=None, name=fget.__name__):
                 fget = getattr(obj, name)
@@ -129,7 +129,7 @@ e. If you inspect the property you will get back functions with the correct __na
 class Iterator(object):
     """Generic iterator implementation.
     """
-    def __init__(self, method, sentinel = None):
+    def __init__(self, method, sentinel=None):
         """
         :param method: Callable without parameters that returns next item.
         :param sentinel: Value that when returned by `method` indicates the end
@@ -156,7 +156,7 @@ class EmbeddedProperty(property):
     """Property class that forwards calls to getter/setter/deleter methods to
 respective property methods of another object. This class allows you to "inject"
 properties from embedded object into class definition of parent object."""
-    def __init__(self,obj,prop):
+    def __init__(self, obj, prop):
         """
         :param string obj: Attribute name with embedded object.
         :param property prop: Property instance from embedded object.
@@ -164,20 +164,20 @@ properties from embedded object into class definition of parent object."""
         self.obj = obj
         self.prop = prop
         self.__doc__ = prop.__doc__
-    def __get__(self,obj,objtype):
+    def __get__(self, obj, objtype):
         if obj is None:
             return self
-        return self.prop.__get__(getattr(obj,self.obj))
-    def __set__(self,obj,val):
-        self.prop.__set__(getattr(obj,self.obj),val)
-    def __delete__(self,obj):
-        self.prop.__delete__(getattr(obj,self.obj))
+        return self.prop.__get__(getattr(obj, self.obj))
+    def __set__(self, obj, val):
+        self.prop.__set__(getattr(obj, self.obj), val)
+    def __delete__(self, obj):
+        self.prop.__delete__(getattr(obj, self.obj))
 
 class EmbeddedAttribute(property):
     """Property class that gets/sets attribute of another object. This class
     allows you to "inject" attributes from embedded object into class definition
     of parent object."""
-    def __init__(self,obj,attr):
+    def __init__(self, obj, attr):
         """
         :param string obj: Attribute name with embedded object.
         :param string attr: Attribute name from embedded object.
@@ -185,12 +185,12 @@ class EmbeddedAttribute(property):
         self.obj = obj
         self.attr = attr
         self.__doc__ = attr.__doc__
-    def __get__(self,obj,objtype):
+    def __get__(self, obj, objtype):
         if obj is None:
             return self
-        return getattr(getattr(obj,self.obj),self.attr)
-    def __set__(self,obj,val):
-        setattr(getattr(obj,self.obj),self.attr,val)
+        return getattr(getattr(obj, self.obj), self.attr)
+    def __set__(self, obj, val):
+        setattr(getattr(obj, self.obj), self.attr, val)
 
 def iter_class_properties(cls):
     """Iterator that yields `name, property` pairs for all properties in class.
@@ -210,25 +210,26 @@ def iter_class_variables(cls):
         if not (isinstance(value, property) or callable(value)) and not varname.startswith('_'):
             yield varname
 
-def embed_attributes(from_class,attr):
+def embed_attributes(from_class, attr):
     """Class decorator that injects properties and attributes
-from another class instance embedded in class instances. Only attributes and properties that are not already defined in decorated
-class are injected.
+from another class instance embedded in class instances. Only attributes and properties that are not
+already defined in decorated class are injected.
 
     :param class from_class: Class that should extend decorated class.
     :param string attr: Attribute name that holds instance of embedded class
         within decorated class instance."""
     def d(class_):
-        for pname,prop in iter_class_properties(from_class):
-            if not hasattr(class_,pname):
-                setattr(class_,pname,EmbeddedProperty(attr,prop))
+        for pname, prop in iter_class_properties(from_class):
+            if not hasattr(class_, pname):
+                setattr(class_, pname, EmbeddedProperty(attr, prop))
         for attrname in iter_class_variables(from_class):
-            if not hasattr(class_,attrname):
-                setattr(class_,attrname,EmbeddedAttribute(attr,attrname))
+            if not hasattr(class_, attrname):
+                setattr(class_, attrname, EmbeddedAttribute(attr, attrname))
         return class_
     return d
 
-def make_lambda(expr, params = 'item', context = None):
+def make_lambda(expr, params='item', context=None):
+    "Make lambda function from expression."
     if context:
         return eval('lambda %s:%s' % (params, expr), context)
     else:
@@ -237,7 +238,7 @@ def make_lambda(expr, params = 'item', context = None):
 class ObjectList(list):
     """Mutable sequence of objects with additional functionality.
 """
-    def __init__(self, items = None, _cls = None, key_expr = None):
+    def __init__(self, items=None, _cls=None, key_expr=None):
         """
             :param iterable items: Sequence to initialize the collection.
             :param _cls: Class or list/tuple of classes. Only instances of these classes would be allowed in collection.
@@ -292,7 +293,7 @@ class ObjectList(list):
         :raises TypeError: When list is frozen or item is not an instance of allowed class"""
         for item in iterable:
             self.append(item)
-    def sort(self, attrs = None, expr = None, reverse = False):
+    def sort(self, attrs=None, expr=None, reverse=False):
         """Sort items in-place, optionaly using attribute values as key or key expression.
 
         :param list attrs: List of attribute names.
@@ -312,11 +313,11 @@ class ObjectList(list):
     """
         self.__check_mutability()
         if attrs:
-            super(ObjectList, self).sort(key=attrgetter(*attrs), reverse = reverse)
+            super(ObjectList, self).sort(key=attrgetter(*attrs), reverse=reverse)
         elif expr:
-            super(ObjectList, self).sort(key=expr if callable(expr) else make_lambda(expr), reverse = reverse)
+            super(ObjectList, self).sort(key=expr if callable(expr) else make_lambda(expr), reverse=reverse)
         else:
-            super(ObjectList, self).sort(reverse = reverse)
+            super(ObjectList, self).sort(reverse=reverse)
     def reverse(self):
         """Reverse the elements of the list, in place.
 
@@ -471,7 +472,7 @@ on list items.
             else:
                 i += 1
         return l
-    def get(self, value, expr = None):
+    def get(self, value, expr=None):
         """Return item with given key value using default or specified key expression, or None if there is no such item.
 
         Uses very fast method to look up value of default key expression in `frozen` list, otherwise it uses slower list traversal.
@@ -504,7 +505,7 @@ on list items.
             if fce(item, value):
                 return item
         return None
-    def contains(self, value, expr = None):
+    def contains(self, value, expr=None):
         """Return True if list has any item with default or specified key expression equal to given value.
 
         :param value:  Tested key value.
@@ -551,5 +552,5 @@ on list items.
                 return True
         return False
     #
-    frozen = property(fget=lambda self: self.__frozen, doc= 'True if list is immutable')
-    key = property(fget=lambda self: self.__key, doc= 'Key expression')
+    frozen = property(fget=lambda self: self.__frozen, doc='True if list is immutable')
+    key = property(fget=lambda self: self.__key_expr, doc='Key expression')
