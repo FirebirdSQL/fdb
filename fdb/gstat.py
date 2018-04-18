@@ -27,6 +27,7 @@ from string import strip
 import datetime
 import weakref
 from collections import namedtuple
+from locale import LC_ALL, getlocale, setlocale, resetlocale
 
 GSTAT_25 = 2
 GSTAT_30 = 3
@@ -484,76 +485,84 @@ def parse(lines):
     #
     line_no = 0
     step = 0  # Look for sections and skip empty lines
-    # Skip empty lines at start
-    for line in imap(strip, lines):
-        line_no += 1
-        if line.startswith('Gstat completion time'):
-            db.completed = datetime.datetime.strptime(line[22:], '%a %b %d %H:%M:%S %Y')
-        elif step == 0:  # Looking for section or db name
-            if line.startswith('Gstat execution time'):
-                db.executed = datetime.datetime.strptime(line[21:], '%a %b %d %H:%M:%S %Y')
-            elif line.startswith('Database header page information:'):
-                step = 1
-            elif line.startswith('Variable header data:'):
-                step = 2
-            elif line.startswith('Database file sequence:'):
-                step = 3
-            elif 'encrypted' in line and 'non-crypted' in line:
-                parse_encryption(line)
-            elif line.startswith('Analyzing database pages ...'):
-                step = 4
-            elif empty_str(line):
-                pass
-            elif line.startswith('Database "'):
-                x, s = line.split(' ')
-                db.filename = s.strip('"')
-                step = 0
-            else:
-                raise ParseError("Unrecognized data (line %i)" % line_no)
-        elif step == 1:  # Header
-            if empty_str(line):  # section ends with empty line
-                step = 0
-            else:
-                parse_hdr(line)
-        elif step == 2:  # Variable data
-            if empty_str(line):  # section ends with empty line
-                step = 0
-            else:
-                parse_var(line)
-        elif step == 3:  # File sequence
-            if empty_str(line):  # section ends with empty line
-                step = 0
-            else:
-                parse_fseq(line)
-        elif step == 4:  # Tables and indices
-            if empty_str(line):  # section ends with empty line
-                new_block = True
-            else:
-                if new_block:
-                    new_block = False
-                    if not line.startswith('Index '):
-                        # Should be table
-                        table = StatTable() if db.gstat_version == GSTAT_25 else StatTable3()
-                        db.tables.append(table)
-                        in_table = True
-                        parse_table(line, table)
-                    else:  # It's index
-                        index = StatIndex(table) if db.gstat_version == GSTAT_25 else StatIndex3(table)
-                        db.indices.append(index)
-                        in_table = False
-                        parse_index(line, index)
+    try:
+        locale = getlocale(LC_ALL)
+        setlocale(LC_ALL, 'en_US')
+        # Skip empty lines at start
+        for line in imap(strip, lines):
+            line_no += 1
+            if line.startswith('Gstat completion time'):
+                db.completed = datetime.datetime.strptime(line[22:], '%a %b %d %H:%M:%S %Y')
+            elif step == 0:  # Looking for section or db name
+                if line.startswith('Gstat execution time'):
+                    db.executed = datetime.datetime.strptime(line[21:], '%a %b %d %H:%M:%S %Y')
+                elif line.startswith('Database header page information:'):
+                    step = 1
+                elif line.startswith('Variable header data:'):
+                    step = 2
+                elif line.startswith('Database file sequence:'):
+                    step = 3
+                elif 'encrypted' in line and 'non-crypted' in line:
+                    parse_encryption(line)
+                elif line.startswith('Analyzing database pages ...'):
+                    step = 4
+                elif empty_str(line):
+                    pass
+                elif line.startswith('Database "'):
+                    x, s = line.split(' ')
+                    db.filename = s.strip('"')
+                    step = 0
                 else:
-                    if in_table:
-                        parse_table(line, table)
+                    raise ParseError("Unrecognized data (line %i)" % line_no)
+            elif step == 1:  # Header
+                if empty_str(line):  # section ends with empty line
+                    step = 0
+                else:
+                    parse_hdr(line)
+            elif step == 2:  # Variable data
+                if empty_str(line):  # section ends with empty line
+                    step = 0
+                else:
+                    parse_var(line)
+            elif step == 3:  # File sequence
+                if empty_str(line):  # section ends with empty line
+                    step = 0
+                else:
+                    parse_fseq(line)
+            elif step == 4:  # Tables and indices
+                if empty_str(line):  # section ends with empty line
+                    new_block = True
+                else:
+                    if new_block:
+                        new_block = False
+                        if not line.startswith('Index '):
+                            # Should be table
+                            table = StatTable() if db.gstat_version == GSTAT_25 else StatTable3()
+                            db.tables.append(table)
+                            in_table = True
+                            parse_table(line, table)
+                        else:  # It's index
+                            index = StatIndex(table) if db.gstat_version == GSTAT_25 else StatIndex3(table)
+                            db.indices.append(index)
+                            in_table = False
+                            parse_index(line, index)
                     else:
-                        parse_index(line, index)
-    # Final touch
-    if db.has_table_stats():
-        for table in db.tables:
-            table.distribution = FillDistribution(*table.distribution)
-    if db.has_index_stats():
-        for index in db.indices:
-            index.distribution = FillDistribution(*index.distribution)
-    db.tables.freeze()
-    db.indices.freeze()
+                        if in_table:
+                            parse_table(line, table)
+                        else:
+                            parse_index(line, index)
+        # Final touch
+        if db.has_table_stats():
+            for table in db.tables:
+                table.distribution = FillDistribution(*table.distribution)
+        if db.has_index_stats():
+            for index in db.indices:
+                index.distribution = FillDistribution(*index.distribution)
+        db.tables.freeze()
+        db.indices.freeze()
+    finally:
+        if locale[0] is None:
+            resetlocale(LC_ALL)
+        else:
+            setlocale(LC_ALL, locale)
     return db

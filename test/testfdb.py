@@ -28,6 +28,7 @@ import fdb.ibase as ibase
 import fdb.schema as sm
 import fdb.utils as utils
 import fdb.gstat as gstat
+import fdb.log as log
 import sys, os
 import threading
 import time
@@ -38,6 +39,8 @@ from contextlib import closing
 from re import finditer
 from pprint import pprint
 from fdb.gstat import FillDistribution, Encryption, StatDatabase
+from fdb.log import LogEntry
+from locale import LC_ALL, getlocale, setlocale, getdefaultlocale
 
 if ibase.PYTHON_MAJOR_VER == 3:
     from io import StringIO, BytesIO
@@ -8496,12 +8499,25 @@ class TestUtils(FDBTestBase):
         self.assertTrue(olist.any('item.size > 0'))
         self.assertFalse(olist.any('item.size < 200'))
 
-class TestGstat(FDBTestBase):
+class TestGstatParse(FDBTestBase):
     def setUp(self):
-        super(TestGstat, self).setUp()
+        super(TestGstatParse, self).setUp()
     def _parse_file(self, filename):
         with open(filename) as f:
             return gstat.parse(f)
+    def test_locale(self):
+        locale = getlocale(LC_ALL)
+        if locale[0] is None:
+            locale = getdefaultlocale()
+        try:
+            db = self._parse_file(os.path.join(self.dbpath, 'gstat25-h.out'))
+            self.assertEquals(locale, getlocale(LC_ALL), "Locale must not change")
+            setlocale(LC_ALL, 'cs_CZ')
+            nlocale = getlocale(LC_ALL)
+            db = self._parse_file(os.path.join(self.dbpath, 'gstat25-h.out'))
+            self.assertEquals(nlocale, getlocale(LC_ALL), "Locale must not change")
+        finally:
+            setlocale(LC_ALL, locale)
     def test_parse25_h(self):
         db = self._parse_file(os.path.join(self.dbpath, 'gstat25-h.out'))
         data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': None, 'bumped_transaction': 1,
@@ -10554,6 +10570,188 @@ class TestGstat(FDBTestBase):
         for index in db.indices:
             if index.name.startswith('RDB$'):
                 self.assertIn(index.name, data)
+
+class TestLogParse(FDBTestBase):
+    def setUp(self):
+        super(TestLogParse, self).setUp()
+    def _check_events(self, trace_lines, output):
+        for obj in log.parse(linesplit_iter(trace_lines)):
+            self.printout(str(obj))
+        self.assertEqual(self.output.getvalue(), output, "Parsed events do not match expected ones")
+    def test_locale(self):
+        data = """
+
+SRVDB1  Tue Apr 04 21:25:40 2017
+        INET/inet_error: read errno = 10054
+
+"""
+	output = """LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 25, 40), message='INET/inet_error: read errno = 10054')
+"""
+	locale = getlocale(LC_ALL)
+        if locale[0] is None:
+            locale = getdefaultlocale()
+        try:
+            self._check_events(data, output)
+            self.assertEquals(locale, getlocale(LC_ALL), "Locale must not change")
+	    self.clear_output()
+            setlocale(LC_ALL, 'cs_CZ')
+            nlocale = getlocale(LC_ALL)
+            self._check_events(data, output)
+            self.assertEquals(nlocale, getlocale(LC_ALL), "Locale must not change")
+        finally:
+            setlocale(LC_ALL, locale)
+    def TestWindowsService(self):
+        data = """
+
+SRVDB1  Tue Apr 04 21:25:40 2017
+        INET/inet_error: read errno = 10054
+
+
+SRVDB1  Tue Apr 04 21:25:41 2017
+        Unable to complete network request to host "SRVDB1".
+        Error reading data from the connection.
+
+
+SRVDB1  Tue Apr 04 21:25:42 2017
+        INET/inet_error: read errno = 10054
+
+
+SRVDB1  Tue Apr 04 21:25:43 2017
+        Unable to complete network request to host "SRVDB1".
+        Error reading data from the connection.
+
+
+SRVDB1  Tue Apr 04 21:28:48 2017
+        INET/inet_error: read errno = 10054
+
+
+SRVDB1  Tue Apr 04 21:28:50 2017
+        Unable to complete network request to host "SRVDB1".
+        Error reading data from the connection.
+
+
+SRVDB1  Tue Apr 04 21:28:51 2017
+        Sweep is started by SYSDBA
+        Database "Mydatabase"
+        OIT 551120654, OAT 551120655, OST 551120655, Next 551121770
+
+
+SRVDB1  Tue Apr 04 21:28:52 2017
+        INET/inet_error: read errno = 10054
+
+
+SRVDB1  Tue Apr 04 21:28:53 2017
+        Unable to complete network request to host "SRVDB1".
+        Error reading data from the connection.
+
+
+SRVDB1  Tue Apr 04 21:28:54 2017
+        Sweep is finished
+        Database "Mydatabase"
+        OIT 551234848, OAT 551234849, OST 551234849, Next 551235006
+
+
+SRVDB1  Tue Apr 04 21:28:55 2017
+        Sweep is started by SWEEPER
+        Database "Mydatabase"
+        OIT 551243753, OAT 551846279, OST 551846279, Next 551846385
+
+
+SRVDB1  Tue Apr 04 21:28:56 2017
+        INET/inet_error: read errno = 10054
+
+
+SRVDB1  Tue Apr 04 21:28:57 2017
+        Sweep is finished
+        Database "Mydatabase"
+        OIT 551846278, OAT 551976724, OST 551976724, Next 551976730
+
+
+SRVDB1  Tue Apr 04 21:28:58 2017
+        Unable to complete network request to host "(unknown)".
+        Error reading data from the connection.
+
+
+SRVDB1  Thu Apr 06 12:52:56 2017
+        Shutting down the server with 1 active connection(s) to 1 database(s), 0 active service(s)
+
+
+"""
+        output = """LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 25, 40), message='INET/inet_error: read errno = 10054')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 25, 41), message='Unable to complete network request to host "SRVDB1".\\nError reading data from the connection.')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 25, 42), message='INET/inet_error: read errno = 10054')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 25, 43), message='Unable to complete network request to host "SRVDB1".\\nError reading data from the connection.')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 48), message='INET/inet_error: read errno = 10054')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 50), message='Unable to complete network request to host "SRVDB1".\\nError reading data from the connection.')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 51), message='Sweep is started by SYSDBA\\nDatabase "Mydatabase"\\nOIT 551120654, OAT 551120655, OST 551120655, Next 551121770')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 52), message='INET/inet_error: read errno = 10054')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 53), message='Unable to complete network request to host "SRVDB1".\\nError reading data from the connection.')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 54), message='Sweep is finished\\nDatabase "Mydatabase"\\nOIT 551234848, OAT 551234849, OST 551234849, Next 551235006')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 55), message='Sweep is started by SWEEPER\\nDatabase "Mydatabase"\\nOIT 551243753, OAT 551846279, OST 551846279, Next 551846385')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 56), message='INET/inet_error: read errno = 10054')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 57), message='Sweep is finished\\nDatabase "Mydatabase"\\nOIT 551846278, OAT 551976724, OST 551976724, Next 551976730')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 28, 58), message='Unable to complete network request to host "(unknown)".\\nError reading data from the connection.')
+LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 6, 12, 52, 56), message='Shutting down the server with 1 active connection(s) to 1 database(s), 0 active service(s)')
+"""
+        self._check_events(data, output)
+    def TestLinuxDirect(self):
+        data = """
+MyServer (Client)	Fri Apr  6 16:35:46 2018
+	INET/inet_error: connect errno = 111
+
+
+MyServer (Client)	Fri Apr  6 16:51:31 2018
+	/opt/firebird/bin/fbguard: guardian starting /opt/firebird/bin/fbserver
+
+
+
+MyServer (Server)	Fri Apr  6 16:55:23 2018
+	activating shadow file /home/db/test_employee.fdb
+
+
+MyServer (Server)	Fri Apr  6 16:55:31 2018
+	Sweep is started by SYSDBA
+	Database "/home/db/test_employee.fdb"
+	OIT 1, OAT 0, OST 0, Next 1
+
+
+MyServer (Server)	Fri Apr  6 16:55:31 2018
+	Sweep is finished
+	Database "/home/db/test_employee.fdb"
+	OIT 1, OAT 0, OST 0, Next 2
+
+
+MyServer (Client)	Fri Apr  6 20:18:52 2018
+	/opt/firebird/bin/fbguard: /opt/firebird/bin/fbserver normal shutdown.
+
+
+
+MyServer (Client)	Mon Apr  9 08:28:29 2018
+	/opt/firebird/bin/fbguard: guardian starting /opt/firebird/bin/fbserver
+
+
+
+MyServer (Server)	Tue Apr 17 15:01:27 2018
+	INET/inet_error: invalid socket in packet_receive errno = 22
+
+
+MyServer (Client)	Tue Apr 17 19:42:55 2018
+	/opt/firebird/bin/fbguard: /opt/firebird/bin/fbserver normal shutdown.
+
+
+
+"""
+        output = """LogEntry(source_id='MyServer (Client)', timestamp=datetime.datetime(2018, 4, 6, 16, 35, 46), message='INET/inet_error: connect errno = 111')
+LogEntry(source_id='MyServer (Client)', timestamp=datetime.datetime(2018, 4, 6, 16, 51, 31), message='/opt/firebird/bin/fbguard: guardian starting /opt/firebird/bin/fbserver')
+LogEntry(source_id='MyServer (Server)', timestamp=datetime.datetime(2018, 4, 6, 16, 55, 23), message='activating shadow file /home/db/test_employee.fdb')
+LogEntry(source_id='MyServer (Server)', timestamp=datetime.datetime(2018, 4, 6, 16, 55, 31), message='Sweep is started by SYSDBA\\nDatabase "/home/db/test_employee.fdb"\\nOIT 1, OAT 0, OST 0, Next 1')
+LogEntry(source_id='MyServer (Server)', timestamp=datetime.datetime(2018, 4, 6, 16, 55, 31), message='Sweep is finished\\nDatabase "/home/db/test_employee.fdb"\\nOIT 1, OAT 0, OST 0, Next 2')
+LogEntry(source_id='MyServer (Client)', timestamp=datetime.datetime(2018, 4, 6, 20, 18, 52), message='/opt/firebird/bin/fbguard: /opt/firebird/bin/fbserver normal shutdown.')
+LogEntry(source_id='MyServer (Client)', timestamp=datetime.datetime(2018, 4, 9, 8, 28, 29), message='/opt/firebird/bin/fbguard: guardian starting /opt/firebird/bin/fbserver')
+LogEntry(source_id='MyServer (Server)', timestamp=datetime.datetime(2018, 4, 17, 15, 1, 27), message='INET/inet_error: invalid socket in packet_receive errno = 22')
+LogEntry(source_id='MyServer (Client)', timestamp=datetime.datetime(2018, 4, 17, 19, 42, 55), message='/opt/firebird/bin/fbguard: /opt/firebird/bin/fbserver normal shutdown.')
+"""
+        self._check_events(data, output)
 
 if __name__ == '__main__':
     unittest.main()
