@@ -801,7 +801,7 @@ class Connection(object):
         req_buf.add_database_name(database)
         req_buf.add_option_mask(option_mask)
         if tables is not None:
-            if isinstance(tables, types.StringTypes):
+            if isinstance(tables, ibase.StringTypes):
                 tables = (tables,)
             cmdline = ['-t']
             cmdline.extend(tables)
@@ -1228,10 +1228,10 @@ class Connection(object):
         bytes_available = backup_stream.tell() - pos
         backup_stream.seek(pos)
         spb = ctypes.create_string_buffer(16)
-        spb[0] = chr(ibase.isc_info_svc_timeout)
+        spb[0] = ibase.int2byte(ibase.isc_info_svc_timeout)
         spb[1:3] = fdb.uint_to_bytes(4, 2)
         spb[3:7] = fdb.uint_to_bytes(1, 4)
-        spb[7] = chr(ibase.isc_info_end)
+        spb[7] = ibase.int2byte(ibase.isc_info_end)
         wait = True
         while not stop:
             if request_length > 0:
@@ -1239,10 +1239,10 @@ class Connection(object):
                 raw = backup_stream.read(request_length)
                 if len(spb) < request_length+4:
                     spb = ctypes.create_string_buffer(request_length+4)
-                spb[0] = chr(ibase.isc_info_svc_line)
+                spb[0] = ibase.int2byte(ibase.isc_info_svc_line)
                 spb[1:3] = fdb.uint_to_bytes(len(raw), 2)
                 spb[3:3+len(raw)] = raw
-                spb[3+len(raw)] = chr(ibase.isc_info_end)
+                spb[3+len(raw)] = ibase.int2byte(ibase.isc_info_end)
                 bytes_available -= len(raw)
             req = fdb.bs([ibase.isc_info_svc_stdin, ibase.isc_info_svc_line])
             api.isc_service_query(self._isc_status, self._svc_handle, None,
@@ -1254,7 +1254,7 @@ class Connection(object):
                                                 "Services/isc_service_query:")
             i = 0
             request_length = 0
-            while self._result_buffer[i] != chr(ibase.isc_info_end):
+            while self._result_buffer[i] != ibase.int2byte(ibase.isc_info_end):
                 code = ibase.ord2(self._result_buffer[i])
                 i += 1
                 if code == ibase.isc_info_svc_stdin:

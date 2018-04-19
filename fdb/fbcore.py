@@ -30,6 +30,7 @@ import datetime
 import decimal
 import weakref
 import threading
+from builtins import dict
 
 from . import ibase
 from . import schema
@@ -152,7 +153,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        #
                        SQLDA_version1, isc_segment,
                        isc_db_handle, isc_tr_handle, isc_stmt_handle, isc_blob_handle,
-                       fbclient_API)
+                       fbclient_API, sys_encoding)
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
@@ -611,7 +612,7 @@ def exception_from_status(error, status, preamble=None):
         if result != 0:
             if PYTHON_MAJOR_VER == 3:
                 ### Todo: trouble? decode from connection charset?
-                msglist.append('- ' + (msg.value).decode('utf_8'))
+                msglist.append('- ' + (msg.value).decode(sys_encoding))
             else:
                 msglist.append('- ' + msg.value)
         else:
@@ -622,8 +623,9 @@ def exception_from_status(error, status, preamble=None):
 class ParameterBuffer(object):
     """Helper class for construction of Database (and other) parameter
     buffers. Parameters are stored in insertion order."""
-    def __init__(self):
+    def __init__(self, charset):
         self.items = []
+        self.charset = charset
     def add_parameter_code(self, code):
         """Add parameter code to parameter buffer.
 
@@ -637,7 +639,7 @@ class ParameterBuffer(object):
         :param string value: Parameter value
         """
         if PYTHON_MAJOR_VER == 3 or isinstance(value, UnicodeType):
-            value = value.encode(charset_map.get(charset, charset))
+            value = value.encode(charset_map.get(self.charset, self.charset))
         slen = len(value)
         if slen >= 256:
             # Because the length is denoted in the DPB by a single byte.
@@ -769,7 +771,7 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
     def build_dpb(user, password, sql_dialect, role, charset, buffers,
                   force_write, no_reserve, db_key_scope, no_gc,
                   no_db_triggers, no_linger):
-        dpb = ParameterBuffer()
+        dpb = ParameterBuffer(charset)
         dpb.add_parameter_code(isc_dpb_version1)
         if user:
             dpb.add_string_parameter(isc_dpb_user_name, user)
@@ -1918,9 +1920,9 @@ class Connection(object):
         stats = self.db_info(info_codes)
         for info_code in info_codes:
             stat = stats[info_code]
-            for table, count in stat.iteritems():
+            for table, count in stat.items():
                 tables.setdefault(table, _TableAccessStats(table))._set_info(info_code, count)
-        return tables.values()
+        return list(tables.values())
 
 
     #: (Read Only) (int) Internal ID (server-side) for connection.
@@ -4298,7 +4300,7 @@ class Transaction(object):
             # The global().get(...) workaround is here because only recent
             # versions of FB expose constant isc_info_tra_isolation:
             if info_code == globals().get('isc_info_tra_isolation', -1):
-                buf = self.transaction_info(info_code, 's')
+                buf = self.transaction_info(info_code, 'b')
                 buf = buf[1 + struct.calcsize('h'):]
                 if len(buf) == 1:
                     results[info_code] = bytes_to_uint(buf)
@@ -4329,7 +4331,7 @@ class Transaction(object):
 
         :param integer info_code: One from the `isc_info_tra_*` constants.
         :param result_type: Code for result type.
-        :type result_type: string 's' or 'i'
+        :type result_type: string 's', 'b' or 'i'
         :raises fdb.ProgrammingError: If transaction is not active.
         :raises fdb.OperationalError: When result is too large to fit into buffer of
                                       size SHRT_MAX.
@@ -4374,8 +4376,10 @@ class Transaction(object):
             return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
         elif result_type.upper() == 'S':
             return p3fix(ctypes.string_at(res_buf, i), self.__python_charset)
+        elif result_type.upper() == 'B':
+            return ctypes.string_at(res_buf, i)
         else:
-            raise ValueError("Unknown result type requested (must be 'i' or 's').")
+            raise ValueError("Unknown result type requested (must be 'i' or 's' or 'b').")
     def prepare(self):
         """Manually triggers the first phase of a two-phase commit (2PC).
 

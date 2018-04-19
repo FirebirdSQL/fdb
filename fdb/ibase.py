@@ -27,7 +27,7 @@ from ctypes import c_char_p, c_wchar_p, c_char, c_byte, c_ubyte, c_int, c_uint, 
      c_uint16, c_uint32, c_uint64, POINTER, Structure, CFUNCTYPE, CDLL
 from ctypes.util import find_library
 import sys
-import locale
+from locale import getpreferredencoding
 import types
 import operator
 import platform
@@ -83,6 +83,7 @@ if PYTHON_MAJOR_VER == 3:
     UnicodeType = str
     TupleType = tuple
     xrange = range
+    StringTypes = str
 
 else:
     from Queue import PriorityQueue
@@ -122,6 +123,8 @@ else:
     UnicodeType = types.UnicodeType
     TupleType = types.TupleType
     xrange = xrange
+    StringTypes = (StringType, UnicodeType)
+
 
 # Support routines from ctypesgen generated file.
 
@@ -149,11 +152,13 @@ MAX_BLOB_SEGMENT_SIZE = 65535
 OP_DIE = 1
 OP_RECORD_AND_REREGISTER = 2
 
+sys_encoding = getpreferredencoding()
+
 charset_map = {
     # DB CHAR SET NAME    :   PYTHON CODEC NAME (CANONICAL)
     # -------------------------------------------------------------------------
-    None                  :   locale.getpreferredencoding(),
-    'NONE'                :   locale.getpreferredencoding(),
+    None                  :   getpreferredencoding(),
+    'NONE'                :   getpreferredencoding(),
     'OCTETS'              :   None,  # Allow to pass through unchanged.
     'UNICODE_FSS'         :   'utf_8',
     'UTF8'                :   'utf_8',  # (Firebird 2.0+)
@@ -1405,6 +1410,7 @@ class fbclient_API(object):
                 fb_library_name = file_name
 
         if sys.platform in ['win32', 'cygwin', 'os2', 'os2emx']:
+            from ctypes import WinDLL
             fb_library = WinDLL(fb_library_name)
         else:
             fb_library = CDLL(fb_library_name)

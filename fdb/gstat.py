@@ -22,12 +22,11 @@
 
 from fdb import ParseError
 from fdb.utils import ObjectList
-from itertools import imap
-from string import strip
 import datetime
 import weakref
 from collections import namedtuple
 from locale import LC_ALL, getlocale, setlocale, resetlocale
+import sys
 
 GSTAT_25 = 2
 GSTAT_30 = 3
@@ -487,9 +486,12 @@ def parse(lines):
     step = 0  # Look for sections and skip empty lines
     try:
         locale = getlocale(LC_ALL)
-        setlocale(LC_ALL, 'en_US')
+        if sys.platform == 'win32':
+            setlocale(LC_ALL, 'English_United States')
+        else:
+            setlocale(LC_ALL, 'en_US')
         # Skip empty lines at start
-        for line in imap(strip, lines):
+        for line in (x.strip() for x in lines):
             line_no += 1
             if line.startswith('Gstat completion time'):
                 db.completed = datetime.datetime.strptime(line[22:], '%a %b %d %H:%M:%S %Y')
@@ -562,7 +564,10 @@ def parse(lines):
         db.indices.freeze()
     finally:
         if locale[0] is None:
-            resetlocale(LC_ALL)
+            if sys.platform == 'win32':
+                setlocale(LC_ALL, '')
+            else:
+                resetlocale(LC_ALL)
         else:
             setlocale(LC_ALL, locale)
     return db

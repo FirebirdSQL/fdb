@@ -25,6 +25,10 @@ import datetime
 import decimal
 import collections
 from . import utils
+try:
+    from sys import intern
+except ImportError:
+    pass
 
 #: Trace event status codes
 STATUS_OK = ' '
