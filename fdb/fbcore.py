@@ -81,7 +81,6 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        isc_info_active_transactions, isc_info_allocation,
                        isc_info_attachment_id, isc_info_backout_count,
                        isc_info_base_level, isc_info_bpage_errors, isc_info_creation_date,
-                       isc_info_cur_log_part_offset, isc_info_cur_logfile_name,
                        isc_info_current_memory,
                        isc_info_db_class, isc_info_db_id, isc_info_db_provider,
                        isc_info_db_read_only, isc_info_db_size_in_pages,
@@ -89,12 +88,10 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        isc_info_dpage_errors, isc_info_expunge_count, isc_info_fetches,
                        isc_info_firebird_version, isc_info_forced_writes,
                        isc_info_implementation, isc_info_insert_count,
-                       isc_info_ipage_errors, isc_info_isc_version, isc_info_license,
-                       isc_info_limbo, isc_info_logfile, isc_info_marks,
-                       isc_info_max_memory, isc_info_next_transaction,
-                       isc_info_no_reserve, isc_info_num_buffers,
-                       isc_info_num_wal_buffers, isc_info_ods_minor_version,
-                       isc_info_ods_version, isc_info_oldest_active,
+                       isc_info_ipage_errors, isc_info_isc_version,
+                       isc_info_limbo, isc_info_marks, isc_info_max_memory,
+                       isc_info_next_transaction, isc_info_no_reserve, isc_info_num_buffers,
+                       isc_info_ods_minor_version, isc_info_ods_version, isc_info_oldest_active,
                        isc_info_oldest_snapshot, isc_info_oldest_transaction,
                        isc_info_page_errors, isc_info_page_size, isc_info_ppage_errors,
                        isc_info_purge_count, isc_info_read_idx_count,
@@ -115,13 +112,12 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        isc_info_tra_read_committed, isc_info_tra_readonly,
                        isc_info_tra_readwrite, isc_info_tra_rec_version, fb_info_tra_dbpath,
                        isc_info_update_count, isc_info_user_names, isc_info_version,
-                       isc_info_wal_avg_grpc_size, isc_info_wal_avg_io_size,
-                       isc_info_wal_buffer_size, isc_info_wal_ckpt_length,
-                       isc_info_wal_cur_ckpt_interval, isc_info_wal_grpc_wait_usecs,
-                       isc_info_wal_num_commits, isc_info_wal_num_io,
-                       isc_info_wal_prv_ckpt_fname, isc_info_wal_prv_ckpt_poffset,
-                       isc_info_wal_recv_ckpt_fname, isc_info_wal_recv_ckpt_poffset,
-                       isc_info_window_turns, isc_info_writes, isc_tpb_autocommit,
+                       isc_info_writes, isc_tpb_autocommit,
+                       # FB 3
+                       isc_dpb_version2,
+                       fb_info_implementation, fb_info_page_warns, fb_info_record_warns,
+                       fb_info_bpage_warns, fb_info_dpage_warns, fb_info_ipage_warns,
+                       fb_info_ppage_warns, fb_info_tpage_warns, fb_info_pip_errors, fb_info_pip_warns,
                        #
                        isc_tpb_commit_time, isc_tpb_concurrency, isc_tpb_consistency,
                        isc_tpb_exclusive, isc_tpb_ignore_limbo, isc_tpb_lock_read,
@@ -149,11 +145,12 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        #
                        blr_varying, blr_varying2, blr_text, blr_text2, blr_short, blr_long,
                        blr_int64, blr_float, blr_d_float, blr_double, blr_timestamp, blr_sql_date,
-                       blr_sql_time, blr_cstring, blr_quad, blr_blob,
+                       blr_sql_time, blr_cstring, blr_quad, blr_blob, blr_bool,
                        #
                        SQLDA_version1, isc_segment,
                        isc_db_handle, isc_tr_handle, isc_stmt_handle, isc_blob_handle,
-                       fbclient_API, sys_encoding)
+                       sys_encoding, get_implementation_name_map, get_db_class_name_map,
+                       get_db_provider_name_map)
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
@@ -223,17 +220,12 @@ def load_api(fb_library_name=None):
     have signature: hook_func(api). Any value returned by hook is ignored.
     """
     if not hasattr(sys.modules[__name__], 'api'):
-        setattr(sys.modules[__name__], 'api', fbclient_API(fb_library_name))
+        setattr(sys.modules[__name__], 'api', ibase.fbclient_API(fb_library_name))
         for hook in get_hooks(HOOK_API_LOADED):
             hook(getattr(sys.modules[__name__], 'api'))
     return getattr(sys.modules[__name__], 'api')
 
 # Exceptions required by Python Database API
-
-#class Warning(Exception):
-    #"""Exception raised for important warnings like data
-    #truncations while inserting, etc."""
-    #pass
 
 class Error(Exception):
     """Exception that is the base class of all other error
@@ -428,7 +420,7 @@ _DATABASE_INFO_CODES_WITH_INT_RESULT = (
     isc_info_allocation, isc_info_no_reserve, isc_info_db_sql_dialect,
     isc_info_ods_minor_version, isc_info_ods_version, isc_info_page_size,
     isc_info_current_memory, isc_info_forced_writes, isc_info_max_memory,
-    isc_info_num_buffers, isc_info_sweep_interval, isc_info_limbo,
+    isc_info_num_buffers, isc_info_sweep_interval,
     isc_info_attachment_id, isc_info_fetches, isc_info_marks, isc_info_reads,
     isc_info_writes, isc_info_set_page_buffers, isc_info_db_read_only,
     isc_info_db_size_in_pages, isc_info_page_errors, isc_info_record_errors,
@@ -598,20 +590,12 @@ def exception_from_status(error, status, preamble=None):
     error_code = status[1]
     msglist.append('- SQLCODE: %i' % sqlcode)
 
-    #isc_sql_interprete(sqlcode, msg, 512)
-    #if PYTHON_MAJOR_VER == 3:
-        #### Todo: trouble? decode from connection charset?
-        #msglist.append('- ' + (msg.value).decode('utf_8'))
-    #else:
-        #msglist.append('- ' + msg.value)
-
     pvector = ctypes.cast(ctypes.addressof(status), ISC_STATUS_PTR)
 
     while True:
         result = api.fb_interpret(msg, 512, pvector)
         if result != 0:
             if PYTHON_MAJOR_VER == 3:
-                ### Todo: trouble? decode from connection charset?
                 msglist.append('- ' + (msg.value).decode(sys_encoding))
             else:
                 msglist.append('- ' + msg.value)
@@ -1414,7 +1398,7 @@ class Connection(object):
         all possible isc_info_* items.
 
         :param integer info_code: One of the `isc_info_*` constants.
-        :param string result_type: Must be either ‘s’ if you expect a string result,
+        :param string result_type: Must be either ‘b’ if you expect a binary string result,
            or ‘i’ if you expect an integer result.
         :param integer page_number: Page number for `fb_info_page_contents` info code.
 
@@ -1435,7 +1419,7 @@ class Connection(object):
         buf_size = 256 if info_code != fb_info_page_contents else self.page_size + 10
         request_buffer = bs([info_code])
         if info_code == fb_info_page_contents:
-            request_buffer += int_to_bytes(2, 2)
+            request_buffer += int_to_bytes(4, 2)
             request_buffer += int_to_bytes(page_number, 4)
         while True:
             res_buf = int2byte(0) * buf_size
@@ -1472,16 +1456,18 @@ class Connection(object):
             raise InternalError("Result code does not match request code.")
         if result_type.upper() == 'I':
             return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
-        elif (result_type.upper() == 'S'
+        elif (result_type.upper() == 'B'
               and info_code in _DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS):
             # The result buffers for a few request codes don't follow the generic
             # conventions, so we need to return their full contents rather than
             # omitting the initial infrastructural bytes.
             return ctypes.string_at(res_buf, i)
-        elif result_type.upper() == 'S':
+        #elif result_type.upper() == 'S':
+            #return ctypes.string_at(res_buf[3:], bytes_to_int(res_buf[1:3]))
+        elif result_type.upper() == 'B':
             return ctypes.string_at(res_buf[3:], bytes_to_int(res_buf[1:3]))
         else:
-            raise ValueError("Unknown result type requested (must be 'i' or 's').")
+            raise ValueError("Unknown result type requested (must be 'i', 'b' or 's').")
     def db_info(self, request):
         """
         Higher-level convenience wrapper around the :meth:`database_info` method
@@ -1510,92 +1496,60 @@ class Connection(object):
                 count = struct.unpack('<i', buf_for_this_pair[ushort_size:])[0]
                 counts[relation_id] = count
             return counts
-        # Notes:
-        #
-        # - IB 6 API Guide page 391:  "In InterBase, integer values...
-        #   are returned in result buffers in a generic format where
-        #   the least significant byte is first, and the most
-        #   significant byte last."
+        def unpack_num(buf, pos):
+            return struct.unpack('B', int2byte(buf[pos]))[0] if PYTHON_MAJOR_VER == 3 \
+                   else struct.unpack('B', buf[pos])[0]
 
         # We process request as a sequence of info codes, even if only one code
         # was supplied by the caller.
         request_is_singleton = isinstance(request, int)
         if request_is_singleton:
             request = (request,)
-
         results = {}
         for info_code in request:
             if info_code == isc_info_base_level:
-                # (IB 6 API Guide page 52)
-                buf = self.database_info(info_code, 's')
-                # Ignore the first byte.
-                if PYTHON_MAJOR_VER == 3:
-                    base_level = struct.unpack('B', int2byte(buf[1]))[0]
-                else:
-                    base_level = struct.unpack('B', buf[1])[0]
-                results[info_code] = base_level
+                results[info_code] = unpack_num(self.database_info(info_code, 'b'), 1)
             elif info_code == isc_info_db_id:
-                # (IB 6 API Guide page 52)
-                buf = self.database_info(info_code, 's')
+                buf = self.database_info(info_code, 'b')
                 pos = 0
                 items = []
-
-                if PYTHON_MAJOR_VER == 3:
-                    count = struct.unpack('B', int2byte(buf[pos]))[0]
-                else:
-                    count = struct.unpack('B', buf[pos])[0]
+                count = unpack_num(buf, pos)
                 pos += 1
-
                 while count > 0:
-                    if PYTHON_MAJOR_VER == 3:
-                        slen = struct.unpack('B', int2byte(buf[pos]))[0]
-                    else:
-                        slen = struct.unpack('B', buf[pos])[0]
+                    slen = unpack_num(buf, pos)
                     pos += 1
-
                     item = buf[pos:pos + slen]
                     pos += slen
                     items.append(p3fix(item, self._python_charset))
                     count -= 1
-
                 results[info_code] = tuple(items)
-            elif info_code == isc_info_implementation:
-                # (IB 6 API Guide page 52)
-                buf = self.database_info(info_code, 's')
-                # Skip the first four bytes.
+            elif info_code == fb_info_implementation:
+                buf = self.database_info(info_code, 'b')
                 pos = 1
-
-                if PYTHON_MAJOR_VER == 3:
-                    impl_number = struct.unpack('B', int2byte(buf[pos]))[0]
-                else:
-                    impl_number = struct.unpack('B', buf[pos])[0]
+                cpu_id = unpack_num(buf, pos)
                 pos += 1
-
-                if PYTHON_MAJOR_VER == 3:
-                    class_number = struct.unpack('B', int2byte(buf[pos]))[0]
-                else:
-                    class_number = struct.unpack('B', buf[pos])[0]
+                os_id = unpack_num(buf, pos)
                 pos += 1
-
+                compiler_id = unpack_num(buf, pos)
+                pos += 1
+                flags = unpack_num(buf, pos)
+                pos += 1
+                class_number = unpack_num(buf, pos)
+                results[info_code] = (cpu_id, os_id, compiler_id, flags, class_number)
+            elif info_code == isc_info_implementation:
+                buf = self.database_info(info_code, 'b')
+                pos = 1
+                impl_number = unpack_num(buf, pos)
+                pos += 1
+                class_number = unpack_num(buf, pos)
                 results[info_code] = (impl_number, class_number)
             elif info_code in (isc_info_version, isc_info_firebird_version):
-                # (IB 6 API Guide page 53)
-                buf = self.database_info(info_code, 's')
-                # Skip the first byte.
+                buf = self.database_info(info_code, 'b')
                 pos = 1
-
-                if PYTHON_MAJOR_VER == 3:
-                    version_string_len = (struct.unpack('B', int2byte(buf[pos]))[0])
-                else:
-                    version_string_len = (struct.unpack('B', buf[pos])[0])
+                version_string_len = unpack_num(buf, pos)
                 pos += 1
-
-                version_string = buf[pos:pos + version_string_len]
-
-                results[info_code] = p3fix(version_string, self._python_charset)
+                results[info_code] = p3fix(buf[pos:pos + version_string_len], self._python_charset)
             elif info_code == isc_info_user_names:
-                # (IB 6 API Guide page 54)
-                #
                 # The isc_info_user_names results buffer does not exactly match
                 # the format declared on page 54 of the IB 6 API Guide.
                 #   The buffer is formatted as a sequence of clusters, each of
@@ -1609,8 +1563,7 @@ class Connection(object):
                 # cluster declared on page 51 while also [trying, but failing
                 # to] adhere to the isc_info_user_names-specific format
                 # declared on page 54.
-                buf = self.database_info(info_code, 's')
-
+                buf = self.database_info(info_code, 'b')
                 usernames = []
                 pos = 0
                 while pos < len(buf):
@@ -1622,16 +1575,13 @@ class Connection(object):
                                                    ' results buffer contents at position %d of [%s]'
                                                    % (pos, buf))
                         pos += 1
-
                         # The two-byte cluster length:
                         name_cluster_len = (struct.unpack('<H', buf[pos:pos + 2])[0])
                         pos += 2
-
                         # The one-byte username length:
                         name_len = buf[pos]
-                        assert name_len == name_cluster_len - 1
+                        #assert name_len == name_cluster_len - 1
                         pos += 1
-
                         usernames.append(p3fix(buf[pos:pos + name_len],
                                                self._python_charset))
                         pos += name_len
@@ -1642,20 +1592,16 @@ class Connection(object):
                                                    ' results buffer contents at position %d of [%s]'
                                                    % (pos, buf))
                         pos += 1
-
                         # The two-byte cluster length:
                         name_cluster_len = (struct.unpack('<H', buf[pos:pos + 2])[0])
                         pos += 2
-
                         # The one-byte username length:
                         name_len = struct.unpack('B', buf[pos])[0]
-                        assert name_len == name_cluster_len - 1
+                        #assert name_len == name_cluster_len - 1
                         pos += 1
-
                         usernames.append(p3fix(buf[pos:pos + name_len],
                                                self._python_charset))
                         pos += name_len
-
                 # The client-exposed return value is a dictionary mapping
                 # username -> number of connections by that user.
                 res = {}
@@ -1663,8 +1609,8 @@ class Connection(object):
                     res[un] = res.get(un, 0) + 1
 
                 results[info_code] = res
-            elif info_code == isc_info_active_transactions:
-                buf = self.database_info(info_code, 's')
+            elif info_code in (isc_info_active_transactions, isc_info_limbo):
+                buf = self.database_info(info_code, 'b')
                 transactions = []
                 ushort_size = struct.calcsize('<H')
                 pos = 1 # Skip inital byte (info_code)
@@ -1679,7 +1625,7 @@ class Connection(object):
             elif info_code in _DATABASE_INFO_CODES_WITH_INT_RESULT:
                 results[info_code] = self.database_info(info_code, 'i')
             elif info_code in _DATABASE_INFO_CODES_WITH_COUNT_RESULTS:
-                buf = self.database_info(info_code, 's')
+                buf = self.database_info(info_code, 'b')
                 counts_by_rel_id = _extract_database_info_counts(buf)
                 # Decided not to convert the relation IDs to relation names
                 # for two reasons:
@@ -1696,13 +1642,12 @@ class Connection(object):
                 #     'create table "table1 " (f1 int)').
                 results[info_code] = counts_by_rel_id
             elif info_code in _DATABASE_INFO_CODES_WITH_TIMESTAMP_RESULT:
-                buf = self.database_info(info_code, 's')
+                buf = self.database_info(info_code, 'b')
                 yyyy, mm, dd = self.__parse_date(buf[:4])
                 h, m, s, ms = self.__parse_time(buf[4:])
                 results[info_code] = datetime.datetime(yyyy, mm, dd, h, m, s, ms)
             else:
                 raise ValueError('Unrecognized database info code %s' % str(info_code))
-
         if request_is_singleton:
             return results[request[0]]
         else:
@@ -1712,48 +1657,12 @@ class Connection(object):
         Thin wrapper around Firebird API `isc_transaction_info` call.
         Operates on :attr:`main_transaction`.
         See :meth:`Transaction.transaction_info` for details.
-
-        :param integer info_code: One from next constants:
-
-                                  * isc_info_tra_id
-                                  * isc_info_tra_oldest_interesting
-                                  * isc_info_tra_oldest_snapshot
-                                  * isc_info_tra_oldest_active
-                                  * isc_info_tra_isolation
-                                  * isc_info_tra_access
-                                  * isc_info_tra_lock_timeout
-
-                                  See Firebird API Guide for details.
-        :param string result_type: String code for result type:
-
-                                   * ‘i’ for Integer
-                                   * ‘s’ fro String
-
-        :returns: Decoded response(s) for specified request code(s). When multiple
-                  requests are passed, returns a dictionary where key is the
-                  request code and value is the response from server.
-        :raises fdb.ProgrammingError: When transaction is not active.
-        :raises fdb.OperationalError: When result is too large to fit into buffer of
-                                  size SHRT_MAX.
-        :raises fdb.InternalError: On unexpected processing condition.
-        :raises fdb.ValueError: On illegal result_type value.
         """
         return self._main_transaction.transaction_info(info_code, result_type)
     def trans_info(self, request):
         """Pythonic wrapper around :meth:`transaction_info()` call.
         Operates on :attr:`main_transaction`.
         See :meth:`Transaction.trans_info` for details.
-
-        :param request: One or more information request codes (see
-                        :meth:`transaction_info` for details). Multiple codes
-                        must be passed as tuple.
-        :returns: Decoded response(s) for specified request code(s). When multiple
-                  requests are passed, returns a dictionary where key is the
-                  request code and value is the response from server.
-        :raises fdb.ProgrammingError: When transaction is not active.
-        :raises fdb.OperationalError: When result is too large to fit into buffer of
-                                  size SHRT_MAX.
-        :raises fdb.InternalError: On unexpected processing condition.
         """
         return self._main_transaction.trans_info(request)
     def trans(self, default_tpb=None):
@@ -1899,7 +1808,7 @@ class Connection(object):
 
         :param int page_number: Page sequence number.
         """
-        buf = self.database_info(fb_info_page_contents, 's', page_number)
+        buf = self.database_info(fb_info_page_contents, 'b', page_number)
         str_len = bytes_to_uint(buf[1:3])
         return buf[3:3 + str_len]
     def get_active_transaction_ids(self):
@@ -2789,6 +2698,9 @@ class PreparedStatement(object):
                 value = struct.unpack('f', sqlvar.sqldata[:sqlvar.sqllen])[0]
             elif vartype == SQL_DOUBLE:
                 value = struct.unpack('d', sqlvar.sqldata[:sqlvar.sqllen])[0]
+            elif vartype == SQL_BOOLEAN:
+                value = bytes_to_int(sqlvar.sqldata[:sqlvar.sqllen])
+                value = value == 1
             elif vartype == SQL_BLOB:
                 val = sqlvar.sqldata[:sqlvar.sqllen]
                 blobid = ISC_QUAD(bytes_to_uint(val[:4]), bytes_to_uint(val[4:sqlvar.sqllen]))
@@ -2961,6 +2873,8 @@ class PreparedStatement(object):
                     val = bytes_to_int(buf[bufpos:bufpos+esize])
                     if subtype or scale:
                         val = decimal.Decimal(val) / _tenTo[abs(256-scale)]
+                elif dtype == blr_bool:
+                    val = bytes_to_int(buf[bufpos:bufpos+esize]) == 1
                 elif dtype == blr_float:
                     val = struct.unpack('f', buf[bufpos:bufpos+esize])[0]
                 elif dtype in (blr_d_float, blr_double):
@@ -3015,6 +2929,11 @@ class PreparedStatement(object):
             valuebuf = ctypes.create_string_buffer(bs([0]), esize)
         elif dtype == blr_sql_time:
             valuebuf = ctypes.create_string_buffer(bs([0]), esize)
+        elif dtype == blr_bool:
+            valuebuf = ctypes.create_string_buffer(bs([0]), esize)
+            #sqlvar.sqldata = ctypes.cast(ctypes.pointer(
+                #ctypes.create_string_buffer(
+                    #int_to_bytes(value, sqlvar.sqllen))), buf_pointer)
         else:
             raise OperationalError("Unsupported Firebird ARRAY subtype: %i" % dtype)
         self.__fill_db_array_buffer(esize, dtype,
@@ -3058,6 +2977,11 @@ class PreparedStatement(object):
                             valuebuf.value = value[i]
                         else:
                             raise OperationalError("Unsupported type")
+                    ctypes.memmove(ctypes.byref(buf, bufpos),
+                                   ctypes.byref(valuebuf),
+                                   esize)
+                elif dtype == blr_bool:
+                    valuebuf.value = int_to_bytes(1 if value[i] else 0, 1)
                     ctypes.memmove(ctypes.byref(buf, bufpos),
                                    ctypes.byref(valuebuf),
                                    esize)
@@ -3116,6 +3040,8 @@ class PreparedStatement(object):
                     ok = isinstance(value[i], datetime.date)
                 elif value_type == blr_sql_time:
                     ok = isinstance(value[i], datetime.time)
+                elif value_type == blr_bool:
+                    ok = isinstance(value[i], bool)
                 else:
                     ok = False
             else:
@@ -3212,7 +3138,7 @@ class PreparedStatement(object):
                 elif vartype == SQL_BOOLEAN:
                     sqlvar.sqldata = ctypes.cast(ctypes.pointer(
                         ctypes.create_string_buffer(
-                            int_to_bytes(value, sqlvar.sqllen))), buf_pointer)
+                            int_to_bytes(1 if value else 0, sqlvar.sqllen))), buf_pointer)
                 elif vartype == SQL_BLOB:
                     blobid = ISC_QUAD(0, 0)
                     blob_handle = isc_blob_handle()
@@ -4299,7 +4225,7 @@ class Transaction(object):
         for info_code in request:
             # The global().get(...) workaround is here because only recent
             # versions of FB expose constant isc_info_tra_isolation:
-            if info_code == globals().get('isc_info_tra_isolation', -1):
+            if info_code == isc_info_tra_isolation:
                 buf = self.transaction_info(info_code, 'b')
                 buf = buf[1 + struct.calcsize('h'):]
                 if len(buf) == 1:
@@ -4331,7 +4257,7 @@ class Transaction(object):
 
         :param integer info_code: One from the `isc_info_tra_*` constants.
         :param result_type: Code for result type.
-        :type result_type: string 's', 'b' or 'i'
+        :type result_type: 'b' for binary string  or 'i' for integer
         :raises fdb.ProgrammingError: If transaction is not active.
         :raises fdb.OperationalError: When result is too large to fit into buffer of
                                       size SHRT_MAX.
@@ -4374,12 +4300,10 @@ class Transaction(object):
             raise InternalError("Result code does not match request code.")
         if result_type.upper() == 'I':
             return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
-        elif result_type.upper() == 'S':
-            return p3fix(ctypes.string_at(res_buf, i), self.__python_charset)
         elif result_type.upper() == 'B':
             return ctypes.string_at(res_buf, i)
         else:
-            raise ValueError("Unknown result type requested (must be 'i' or 's' or 'b').")
+            raise ValueError("Unknown result type requested (must be 'i' or 'b').")
     def prepare(self):
         """Manually triggers the first phase of a two-phase commit (2PC).
 

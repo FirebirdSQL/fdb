@@ -3525,7 +3525,7 @@ and rdb$parameter_type = 1 order by rdb$parameter_number"""
     output_params = LateBindingProperty(_get_output_params, doc=":class:`ObjectList` of output parameters.\nInstances are :class:`ProcedureParameter` instances.")
     privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
     # FB 2.1
-    proc_type = LateBindingProperty(_get_proc_type, doc="Procedure type code. See :attr:`fdb.Connection.enum_procedure_types`.")
+    proc_type = LateBindingProperty(_get_proc_type, doc="Procedure type code. See :attr:`~fdb.schema.Schema.enum_procedure_types`.")
     valid_blr = LateBindingProperty(_get_valid_blr, doc="Procedure BLR invalidation flag. Coul be True/False or None.")
     # FB 3.0
     engine_name = LateBindingProperty(_get_engine_name, doc="Engine name.")
@@ -4383,7 +4383,7 @@ class Package(BaseSchemaItem):
     def _get_body(self):
         return self._attributes['RDB$PACKAGE_BODY_SOURCE']
     def _get_functions(self):
-        return self.schema.functions.filter(lambda fb:
+        return self.schema.functions.filter(lambda fn:
                                             fn._attributes['RDB$PACKAGE_NAME'] == self.name)
     def _get_procedures(self):
         return self.schema.procedures.filter(lambda proc:

@@ -323,8 +323,9 @@ class Connection(object):
                 self.__read_buffer()
             if self._line_buffer:
                 return self._line_buffer.pop(0)
-            self.__fetching = False
-            return None
+            else:
+                self.__fetching = False
+                return None
     def __get_version(self):
         return self.__version
     def __get_engine_version(self):
@@ -570,13 +571,13 @@ class Connection(object):
         """
         return self._QI(ibase.isc_info_svc_running) > 0
     def wait(self):
-        """Wait until running service completes.
+        """Wait until running service completes, i.e. stops sending data.
         """
         if self.isrunning:
             x = 1
-            while x:
+            while not self.__eof:
                 x = self.__fetchline()
-            self.__fetching = False
+            #self.__fetching = False
     def get_service_manager_version(self):
         """Get Firebird Service Manager version number.
 

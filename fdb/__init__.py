@@ -124,27 +124,3 @@ __all__ = (# Common with KInterbasDB
     'charset_map', 'load_api',
     'isc_info_end', 'bs', 'ConnectionWithSchema',  # 'isc_sqlcode',
     'ODS_FB_20', 'ODS_FB_21', 'ODS_FB_25', 'ODS_FB_30')
-
-# Present in KDB but missing in FDB
-
-# 'BASELINE_TYPE_TRANSLATION_FACILITIES',
-# 'CT_COMMIT', 'CT_DEFAULT', 'CT_NONTRANSPARENT', 'CT_ROLLBACK', 'CT_VETO',
-# 'ConduitWasClosed', 'ConnectionTimedOut', 'DEFAULT_CONCURRENCY_LEVEL',
-# 'ExternallyVisibleMainTransaction', 'FB_API_VER', 'Timestamp',
-# '_ALL_EXCEPTION_CLASSES', '_CONNECTION_TIMEOUT_SUPPORTED',
-# '_Cursor_execute_exception_type_filter', '_DATABASE_INFO_CODES_WITH_COUNT_RESULTS',
-# '_DATABASE_INFO_CODES_WITH_INT_RESULT', '_DATABASE_INFO_CODES_WITH_TIMESTAMP_RESULT',
-# '_DATABASE_INFO__KNOWN_LOW_LEVEL_EXCEPTIONS', '_DPBBuilder',
-# '_DPB_CODES_WITH_STRING_VALUE', '_DPB_CODE_WITH_INT_VALUE',
-# '_EVENT_HANDLING_SUPPORTED', '_FS_ENCODING', '_MINIMAL_TYPE_TRANS_TYPES',
-# '_NORMAL_TYPE_TRANS_IN', '_NORMAL_TYPE_TRANS_OUT', '_OUT_TRANS_FUNC_SAMPLE_ARGS',
-# '_TRANSACTION_CONFLICT_RAW_CODES',
-# '__timestamp__', '_addDatabaseInfoCodeIfPresent', '_connection_timeout',
-# '_ensureInitialized', '_extractDatabaseInfoCounts',
-# '_guessTextualBlobEncodingWhenUsingFB20AndEarlier', '_k', '_kinterbasdb',
-# '_look_up_array_descriptor', '_look_up_array_subtype',
-# '_make_output_translator_return_type_dict_from_trans_dict',
-# '_normalizeDatabaseIdentifier', '_request_buffer_builder', '_trans_info',
-# '_trans_require_dict', '_validateTPB', 'default_tpb', 'get_concurrency_level',
-# 'init', 'initialized', 'k_exceptions', 'portable_int', 'raw_byte_to_int',
-# 'raw_timestamp_to_tuple']

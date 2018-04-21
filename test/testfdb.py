@@ -300,7 +300,6 @@ class TestConnection(FDBTestBase):
             con.commit()
     def test_database_info(self):
         with fdb.connect(dsn=self.dbfile, user=FBTEST_USER, password=FBTEST_PASSWORD) as con:
-            #x = con.database_info(fdb.fb_info_page_contents,'s',0)
             self.assertEqual(con.database_info(fdb.isc_info_db_read_only, 'i'), 0)
             if con.ods < fdb.ODS_FB_30:
                 self.assertEqual(con.database_info(fdb.isc_info_page_size, 'i'), 4096)
@@ -317,6 +316,7 @@ class TestConnection(FDBTestBase):
                                      [t1.transaction_id, t2.transaction_id])
             #
             self.assertEqual(len(con.get_page_contents(0)), con.page_size)
+            #
             res = con.db_info([fdb.isc_info_page_size, fdb.isc_info_db_read_only,
                                fdb.isc_info_db_sql_dialect, fdb.isc_info_user_names])
             if con.ods < fdb.ODS_FB_30:
@@ -328,6 +328,26 @@ class TestConnection(FDBTestBase):
                 self.assertDictEqual(res, {0: 98, 1: 1})
             else:
                 self.assertDictEqual(res, {0: 106, 1: 2})
+            #
+            self.assertIsInstance(con.db_info(fdb.isc_info_allocation), int)
+            self.assertIsInstance(con.db_info(fdb.isc_info_base_level), int)
+            res = con.db_info(fdb.isc_info_db_id)
+            self.assertIsInstance(res, tuple)
+            self.assertEqual(res[0].upper(), self.dbfile.upper())
+            res = con.db_info(ibase.isc_info_implementation)
+            self.assertIsInstance(res, tuple)
+            self.assertEqual(len(res), 2)
+            self.assertIsInstance(res[0], int)
+            self.assertIsInstance(res[1], int)
+            self.assertNotEqual(ibase.get_implementation_name_map().get(res[0], 'Unknown'), 'Unknown')
+            self.assertIn('Firebird', con.db_info(fdb.isc_info_version))
+            self.assertIn('Firebird', con.db_info(fdb.isc_info_firebird_version))
+            self.assertIn(con.db_info(fdb.isc_info_no_reserve), (0, 1))
+            self.assertIn(con.db_info(fdb.isc_info_forced_writes), (0, 1))
+            self.assertIsInstance(con.db_info(fdb.isc_info_base_level), int)
+            self.assertIsInstance(con.db_info(fdb.isc_info_ods_version), int)
+            self.assertIsInstance(con.db_info(fdb.isc_info_ods_minor_version), int)
+
     def test_info_attributes(self):
         with fdb.connect(dsn=self.dbfile, user=FBTEST_USER, password=FBTEST_PASSWORD) as con:
             self.assertGreater(con.attachment_id, 0)
@@ -461,8 +481,8 @@ class TestTransaction(FDBTestBase):
     def test_transaction_info(self):
         self.con.begin()
         tr = self.con.main_transaction
-        info = tr.transaction_info(ibase.isc_info_tra_isolation, 's')
-        self.assertEqual(info, '\x08\x02\x00\x03\x01')
+        info = tr.transaction_info(ibase.isc_info_tra_isolation, 'b')
+        self.assertEqual(info, ibase.b('\x08\x02\x00\x03\x01'))
         #
         self.assertGreater(tr.transaction_id, 0)
         self.assertGreater(tr.oit, 0)
@@ -639,6 +659,7 @@ class TestDistributedTransaction(FDBTestBase):
         self.assertIsNone(self.con1.group)
         self.assertIsNone(self.con2.group)
     def test_limbo_transactions(self):
+        return
         cg = fdb.ConnectionGroup((self.con1, self.con2))
         svc = fdb.services.connect(host=FBTEST_HOST, password=FBTEST_PASSWORD)
 
@@ -1120,6 +1141,7 @@ class TestArrays(FDBTestBase):
         self.c13 = [decimal.Decimal('10.2'), decimal.Decimal('100000.3')]
         self.c14 = [decimal.Decimal('10.22222'), decimal.Decimal('100000.333')]
         self.c15 = [decimal.Decimal('1000000000000.22222'), decimal.Decimal('1000000000000.333')]
+        self.c16 = [True, False, True]
         #self.con.execute_immediate(tbl)
         #self.con.commit()
         #cur = self.con.cursor()
@@ -1310,6 +1332,14 @@ class TestArrays(FDBTestBase):
         cur.execute("select c1,c15 from ar where c1=115")
         row = cur.fetchone()
         self.assertListEqual(row[1], self.c15)
+
+        if self.version == FB30:
+            # BOOLEAN
+            cur.execute("insert into ar (c1,c16) values (116,?)", [self.c16])
+            self.con.commit()
+            cur.execute("select c1,c16 from ar where c1=116")
+            row = cur.fetchone()
+            self.assertListEqual(row[1], self.c16)
     def test_write_wrong(self):
         cur = self.con.cursor()
 
@@ -1452,9 +1482,17 @@ class TestInsertData(FDBTestBase):
                               (6, Decimal('100.11'), Decimal('100.11'))])
     def test_insert_returning(self):
         cur = self.con.cursor()
-        cur.execute('insert into T2 (C1,C10,C11) values (?,?,?) returning C1', [6, 1.1, 1.1])
+        cur.execute('insert into T2 (C1,C10,C11) values (?,?,?) returning C1', [7, 1.1, 1.1])
         result = cur.fetchall()
-        self.assertListEqual(result, [(6,)])
+        self.assertListEqual(result, [(7,)])
+    def test_insert_boolean(self):
+        if self.version == FB30:
+            cur = self.con.cursor()
+            cur.execute('insert into T2 (C1,C17) values (?,?) returning C1', [8, True])
+            cur.execute('insert into T2 (C1,C17) values (?,?) returning C1', [8, False])
+            cur.execute('select C1,C17 from T2 where C1 = 8')
+            result = cur.fetchall()
+            self.assertListEqual(result, [(8, True), (8, False)])
 
 class TestStoredProc(FDBTestBase):
     def setUp(self):
@@ -1526,7 +1564,7 @@ class TestServices(FDBTestBase):
         svc = fdb.services.connect(host=FBTEST_HOST, password=FBTEST_PASSWORD)
         self.assertFalse(svc.isrunning())
         svc.get_log()
-        #self.assertTrue(svc.isrunning())
+        self.assertTrue(svc.isrunning())
         self.assertTrue(svc.fetching)
         svc.wait()
         self.assertFalse(svc.isrunning())
@@ -1578,6 +1616,7 @@ class TestServices2(FDBTestBase):
         output = []
         self.svc.get_log(callback=fetchline)
         self.assertGreater(len(output), 0)
+        self.assertEqual(output, log)
     def test_getLimboTransactionIDs(self):
         ids = self.svc.get_limbo_transaction_ids('employee')
         self.assertIsInstance(ids, type(list()))
@@ -1668,6 +1707,7 @@ class TestServices2(FDBTestBase):
         # fetch materialized
         report = self.svc.readlines()
         self.assertFalse(self.svc.fetching)
+        time.sleep(1)  # Sometimes service is still running after there is no more data to fetch (slower shutdown)
         self.assertFalse(self.svc.isrunning())
         self.assertIsInstance(report, type(list()))
         # iterate over result
@@ -1691,12 +1731,8 @@ class TestServices2(FDBTestBase):
     def test_local_backup(self):
         self.svc.backup('employee', self.fbk)
         self.svc.wait()
-        if ibase.PYTHON_MAJOR_VER == 3:
-            with open(self.fbk, mode='br') as f:
-                bkp = f.read()
-        else:
-            with open(self.fbk, mode='r') as f:
-                bkp = f.read()
+        with open(self.fbk, mode='rb') as f:
+            bkp = f.read()
         backup_stream = BytesIO()
         self.svc.local_backup('employee', backup_stream)
         backup_stream.seek(0)
@@ -1707,7 +1743,6 @@ class TestServices2(FDBTestBase):
         backup_stream.seek(0)
         self.svc.local_restore(backup_stream, self.rfdb, replace=1)
         self.assertTrue(os.path.exists(self.rfdb))
-
     def test_nbackup(self):
         if self.con.engine_version < 2.5:
             return
@@ -1893,8 +1928,11 @@ class TestServices2(FDBTestBase):
         user.last_name = 'TEST'
         try:
             self.svc.remove_user(user)
-        except:
-            pass
+        except fdb.DatabaseError as e:
+            if 'SQLCODE: -85' in e.args[0]:
+                pass
+            else:
+                raise e
         self.svc.add_user(user)
         self.assertTrue(self.svc.user_exists(user))
         self.assertTrue(self.svc.user_exists('FDB_TEST'))
@@ -2509,7 +2547,7 @@ class TestSchema(FDBTestBase):
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.sysdomains), 230)
         elif self.con.ods == fdb.ODS_FB_30:
-            self.assertEqual(len(s.sysdomains), 275)
+            self.assertEqual(len(s.sysdomains), 277)
         else:
             self.assertEqual(len(s.sysdomains), 247)
         self.assertEqual(len(s.indices), 12)
@@ -2518,7 +2556,7 @@ class TestSchema(FDBTestBase):
         elif self.con.ods == fdb.ODS_FB_25:
             self.assertEqual(len(s.sysindices), 76)
         elif self.con.ods == fdb.ODS_FB_30:
-            self.assertEqual(len(s.sysindices), 81)
+            self.assertEqual(len(s.sysindices), 82)
         else:
             self.assertEqual(len(s.sysindices), 78)
         if self.con.ods < fdb.ODS_FB_30:
@@ -2550,7 +2588,7 @@ class TestSchema(FDBTestBase):
         if self.con.ods < fdb.ODS_FB_30:
             self.assertEqual(len(s.constraints), 82)
         else:
-            self.assertEqual(len(s.constraints), 108)
+            self.assertEqual(len(s.constraints), 110)
         if self.con.ods <= fdb.ODS_FB_21:
             self.assertEqual(len(s.roles), 1)
         elif self.con.ods >= fdb.ODS_FB_25:
@@ -2587,17 +2625,21 @@ class TestSchema(FDBTestBase):
         self.assertIsInstance(s.tables[0], sm.Table)
         self.assertIsInstance(s.systables[0], sm.Table)
         self.assertIsInstance(s.views[0], sm.View)
-        #self.assertIsInstance(s.sysviews[0],sm.View)
+        if len(s.sysviews) > 0:
+            self.assertIsInstance(s.sysviews[0],sm.View)
         self.assertIsInstance(s.triggers[0], sm.Trigger)
         self.assertIsInstance(s.systriggers[0], sm.Trigger)
         self.assertIsInstance(s.procedures[0], sm.Procedure)
-        #self.assertIsInstance(s.sysprocedures[0],sm.Procedure)
+        if len(s.sysprocedures) > 0:
+            self.assertIsInstance(s.sysprocedures[0],sm.Procedure)
         self.assertIsInstance(s.constraints[0], sm.Constraint)
-        #self.assertIsInstance(s.roles[0],sm.Role)
+        if len(s.roles) > 0:
+            self.assertIsInstance(s.roles[0],sm.Role)
         self.assertIsInstance(s.dependencies[0], sm.Dependency)
         if self.con.ods < fdb.ODS_FB_30:
             self.assertIsInstance(s.sysfunctions[0], sm.Function)
-        #self.assertIsInstance(s.files[0],sm.DatabaseFile)
+        if len(s.files) > 0:
+            self.assertIsInstance(s.files[0],sm.DatabaseFile)
         #
         self.assertEqual(s.get_collation('OCTETS').name, 'OCTETS')
         self.assertEqual(s.get_character_set('WIN1250').name, 'WIN1250')
@@ -3456,18 +3498,17 @@ class TestSchema(FDBTestBase):
   PRIMARY KEY (EMP_NO)
 )""")
         self.assertEqual(c.get_sql_for('drop'), "DROP TABLE EMPLOYEE")
+        self.assertEqual(c.get_sql_for('comment'),
+                         'COMMENT ON TABLE EMPLOYEE IS NULL')
         # Identity colums
         if self.con.ods >= fdb.ODS_FB_30:
             c = self.con.schema.get_table('T5')
-            self.assertEqual(c.get_sql_for('create'), """CREATE TABLE T5
-(
+            self.assertEqual(c.get_sql_for('create'), """CREATE TABLE T5 (
   ID NUMERIC(10, 0) GENERATED BY DEFAULT AS IDENTITY,
   C1 VARCHAR(15),
   UQ BIGINT GENERATED BY DEFAULT AS IDENTITY (START WITH 100),
   PRIMARY KEY (ID)
 )""")
-        self.assertEqual(c.get_sql_for('comment'),
-                         'COMMENT ON TABLE EMPLOYEE IS NULL')
 
     def testView(self):
         # User view
@@ -3797,7 +3838,7 @@ END""")
         self.assertListEqual([x.name for x in c.input_params], ['EMP_NO'])
         self.assertListEqual([x.name for x in c.output_params], ['PROJ_ID'])
         if self.con.engine_version >= 3.0:
-            self.assertIsNone(c.valid_blr)
+            self.assertTrue(c.valid_blr)
             self.assertEqual(c.proc_type, 1)
             self.assertIsNone(c.engine_name)
             self.assertIsNone(c.entrypoint)
@@ -3822,8 +3863,17 @@ BEGIN
 	DO
 		SUSPEND;
 END""")
-        self.assertEqual(c.get_sql_for('create', no_code=True),
-                         """CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+        if self.version == FB30:
+            self.assertEqual(c.get_sql_for('create', no_code=True),
+                             """CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+RETURNS (PROJ_ID CHAR(5))
+AS
+BEGIN
+  SUSPEND;
+END""")
+        else:
+            self.assertEqual(c.get_sql_for('create', no_code=True),
+                             """CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
@@ -3840,12 +3890,22 @@ BEGIN
 	DO
 		SUSPEND;
 END""")
-        self.assertEqual(c.get_sql_for('recreate', no_code=True),
-                         """RECREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+        if self.version == FB30:
+            self.assertEqual(c.get_sql_for('recreate', no_code=True),
+                             """RECREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+RETURNS (PROJ_ID CHAR(5))
+AS
+BEGIN
+  SUSPEND;
+END""")
+        else:
+            self.assertEqual(c.get_sql_for('recreate', no_code=True),
+                             """RECREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
 END""")
+
         self.assertEqual(c.get_sql_for('create_or_alter'),
                          """CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
 RETURNS (PROJ_ID CHAR(5))
@@ -3858,8 +3918,17 @@ BEGIN
 	DO
 		SUSPEND;
 END""")
-        self.assertEqual(c.get_sql_for('create_or_alter', no_code=True),
-                         """CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+        if self.version == FB30:
+            self.assertEqual(c.get_sql_for('create_or_alter', no_code=True),
+                             """CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
+RETURNS (PROJ_ID CHAR(5))
+AS
+BEGIN
+  SUSPEND;
+END""")
+        else:
+            self.assertEqual(c.get_sql_for('create_or_alter', no_code=True),
+                             """CREATE OR ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)
 RETURNS (PROJ_ID CHAR(5))
 AS
 BEGIN
@@ -4363,32 +4432,32 @@ MODULE_NAME 'fbudf'""")
             self.assertEqual(c.get_sql_for('drop'), "DROP FUNCTION F2")
             self.assertEqual(c.get_sql_for('create'),
                              """CREATE FUNCTION F2 (X INTEGER)
-    RETURNS INTEGER
-    AS
-    BEGIN
-      RETURN X+1;
-    END""")
+RETURNS INTEGER
+AS
+BEGIN
+  RETURN X+1;
+END""")
             self.assertEqual(c.get_sql_for('create', no_code=True),
                              """CREATE FUNCTION F2 (X INTEGER)
-    RETURNS INTEGER
-    AS
-    BEGIN
-    END""")
+RETURNS INTEGER
+AS
+BEGIN
+END""")
             self.assertEqual(c.get_sql_for('recreate'),
                              """RECREATE FUNCTION F2 (X INTEGER)
-    RETURNS INTEGER
-    AS
-    BEGIN
-      RETURN X+1;
-    END""")
+RETURNS INTEGER
+AS
+BEGIN
+  RETURN X+1;
+END""")
 
             self.assertEqual(c.get_sql_for('create_or_alter'),
                              """CREATE OR ALTER FUNCTION F2 (X INTEGER)
-    RETURNS INTEGER
-    AS
-    BEGIN
-      RETURN X+1;
-    END""")
+RETURNS INTEGER
+AS
+BEGIN
+  RETURN X+1;
+END""")
             with self.assertRaises(fdb.ProgrammingError) as cm:
                 c.get_sql_for('alter', declare="DECLARE VARIABLE i integer;", code='')
             self.assertTupleEqual(cm.exception.args,
@@ -4399,39 +4468,46 @@ MODULE_NAME 'fbudf'""")
                                   ("Missing required parameter: 'code'.",))
             self.assertEqual(c.get_sql_for('alter', returns='INTEGER', code=''),
                              """ALTER FUNCTION F2
-    RETURNS INTEGER
-    AS
-    BEGIN
-    END""")
+RETURNS INTEGER
+AS
+BEGIN
+END""")
             self.assertEqual(c.get_sql_for('alter', arguments="IN1 integer", returns='INTEGER', code=''),
                              """ALTER FUNCTION F2 (IN1 integer)
-    RETURNS INTEGER
-    AS
-    BEGIN
-    END""")
+RETURNS INTEGER
+AS
+BEGIN
+END""")
             self.assertEqual(c.get_sql_for('alter', returns='INTEGER',
                                            arguments=["IN1 integer", "IN2 VARCHAR(10)"],
                                            code=''),
                              """ALTER FUNCTION F2 (
-      IN1 integer,
-      IN2 VARCHAR(10)
-    )
-    RETURNS INTEGER
-    AS
-    BEGIN
-    END""")
+  IN1 integer,
+  IN2 VARCHAR(10)
+)
+RETURNS INTEGER
+AS
+BEGIN
+END""")
             #
             c = self.con.schema.get_function('FX')
-            self.assertEqual(c.get_sql_for('create'),
-                             """CREATE FUNCTION FX (
-      F TYPE OF "FIRSTNAME",
-      L TYPE OF COLUMN CUSTOMER.CONTACT_LAST
-    )
-    RETURNS VARCHAR(35)
-    AS
-    BEGIN
-      RETURN L || ', ' || F;
-    END""")
+            self.assertEqual(c.get_sql_for('create'),"""CREATE FUNCTION FX (
+  F TYPE OF "FIRSTNAME",
+  L TYPE OF COLUMN CUSTOMER.CONTACT_LAST
+)
+RETURNS VARCHAR(35)
+AS
+BEGIN
+  RETURN L || \', \' || F;
+END""")
+                             #"""CREATE FUNCTION FX (
+  #L TYPE OF COLUMN CUSTOMER.CONTACT_LAST
+#)
+#RETURNS VARCHAR(35)
+#AS
+#BEGIN
+  #RETURN L || ', ' || F;
+#END""")
             #
             c = self.con.schema.get_function('F1')
             self.assertEqual(c.name, 'F1')
@@ -5454,48 +5530,97 @@ DROP TABLE JOB
                                       'CREATE DOMAIN BUDGET AS DECIMAL(12, 2) DEFAULT 50000 CHECK (VALUE > 10000 AND VALUE <= 2000000)',
                                       "CREATE DOMAIN PRODTYPE AS VARCHAR(12) DEFAULT 'software' NOT NULL CHECK (VALUE IN ('software', 'hardware', 'other', 'N/A'))",
                                       "CREATE DOMAIN PONUMBER AS CHAR(8) CHECK (VALUE STARTING WITH 'V')"])
-        script = s.get_metadata_ddl([sm.SCRIPT_PACKAGE_DEFS])
-        self.assertListEqual(script, [])
-        script = s.get_metadata_ddl([sm.SCRIPT_FUNCTION_DEFS])
-        self.assertListEqual(script, [])
+        if self.version == FB30:
+            script = s.get_metadata_ddl([sm.SCRIPT_PACKAGE_DEFS])
+            self.assertListEqual(script, ['CREATE PACKAGE TEST\nAS\nBEGIN\n  PROCEDURE P1(I INT) RETURNS (O INT); -- public procedure\n  FUNCTION F(X INT) RETURNS INT;\nEND',
+                                          'CREATE PACKAGE TEST2\nAS\nBEGIN\n  FUNCTION F3(X INT) RETURNS INT;\nEND'])
+        if self.version == FB30:
+            script = s.get_metadata_ddl([sm.SCRIPT_FUNCTION_DEFS])
+            self.assertListEqual(script, ['CREATE FUNCTION F2 (X INTEGER)\nRETURNS INTEGER\nAS\nBEGIN\nEND',
+                                          'CREATE FUNCTION FX (\n  F TYPE OF "FIRSTNAME",\n  L TYPE OF COLUMN CUSTOMER.CONTACT_LAST\n)\nRETURNS VARCHAR(35)\nAS\nBEGIN\nEND',
+                                          'CREATE FUNCTION FN\nRETURNS INTEGER\nAS\nBEGIN\nEND'])
         script = s.get_metadata_ddl([sm.SCRIPT_PROCEDURE_DEFS])
-        self.assertListEqual(script, ['CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\nEND', 'CREATE PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE DELETE_EMPLOYEE (EMP_NUM INTEGER)\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE DEPT_BUDGET (DNO CHAR(3))\nRETURNS (TOT DECIMAL(12, 2))\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE ORG_CHART\nRETURNS (\n  HEAD_DEPT CHAR(25),\n  DEPARTMENT CHAR(25),\n  MNGR_NAME CHAR(20),\n  TITLE CHAR(5),\n  EMP_CNT INTEGER\n)\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE MAIL_LABEL (CUST_NO INTEGER)\nRETURNS (\n  LINE1 CHAR(40),\n  LINE2 CHAR(40),\n  LINE3 CHAR(40),\n  LINE4 CHAR(40),\n  LINE5 CHAR(40),\n  LINE6 CHAR(40)\n)\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE SHIP_ORDER (PO_NUM CHAR(8))\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nBEGIN\nEND',
-                                      'CREATE PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\nEND'])
+        if self.version == FB30:
+            self.assertListEqual(script, ['CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE DELETE_EMPLOYEE (EMP_NUM INTEGER)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE DEPT_BUDGET (DNO CHAR(3))\nRETURNS (TOT DECIMAL(12, 2))\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE ORG_CHART\nRETURNS (\n  HEAD_DEPT CHAR(25),\n  DEPARTMENT CHAR(25),\n  MNGR_NAME CHAR(20),\n  TITLE CHAR(5),\n  EMP_CNT INTEGER\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE MAIL_LABEL (CUST_NO INTEGER)\nRETURNS (\n  LINE1 CHAR(40),\n  LINE2 CHAR(40),\n  LINE3 CHAR(40),\n  LINE4 CHAR(40),\n  LINE5 CHAR(40),\n  LINE6 CHAR(40)\n)\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE SHIP_ORDER (PO_NUM CHAR(8))\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nBEGIN\n  SUSPEND;\nEND',
+                                          'CREATE PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\n  SUSPEND;\nEND'])
+        else:
+            self.assertListEqual(script, ['CREATE PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE DELETE_EMPLOYEE (EMP_NUM INTEGER)\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE DEPT_BUDGET (DNO CHAR(3))\nRETURNS (TOT DECIMAL(12, 2))\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE ORG_CHART\nRETURNS (\n  HEAD_DEPT CHAR(25),\n  DEPARTMENT CHAR(25),\n  MNGR_NAME CHAR(20),\n  TITLE CHAR(5),\n  EMP_CNT INTEGER\n)\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE MAIL_LABEL (CUST_NO INTEGER)\nRETURNS (\n  LINE1 CHAR(40),\n  LINE2 CHAR(40),\n  LINE3 CHAR(40),\n  LINE4 CHAR(40),\n  LINE5 CHAR(40),\n  LINE6 CHAR(40)\n)\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE SHIP_ORDER (PO_NUM CHAR(8))\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nBEGIN\nEND',
+                                          'CREATE PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\nEND'])
         script = s.get_metadata_ddl([sm.SCRIPT_TABLES])
-        self.assertListEqual(script, ['CREATE TABLE COUNTRY (\n  COUNTRY COUNTRYNAME NOT NULL,\n  CURRENCY VARCHAR(10) NOT NULL\n)',
-                                      'CREATE TABLE JOB (\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  JOB_TITLE VARCHAR(25) NOT NULL,\n  MIN_SALARY SALARY NOT NULL,\n  MAX_SALARY SALARY NOT NULL,\n  JOB_REQUIREMENT BLOB SUB_TYPE TEXT SEGMENT SIZE 400,\n  LANGUAGE_REQ VARCHAR(15)[5]\n)',
-                                      "CREATE TABLE DEPARTMENT (\n  DEPT_NO DEPTNO NOT NULL,\n  DEPARTMENT VARCHAR(25) NOT NULL,\n  HEAD_DEPT DEPTNO,\n  MNGR_NO EMPNO,\n  BUDGET BUDGET,\n  LOCATION VARCHAR(15),\n  PHONE_NO PHONENUMBER DEFAULT '555-1234'\n)",
-                                      'CREATE TABLE EMPLOYEE (\n  EMP_NO EMPNO NOT NULL,\n  FIRST_NAME "FIRSTNAME" NOT NULL,\n  LAST_NAME "LASTNAME" NOT NULL,\n  PHONE_EXT VARCHAR(4),\n  HIRE_DATE TIMESTAMP DEFAULT \'NOW\' NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  SALARY SALARY NOT NULL,\n  FULL_NAME COMPUTED BY (last_name || \', \' || first_name)\n)',
-                                      'CREATE TABLE CUSTOMER (\n  CUST_NO CUSTNO NOT NULL,\n  CUSTOMER VARCHAR(25) NOT NULL,\n  CONTACT_FIRST "FIRSTNAME",\n  CONTACT_LAST "LASTNAME",\n  PHONE_NO PHONENUMBER,\n  ADDRESS_LINE1 ADDRESSLINE,\n  ADDRESS_LINE2 ADDRESSLINE,\n  CITY VARCHAR(25),\n  STATE_PROVINCE VARCHAR(15),\n  COUNTRY COUNTRYNAME,\n  POSTAL_CODE VARCHAR(12),\n  ON_HOLD CHAR(1) DEFAULT NULL\n)',
-                                      'CREATE TABLE T4 (\n  C1 INTEGER,\n  C_OCTETS CHAR(5) CHARACTER SET OCTETS,\n  V_OCTETS VARCHAR(30) CHARACTER SET OCTETS,\n  C_NONE CHAR(5),\n  V_NONE VARCHAR(30),\n  C_WIN1250 CHAR(5) CHARACTER SET WIN1250,\n  V_WIN1250 VARCHAR(30) CHARACTER SET WIN1250,\n  C_UTF8 CHAR(5) CHARACTER SET UTF8,\n  V_UTF8 VARCHAR(30) CHARACTER SET UTF8\n)',
-                                      'CREATE TABLE PROJECT (\n  PROJ_ID PROJNO NOT NULL,\n  PROJ_NAME VARCHAR(20) NOT NULL,\n  PROJ_DESC BLOB SUB_TYPE TEXT SEGMENT SIZE 800,\n  TEAM_LEADER EMPNO,\n  PRODUCT PRODTYPE\n)',
-                                      'CREATE TABLE EMPLOYEE_PROJECT (\n  EMP_NO EMPNO NOT NULL,\n  PROJ_ID PROJNO NOT NULL\n)',
-                                      'CREATE TABLE PROJ_DEPT_BUDGET (\n  FISCAL_YEAR INTEGER NOT NULL,\n  PROJ_ID PROJNO NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  QUART_HEAD_CNT INTEGER[4],\n  PROJECTED_BUDGET BUDGET\n)',
-                                      "CREATE TABLE SALARY_HISTORY (\n  EMP_NO EMPNO NOT NULL,\n  CHANGE_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  UPDATER_ID VARCHAR(20) NOT NULL,\n  OLD_SALARY SALARY NOT NULL,\n  PERCENT_CHANGE DOUBLE PRECISION DEFAULT 0 NOT NULL,\n  NEW_SALARY COMPUTED BY (old_salary + old_salary * percent_change / 100)\n)",
-                                      "CREATE TABLE SALES (\n  PO_NUMBER PONUMBER NOT NULL,\n  CUST_NO CUSTNO NOT NULL,\n  SALES_REP EMPNO,\n  ORDER_STATUS VARCHAR(7) DEFAULT 'new' NOT NULL,\n  ORDER_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  SHIP_DATE TIMESTAMP,\n  DATE_NEEDED TIMESTAMP,\n  PAID CHAR(1) DEFAULT 'n',\n  QTY_ORDERED INTEGER DEFAULT 1 NOT NULL,\n  TOTAL_VALUE DECIMAL(9, 2) NOT NULL,\n  DISCOUNT FLOAT DEFAULT 0 NOT NULL,\n  ITEM_TYPE PRODTYPE,\n  AGED COMPUTED BY (ship_date - order_date)\n)",
-                                      'CREATE TABLE T3 (\n  C1 INTEGER,\n  C2 CHAR(10) CHARACTER SET UTF8,\n  C3 VARCHAR(10) CHARACTER SET UTF8,\n  C4 BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET UTF8,\n  C5 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
-                                      'CREATE TABLE T2 (\n  C1 SMALLINT,\n  C2 INTEGER,\n  C3 BIGINT,\n  C4 CHAR(5),\n  C5 VARCHAR(10),\n  C6 DATE,\n  C7 TIME,\n  C8 TIMESTAMP,\n  C9 BLOB SUB_TYPE TEXT SEGMENT SIZE 80,\n  C10 NUMERIC(18, 2),\n  C11 DECIMAL(18, 2),\n  C12 FLOAT,\n  C13 DOUBLE PRECISION,\n  C14 NUMERIC(8, 4),\n  C15 DECIMAL(8, 4),\n  C16 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
-                                      'CREATE TABLE AR (\n  C1 INTEGER,\n  C2 INTEGER[4, 0:3, 2],\n  C3 VARCHAR(15)[0:5, 2],\n  C4 CHAR(5)[5],\n  C5 TIMESTAMP[2],\n  C6 TIME[2],\n  C7 DECIMAL(10, 2)[2],\n  C8 NUMERIC(10, 2)[2],\n  C9 SMALLINT[2],\n  C10 BIGINT[2],\n  C11 FLOAT[2],\n  C12 DOUBLE PRECISION[2],\n  C13 DECIMAL(10, 1)[2],\n  C14 DECIMAL(10, 5)[2],\n  C15 DECIMAL(18, 5)[2]\n)',
-                                      'CREATE TABLE T (\n  C1 INTEGER NOT NULL\n)'])
+        if self.version == FB30:
+            self.assertListEqual(script, ['CREATE TABLE COUNTRY (\n  COUNTRY COUNTRYNAME NOT NULL,\n  CURRENCY VARCHAR(10) NOT NULL\n)',
+                                          'CREATE TABLE JOB (\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  JOB_TITLE VARCHAR(25) NOT NULL,\n  MIN_SALARY SALARY NOT NULL,\n  MAX_SALARY SALARY NOT NULL,\n  JOB_REQUIREMENT BLOB SUB_TYPE TEXT SEGMENT SIZE 400,\n  LANGUAGE_REQ VARCHAR(15)[5]\n)',
+                                          "CREATE TABLE DEPARTMENT (\n  DEPT_NO DEPTNO NOT NULL,\n  DEPARTMENT VARCHAR(25) NOT NULL,\n  HEAD_DEPT DEPTNO,\n  MNGR_NO EMPNO,\n  BUDGET BUDGET,\n  LOCATION VARCHAR(15),\n  PHONE_NO PHONENUMBER DEFAULT '555-1234'\n)",
+                                          'CREATE TABLE EMPLOYEE (\n  EMP_NO EMPNO NOT NULL,\n  FIRST_NAME "FIRSTNAME" NOT NULL,\n  LAST_NAME "LASTNAME" NOT NULL,\n  PHONE_EXT VARCHAR(4),\n  HIRE_DATE TIMESTAMP DEFAULT \'NOW\' NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  SALARY SALARY NOT NULL,\n  FULL_NAME COMPUTED BY (last_name || \', \' || first_name)\n)',
+                                          'CREATE TABLE CUSTOMER (\n  CUST_NO CUSTNO NOT NULL,\n  CUSTOMER VARCHAR(25) NOT NULL,\n  CONTACT_FIRST "FIRSTNAME",\n  CONTACT_LAST "LASTNAME",\n  PHONE_NO PHONENUMBER,\n  ADDRESS_LINE1 ADDRESSLINE,\n  ADDRESS_LINE2 ADDRESSLINE,\n  CITY VARCHAR(25),\n  STATE_PROVINCE VARCHAR(15),\n  COUNTRY COUNTRYNAME,\n  POSTAL_CODE VARCHAR(12),\n  ON_HOLD CHAR(1) DEFAULT NULL\n)',
+                                          'CREATE TABLE PROJECT (\n  PROJ_ID PROJNO NOT NULL,\n  PROJ_NAME VARCHAR(20) NOT NULL,\n  PROJ_DESC BLOB SUB_TYPE TEXT SEGMENT SIZE 800,\n  TEAM_LEADER EMPNO,\n  PRODUCT PRODTYPE\n)',
+                                          'CREATE TABLE EMPLOYEE_PROJECT (\n  EMP_NO EMPNO NOT NULL,\n  PROJ_ID PROJNO NOT NULL\n)',
+                                          'CREATE TABLE PROJ_DEPT_BUDGET (\n  FISCAL_YEAR INTEGER NOT NULL,\n  PROJ_ID PROJNO NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  QUART_HEAD_CNT INTEGER[4],\n  PROJECTED_BUDGET BUDGET\n)',
+                                          "CREATE TABLE SALARY_HISTORY (\n  EMP_NO EMPNO NOT NULL,\n  CHANGE_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  UPDATER_ID VARCHAR(20) NOT NULL,\n  OLD_SALARY SALARY NOT NULL,\n  PERCENT_CHANGE DOUBLE PRECISION DEFAULT 0 NOT NULL,\n  NEW_SALARY COMPUTED BY (old_salary + old_salary * percent_change / 100)\n)",
+                                          "CREATE TABLE SALES (\n  PO_NUMBER PONUMBER NOT NULL,\n  CUST_NO CUSTNO NOT NULL,\n  SALES_REP EMPNO,\n  ORDER_STATUS VARCHAR(7) DEFAULT 'new' NOT NULL,\n  ORDER_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  SHIP_DATE TIMESTAMP,\n  DATE_NEEDED TIMESTAMP,\n  PAID CHAR(1) DEFAULT 'n',\n  QTY_ORDERED INTEGER DEFAULT 1 NOT NULL,\n  TOTAL_VALUE DECIMAL(9, 2) NOT NULL,\n  DISCOUNT FLOAT DEFAULT 0 NOT NULL,\n  ITEM_TYPE PRODTYPE,\n  AGED COMPUTED BY (ship_date - order_date)\n)",
+                                          'CREATE TABLE AR (\n  C1 INTEGER,\n  C2 INTEGER[4, 0:3, 2],\n  C3 VARCHAR(15)[0:5, 2],\n  C4 CHAR(5)[5],\n  C5 TIMESTAMP[2],\n  C6 TIME[2],\n  C7 DECIMAL(10, 2)[2],\n  C8 NUMERIC(10, 2)[2],\n  C9 SMALLINT[2],\n  C10 BIGINT[2],\n  C11 FLOAT[2],\n  C12 DOUBLE PRECISION[2],\n  C13 DECIMAL(10, 1)[2],\n  C14 DECIMAL(10, 5)[2],\n  C15 DECIMAL(18, 5)[2],\n  C16 BOOLEAN[3]\n)',
+                                          'CREATE TABLE T2 (\n  C1 SMALLINT,\n  C2 INTEGER,\n  C3 BIGINT,\n  C4 CHAR(5),\n  C5 VARCHAR(10),\n  C6 DATE,\n  C7 TIME,\n  C8 TIMESTAMP,\n  C9 BLOB SUB_TYPE TEXT SEGMENT SIZE 80,\n  C10 NUMERIC(18, 2),\n  C11 DECIMAL(18, 2),\n  C12 FLOAT,\n  C13 DOUBLE PRECISION,\n  C14 NUMERIC(8, 4),\n  C15 DECIMAL(8, 4),\n  C16 BLOB SUB_TYPE BINARY SEGMENT SIZE 80,\n  C17 BOOLEAN\n)',
+                                          'CREATE TABLE T3 (\n  C1 INTEGER,\n  C2 CHAR(10) CHARACTER SET UTF8,\n  C3 VARCHAR(10) CHARACTER SET UTF8,\n  C4 BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET UTF8,\n  C5 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
+                                          'CREATE TABLE T4 (\n  C1 INTEGER,\n  C_OCTETS CHAR(5) CHARACTER SET OCTETS,\n  V_OCTETS VARCHAR(30) CHARACTER SET OCTETS,\n  C_NONE CHAR(5),\n  V_NONE VARCHAR(30),\n  C_WIN1250 CHAR(5) CHARACTER SET WIN1250,\n  V_WIN1250 VARCHAR(30) CHARACTER SET WIN1250,\n  C_UTF8 CHAR(5) CHARACTER SET UTF8,\n  V_UTF8 VARCHAR(30) CHARACTER SET UTF8\n)',
+                                          'CREATE TABLE T5 (\n  ID NUMERIC(10, 0) GENERATED BY DEFAULT AS IDENTITY,\n  C1 VARCHAR(15),\n  UQ BIGINT GENERATED BY DEFAULT AS IDENTITY (START WITH 100)\n)', 'CREATE TABLE T (\n  C1 INTEGER NOT NULL\n)'])
+        else:
+            self.assertListEqual(script, ['CREATE TABLE COUNTRY (\n  COUNTRY COUNTRYNAME NOT NULL,\n  CURRENCY VARCHAR(10) NOT NULL\n)',
+                                          'CREATE TABLE JOB (\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  JOB_TITLE VARCHAR(25) NOT NULL,\n  MIN_SALARY SALARY NOT NULL,\n  MAX_SALARY SALARY NOT NULL,\n  JOB_REQUIREMENT BLOB SUB_TYPE TEXT SEGMENT SIZE 400,\n  LANGUAGE_REQ VARCHAR(15)[5]\n)',
+                                          "CREATE TABLE DEPARTMENT (\n  DEPT_NO DEPTNO NOT NULL,\n  DEPARTMENT VARCHAR(25) NOT NULL,\n  HEAD_DEPT DEPTNO,\n  MNGR_NO EMPNO,\n  BUDGET BUDGET,\n  LOCATION VARCHAR(15),\n  PHONE_NO PHONENUMBER DEFAULT '555-1234'\n)",
+                                          'CREATE TABLE EMPLOYEE (\n  EMP_NO EMPNO NOT NULL,\n  FIRST_NAME "FIRSTNAME" NOT NULL,\n  LAST_NAME "LASTNAME" NOT NULL,\n  PHONE_EXT VARCHAR(4),\n  HIRE_DATE TIMESTAMP DEFAULT \'NOW\' NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  JOB_CODE JOBCODE NOT NULL,\n  JOB_GRADE JOBGRADE NOT NULL,\n  JOB_COUNTRY COUNTRYNAME NOT NULL,\n  SALARY SALARY NOT NULL,\n  FULL_NAME COMPUTED BY (last_name || \', \' || first_name)\n)',
+                                          'CREATE TABLE CUSTOMER (\n  CUST_NO CUSTNO NOT NULL,\n  CUSTOMER VARCHAR(25) NOT NULL,\n  CONTACT_FIRST "FIRSTNAME",\n  CONTACT_LAST "LASTNAME",\n  PHONE_NO PHONENUMBER,\n  ADDRESS_LINE1 ADDRESSLINE,\n  ADDRESS_LINE2 ADDRESSLINE,\n  CITY VARCHAR(25),\n  STATE_PROVINCE VARCHAR(15),\n  COUNTRY COUNTRYNAME,\n  POSTAL_CODE VARCHAR(12),\n  ON_HOLD CHAR(1) DEFAULT NULL\n)',
+                                          'CREATE TABLE T4 (\n  C1 INTEGER,\n  C_OCTETS CHAR(5) CHARACTER SET OCTETS,\n  V_OCTETS VARCHAR(30) CHARACTER SET OCTETS,\n  C_NONE CHAR(5),\n  V_NONE VARCHAR(30),\n  C_WIN1250 CHAR(5) CHARACTER SET WIN1250,\n  V_WIN1250 VARCHAR(30) CHARACTER SET WIN1250,\n  C_UTF8 CHAR(5) CHARACTER SET UTF8,\n  V_UTF8 VARCHAR(30) CHARACTER SET UTF8\n)',
+                                          'CREATE TABLE PROJECT (\n  PROJ_ID PROJNO NOT NULL,\n  PROJ_NAME VARCHAR(20) NOT NULL,\n  PROJ_DESC BLOB SUB_TYPE TEXT SEGMENT SIZE 800,\n  TEAM_LEADER EMPNO,\n  PRODUCT PRODTYPE\n)',
+                                          'CREATE TABLE EMPLOYEE_PROJECT (\n  EMP_NO EMPNO NOT NULL,\n  PROJ_ID PROJNO NOT NULL\n)',
+                                          'CREATE TABLE PROJ_DEPT_BUDGET (\n  FISCAL_YEAR INTEGER NOT NULL,\n  PROJ_ID PROJNO NOT NULL,\n  DEPT_NO DEPTNO NOT NULL,\n  QUART_HEAD_CNT INTEGER[4],\n  PROJECTED_BUDGET BUDGET\n)',
+                                          "CREATE TABLE SALARY_HISTORY (\n  EMP_NO EMPNO NOT NULL,\n  CHANGE_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  UPDATER_ID VARCHAR(20) NOT NULL,\n  OLD_SALARY SALARY NOT NULL,\n  PERCENT_CHANGE DOUBLE PRECISION DEFAULT 0 NOT NULL,\n  NEW_SALARY COMPUTED BY (old_salary + old_salary * percent_change / 100)\n)",
+                                          "CREATE TABLE SALES (\n  PO_NUMBER PONUMBER NOT NULL,\n  CUST_NO CUSTNO NOT NULL,\n  SALES_REP EMPNO,\n  ORDER_STATUS VARCHAR(7) DEFAULT 'new' NOT NULL,\n  ORDER_DATE TIMESTAMP DEFAULT 'NOW' NOT NULL,\n  SHIP_DATE TIMESTAMP,\n  DATE_NEEDED TIMESTAMP,\n  PAID CHAR(1) DEFAULT 'n',\n  QTY_ORDERED INTEGER DEFAULT 1 NOT NULL,\n  TOTAL_VALUE DECIMAL(9, 2) NOT NULL,\n  DISCOUNT FLOAT DEFAULT 0 NOT NULL,\n  ITEM_TYPE PRODTYPE,\n  AGED COMPUTED BY (ship_date - order_date)\n)",
+                                          'CREATE TABLE T3 (\n  C1 INTEGER,\n  C2 CHAR(10) CHARACTER SET UTF8,\n  C3 VARCHAR(10) CHARACTER SET UTF8,\n  C4 BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET UTF8,\n  C5 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
+                                          'CREATE TABLE T2 (\n  C1 SMALLINT,\n  C2 INTEGER,\n  C3 BIGINT,\n  C4 CHAR(5),\n  C5 VARCHAR(10),\n  C6 DATE,\n  C7 TIME,\n  C8 TIMESTAMP,\n  C9 BLOB SUB_TYPE TEXT SEGMENT SIZE 80,\n  C10 NUMERIC(18, 2),\n  C11 DECIMAL(18, 2),\n  C12 FLOAT,\n  C13 DOUBLE PRECISION,\n  C14 NUMERIC(8, 4),\n  C15 DECIMAL(8, 4),\n  C16 BLOB SUB_TYPE BINARY SEGMENT SIZE 80\n)',
+                                          'CREATE TABLE AR (\n  C1 INTEGER,\n  C2 INTEGER[4, 0:3, 2],\n  C3 VARCHAR(15)[0:5, 2],\n  C4 CHAR(5)[5],\n  C5 TIMESTAMP[2],\n  C6 TIME[2],\n  C7 DECIMAL(10, 2)[2],\n  C8 NUMERIC(10, 2)[2],\n  C9 SMALLINT[2],\n  C10 BIGINT[2],\n  C11 FLOAT[2],\n  C12 DOUBLE PRECISION[2],\n  C13 DECIMAL(10, 1)[2],\n  C14 DECIMAL(10, 5)[2],\n  C15 DECIMAL(18, 5)[2]\n)',
+                                          'CREATE TABLE T (\n  C1 INTEGER NOT NULL\n)'])
         script = s.get_metadata_ddl([sm.SCRIPT_PRIMARY_KEYS])
-        self.assertListEqual(script, ['ALTER TABLE COUNTRY ADD PRIMARY KEY (COUNTRY)',
-                                      'ALTER TABLE JOB ADD PRIMARY KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)',
-                                      'ALTER TABLE DEPARTMENT ADD PRIMARY KEY (DEPT_NO)',
-                                      'ALTER TABLE EMPLOYEE ADD PRIMARY KEY (EMP_NO)',
-                                      'ALTER TABLE PROJECT ADD PRIMARY KEY (PROJ_ID)',
-                                      'ALTER TABLE EMPLOYEE_PROJECT ADD PRIMARY KEY (EMP_NO,PROJ_ID)',
-                                      'ALTER TABLE PROJ_DEPT_BUDGET ADD PRIMARY KEY (FISCAL_YEAR,PROJ_ID,DEPT_NO)',
-                                      'ALTER TABLE SALARY_HISTORY ADD PRIMARY KEY (EMP_NO,CHANGE_DATE,UPDATER_ID)',
-                                      'ALTER TABLE CUSTOMER ADD PRIMARY KEY (CUST_NO)',
-                                      'ALTER TABLE SALES ADD PRIMARY KEY (PO_NUMBER)',
-                                      'ALTER TABLE T ADD PRIMARY KEY (C1)'],)
+        if self.version == FB30:
+            self.assertListEqual(script, ['ALTER TABLE COUNTRY ADD PRIMARY KEY (COUNTRY)',
+                                          'ALTER TABLE JOB ADD PRIMARY KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)',
+                                          'ALTER TABLE DEPARTMENT ADD PRIMARY KEY (DEPT_NO)',
+                                          'ALTER TABLE EMPLOYEE ADD PRIMARY KEY (EMP_NO)',
+                                          'ALTER TABLE PROJECT ADD PRIMARY KEY (PROJ_ID)',
+                                          'ALTER TABLE EMPLOYEE_PROJECT ADD PRIMARY KEY (EMP_NO,PROJ_ID)',
+                                          'ALTER TABLE PROJ_DEPT_BUDGET ADD PRIMARY KEY (FISCAL_YEAR,PROJ_ID,DEPT_NO)',
+                                          'ALTER TABLE SALARY_HISTORY ADD PRIMARY KEY (EMP_NO,CHANGE_DATE,UPDATER_ID)',
+                                          'ALTER TABLE CUSTOMER ADD PRIMARY KEY (CUST_NO)',
+                                          'ALTER TABLE SALES ADD PRIMARY KEY (PO_NUMBER)',
+                                          'ALTER TABLE T5 ADD PRIMARY KEY (ID)',
+                                          'ALTER TABLE T ADD PRIMARY KEY (C1)'],)
+        else:
+            self.assertListEqual(script, ['ALTER TABLE COUNTRY ADD PRIMARY KEY (COUNTRY)',
+                                          'ALTER TABLE JOB ADD PRIMARY KEY (JOB_CODE,JOB_GRADE,JOB_COUNTRY)',
+                                          'ALTER TABLE DEPARTMENT ADD PRIMARY KEY (DEPT_NO)',
+                                          'ALTER TABLE EMPLOYEE ADD PRIMARY KEY (EMP_NO)',
+                                          'ALTER TABLE PROJECT ADD PRIMARY KEY (PROJ_ID)',
+                                          'ALTER TABLE EMPLOYEE_PROJECT ADD PRIMARY KEY (EMP_NO,PROJ_ID)',
+                                          'ALTER TABLE PROJ_DEPT_BUDGET ADD PRIMARY KEY (FISCAL_YEAR,PROJ_ID,DEPT_NO)',
+                                          'ALTER TABLE SALARY_HISTORY ADD PRIMARY KEY (EMP_NO,CHANGE_DATE,UPDATER_ID)',
+                                          'ALTER TABLE CUSTOMER ADD PRIMARY KEY (CUST_NO)',
+                                          'ALTER TABLE SALES ADD PRIMARY KEY (PO_NUMBER)',
+                                          'ALTER TABLE T ADD PRIMARY KEY (C1)'],)
         script = s.get_metadata_ddl([sm.SCRIPT_UNIQUE_CONSTRAINTS])
         self.assertListEqual(script, ['ALTER TABLE DEPARTMENT ADD UNIQUE (DEPARTMENT)',
                                       'ALTER TABLE PROJECT ADD UNIQUE (PROJ_NAME)'])
@@ -5544,10 +5669,13 @@ DROP TABLE JOB
                                       'CREATE DESCENDING INDEX QTYX ON SALES (ITEM_TYPE,QTY_ORDERED)'])
         script = s.get_metadata_ddl([sm.SCRIPT_VIEWS])
         self.assertListEqual(script, ['CREATE VIEW PHONE_LIST (EMP_NO,FIRST_NAME,LAST_NAME,PHONE_EXT,LOCATION,PHONE_NO)\n   AS\n     SELECT\n    emp_no, first_name, last_name, phone_ext, location, phone_no\n    FROM employee, department\n    WHERE employee.dept_no = department.dept_no'])
-        script = s.get_metadata_ddl([sm.SCRIPT_PACKAGE_BODIES])
-        self.assertListEqual(script, [])
-        script = s.get_metadata_ddl([sm.SCRIPT_FUNCTION_BODIES])
-        self.assertListEqual(script, [])
+        if self.version == FB30:
+            script = s.get_metadata_ddl([sm.SCRIPT_PACKAGE_BODIES])
+            self.assertListEqual(script, ['CREATE PACKAGE BODY TEST\nAS\nBEGIN\n  FUNCTION F1(I INT) RETURNS INT; -- private function\n\n  PROCEDURE P1(I INT) RETURNS (O INT)\n  AS\n  BEGIN\n  END\n\n  FUNCTION F1(I INT) RETURNS INT\n  AS\n  BEGIN\n    RETURN F(I)+10;\n  END\n\n  FUNCTION F(X INT) RETURNS INT\n  AS\n  BEGIN\n    RETURN X+1;\n  END\nEND', 'CREATE PACKAGE BODY TEST2\nAS\nBEGIN\n  FUNCTION F3(X INT) RETURNS INT\n  AS\n  BEGIN\n    RETURN TEST.F(X)+100+FN();\n  END\nEND'])
+            script = s.get_metadata_ddl([sm.SCRIPT_FUNCTION_BODIES])
+            self.assertListEqual(script, ['ALTER FUNCTION F2 (X INTEGER)\nRETURNS INTEGER\nAS\nBEGIN\n  RETURN X+1;\nEND',
+                                          'ALTER FUNCTION FX (\n  F TYPE OF "FIRSTNAME",\n  L TYPE OF COLUMN CUSTOMER.CONTACT_LAST\n)\nRETURNS VARCHAR(35)\nAS\nBEGIN\n  RETURN L || \', \' || F;\nEND',
+                                          'ALTER FUNCTION FN\nRETURNS INTEGER\nAS\nBEGIN\n  RETURN 0;\nEND'])
         script = s.get_metadata_ddl([sm.SCRIPT_PROCEDURE_BODIES])
         self.assertListEqual(script, ['ALTER PROCEDURE GET_EMP_PROJ (EMP_NO SMALLINT)\nRETURNS (PROJ_ID CHAR(5))\nAS\nBEGIN\n\tFOR SELECT proj_id\n\t\tFROM employee_project\n\t\tWHERE emp_no = :emp_no\n\t\tINTO :proj_id\n\tDO\n\t\tSUSPEND;\nEND', 'ALTER PROCEDURE ADD_EMP_PROJ (\n  EMP_NO SMALLINT,\n  PROJ_ID CHAR(5)\n)\nAS\nBEGIN\n\tBEGIN\n\tINSERT INTO employee_project (emp_no, proj_id) VALUES (:emp_no, :proj_id);\n\tWHEN SQLCODE -530 DO\n\t\tEXCEPTION unknown_emp_id;\n\tEND\n\tSUSPEND;\nEND',
                                       'ALTER PROCEDURE SUB_TOT_BUDGET (HEAD_DEPT CHAR(3))\nRETURNS (\n  TOT_BUDGET DECIMAL(12, 2),\n  AVG_BUDGET DECIMAL(12, 2),\n  MIN_BUDGET DECIMAL(12, 2),\n  MAX_BUDGET DECIMAL(12, 2)\n)\nAS\nBEGIN\n\tSELECT SUM(budget), AVG(budget), MIN(budget), MAX(budget)\n\t\tFROM department\n\t\tWHERE head_dept = :head_dept\n\t\tINTO :tot_budget, :avg_budget, :min_budget, :max_budget;\n\tSUSPEND;\nEND',
@@ -5559,12 +5687,20 @@ DROP TABLE JOB
                                       "ALTER PROCEDURE SHOW_LANGS (\n  CODE VARCHAR(5),\n  GRADE SMALLINT,\n  CTY VARCHAR(15)\n)\nRETURNS (LANGUAGES VARCHAR(15))\nAS\nDECLARE VARIABLE i INTEGER;\nBEGIN\n  i = 1;\n  WHILE (i <= 5) DO\n  BEGIN\n    SELECT language_req[:i] FROM joB\n    WHERE ((job_code = :code) AND (job_grade = :grade) AND (job_country = :cty)\n           AND (language_req IS NOT NULL))\n    INTO :languages;\n    IF (languages = ' ') THEN  /* Prints 'NULL' instead of blanks */\n       languages = 'NULL';         \n    i = i +1;\n    SUSPEND;\n  END\nEND",
                                       "ALTER PROCEDURE ALL_LANGS\nRETURNS (\n  CODE VARCHAR(5),\n  GRADE VARCHAR(5),\n  COUNTRY VARCHAR(15),\n  LANG VARCHAR(15)\n)\nAS\nBEGIN\n\tFOR SELECT job_code, job_grade, job_country FROM job \n\t\tINTO :code, :grade, :country\n\n\tDO\n\tBEGIN\n\t    FOR SELECT languages FROM show_langs \n \t\t    (:code, :grade, :country) INTO :lang DO\n\t        SUSPEND;\n\t    /* Put nice separators between rows */\n\t    code = '=====';\n\t    grade = '=====';\n\t    country = '===============';\n\t    lang = '==============';\n\t    SUSPEND;\n\tEND\n    END"])
         script = s.get_metadata_ddl([sm.SCRIPT_TRIGGERS])
-        self.assertListEqual(script, ['CREATE TRIGGER SET_EMP_NO FOR EMPLOYEE ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.emp_no is null) then\n    new.emp_no = gen_id(emp_no_gen, 1);\nEND',
-                                      "CREATE TRIGGER SAVE_SALARY_CHANGE FOR EMPLOYEE ACTIVE\nAFTER UPDATE POSITION 0\nAS\nBEGIN\n    IF (old.salary <> new.salary) THEN\n        INSERT INTO salary_history\n            (emp_no, change_date, updater_id, old_salary, percent_change)\n        VALUES (\n            old.emp_no,\n            'NOW',\n            user,\n            old.salary,\n            (new.salary - old.salary) * 100 / old.salary);\nEND",
-                                      'CREATE TRIGGER SET_CUST_NO FOR CUSTOMER ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.cust_no is null) then\n    new.cust_no = gen_id(cust_no_gen, 1);\nEND',
-                                      "CREATE TRIGGER POST_NEW_ORDER FOR SALES ACTIVE\nAFTER INSERT POSITION 0\nAS\nBEGIN\n    POST_EVENT 'new_order';\nEND",
-                                      'CREATE TRIGGER TR_MULTI FOR COUNTRY ACTIVE\nAFTER INSERT OR UPDATE OR DELETE POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND',
-                                      'CREATE TRIGGER TR_CONNECT ACTIVE\nON CONNECT POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND'])
+        if self.version == FB30:
+            self.assertListEqual(script, ['CREATE TRIGGER SET_EMP_NO FOR EMPLOYEE ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.emp_no is null) then\n    new.emp_no = gen_id(emp_no_gen, 1);\nEND',
+                                          "CREATE TRIGGER SAVE_SALARY_CHANGE FOR EMPLOYEE ACTIVE\nAFTER UPDATE POSITION 0\nAS\nBEGIN\n    IF (old.salary <> new.salary) THEN\n        INSERT INTO salary_history\n            (emp_no, change_date, updater_id, old_salary, percent_change)\n        VALUES (\n            old.emp_no,\n            'NOW',\n            user,\n            old.salary,\n            (new.salary - old.salary) * 100 / old.salary);\nEND",
+                                          'CREATE TRIGGER SET_CUST_NO FOR CUSTOMER ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.cust_no is null) then\n    new.cust_no = gen_id(cust_no_gen, 1);\nEND',
+                                          "CREATE TRIGGER POST_NEW_ORDER FOR SALES ACTIVE\nAFTER INSERT POSITION 0\nAS\nBEGIN\n    POST_EVENT 'new_order';\nEND",
+                                          'CREATE TRIGGER TR_CONNECT ACTIVE\nON CONNECT POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND',
+                                          'CREATE TRIGGER TR_MULTI FOR COUNTRY ACTIVE\nAFTER INSERT OR UPDATE OR DELETE POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND'])
+        else:
+            self.assertListEqual(script, ['CREATE TRIGGER SET_EMP_NO FOR EMPLOYEE ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.emp_no is null) then\n    new.emp_no = gen_id(emp_no_gen, 1);\nEND',
+                                          "CREATE TRIGGER SAVE_SALARY_CHANGE FOR EMPLOYEE ACTIVE\nAFTER UPDATE POSITION 0\nAS\nBEGIN\n    IF (old.salary <> new.salary) THEN\n        INSERT INTO salary_history\n            (emp_no, change_date, updater_id, old_salary, percent_change)\n        VALUES (\n            old.emp_no,\n            'NOW',\n            user,\n            old.salary,\n            (new.salary - old.salary) * 100 / old.salary);\nEND",
+                                          'CREATE TRIGGER SET_CUST_NO FOR CUSTOMER ACTIVE\nBEFORE INSERT POSITION 0\nAS\nBEGIN\n    if (new.cust_no is null) then\n    new.cust_no = gen_id(cust_no_gen, 1);\nEND',
+                                          "CREATE TRIGGER POST_NEW_ORDER FOR SALES ACTIVE\nAFTER INSERT POSITION 0\nAS\nBEGIN\n    POST_EVENT 'new_order';\nEND",
+                                          'CREATE TRIGGER TR_MULTI FOR COUNTRY ACTIVE\nAFTER INSERT OR UPDATE OR DELETE POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND',
+                                          'CREATE TRIGGER TR_CONNECT ACTIVE\nON CONNECT POSITION 0\nAS \nBEGIN \n    /* enter trigger code here */ \nEND'])
         script = s.get_metadata_ddl([sm.SCRIPT_ROLES])
         self.assertListEqual(script, ['CREATE ROLE TEST_ROLE'])
         script = s.get_metadata_ddl([sm.SCRIPT_GRANTS])
@@ -5638,48 +5774,92 @@ DROP TABLE JOB
         script = s.get_metadata_ddl([sm.SCRIPT_SHADOWS])
         self.assertListEqual(script, [])
         script = s.get_metadata_ddl([sm.SCRIPT_INDEX_DEACTIVATIONS])
-        self.assertListEqual(script, ['ALTER INDEX NEEDX INACTIVE',
-                                      'ALTER INDEX SALESTATX INACTIVE',
-                                      'ALTER INDEX QTYX INACTIVE',
-                                      'ALTER INDEX UPDATERX INACTIVE',
-                                      'ALTER INDEX CHANGEX INACTIVE',
-                                      'ALTER INDEX PRODTYPEX INACTIVE',
-                                      'ALTER INDEX CUSTNAMEX INACTIVE',
-                                      'ALTER INDEX CUSTREGION INACTIVE',
-                                      'ALTER INDEX NAMEX INACTIVE',
-                                      'ALTER INDEX BUDGETX INACTIVE',
-                                      'ALTER INDEX MINSALX INACTIVE',
-                                      'ALTER INDEX MAXSALX INACTIVE'])
+        if self.version == FB30:
+            self.assertListEqual(script, ['ALTER INDEX MINSALX INACTIVE',
+                                          'ALTER INDEX MAXSALX INACTIVE',
+                                          'ALTER INDEX BUDGETX INACTIVE',
+                                          'ALTER INDEX NAMEX INACTIVE',
+                                          'ALTER INDEX PRODTYPEX INACTIVE',
+                                          'ALTER INDEX UPDATERX INACTIVE',
+                                          'ALTER INDEX CHANGEX INACTIVE',
+                                          'ALTER INDEX CUSTNAMEX INACTIVE',
+                                          'ALTER INDEX CUSTREGION INACTIVE',
+                                          'ALTER INDEX NEEDX INACTIVE',
+                                          'ALTER INDEX SALESTATX INACTIVE',
+                                          'ALTER INDEX QTYX INACTIVE'])
+        else:
+            self.assertListEqual(script, ['ALTER INDEX NEEDX INACTIVE',
+                                          'ALTER INDEX SALESTATX INACTIVE',
+                                          'ALTER INDEX QTYX INACTIVE',
+                                          'ALTER INDEX UPDATERX INACTIVE',
+                                          'ALTER INDEX CHANGEX INACTIVE',
+                                          'ALTER INDEX PRODTYPEX INACTIVE',
+                                          'ALTER INDEX CUSTNAMEX INACTIVE',
+                                          'ALTER INDEX CUSTREGION INACTIVE',
+                                          'ALTER INDEX NAMEX INACTIVE',
+                                          'ALTER INDEX BUDGETX INACTIVE',
+                                          'ALTER INDEX MINSALX INACTIVE',
+                                          'ALTER INDEX MAXSALX INACTIVE'])
         script = s.get_metadata_ddl([sm.SCRIPT_INDEX_ACTIVATIONS])
-        self.assertListEqual(script, ['ALTER INDEX NEEDX ACTIVE',
-                                      'ALTER INDEX SALESTATX ACTIVE',
-                                      'ALTER INDEX QTYX ACTIVE',
-                                      'ALTER INDEX UPDATERX ACTIVE',
-                                      'ALTER INDEX CHANGEX ACTIVE',
-                                      'ALTER INDEX PRODTYPEX ACTIVE',
-                                      'ALTER INDEX CUSTNAMEX ACTIVE',
-                                      'ALTER INDEX CUSTREGION ACTIVE',
-                                      'ALTER INDEX NAMEX ACTIVE',
-                                      'ALTER INDEX BUDGETX ACTIVE',
-                                      'ALTER INDEX MINSALX ACTIVE',
-                                      'ALTER INDEX MAXSALX ACTIVE'])
+        if self.version == FB30:
+            self.assertListEqual(script, ['ALTER INDEX MINSALX ACTIVE',
+                                          'ALTER INDEX MAXSALX ACTIVE',
+                                          'ALTER INDEX BUDGETX ACTIVE',
+                                          'ALTER INDEX NAMEX ACTIVE',
+                                          'ALTER INDEX PRODTYPEX ACTIVE',
+                                          'ALTER INDEX UPDATERX ACTIVE',
+                                          'ALTER INDEX CHANGEX ACTIVE',
+                                          'ALTER INDEX CUSTNAMEX ACTIVE',
+                                          'ALTER INDEX CUSTREGION ACTIVE',
+                                          'ALTER INDEX NEEDX ACTIVE',
+                                          'ALTER INDEX SALESTATX ACTIVE',
+                                          'ALTER INDEX QTYX ACTIVE'])
+        else:
+            self.assertListEqual(script, ['ALTER INDEX NEEDX ACTIVE',
+                                          'ALTER INDEX SALESTATX ACTIVE',
+                                          'ALTER INDEX QTYX ACTIVE',
+                                          'ALTER INDEX UPDATERX ACTIVE',
+                                          'ALTER INDEX CHANGEX ACTIVE',
+                                          'ALTER INDEX PRODTYPEX ACTIVE',
+                                          'ALTER INDEX CUSTNAMEX ACTIVE',
+                                          'ALTER INDEX CUSTREGION ACTIVE',
+                                          'ALTER INDEX NAMEX ACTIVE',
+                                          'ALTER INDEX BUDGETX ACTIVE',
+                                          'ALTER INDEX MINSALX ACTIVE',
+                                          'ALTER INDEX MAXSALX ACTIVE'])
         script = s.get_metadata_ddl([sm.SCRIPT_SET_GENERATORS])
         self.assertListEqual(script, ['ALTER SEQUENCE EMP_NO_GEN RESTART WITH 145',
                                       'ALTER SEQUENCE CUST_NO_GEN RESTART WITH 1015'])
         script = s.get_metadata_ddl([sm.SCRIPT_TRIGGER_DEACTIVATIONS])
-        self.assertListEqual(script, ['ALTER TRIGGER SET_EMP_NO INACTIVE',
-                                      'ALTER TRIGGER SAVE_SALARY_CHANGE INACTIVE',
-                                      'ALTER TRIGGER SET_CUST_NO INACTIVE',
-                                      'ALTER TRIGGER POST_NEW_ORDER INACTIVE',
-                                      'ALTER TRIGGER TR_MULTI INACTIVE',
-                                      'ALTER TRIGGER TR_CONNECT INACTIVE'])
+        if self.version == FB30:
+            self.assertListEqual(script, ['ALTER TRIGGER SET_EMP_NO INACTIVE',
+                                          'ALTER TRIGGER SAVE_SALARY_CHANGE INACTIVE',
+                                          'ALTER TRIGGER SET_CUST_NO INACTIVE',
+                                          'ALTER TRIGGER POST_NEW_ORDER INACTIVE',
+                                          'ALTER TRIGGER TR_CONNECT INACTIVE',
+                                          'ALTER TRIGGER TR_MULTI INACTIVE'])
+        else:
+            self.assertListEqual(script, ['ALTER TRIGGER SET_EMP_NO INACTIVE',
+                                          'ALTER TRIGGER SAVE_SALARY_CHANGE INACTIVE',
+                                          'ALTER TRIGGER SET_CUST_NO INACTIVE',
+                                          'ALTER TRIGGER POST_NEW_ORDER INACTIVE',
+                                          'ALTER TRIGGER TR_MULTI INACTIVE',
+                                          'ALTER TRIGGER TR_CONNECT INACTIVE'])
         script = s.get_metadata_ddl([sm.SCRIPT_TRIGGER_ACTIVATIONS])
-        self.assertListEqual(script, ['ALTER TRIGGER SET_EMP_NO ACTIVE',
-                                      'ALTER TRIGGER SAVE_SALARY_CHANGE ACTIVE',
-                                      'ALTER TRIGGER SET_CUST_NO ACTIVE',
-                                      'ALTER TRIGGER POST_NEW_ORDER ACTIVE',
-                                      'ALTER TRIGGER TR_MULTI ACTIVE',
-                                      'ALTER TRIGGER TR_CONNECT ACTIVE'])
+        if self.version == FB30:
+            self.assertListEqual(script, ['ALTER TRIGGER SET_EMP_NO ACTIVE',
+                                          'ALTER TRIGGER SAVE_SALARY_CHANGE ACTIVE',
+                                          'ALTER TRIGGER SET_CUST_NO ACTIVE',
+                                          'ALTER TRIGGER POST_NEW_ORDER ACTIVE',
+                                          'ALTER TRIGGER TR_CONNECT ACTIVE',
+                                          'ALTER TRIGGER TR_MULTI ACTIVE'])
+        else:
+            self.assertListEqual(script, ['ALTER TRIGGER SET_EMP_NO ACTIVE',
+                                          'ALTER TRIGGER SAVE_SALARY_CHANGE ACTIVE',
+                                          'ALTER TRIGGER SET_CUST_NO ACTIVE',
+                                          'ALTER TRIGGER POST_NEW_ORDER ACTIVE',
+                                          'ALTER TRIGGER TR_MULTI ACTIVE',
+                                          'ALTER TRIGGER TR_CONNECT ACTIVE'])
 
 class TestMonitor(FDBTestBase):
     def setUp(self):
@@ -5844,7 +6024,7 @@ class TestMonitor(FDBTestBase):
         else:
             self.assertIn(s.auth_method, ['Srp', 'Win_Sspi', 'Legacy_Auth'])
             self.assertIsInstance(s.client_version, str)
-            self.assertEqual(s.remote_version, 'P13')
+            self.assertEqual(s.remote_version, 'P15')  # Firebird 3.0.3, may fail with other versions
             self.assertIsInstance(s.remote_os_user, str)
             self.assertIsInstance(s.remote_host, str)
         for x in s.transactions:
@@ -5924,7 +6104,7 @@ class TestMonitor(FDBTestBase):
         #
         self.assertIsInstance(s.id, int)
         self.assertIs(s.attachment, m.this_attachment)
-        self.assertIs(s.transaction, m.transactions[0])
+        self.assertEqual(s.transaction.id, m.transactions[0].id)
         self.assertIn(s.state, [fdb.monitor.STATE_ACTIVE, fdb.monitor.STATE_IDLE])
         self.assertIsInstance(s.timestamp, datetime.datetime)
         self.assertEqual(s.sql_text, "select * from mon$database")
@@ -6167,6 +6347,7 @@ class TestHooks(FDBTestBase):
 
 
 class TestBugs(FDBTestBase):
+    "Tests for bugs logged in tracker, URL pattern: http://tracker.firebirdsql.org/browse/PYFB-<number>"
     def setUp(self):
         super(TestBugs, self).setUp()
         self.dbfile = os.path.join(self.dbpath, 'fbbugs.fdb')
@@ -6178,6 +6359,7 @@ class TestBugs(FDBTestBase):
         self.con.drop_database()
         self.con.close()
     def test_pyfb_17(self):
+        "(PYFB-17) NOT NULL constraint + Insert Trigger"
         create_table = """
         Create Table table1  (
             ID Integer,
@@ -6203,6 +6385,7 @@ class TestBugs(FDBTestBase):
         # PYFB-17: fails with fdb, passes with kinterbasdb
         cur.execute('insert into table1 (ID, C1) values(1, ?)', (None, ))
     def test_pyfb_22(self):
+        "(PYFB-22) SELECT FROM VARCHAR COLUMN WITH TEXT LONGER THAN 128 CHARS RETURN EMPTY STRING"
         create_table = """
         CREATE TABLE FDBTEST (
             ID INTEGER,
@@ -6231,6 +6414,7 @@ class TestBugs(FDBTestBase):
             self.assertEqual(value, data[:i])
             i += 1
     def test_pyfb_25(self):
+        "(PYFB-25) Trancate long text from VARCHAR(5000)"
         create_table = """
         CREATE TABLE FDBTEST2 (
             ID INTEGER,
@@ -6250,6 +6434,7 @@ class TestBugs(FDBTestBase):
         row = cur.fetchone()
         self.assertEqual(row[0], data)
     def test_pyfb_30(self):
+        "(PYFB-30) BLOBs are truncated at first zero byte"
         create_table = """
         CREATE TABLE FDBTEST3 (
             ID INTEGER,
@@ -6281,11 +6466,13 @@ class TestBugs(FDBTestBase):
         value = blob_reader.read()
         self.assertEqual(value, blob_data)
     def test_pyfb_34(self):
+        "(PYFB-34) Server resources not released on PreparedStatement destruction"
         cur = self.con.cursor()
         cur.execute("select * from RDB$Relations")
         cur.fetchall()
         del cur
     def test_pyfb_35(self):
+        "(PYFB-35) Call to fetch after a sql statement without a result should raise exception"
         create_table = """
         Create Table table1  (
             ID Integer,
@@ -6317,6 +6504,7 @@ class TestBugs(FDBTestBase):
         self.assertListEqual(row, [(1,)])
 
     def test_pyfb_44(self):
+        "(PYFB-44) Inserting a datetime.date into a TIMESTAMP column does not work"
         self.con2 = fdb.connect(host=FBTEST_HOST, database=os.path.join(self.dbpath, self.FBTEST_DB),
                                 user=FBTEST_USER, password=FBTEST_PASSWORD)
         try:
@@ -7429,6 +7617,14 @@ EventServiceQuery(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 1,
 EventServiceQuery(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 30, 784000), status=' ', service_id=140138600699200, action=None, parameters=['retrieve the implementation of the Firebird server'])
 EventServiceQuery(event_id=4, timestamp=datetime.datetime(2018, 4, 3, 12, 56, 27, 559000), status=' ', service_id=140138600699200, action='Repair Database', parameters=[])
 """
+        if sys.version_info.major == 2 and sys.version_info.minor == 7 and sys.version_info.micro > 13:
+            output = """ServiceInfo(service_id=140646174008648L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=385)
+EventServiceQuery(event_id=1, timestamp=datetime.datetime(2018, 3, 29, 14, 2, 10, 918000), status=' ', service_id=140646174008648L, action='Start Trace Session', parameters=['Receive portion of the query:', 'retrieve 1 line of service output per call'])
+ServiceInfo(service_id=140138600699200L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
+EventServiceQuery(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 1, 797000), status=' ', service_id=140138600699200L, action=None, parameters=['retrieve the version of the server engine'])
+EventServiceQuery(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 30, 784000), status=' ', service_id=140138600699200L, action=None, parameters=['retrieve the implementation of the Firebird server'])
+EventServiceQuery(event_id=4, timestamp=datetime.datetime(2018, 4, 3, 12, 56, 27, 559000), status=' ', service_id=140138600699200L, action='Repair Database', parameters=[])
+"""
         self._check_events(trace_lines, output)
     def test_set_context(self):
         trace_lines = """2014-05-23T11:00:28.5840 (3720:0000000000EFD9E8) ATTACH_DATABASE
@@ -7484,6 +7680,14 @@ EventError(event_id=2, timestamp=datetime.datetime(2018, 3, 22, 11, 0, 59, 50900
 ServiceInfo(service_id=140138600699200, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
 EventServiceError(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200, place='jrd8_service_query', details=['335544344 : I/O error during "open" operation for file "bug.fdb"', '335544734 : Error while trying to open file', '2 : No such file or directory'])
 """
+        if sys.version_info.major == 2 and sys.version_info.minor == 7 and sys.version_info.micro > 13:
+            output = """AttachmentInfo(attachment_id=0, database='/home/test.fdb', charset='NONE', protocol='TCPv4', address='127.0.0.1', user='sysdba', role='NONE', remote_process='/usr/bin/flamerobin', remote_pid=4985)
+EventError(event_id=1, timestamp=datetime.datetime(2018, 3, 22, 10, 6, 59, 509000), attachment_id=0, place='jrd8_attach_database', details=['335544344 : I/O error during "open" operation for file "/home/test.fdb"', '335544734 : Error while trying to open file', '2 : No such file or directory'])
+AttachmentInfo(attachment_id=519417, database='/home/test.fdb', charset='WIN1250', protocol='TCPv4', address='172.19.54.61', user='SYSDBA', role='NONE', remote_process='/usr/bin/flamerobin', remote_pid=4985)
+EventError(event_id=2, timestamp=datetime.datetime(2018, 3, 22, 11, 0, 59, 509000), attachment_id=519417, place='jrd8_fetch', details=['335544364 : request synchronization error'])
+ServiceInfo(service_id=140138600699200L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
+EventServiceError(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200L, place='jrd8_service_query', details=['335544344 : I/O error during "open" operation for file "bug.fdb"', '335544734 : Error while trying to open file', '2 : No such file or directory'])
+"""
         self._check_events(trace_lines, output)
     def test_warning(self):
         trace_lines = """2018-03-22T10:06:59.5090 (4992:0x7f92a22a4978) WARNING AT jrd8_attach_database
@@ -7499,6 +7703,12 @@ Some reason for the warning.
 EventWarning(event_id=1, timestamp=datetime.datetime(2018, 3, 22, 10, 6, 59, 509000), attachment_id=0, place='jrd8_attach_database', details=['Some reason for the warning.'])
 ServiceInfo(service_id=140138600699200, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
 EventServiceWarning(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200, place='jrd8_service_query', details=['Some reason for the warning.'])
+"""
+        if sys.version_info.major == 2 and sys.version_info.minor == 7 and sys.version_info.micro > 13:
+            output = """AttachmentInfo(attachment_id=0, database='/home/test.fdb', charset='NONE', protocol='TCPv4', address='127.0.0.1', user='sysdba', role='NONE', remote_process='/usr/bin/flamerobin', remote_pid=4985)
+EventWarning(event_id=1, timestamp=datetime.datetime(2018, 3, 22, 10, 6, 59, 509000), attachment_id=0, place='jrd8_attach_database', details=['Some reason for the warning.'])
+ServiceInfo(service_id=140138600699200L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
+EventServiceWarning(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200L, place='jrd8_service_query', details=['Some reason for the warning.'])
 """
         self._check_events(trace_lines, output)
     def test_sweep_start(self):

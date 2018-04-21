@@ -282,9 +282,6 @@ blr_column_name = 21
 blr_column_name2 = 22
 # Added in FB 3.0
 blr_bool = 23
-#
-blr_domain_type_of = 0
-blr_domain_full = 1
 # Rest of BLR is defined in fdb.blr
 
 # Database parameter block stuff
@@ -399,89 +396,74 @@ isc_info_req_update_count = 15
 isc_info_req_delete_count = 16
 
 # DB Info item codes
-isc_info_db_id = 4
-isc_info_reads = 5
-isc_info_writes = 6
-isc_info_fetches = 7
-isc_info_marks = 8
-isc_info_implementation = 11
-isc_info_isc_version = 12
-isc_info_base_level = 13 # Note: This is useless info item, consider as obsolete
+isc_info_db_id = 4  # [db_filename,site_name[,site_name...]]
+isc_info_reads = 5  # number of page reads
+isc_info_writes = 6  # number of page writes
+isc_info_fetches = 7  # number of reads from the memory buffer cache
+isc_info_marks = 8  # number of writes to the memory buffer cache
+isc_info_implementation = 11  # (implementation code, implementation class)
+isc_info_isc_version = 12  # interbase server version identification string
+isc_info_base_level = 13  # capability version of the server
 isc_info_page_size = 14
-isc_info_num_buffers = 15
+isc_info_num_buffers = 15  # number of memory buffers currently allocated
 isc_info_limbo = 16
-isc_info_current_memory = 17
-isc_info_max_memory = 18
-isc_info_window_turns = 19
-isc_info_license = 20
-isc_info_allocation = 21
-isc_info_attachment_id = 22
-isc_info_read_seq_count = 23
-isc_info_read_idx_count = 24
-isc_info_insert_count = 25
-isc_info_update_count = 26
-isc_info_delete_count = 27
-isc_info_backout_count = 28
-isc_info_purge_count = 29
-isc_info_expunge_count = 30
-isc_info_sweep_interval = 31
-isc_info_ods_version = 32
-isc_info_ods_minor_version = 33
-isc_info_no_reserve = 34
-isc_info_logfile = 35
-isc_info_cur_logfile_name = 36
-isc_info_cur_log_part_offset = 37
-isc_info_num_wal_buffers = 38
-isc_info_wal_buffer_size = 39
-isc_info_wal_ckpt_length = 40
-isc_info_wal_cur_ckpt_interval = 41
-isc_info_wal_prv_ckpt_fname = 42
-isc_info_wal_prv_ckpt_poffset = 43
-isc_info_wal_recv_ckpt_fname = 44
-isc_info_wal_recv_ckpt_poffset = 45
-isc_info_wal_grpc_wait_usecs = 47
-isc_info_wal_num_io = 48
-isc_info_wal_avg_io_size = 49
-isc_info_wal_num_commits = 50
-isc_info_wal_avg_grpc_size = 51
-isc_info_forced_writes = 52
-isc_info_user_names = 53
-isc_info_page_errors = 54
-isc_info_record_errors = 55
-isc_info_bpage_errors = 56
-isc_info_dpage_errors = 57
-isc_info_ipage_errors = 58
-isc_info_ppage_errors = 59
-isc_info_tpage_errors = 60
-isc_info_set_page_buffers = 61
-isc_info_db_sql_dialect = 62
-isc_info_db_read_only = 63
-isc_info_db_size_in_pages = 64
+isc_info_current_memory = 17  # amount of server memory (in bytes) currently in use
+isc_info_max_memory = 18  # maximum amount of memory (in bytes) used at one time since the first process attached to the database
+# Obsolete 19-20
+isc_info_allocation = 21  # number of last database page allocated
+isc_info_attachment_id = 22  # attachment id number
+# all *_count codes below return {[table_id]=operation_count,...}; table IDs are in the system table RDB$RELATIONS.
+isc_info_read_seq_count = 23  # number of sequential table scans (row reads) done on each table since the database was last attached
+isc_info_read_idx_count = 24  # number of reads done via an index since the database was last attached
+isc_info_insert_count = 25  # number of inserts into the database since the database was last attached
+isc_info_update_count = 26  # number of database updates since the database was last attached
+isc_info_delete_count = 27  # number of database deletes since the database was last attached
+isc_info_backout_count = 28  # number of removals of a version of a record
+isc_info_purge_count = 29  # number of removals of old versions of fully mature records (records that are committed, so that older ancestor versions are no longer needed)
+isc_info_expunge_count = 30  # number of removals of a record and all of its ancestors, for records whose deletions have been committed
+isc_info_sweep_interval = 31  # number of transactions that are committed between sweeps to remove database record versions that are no longer needed
+isc_info_ods_version = 32  # On-disk structure (ODS) minor major version number
+isc_info_ods_minor_version = 33  # On-disk structure (ODS) minor version number
+isc_info_no_reserve = 34  # 20% page space reservation for holding backup versions of modified records: 0=yes, 1=no
+# Obsolete 35-51
+isc_info_forced_writes = 52  # mode in which database writes are performed: 0=sync, 1=async
+isc_info_user_names = 53  # array of names of all the users currently attached to the database
+isc_info_page_errors = 54  # number of page level errors validate found
+isc_info_record_errors = 55  # number of record level errors validate found
+isc_info_bpage_errors = 56  # number of blob page errors validate found
+isc_info_dpage_errors = 57  # number of data page errors validate found
+isc_info_ipage_errors = 58  # number of index page errors validate found
+isc_info_ppage_errors = 59  # number of pointer page errors validate found
+isc_info_tpage_errors = 60  # number of transaction page errors validate found
+isc_info_set_page_buffers = 61  # number of memory buffers that should be allocated
+isc_info_db_sql_dialect = 62  # dialect of currently attached database
+isc_info_db_read_only = 63  # whether the database is read-only (1) or not (0)
+isc_info_db_size_in_pages = 64  # number of allocated pages
 # Values 65 -100 unused to avoid conflict with InterBase
-frb_info_att_charset = 101
-isc_info_db_class = 102
-isc_info_firebird_version = 103
-isc_info_oldest_transaction = 104
-isc_info_oldest_active = 105
-isc_info_oldest_snapshot = 106
-isc_info_next_transaction = 107
-isc_info_db_provider = 108
-isc_info_active_transactions = 109
-isc_info_active_tran_count = 110
-isc_info_creation_date = 111
+frb_info_att_charset = 101  # charset of current attachment
+isc_info_db_class = 102  # server architecture
+isc_info_firebird_version = 103  # firebird server version identification string
+isc_info_oldest_transaction = 104  # ID of oldest transaction
+isc_info_oldest_active = 105  # ID of oldest active transaction
+isc_info_oldest_snapshot = 106  # ID of oldest snapshot transaction
+isc_info_next_transaction = 107  # ID of next transaction
+isc_info_db_provider = 108  # for firebird is 'isc_info_db_code_firebird'
+isc_info_active_transactions = 109  # array of active transaction IDs
+isc_info_active_tran_count = 110  # number of active transactions
+isc_info_creation_date = 111  # time_t struct representing database creation date & time
 isc_info_db_file_size = 112 # added in FB 2.1, nbackup-related - size (in pages) of locked db
-fb_info_page_contents = 113 # added in FB 2.5
+fb_info_page_contents = 113 # added in FB 2.5, get raw page contents; takes page_number as parameter;
 # Added in Firebird 3.0
-fb_info_implementation = 114
-fb_info_page_warns = 115
-fb_info_record_warns = 116
-fb_info_bpage_warns = 117
-fb_info_dpage_warns = 118
-fb_info_ipage_warns = 119
-fb_info_ppage_warns = 120
-fb_info_tpage_warns = 121
-fb_info_pip_errors = 122
-fb_info_pip_warns = 123
+fb_info_implementation = 114  # (cpu code, OS code, compiler code, flags, implementation class)
+fb_info_page_warns = 115  # number of page level warnings validate found
+fb_info_record_warns = 116  # number of record level warnings validate found
+fb_info_bpage_warns = 117  # number of blob page level warnings validate found
+fb_info_dpage_warns = 118  # number of data page level warnings validate found
+fb_info_ipage_warns = 119  # number of index page level warnings validate found
+fb_info_ppage_warns = 120  # number of pointer page level warnings validate found
+fb_info_tpage_warns = 121  # number of trabsaction page level warnings validate found
+fb_info_pip_errors = 122  # number of pip page level errors validate found
+fb_info_pip_warns = 123  # number of pip page level warnings validate found
 isc_info_db_last_value = (fb_info_pip_warns + 1)
 
 isc_info_version = isc_info_isc_version
@@ -498,14 +480,15 @@ isc_info_blob_type = 7
 
 # Transaction information items
 
-isc_info_tra_id = 4
-isc_info_tra_oldest_interesting = 5
-isc_info_tra_oldest_snapshot = 6
-isc_info_tra_oldest_active = 7
-isc_info_tra_isolation = 8
-isc_info_tra_access = 9
-isc_info_tra_lock_timeout = 10
-fb_info_tra_dbpath = 11 # Firebird 3.0
+isc_info_tra_id = 4  # current tran ID number
+isc_info_tra_oldest_interesting = 5  # oldest interesting tran ID when current tran started
+isc_info_tra_oldest_snapshot = 6  # min. tran ID of tra_oldest_active
+isc_info_tra_oldest_active = 7  # oldest active tran ID when current tran started
+isc_info_tra_isolation = 8  # pair: {one of isc_info_tra_isolation_flags, [one of isc_info_tra_read_committed_flags]}
+isc_info_tra_access = 9  # 'isc_info_tra_readonly' or 'isc_info_tra_readwrite'
+isc_info_tra_lock_timeout = 10  # lock timeout value
+# Firebird 3.0
+fb_info_tra_dbpath = 11  # db filename for current transaction
 
 # isc_info_tra_isolation responses
 isc_info_tra_consistency = 1
@@ -1353,6 +1336,21 @@ uint_fast64_t = c_ulong
 ptrdiff_t = c_long
 size_t = c_ulong
 uintmax_t = c_ulong
+
+def get_implementation_name_map():
+    'Return dict() that maps isc_info_db_impl_* IDs to corresponding names.'
+    return dict(((getattr(sys.modules[__name__],key), key[len('isc_info_db_impl_'):]) for key
+                 in (x for x in dir(sys.modules[__name__]) if x.startswith('isc_info_db_impl_'))))
+
+def get_db_provider_name_map():
+    'Return dict() that maps isc_info_db_code_* IDs to corresponding names.'
+    return dict(((getattr(sys.modules[__name__],key), key[len('isc_info_db_code_'):]) for key
+                 in (x for x in dir(sys.modules[__name__]) if x.startswith('isc_info_db_code_'))))
+
+def get_db_class_name_map():
+    'Return dict() that maps isc_info_db_class_* IDs to corresponding names.'
+    return dict(((getattr(sys.modules[__name__],key), key[len('isc_info_db_class_'):]) for key
+                 in (x for x in dir(sys.modules[__name__]) if x.startswith('isc_info_db_class_'))))
 
 
 class fbclient_API(object):
