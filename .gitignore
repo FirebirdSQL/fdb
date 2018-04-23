@@ -1,6 +1,7 @@
 # general things to ignore
 build/
 dist/
+docs/
 *.egg-info/
 *.egg
 *.py[cod]
@@ -9,6 +10,6 @@ __pycache__/
 *~
 *.wpr
 *.wpu
-
+*.log
 
 
