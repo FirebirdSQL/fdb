@@ -1,3 +1,0 @@
-include LICENSE.TXT
-include test/fbtest.fdb
-include docs/*

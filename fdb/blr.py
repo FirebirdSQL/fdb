@@ -2,7 +2,7 @@
 #
 #   PROGRAM/MODULE: fdb
 #   FILE:           blr.py
-#   DESCRIPTION:    BLR-related definitions
+#   DESCRIPTION:    Python driver for Firebird - BLR-related definitions
 #   CREATED:        12.6.2013
 #
 #  Software distributed under the License is distributed AS IS,
@@ -12,7 +12,7 @@
 #
 #  The Original Code was created by Pavel Cisar
 #
-#  Copyright (c) 2011 Pavel Cisar <pcisar@users.sourceforge.net>
+#  Copyright (c) Pavel Cisar <pcisar@users.sourceforge.net>
 #  and all contributors signed below.
 #
 #  All Rights Reserved.
@@ -21,40 +21,40 @@
 #
 # See LICENSE.TXT for details.
 
-# BLR data types
+# BLR data types are defined in fdb.ibase
 
-blr_text = 14
-blr_text2 = 15
-blr_short = 7
-blr_long = 8
-blr_quad = 9
-blr_float = 10
-blr_double = 27
-blr_d_float = 11
-blr_timestamp = 35
-blr_varying = 37
-blr_varying2 = 38
-blr_blob = 261
-blr_cstring = 40
-blr_cstring2 = 41
-blr_blob_id = 45
-blr_sql_date = 12
-blr_sql_time = 13
-blr_int64 = 16
-blr_blob2 = 17
-blr_domain_name = 18
-blr_domain_name2 = 19
-blr_not_nullable = 20
-blr_column_name = 21
-blr_column_name2 = 22
-blr_bool = 23 # Firebird 3.0
+#blr_text = 14
+#blr_text2 = 15
+#blr_short = 7
+#blr_long = 8
+#blr_quad = 9
+#blr_float = 10
+#blr_double = 27
+#blr_d_float = 11
+#blr_timestamp = 35
+#blr_varying = 37
+#blr_varying2 = 38
+#blr_blob = 261
+#blr_cstring = 40
+#blr_cstring2 = 41
+#blr_blob_id = 45
+#blr_sql_date = 12
+#blr_sql_time = 13
+#blr_int64 = 16
+#blr_blob2 = 17
+#blr_domain_name = 18
+#blr_domain_name2 = 19
+#blr_not_nullable = 20
+#blr_column_name = 21
+#blr_column_name2 = 22
+#blr_bool = 23 # Firebird 3.0
 
 # first sub parameter for blr_domain_name[2]
 blr_domain_type_of = 0
 blr_domain_full = 1
 
 # Historical alias for pre V6 applications
-blr_date = blr_timestamp
+blr_date = 35  # blr_timestamp
 
 # Other BLR codes
 
@@ -186,13 +186,6 @@ blr_scrollable = 109 # Firebird 3.0
 #blr_seek = 112 # Defined in FB < 3.0
 # unused codes 110..117
 
-# these indicate directions for blr_seek and blr_find
-blr_continue = 0
-blr_forward = 1
-blr_backward = 2
-blr_bof_forward = 3
-blr_eof_backward = 4
-
 blr_run_count = 118
 blr_rs_stream = 119
 blr_exec_proc = 120
@@ -234,6 +227,13 @@ blr_stall = 155
 # unused codes 156..157
 blr_ansi_all = 158
 blr_extract = 159
+
+# these indicate directions for blr_seek and blr_find
+blr_continue = 0
+blr_forward = 1
+blr_backward = 2
+blr_bof_forward = 3
+blr_eof_backward = 4
 
 # sub parameters for blr_extract
 blr_extract_year = 0

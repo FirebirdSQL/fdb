@@ -1,40 +1,64 @@
-#!/usr/bin/env python
-"""fdb package is a set of Firebird RDBMS bindings for python.
-It works on Python 2.6+ and Python 3.x.
-
+#coding:utf-8
+"""A setuptools based setup module for FDB package.
+See:
+https://packaging.python.org/en/latest/distributing.html
+https://github.com/pypa/sampleproject
 """
+
+# Always prefer setuptools over distutils
 from setuptools import setup, find_packages
+# To use a consistent encoding
+from codecs import open
+from os import path
 from fdb import __version__
 
-classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'License :: OSI Approved :: BSD License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Topic :: Database',
-]
+here = path.abspath(path.dirname(__file__))
 
-setup(name='fdb',
-        version=__version__,
-        description = 'Firebird RDBMS bindings for Python.',
-        url='http://www.firebirdsql.org/en/devel-python-driver/',
-        classifiers=classifiers,
-        keywords=['Firebird'],
-        license='BSD',
-        author='Pavel Cisar',
-        author_email='pcisar@users.sourceforge.net',
-        long_description=__doc__,
-    install_requires=[],
-    setup_requires=[],
-    packages=find_packages(exclude=['ez_setup']),
+# Get the long description from the README file
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
+
+# Arguments marked as "Required" below must be included for upload to PyPI.
+# Fields marked as "Optional" may be commented out.
+
+setup(
+    name='fdb',
+    version=__version__,
+    description='Firebird RDBMS bindings for Python.',
+    long_description=long_description,
+    long_description_content_type='text/x-rst',
+    url='http://www.firebirdsql.org/en/devel-python-driver/',
+    author='Pavel Císař',
+    author_email='pcisar@users.sourceforge.net',
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+
+        'Intended Audience :: Developers',
+
+        'License :: OSI Approved :: BSD License',
+
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: MacOS',
+
+        'Topic :: Database',
+],
+    keywords='Firebird',  # Optional
+    packages=find_packages(),  # Required
+    install_requires=['future>=0.16.0'],  # Optional
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
     test_suite='nose.collector',
-    #include_package_data=True,
-    package_data={'': ['*.txt'],
-                  'test':'fbtest.fdb'},
-    #message_extractors={'fdb': [
-            #('**.py', 'python', None),
-            #('public/**', 'ignore', None)]},
-    zip_safe=False,
-    entry_points="""
-    """,
+    project_urls={  # Optional
+        'Bug Reports': 'http://tracker.firebirdsql.org/browse/PYFB',
+        'Funding': 'https://www.firebirdsql.org/en/donate/',
+        'Say Thanks!': 'https://saythanks.io/to/pcisar',
+        'Source': 'https://github.com/FirebirdSQL/fdb',
+    },
 )

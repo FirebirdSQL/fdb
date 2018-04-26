@@ -1,0 +1,243 @@
+
+Database "/home/fdb/test/FBTEST30.FDB"
+Gstat execution time Wed Apr 04 15:42:12 2018
+
+Database header page information:
+	Flags			0
+	Generation		2177
+	System Change Number	24
+	Page size		8192
+	ODS version		12.0
+	Oldest transaction	179
+	Oldest active		2142
+	Oldest snapshot		2142
+	Next transaction	2142
+	Sequence number		0
+	Next attachment ID	1202
+	Implementation		HW=AMD/Intel/x64 little-endian OS=Linux CC=gcc
+	Shadow count		0
+	Page buffers		0
+	Next header page	0
+	Database dialect	3
+	Creation date		Nov 27, 2015 11:19:39
+	Attributes		force write
+
+    Variable header data:
+	Database backup GUID:	{F978F787-7023-4C4A-F79D-8D86645B0487}
+	*END*
+
+
+Database file sequence:
+File /home/fdb/test/FBTEST30.FDB is the only file
+
+Analyzing database pages ...
+AR (140)
+    Primary pointer page: 297, Index root page: 299
+    Pointer pages: 1, data page slots: 3
+    Data pages: 3, average fill: 86%
+    Primary pages: 1, secondary pages: 2, swept pages: 0
+    Empty pages: 0, full pages: 1
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 2
+
+COUNTRY (128)
+    Primary pointer page: 182, Index root page: 183
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 8%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+CUSTOMER (137)
+    Primary pointer page: 261, Index root page: 262
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 26%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+DEPARTMENT (130)
+    Primary pointer page: 198, Index root page: 199
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 24%
+    Primary pages: 1, secondary pages: 0, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+EMPLOYEE (131)
+    Primary pointer page: 212, Index root page: 213
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 44%
+    Primary pages: 1, secondary pages: 0, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 1
+	60 - 79% = 0
+	80 - 99% = 0
+
+EMPLOYEE_PROJECT (134)
+    Primary pointer page: 234, Index root page: 235
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 10%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+JOB (129)
+    Primary pointer page: 189, Index root page: 190
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 54%
+    Primary pages: 1, secondary pages: 1, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 1
+	80 - 99% = 0
+
+PROJECT (133)
+    Primary pointer page: 220, Index root page: 221
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 7%
+    Primary pages: 1, secondary pages: 1, swept pages: 1
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+PROJ_DEPT_BUDGET (135)
+    Primary pointer page: 239, Index root page: 248
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 20%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+SALARY_HISTORY (136)
+    Primary pointer page: 253, Index root page: 254
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 30%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+SALES (138)
+    Primary pointer page: 267, Index root page: 268
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 35%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 1
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T (147)
+    Primary pointer page: 323, Index root page: 324
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T2 (142)
+    Primary pointer page: 302, Index root page: 303
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 8%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T3 (143)
+    Primary pointer page: 305, Index root page: 306
+    Pointer pages: 1, data page slots: 2
+    Data pages: 2, average fill: 3%
+    Primary pages: 1, secondary pages: 1, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 2
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T4 (144)
+    Primary pointer page: 307, Index root page: 308
+    Pointer pages: 1, data page slots: 1
+    Data pages: 1, average fill: 3%
+    Primary pages: 1, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 1
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+T5 (145)
+    Primary pointer page: 315, Index root page: 316
+    Pointer pages: 1, data page slots: 0
+    Data pages: 0, average fill: 0%
+    Primary pages: 0, secondary pages: 0, swept pages: 0
+    Empty pages: 0, full pages: 0
+    Fill distribution:
+	 0 - 19% = 0
+	20 - 39% = 0
+	40 - 59% = 0
+	60 - 79% = 0
+	80 - 99% = 0
+
+Gstat completion time Wed Apr 04 15:42:12 2018
+

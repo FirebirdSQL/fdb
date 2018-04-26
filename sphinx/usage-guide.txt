@@ -14,10 +14,14 @@ Source code is currently divided into next submodules:
 * :mod:`~fdb.fbcore` - Main driver source code.
 * :mod:`~fdb.services` - Driver code to work with Firebird Services.
 * :mod:`~fdb.schema` - Driver code to work with Firebird database schema (metadata).
+* :mod:`~fdb.monitor` - Driver code to work with Firebird monitoring tables.
+* :mod:`~fdb.trace` - Code for Firebird Trace & Audit processing.
+* :mod:`~fdb.gstat` - Code for Firebird gstat output processing.
+* :mod:`~fdb.log` - Code for Firebird server log processing.
 * :mod:`~fdb.utils` - Various classes and functions used by driver that are generally useful.
+* :mod:`~fdb.blr` - Firebird BLR-related definitions.
 
-All important data, functions, classes and constants are available directly in fdb namespace, so there is not need to import or use :mod:`~fdb.fbcore` and :mod:`~fdb.ibase` submodules directly. Exception is the :mod:`fdb.services` submodule that contains functions and classes for work with Firebird Services. Because Services are optional, not so frequently used Firebird facility, all
-service-related code was isolated in separate submodule rather than exposed directly through main module namespace. Because :mod:`~fdb.services` submodule contains names also used by main driver (:func:`~fdb.services.connect`, :class:`~fdb.services.Connection`), it's advised to use fully qualified names when refering to them instead importing them via `from fdb.services import ...`.
+All important data, functions, classes and constants are available directly in fdb namespace, so there is no need to import or use :mod:`~fdb.fbcore` and :mod:`~fdb.ibase` submodules directly. Other submodules (like :mod:`fdb.services` submodule that contains functions and classes for work with Firebird Services) contain optional driver functionality that is not exposed directly through main module namespace. Because :mod:`~fdb.services` submodule contains names also used by main driver (:func:`~fdb.services.connect`, :class:`~fdb.services.Connection`), it's advised to use fully qualified names when refering to them instead importing them via `from fdb.services import ...`.
 
 
 .. index:: Database
@@ -177,6 +181,9 @@ However, this version string contains more information than version number. For 
 - :attr:`~Connection.engine_version` - Engine (major.minor) version as (float) number.
 
 FDB also provides convenient constants for supported engine versions: `ODS_FB_20`,`ODS_FB_21` and `ODS_FB_25`.
+
+.. index::
+   pair: Database; On-disk Structure
 
 Database On-Disk Structure
 --------------------------
@@ -407,7 +414,6 @@ While both methods have the same results, the second one (called `parametrized`)
 * You don't need to handle conversions from Python data types to strings.
 * FDB will handle all data type conversions (if necessary) from Python data types to Firebird ones, including `None/NULL` conversion and conversion from `unicode` to `byte strings` in encoding expected by server.
 * You may pass BLOB values as open `file-like` objects, and FDB will handle the transfer of BLOB value.
-* If you'll pass exactly the same command `string` again to particular :class:`Cursor` instance, it will be executed more efficiently (see section about `Prepared Statements`_ for details).
 
 Parametrized statemets also have some limitations. Currently:
 
@@ -739,7 +745,7 @@ Implicit Conversion of Input Parameters from Strings
 
 The database engine treats most SQL data types in a weakly typed fashion: the engine may attempt to convert the raw value to a different type, as appropriate for the current context. For instance, the SQL expressions `123` (integer) and `‘123’` (string) are treated equivalently when the value is to be inserted into an `integer` field; the same applies when `‘123’` and `123` are to be inserted into a `varchar` field.
 
-This weak typing model is quite unlike Python’s dynamic yet strong typing. Although weak typing is regarded with suspicion by most experienced Python programmers, the database engine is in certain situations so aggressive about its typing model that KInterbasDB must compromise in order to remain an elegant means of programming the database engine.
+This weak typing model is quite unlike Python’s dynamic yet strong typing. Although weak typing is regarded with suspicion by most experienced Python programmers, the database engine is in certain situations so aggressive about its typing model that FDB must compromise in order to remain an elegant means of programming the database engine.
 
 An example is the handling of “magic values” for date and time fields. The database engine interprets certain string values such as `‘yesterday’` and `‘now’` as having special meaning in a date/time context. If FDB did not accept strings as the values of parameters destined for storage in date/time fields, the resulting code would be awkward. Consider the difference between the two Python snippets below, which insert a row containing an integer and a timestamp into a table defined with the following DDL statement:
 
@@ -811,6 +817,8 @@ Rules for automatic conversion depend on Python version you use:
 
 .. index:: BLOB
    pair: Data; BLOB
+   pair: BLOB; materialized
+   pair: BLOB; stream
 
 .. _working_with_blobs:
 
@@ -1301,7 +1309,7 @@ If retaining is `True`, the infrastructural support for the transaction active a
 For more information about retaining transactions, see `Firebird documentation`.
 
 
-.. index::
+.. index:: SAVEPOINT
    pair: Transaction; SAVEPOINT
 
 Savepoints
@@ -1568,6 +1576,8 @@ Output::
    db1: [(1, None), (2, None), (3, None)]
    db2: [(1, None), (2, None), (3, None)]
 
+.. index::
+   pair: Transaction; context manager
 
 .. _transaction-context-manager:
 
@@ -1681,24 +1691,12 @@ How events are exposed
    as nasty as they are numerous, but the essence of using asynchronous
    notification from C is as follows:
 
-    #. Call :c:func:`isc_event_block()` to create a formatted binary buffer that
-       will tell the server which events the client wants to listen for.
-    #. Call :c:func:`isc_que_events()` (passing the buffer created in the previous
-       step) to inform the server that the client is ready to receive event
-       notifications, and provide a callback that will be asynchronously
-       invoked when one or more of the registered events occurs.
-    #. [The thread that called :c:func:`isc_que_events()` to initiate event
-       listening must now do something else.]
-    #. When the callback is invoked (the database client library starts a
-       thread dedicated to this purpose), it can use the :c:func:`isc_event_counts()`
-       function to determine how many times each of the registered events has
-       occurred since the last call to :c:func:`isc_event_counts()` (if any).
-    #. [The callback thread should now "do its thing", which may include
-       communicating with the thread that called :c:func:`isc_que_events()`.]
-    #. When the callback thread is finished handling an event
-       notification, it must call :c:func:`isc_que_events()` again in order to receive
-       future notifications. Future notifications will invoke the callback
-       again, effectively "looping" the callback thread back to Step 4.
+   #. Call :c:func:`isc_event_block()` to create a formatted binary buffer that will tell the server which events the client wants to listen for.
+   #. Call :c:func:`isc_que_events()` (passing the buffer created in the previous step) to inform the server that the client is ready to receive event notifications, and provide a callback that will be asynchronously invoked when one or more of the registered events occurs.
+   #. [The thread that called :c:func:`isc_que_events()` to initiate event listening must now do something else.]
+   #. When the callback is invoked (the database client library starts a thread dedicated to this purpose), it can use the :c:func:`isc_event_counts()` function to determine how many times each of the registered events has occurred since the last call to :c:func:`isc_event_counts()` (if any).
+   #. [The callback thread should now "do its thing", which may include communicating with the thread that called :c:func:`isc_que_events()`.]
+   #. When the callback thread is finished handling an event notification, it must call :c:func:`isc_que_events()` again in order to receive future notifications. Future notifications will invoke the callback again, effectively "looping" the callback thread back to Step 4.
 
 API for Python developers
 -------------------------
@@ -1848,6 +1846,7 @@ Output::
 .. currentModule:: fdb.services
 
 .. index:: Services
+   pair: Services; working with
 
 .. _working_with_services:
 
@@ -1860,6 +1859,9 @@ The API presented to the client programmer by these utilities is inelegant becau
 
 The native Services API, though consistent, is much lower-level than a Pythonic API. If the native version were exposed directly, accomplishing a given task would probably require more Python code than scripting the traditional command-line tools. For this reason, FDB presents its own abstraction over the native API via the :mod:`fdb.services` module.
 
+.. index:: 
+   pair: Services; connection
+
 Services API Connections
 ------------------------
 
@@ -1867,9 +1869,9 @@ All Services API operations are performed in the context of a `connection` to a 
 
 This constructor has three keyword parameters:
 
-   :host:	The network name of the computer on which the database server is running.
-   :user:	The name of the database user under whose authority the maintenance tasks are to be performed.
-   :password:	User’s password.
+:host:	The network name of the computer on which the database server is running.
+:user:	The name of the database user under whose authority the maintenance tasks are to be performed.
+:password:	User’s password.
 
 Since maintenance operations are most often initiated by an administrative user on the same computer as the database server, `host` defaults to the local computer, and `user` defaults to `SYSDBA`.
 
@@ -1893,9 +1895,12 @@ The three calls to :func:`fdb.services.connect()` in the following program are e
 * `Server Configuration and State`_: To get information about server configuration, active attachments or users, or to get content of server log.
 * `Database options`_: To set various database parameters like size of page cache, access mode or SQL dialect.
 * `Database maintenance`_: To perform backup, restore, validation or other database maintenance tasks.
-* `User maintanance`_: To get or change information about users defined in security database, to create new or remove users.
+* `User maintenance`_: To get or change information about users defined in security database, to create new or remove users.
 * `Trace service`_: To start, stop, pause/resume or list Firebird `trace sessions`.
 * `Text ouput from Services`_: Some services like `backup` or `trace` may return significant amount of text. This output is not returned directly by method that starts the service, but through separate methods that emulate read from text file, or provide :ref:`iterator protocol <python:typeiter>` support on `Connection`.
+
+.. index:: 
+   pair: Services; server information
 
 Server Configuration and State
 ------------------------------
@@ -2074,6 +2079,11 @@ Server Configuration and State
       >>> con.get_log()
       >>> log = con.readlines()
       
+   .. tip:: You can use :mod:`fdb.log` module for parsing and further data processing.
+      
+.. index:: 
+   pair: Services; database options
+
 Database options
 ----------------
 
@@ -2151,6 +2161,8 @@ Database options
       # Use SQL dialect 1
       >>> con.set_sql_dialect('employee',1)
 
+.. index:: 
+   triple: Services; Database; maintenance
 
 Database maintenance
 --------------------
@@ -2170,7 +2182,7 @@ Database maintenance
 :meth:`~Connection.get_statistics`
 
    Request database statisctics. Report is in the same format as the output of the gstat command-line utility. This method has one required parameter, the location of the database on which to compute statistics, and six optional boolean parameters for controlling the domain of the statistics.
-
+   
    This method is so-called `Async method` that only initiates report processing. Actual report could be read by one from many methods for `text ouput from Services`_ that `Connection` provides .
 
    .. note::
@@ -2184,6 +2196,8 @@ Database maintenance
       >>> con = services.connect(host='localhost', user='sysdba', password='masterkey')
       >>> con.get_statistics('employee')
       >>> stat_report = con.readlines()
+      
+   .. tip:: You can use :mod:`fdb.gstat` module for parsing and further data processing.
 
 :meth:`~Connection.backup`
 
@@ -2204,6 +2218,11 @@ Database maintenance
       >>> con.backup('employee', '/home/data/employee.fbk', metadata_only=True, collect_garbage=False)
       >>> backup_report = con.readlines()
 
+      
+   .. note::
+   
+      :meth:`~Connection.backup` creates a backup file on server host. Alternatively you can use :meth:`~Connection.local_backup` to create a backup file on local machine.
+   
 :meth:`~Connection.restore`
 
    Request database restore from logical (GBAK) backup. Produces report about restore process.
@@ -2223,6 +2242,10 @@ Database maintenance
       >>> con.restore('/home/data/employee.fbk', '/home/data/empcopy.fdb')
       >>> restore_report = con.readlines()
 
+   .. note::
+   
+      :meth:`~Connection.restore` uses a backup file on server host. Alternatively you can use :meth:`~Connection.local_restore` to use a backup file on local machine.
+   
 :meth:`~Connection.nbackup`
 
    Perform physical (NBACKUP) database backup.
@@ -2314,8 +2337,10 @@ Database maintenance
       # Mend the database
       >>> con.repair('empoyee', ignore_checksums=True, mend_database=True)
 
+.. index:: 
+   triple: Services; Database; users
 
-User maintanance
+User maintenance
 ----------------
 
 :meth:`~Connection.get_users`
@@ -2389,8 +2414,13 @@ User maintanance
       >>> con.user_exists('NewUser')
       False
 
+.. index:: 
+   pair: Services; trace
+
 Trace service
 -------------
+
+.. tip:: You can use :mod:`fdb.trace` module for parsing and further data processing.
 
 :meth:`~Connection.trace_start`
 
@@ -2481,6 +2511,8 @@ Trace service
             'flags': ['active', ' admin', ' trace'], 
             'user': 'SYSDBA'}}
 
+.. index:: 
+   pair: Services; output
 
 Text ouput from Services
 ------------------------
@@ -2585,6 +2617,7 @@ Output::
    gbak:writing names mapping 
    gbak:closing file, committing, and finishing. 74752 bytes written 
 
+.. currentModule:: fdb.schema
 
 .. index::
    pair: Database; schema
@@ -2646,7 +2679,8 @@ Database schema could be accessed in three different ways, each suitable for dif
    Because once loaded information is cached, it's good to :meth:`clar <fdb.schema.Schema.clear>` it
    when it's no longer needed to conserve memory.
 
-
+.. index::
+   pair: Database schema; categories
 
 Available information
 ---------------------
@@ -2656,22 +2690,22 @@ The :class:`~fdb.schema.Schema` provides information about:
 - **Database:** :attr:`Owner name <fdb.schema.Schema.owner_name>`, 
   :attr:`default character set <fdb.schema.Schema.default_character_set>`, 
   :attr:`description <fdb.schema.Schema.description>`, 
-  :attr:`security class <fdb.schema.Schema.security_class>` and whether database consist 
+  :attr:`security class <fdb.schema.Schema.security_class>`,
+  :attr:`nbackup backup history <fdb.schema.Schema.backup_history>` and whether database consist 
   from :meth:`single or multiple files <fdb.schema.Schema.ismultifile>`.
 - **Facilities:** Available :attr:`character sets <fdb.schema.Schema.character_sets>`, 
-  :attr:`collations <fdb.schema.Schema.collations>`, database :attr:`files <fdb.schema.Schema.files>` and 
+  :attr:`collations <fdb.schema.Schema.collations>`, BLOB :attr:`filters <fdb.schema.Schema.filters>`, database :attr:`files <fdb.schema.Schema.files>` and 
   :attr:`shadows <fdb.schema.Schema.shadows>`.
 - **User database objects:** :attr:`exceptions <fdb.schema.Schema.exceptions>`, 
   :attr:`generators <fdb.schema.Schema.generators>`, :attr:`domains <fdb.schema.Schema.domains>`, 
   :attr:`tables <fdb.schema.Schema.tables>` and their :attr:`constraints <fdb.schema.Schema.constraints>`, 
   :attr:`indices <fdb.schema.Schema.indices>`, :attr:`views <fdb.schema.Schema.views>`, 
   :attr:`triggers <fdb.schema.Schema.triggers>`, :attr:`procedures <fdb.schema.Schema.procedures>`, 
-  user :attr:`roles <fdb.schema.Schema.roles>` and :attr:`user defined functions <fdb.schema.Schema.functions>`.
+  user :attr:`roles <fdb.schema.Schema.roles>`, :attr:`user defined functions <fdb.schema.Schema.functions>` and :attr:`packages <fdb.schema.Schema.packages>`.
 - **System database objects:** :attr:`generators <fdb.schema.Schema.sysgenerators>`, 
   :attr:`domains <fdb.schema.Schema.sysdomains>`, :attr:`tables <fdb.schema.Schema.systables>` and their 
   constraints,  :attr:`indices <fdb.schema.Schema.sysindices>`, :attr:`views <fdb.schema.Schema.sysviews>`, 
-  :attr:`triggers <fdb.schema.Schema.systriggers>`, :attr:`procedures <fdb.schema.Schema.sysprocedures>` 
-  and :attr:`functions <fdb.schema.Schema.sysfunctions>`.
+  :attr:`triggers <fdb.schema.Schema.systriggers>`, :attr:`procedures <fdb.schema.Schema.sysprocedures>`, :attr:`functions <fdb.schema.Schema.sysfunctions>` and :attr:`backup history <fdb.schema.Schema.backup_history>`.
 - **Relations between objects:** Through direct links between metadata objects and 
   :attr:`dependencies <fdb.schema.Schema.dependencies>`.
 - **Privileges:** :attr:`All <fdb.schema.Schema.privileges>` privileges, or privileges granted for specific 
@@ -2680,6 +2714,9 @@ The :class:`~fdb.schema.Schema` provides information about:
   :attr:`procedure <fdb.schema.Procedure.privileges>` or :attr:`role <fdb.schema.Role.privileges>`. It's also
   possible to get all privileges :meth:`granted to <fdb.schema.Schema.get_privileges_of>` specific user, role, 
   procedure, trigger or view.
+
+.. index::
+   pair: Database schema; metadata objects
 
 Metadata objects
 ----------------
@@ -2699,7 +2736,7 @@ Methods:
 - :meth:`~fdb.schema.BaseSchemaItem.get_quoted_name`: Returns quoted (if necessary) name of database object.
 - :meth:`~fdb.schema.BaseSchemaItem.get_dependents`: Returns list of all database objects that :ref:`depend <object-dependencies>` on this one.
 - :meth:`~fdb.schema.BaseSchemaItem.get_dependencies`: Returns list of database objects that this object :ref:`depend <object-dependencies>` on.
-- :meth:`~fdb.schema.BaseSchemaItem.get_sql_for`: Returns :ref:`SQL command string <sql-oprations>` for specified action on database object.
+- :meth:`~fdb.schema.BaseSchemaItem.get_sql_for`: Returns :ref:`SQL command string <sql-operations>` for specified action on database object.
 
 There are next schema objects: :class:`~fdb.schema.Collation`, :class:`~fdb.schema.CharacterSet`,
 :class:`~fdb.schema.DatabaseException`, :class:`~fdb.schema.Sequence` (Generator), :class:`~fdb.schema.Domain`,
@@ -2707,16 +2744,25 @@ There are next schema objects: :class:`~fdb.schema.Collation`, :class:`~fdb.sche
 :class:`~fdb.schema.Constraint`, :class:`~fdb.schema.View`, :class:`~fdb.schema.ViewColumn`, 
 :class:`~fdb.schema.Trigger`, :class:`~fdb.schema.Procedure`, :class:`~fdb.schema.ProcedureParameter`,
 :class:`~fdb.schema.Function`, :class:`~fdb.schema.FunctionArgument`, :class:`~fdb.schema.Role`,
-:class:`~fdb.schema.Dependency`, :class:`~fdb.schema.DatabaseFile` and :class:`~fdb.schema.Shadow`.
+:class:`~fdb.schema.Dependency`, :class:`~fdb.schema.DatabaseFile`, :class:`~fdb.schema.Shadow`, :class:`~fdb.schema.Package`, :class:`~fdb.schema.Filter`, :class:`~fdb.schema.BackupHistory` and :class:`~fdb.schema.Privilege`.
+
+.. index::
+   pair: visitor pattern; usage
+   pair: Database schema; visitor pattern
 
 .. _visitor-pattern-support:
 
 Visitor Pattern support
 -----------------------
 
-`Visitor Pattern`_ is particularly useful when you need to process various objects that need special handling in common algorithm (for example display information about them or generate SQL commands to create them in new database). Each metadata object (including :class:`~fdb.schema.Schema`) supports :meth:`~fdb.schema.BaseSchemaItem.accept_visitor` method that calls `class-specific` method on object passed to it as parameter. This method name always starts with 'visit'. For example :class:`~fdb.schema.Table` object calls `visitTable`. This 'visit*' method has one parameter - object instance that calls it.
+.. versionchanged:: 2.0
 
-FDB provides skeleton implementation for :class:`schema Visitor object <fdb.schema.SchemaVisitor>` that implements all `visit*` methods called by schema classes as call to method `default_action` that does nothing.
+   Class *fdb.schema.SchemaVisitor* was replaced with :class:`fdb.utils.Visitor` class.
+
+`Visitor Pattern`_ is particularly useful when you need to process various objects that need special handling in common algorithm (for example display information about them or generate SQL commands to create them in new database). Each metadata objects (including :class:`~fdb.schema.Schema`) descend from :class:`~fdb.utils.Visitable` class and thus support :meth:`~fdb.schema.BaseSchemaItem.accept` method that calls visitor's :meth:`~fdb.utils.Visitor.visit` method. This method dispatch calls to specific class-handling method or :meth:`fdb.utils.Visitor.default_action` if there is no such special class-handling method defined in your visitor class. Special class-handling methods must have a name that follows *visit_<class_name>* pattern, for example method that should handle :class:`~fdb.schema.Table` (or its descendants) objects must be named as *visit_Table*.
+
+.. index::
+   pair: visitor pattern; example
 
 Next code uses visitor pattern to print all DROP SQL statements necessary to drop database object, taking its dependencies into account, i.e. it could be necessary to first drop other - dependant objects before it could be dropped.
 
@@ -2724,41 +2770,29 @@ Next code uses visitor pattern to print all DROP SQL statements necessary to dro
 
    import fdb
    # Object dropper
-   class ObjectDropper(fdb.schema.SchemaVisitor):
+   class ObjectDropper(fdb.utils.Visitor):
        def __init__(self):
            self.seen = []
-       def drop(self,obj):
-           self.seen = []
-           obj.accept_visitor(self)
-       def default_action(self,obj):
+       def drop(self, obj):
+           self.seen = [] 
+           obj.accept(self) # You can call self.visit(obj) directly here as well
+       def default_action(self, obj):
            if not obj.issystemobject() and 'drop' in obj.actions:
               for dependency in obj.get_dependents():
                    d = dependency.dependent
                    if d and d not in self.seen:
-                       d.accept_visitor(self)
+                       d.accept(self)
               if obj not in self.seen:
                    print obj.get_sql_for('drop')
                    self.seen.append(obj)
-       def visitSchema(self,schema):
-           pass
-       def visitMetadataItem(self,item):
-           pass
-       def visitTableColumn(self,column):
-           column.table.accept_visitor(self)
-       def visitViewColumn(self,column):
-           column.view.accept_visitor(self)
-       def visitDependency(self,dependency):
-           pass
-       def visitConstraint(self,constraint):
-           pass
-       def visitProcedureParameter(self,param):
-           param.procedure.accept_visitor(self)
-       def visitFunctionArgument(self,arg):
-           arg.function.accept_visitor(self)
-       def visitDatabaseFile(self,dbfile):
-           pass
-       def visitShadow(self,shadow):
-           pass
+       def visit_TableColumn(self, column):
+           column.table.accept(self)
+       def visit_ViewColumn(self, column):
+           column.view.accept(self)
+       def visit_ProcedureParameter(self, param):
+           param.procedure.accept(self)
+       def visit_FunctionArgument(self, arg):
+           arg.function.accept(self)
  
    # Sample use:
 
@@ -2775,6 +2809,10 @@ Will produce next result::
 
 .. _object-dependencies:
 
+.. index::
+   pair: dependencies; working with
+   pair: Database schema; dependencies
+
 Object dependencies
 -------------------
 
@@ -2782,12 +2820,31 @@ Close relations between metadata object like `ownership` (Table vs. TableColumn,
 
 :class:`~fdb.schema.Dependency` object provides names and types of dependent/depended on database objects, and access to their respective schema Python objects as well.
 
-.. _sql-oprations:
+.. _enhanced-object-list:
+
+.. index::
+   pair: list; enhanced
+
+Enhanced list of objects
+------------------------
+
+.. versionadded:: 2.0
+
+Whenever possible, schema module uses enhanced :class:`~fdb.utils.ObjectList` list descendant for collections of metadata objects. This enhanced list provides several convenient methods for advanced list processing: 
+
+- filtering - :meth:`~fdb.utils.ObjectList.filter`, :meth:`~fdb.utils.ObjectList.ifilter` and :meth:`~fdb.utils.ObjectList.ifilterfalse`
+- sorting - :meth:`~fdb.utils.ObjectList.sort`
+- extracting/splitting - :meth:`~fdb.utils.ObjectList.extract` and :meth:`~fdb.utils.ObjectList.split`
+- testing - :meth:`~fdb.utils.ObjectList.contains`, :meth:`~fdb.utils.ObjectList.all` and :meth:`~fdb.utils.ObjectList.any`
+- reporting - :meth:`~fdb.utils.ObjectList.ecount`, :meth:`~fdb.utils.ObjectList.report` and :meth:`~fdb.utils.ObjectList.ireport`
+- fast key access - :attr:`~fdb.utils.ObjectList.key`, :attr:`~fdb.utils.ObjectList.frozen`, :meth:`~fdb.utils.ObjectList.freeze` and :meth:`~fdb.utils.ObjectList.get`
+
+.. _sql-operations:
 
 SQL operations
 --------------
 
-FDB doesn't allow you to change database metadata directly using schema objects. Instead it supports generation of DDL SQL commands from schema objects using :meth:`~fdb.schema.BaseSchemaItem.get_sql_for` method present on all schema objects except Schema itself. DDL commands that could be generated depend on object type and context (for example it's not possible to generate DDL commands for system database objects), and list of DDL commands that could be generated for particular schema object could be obtained from its :attr:`~fdb.schema.BaseSchemaItem.actions` attribute.
+FDB doesn't allow you to change database metadata directly using schema objects. Instead it supports generation of DDL SQL commands from schema objects using :meth:`~fdb.schema.BaseSchemaItem.get_sql_for` method present on all schema objects except Schema itself. DDL commands that could be generated depend on object type and context (for example it's not possible to generate all DDL commands for system database objects), and list of DDL commands that could be generated for particular schema object could be obtained from its :attr:`~fdb.schema.BaseSchemaItem.actions` attribute.
 
 Possible `actions` could be: create, recreate, create_or_alter, alter, drop, activate, deactivate, recompute and declare. Some actions require/allow additional parameters.
 
@@ -2810,11 +2867,21 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      - 
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.CharacterSet`
      - alter
      - collation
      - Yes
      - :class:`~fdb.schema.Collation` instance or collation name
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.DatabaseException`
      - create
      - 
@@ -2840,6 +2907,11 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.Sequence`
      - create
      - 
@@ -2855,6 +2927,11 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.Domain`
      - create
      - 
@@ -2890,6 +2967,11 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.Constraint`
      - create
      - 
@@ -2925,21 +3007,51 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.Table`
      - create
      - 
      -
      -
    * - 
+     - 
+     - no_pk
+     - No
+     - Do not generate PK constraint
+   * - 
+     - 
+     - no_unique
+     - No
+     - Do not generate unique constraints
+   * - 
      - recreate
      - 
      -
      -
    * - 
+     - 
+     - no_pk
+     - No
+     - Do not generate PK constraint
+   * - 
+     - 
+     - no_unique
+     - No
+     - Do not generate unique constraints
+   * - 
      - drop
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.TableColumn`
      - alter
      - 
@@ -2965,6 +3077,21 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - expression
      - No
      - string with COMPUTED BY expression
+   * - 
+     - 
+     - restart
+     - No
+     - None or initial value
+   * - 
+     - drop
+     - 
+     -
+     - 
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.View`
      - create
      - 
@@ -3000,11 +3127,16 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
-   * - :class:`~fdb.schema.Trigger`
-     - create
+   * - 
+     - comment
      - 
      -
-     -
+     - 
+   * - :class:`~fdb.schema.Trigger`
+     - create
+     - inactive
+     - No
+     - Create inactive trigger
    * - 
      - recreate
      - 
@@ -3050,6 +3182,11 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.Procedure`
      - create
      - no_code
@@ -3066,10 +3203,35 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - No
      - True to supress procedure body from output
    * - 
+     - alter
+     - input
+     - No
+     - Input parameters
+   * - 
+     -
+     - output
+     - No
+     - Output parameters
+   * - 
+     -
+     - declare
+     - No
+     - Variable declarations
+   * - 
+     -
+     - code
+     - Yes
+     - Procedure code / body
+   * - 
      - drop
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.Role`
      - create
      - 
@@ -3080,6 +3242,11 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.Function`
      - declare
      - 
@@ -3090,6 +3257,46 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - 
      -
      -
+   * - 
+     - create
+     - no_code
+     - No
+     - Generate PSQL function code or not
+   * - 
+     - create_or_alter
+     - no_code
+     - No
+     - Generate PSQL function code or not
+   * - 
+     - recreate
+     - no_code
+     - No
+     - Generate PSQL function code or not
+   * - 
+     - alter
+     - arguments
+     - No
+     - Function arguments
+   * - 
+     - 
+     - returns
+     - Yes
+     - Function return value
+   * - 
+     - 
+     - declare
+     - No
+     - Variable declarations
+   * - 
+     - 
+     - code
+     - Yes
+     - PSQL function body / code
+   * - 
+     - comment
+     - 
+     -
+     - 
    * - :class:`~fdb.schema.DatabaseFile`
      - create
      - 
@@ -3102,9 +3309,9 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      -
    * - 
      - drop
-     - 
-     -
-     -
+     - preserve
+     - No
+     - Preserve file or not
    * - :class:`~fdb.schema.Privilege`
      - grant
      - grantors
@@ -3121,6 +3328,31 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      - No
      - True to get REVOKE of GRANT/ADMIN OPTION only. Raises ProgrammingError if privilege
        doesn't have such option.
+   * - :class:`~fdb.schema.Package`
+     - create
+     - body
+     - No
+     - (bool) Generate package body
+   * - 
+     - recreate
+     - body
+     - No
+     - (bool) Generate package body
+   * - 
+     - create_or_alter
+     - body
+     - No
+     - (bool) Generate package body
+   * - 
+     - alter
+     - header
+     - No
+     - (string_or_list) Package header
+   * - 
+     - drop
+     - body
+     - No
+     - (bool) Drop only package body
 
 **Examples:**
 
@@ -3202,6 +3434,9 @@ Possible `actions` could be: create, recreate, create_or_alter, alter, drop, act
      Out2 = 'Value'
    END
 
+.. index::
+   pair: privileges; working with
+
 Working with user privileges
 ============================
 
@@ -3209,7 +3444,7 @@ User or database object privileges are part of database metadata accesible throu
 :attr:`table <fdb.schema.Table.privileges>`, :attr:`table column <fdb.schema.TableColumn.privileges>`, :attr:`view <fdb.schema.View.privileges>`, :attr:`view column <fdb.schema.ViewColumn.privileges>`, :attr:`procedure <fdb.schema.Procedure.privileges>` or :attr:`role <fdb.schema.Role.privileges>`. It's also possible to get all privileges :meth:`granted to <fdb.schema.Schema.get_privileges_of>` specific user, role, procedure, trigger or view.
 
 :class:`~fdb.schema.Privilege` class supports :meth:`~fdb.schema.Privilege.get_sql_for` method to generate GRANT and REVOKE SQL statements for given privilege. If you want to generate grant/revoke statements for
-set of privileges (for example all privileges granted on specific object or grated to specific user), it's more convenient to use function :func:`~fdb.schema.get_grants` that returns list of minimal set of SQL commands required to task.
+set of privileges (for example all privileges granted on specific object or grated to specific user), it's more convenient to use function :func:`~fdb.schema.get_grants` that returns list of minimal set of SQL commands required for task.
 
 **Examples:**
 
@@ -3238,6 +3473,11 @@ set of privileges (for example all privileges granted on specific object or grat
    GRANT DELETE, INSERT, REFERENCES, SELECT, UPDATE ON EMPLOYEE TO SYSDBA WITH GRANT OPTION
 
 Normally generated GRANT/REVOKE statements don't contain grantor's name, because GRANTED BY clause is supported only since Firebird 2.5. If you want to get GRANT/REVOKE statements including this clause, use `grantors` parameter for `get_sql_for` and `get_grants`. This parameter is a list of grantor names, and GRANTED BY clause is generated only for privileges not granted by user from this list. It's useful to suppress GRANTED BY clause for SYSDBA or database owner.
+
+.. currentModule:: fdb.monitor
+
+.. index::
+   pair: monitoring tables; working with
 
 Working with monitoring tables
 ==============================
@@ -3305,6 +3545,96 @@ There are two ways to refresh the snapshot:
    Individual monitoring information (i.e. information about :attr:`connections <fdb.monitor.Monitor.attachments>`, :attr:`transactions <fdb.monitor.Monitor.transactions>` etc.) is loaded from activity snapshot on first access and cached for further reference until it's :meth:`clared <fdb.monitor.Monitor.clear>` or snapshot is :meth:`refreshed <fdb.monitor.Monitor.refresh>`.
 
    Because once loaded information is cached, it's good to :meth:`clear <fdb.monitor.Monitor.clear>` it when it's no longer needed to conserve memory.
+
+.. currentModule:: fdb
+
+.. _driver-hooks:
+
+.. index::
+   pair: driver; hooks
+   pair: hooks; usage
+
+Driver hooks
+============
+
+.. versionadded:: 2.0
+
+FDB provides internal notification mechanism that allows installation of custom *hooks* into certain driver tasks. This mechanism consists from next functions:
+
+- :meth:`fdb.add_hook` that instals hook function for specified *hook_type*.
+- :meth:`fdb.remove_hook` that uninstalls previously installed hook function for specified *hook_type*.
+- :meth:`fdb.get_hooks` that returns list of installed hook routines for specified *hook_type*.
+
+.. index::
+   pair: hooks; types
+
+.. index:: HOOK_API_LOADED, HOOK_DATABASE_ATTACHED, HOOK_DATABASE_ATTACH_REQUEST
+.. index:: HOOK_DATABASE_DETACH_REQUEST, HOOK_DATABASE_CLOSED, HOOK_SERVICE_ATTACHED
+
+FDB provides next *hook types* (exposed as constants in *fdb* namespace):
+
+.. data:: HOOK_API_LOADED
+
+   This hook is invoked once when instance of :class:`~fdb.ibase.fbclient_API` is created. It could be used for additional initialization tasks that require Firebird API. 
+   
+   Hook routine must have signature: *hook_func(api)*. Any value returned by hook is ignored.
+   
+.. data:: HOOK_DATABASE_ATTACHED
+
+   This hook is invoked just before :class:`Connection` (or subclass) instance is returned to the client application. 
+   
+   Hook routine must have signature: *hook_func(connection)*. Any value returned by hook is ignored.
+   
+.. data:: HOOK_DATABASE_ATTACH_REQUEST
+
+   This hook is invoked after all parameters are preprocessed and before :class:`Connection` is created. 
+   
+   Hook routine must have signature: *hook_func(dsn, dpb)* where `dpb` is :class:`~fdb.ParameterBuffer` instance. It may return :class:`Connection` (or subclass) instance or None. First instance returned by any hook of this type will become the return value of caller function and other hooks of the same type are not invoked.
+   
+.. data:: HOOK_DATABASE_DETACH_REQUEST
+
+   This hook is invoked before connection is closed. 
+   
+   Hook must have signature: *hook_func(connection)*. If any hook function returns True, connection is not closed.
+   
+.. data:: HOOK_DATABASE_CLOSED
+
+   This hook is invoked after connection is closed. 
+   
+   Hook must have signature: *hook_func(connection)*. Any value returned by hook is ignored.
+   
+.. data:: HOOK_SERVICE_ATTACHED
+
+   This hook is invoked before :class:`fdb.services.Connection` instance is returned. 
+   
+   Hook must have signature: hook_func(connection). Any value returned by hook is ignored.
+   
+.. index::
+   pair: hooks; invocation
+
+Installed hook functions are invoked by next fdb code.
+
+:func:`fdb.load_api` hooks:
+
+- Event :data:`HOOK_API_LOADED`
+    
+:func:`fdb.connect` hooks:
+
+- Event :data:`HOOK_DATABASE_ATTACH_REQUEST`
+- Event :data:`HOOK_DATABASE_ATTACHED`
+
+:func:`fdb.create_database` hooks:
+
+- Event :data:`HOOK_DATABASE_ATTACHED`
+
+:meth:`fdb.Connection.close` hooks:
+
+- Event :data:`HOOK_DATABASE_DETACH_REQUEST`
+- Event :data:`HOOK_DATABASE_CLOSED`
+
+:func:`fdb.services.connect` hooks:
+
+- Event :data:`HOOK_SERVICE_ATTACHED`
 
 
 

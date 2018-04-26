@@ -1,120 +1,394 @@
 
-=============
+#############
 FDB Reference
-=============
+#############
+
+=====================
+Main driver namespace
+=====================
 
 .. module:: fdb
    :synopsis: Python Database API 2.0 Compliant driver for Firebird
 
-Module globals
-==============
+Constants
+=========
 
-.. data:: __version__
+:__version__: Current driver version, string.
 
-   Current driver version, string.
 
-.. data:: apilevel
+PyDB API 2.0 globals
+--------------------
 
-   String constant stating the supported DB API level (2.0).
+:apilevel: String constant stating the supported DB API level (2.0).
 
-.. data:: threadsafety
+:threadsafety: Integer constant stating the level of thread safety the interface supports.
+               Curretly `1` = Threads may share the module, but not connections.
 
-   Integer constant stating the level of thread safety the interface supports. 
+:paramstyle: String constant stating the type of parameter marker formatting expected by the interface. `'qmark'`    = Question mark style, e.g. '...WHERE name=?'
 
-   Curretly `1` = Threads may share the module, but not connections. 
+Constants for work with driver :ref:`hooks <driver-hooks>`
+----------------------------------------------------------
 
-.. data:: paramstyle
+- HOOK_API_LOADED
+- HOOK_DATABASE_ATTACHED
+- HOOK_DATABASE_ATTACH_REQUEST
+- HOOK_DATABASE_DETACH_REQUEST
+- HOOK_DATABASE_CLOSED
+- HOOK_SERVICE_ATTACHED
 
-   String constant stating the type of parameter marker
-   formatting expected by the interface.
+Helper constants for work with :attr:`Cursor.description` content
+-----------------------------------------------------------------
 
-   `'qmark'`    = Question mark style, e.g. '...WHERE name=?' 
+- DESCRIPTION_NAME
+- DESCRIPTION_TYPE_CODE
+- DESCRIPTION_DISPLAY_SIZE
+- DESCRIPTION_INTERNAL_SIZE
+- DESCRIPTION_PRECISION
+- DESCRIPTION_SCALE
+- DESCRIPTION_NULL_OK
 
-.. data:: DESCRIPTION_NAME
-.. data:: DESCRIPTION_TYPE_CODE
-.. data:: DESCRIPTION_DISPLAY_SIZE
-.. data:: DESCRIPTION_INTERNAL_SIZE
-.. data:: DESCRIPTION_PRECISION
-.. data:: DESCRIPTION_SCALE
-.. data:: DESCRIPTION_NULL_OK
+Helper Transaction Parameter Block (TPB) constants
+--------------------------------------------------
 
-   Helper constants for work with :attr:`Cursor.description` content.
+:ISOLATION_LEVEL_READ_COMMITED_LEGACY: R/W WAIT READ COMMITTED NO RECORD VERSION transaction.
+:ISOLATION_LEVEL_READ_COMMITED: R/W WAIT READ COMMITTED RECORD VERSION transaction.
+:ISOLATION_LEVEL_REPEATABLE_READ: Same as ISOLATION_LEVEL_SNAPSHOT.
+:ISOLATION_LEVEL_SNAPSHOT: R/W WAIT SNAPSHOT transaction.
+:ISOLATION_LEVEL_SERIALIZABLE: R/W WAIT SERIALIZABLE transaction.
+:ISOLATION_LEVEL_SNAPSHOT_TABLE_STABILITY: Same as ISOLATION_LEVEL_SERIALIZABLE.
+:ISOLATION_LEVEL_READ_COMMITED_RO: R/O WAIT READ COMMITTED RECORD VERSION transaction.
 
-.. data:: ISOLATION_LEVEL_READ_COMMITED_LEGACY
+:MAX_BLOB_SEGMENT_SIZE:
 
-   TPB for R/W WAIT READ COMMITTED NO RECORD VERSION transaction.
+:charset_map: Python dictionary that maps Firebird character set names (key) to Python character sets (value).
 
-.. data:: ISOLATION_LEVEL_READ_COMMITED
+ODS version numbers introduced by Firebird engine version
+---------------------------------------------------------
 
-   TPB for R/W WAIT READ COMMITTED RECORD VERSION transaction.
+- ODS_FB_20
+- ODS_FB_21
+- ODS_FB_25
+- ODS_FB_30
 
-.. data:: ISOLATION_LEVEL_REPEATABLE_READ
-.. data:: ISOLATION_LEVEL_SNAPSHOT
 
-   TPB's for R/W WAIT SNAPSHOT transaction.
+Translation dictionaries
+------------------------
 
-.. data:: ISOLATION_LEVEL_SERIALIZABLE
-.. data:: ISOLATION_LEVEL_SNAPSHOT_TABLE_STABILITY
+:IMPLEMENTATION_NAMES: Dictionary to map Implementation codes to names
 
-   TPB's for R/W WAIT SNAPSHOT TABLE STABILITY transaction.
+:PROVIDER_NAMES: Dictionary to map provider codes to names
 
-.. data:: ISOLATION_LEVEL_READ_COMMITED_RO
+:DB_CLASS_NAMES: Dictionary to map database class codes to names
 
-   TPB for R/O WAIT READ COMMITTED RECORD VERSION transaction.
+Firebird API constants and globals
+----------------------------------
 
-.. data:: MAX_BLOB_SEGMENT_SIZE
+.. hlist::
+   :columns: 5
 
-.. data:: charset_map
-
-   Python dictionary that maps Firebird character set names (key) to Python character sets (value).
-
-.. data:: ODS_FB_20
-.. data:: ODS_FB_21
-.. data:: ODS_FB_25
-
-   ODS version numbers introduced by Firebird engine version.
-
-.. data:: IMPLEMENTATION_NAMES
-
-.. data:: PROVIDER_NAMES
-
-.. data:: DB_CLASS_NAMES
+   * frb_info_att_charset
+   * isc_dpb_activate_shadow
+   * isc_dpb_address_path
+   * isc_dpb_allocation
+   * isc_dpb_begin_log
+   * isc_dpb_buffer_length
+   * isc_dpb_cache_manager
+   * isc_dpb_cdd_pathname
+   * isc_dpb_connect_timeout
+   * isc_dpb_damaged
+   * isc_dpb_dbkey_scope
+   * isc_dpb_debug
+   * isc_dpb_delete_shadow
+   * isc_dpb_dummy_packet_interval
+   * isc_dpb_encrypt_key
+   * isc_dpb_force_write
+   * isc_dpb_garbage_collect
+   * isc_dpb_gbak_attach
+   * isc_dpb_gfix_attach
+   * isc_dpb_gsec_attach
+   * isc_dpb_gstat_attach
+   * isc_dpb_interp
+   * isc_dpb_lc_ctype
+   * isc_dpb_lc_messages
+   * isc_dpb_no_garbage_collect
+   * isc_dpb_no_reserve
+   * isc_dpb_num_buffers
+   * isc_dpb_number_of_users
+   * isc_dpb_old_dump_id
+   * isc_dpb_old_file
+   * isc_dpb_old_file_size
+   * isc_dpb_old_num_files
+   * isc_dpb_old_start_file
+   * isc_dpb_old_start_page
+   * isc_dpb_old_start_seqno
+   * isc_dpb_online
+   * isc_dpb_online_dump
+   * isc_dpb_overwrite
+   * isc_dpb_page_size
+   * isc_dpb_password
+   * isc_dpb_password_enc
+   * isc_dpb_reserved
+   * isc_dpb_sec_attach
+   * isc_dpb_set_db_charset
+   * isc_dpb_set_db_readonly
+   * isc_dpb_set_db_sql_dialect
+   * isc_dpb_set_page_buffers
+   * isc_dpb_shutdown
+   * isc_dpb_shutdown_delay
+   * isc_dpb_sql_dialect
+   * isc_dpb_sql_role_name
+   * isc_dpb_sweep
+   * isc_dpb_sweep_interval
+   * isc_dpb_sys_user_name
+   * isc_dpb_sys_user_name_enc
+   * isc_dpb_trace
+   * isc_dpb_user_name
+   * isc_dpb_verify
+   * isc_dpb_version1
+   * isc_dpb_working_directory
+   * isc_dpb_no_db_triggers
+   * isc_dpb_nolinger,
+   * isc_info_active_tran_count
+   * isc_info_end
+   * isc_info_truncated
+   * isc_info_sql_stmt_type
+   * isc_info_sql_get_plan
+   * isc_info_sql_records
+   * isc_info_req_select_count
+   * isc_info_req_insert_count
+   * isc_info_req_update_count
+   * isc_info_req_delete_count
+   * isc_info_blob_total_length
+   * isc_info_blob_max_segment
+   * isc_info_blob_type
+   * isc_info_blob_num_segments
+   * fb_info_page_contents
+   * isc_info_active_transactions
+   * isc_info_allocation
+   * isc_info_attachment_id
+   * isc_info_backout_count
+   * isc_info_base_level
+   * isc_info_bpage_errors
+   * isc_info_creation_date
+   * isc_info_current_memory
+   * isc_info_db_class
+   * isc_info_db_id
+   * isc_info_db_provider
+   * isc_info_db_read_only
+   * isc_info_db_size_in_pages
+   * isc_info_db_sql_dialect
+   * isc_info_delete_count
+   * isc_info_dpage_errors
+   * isc_info_expunge_count
+   * isc_info_fetches
+   * isc_info_firebird_version
+   * isc_info_forced_writes
+   * isc_info_implementation
+   * isc_info_insert_count
+   * isc_info_ipage_errors
+   * isc_info_isc_version
+   * isc_info_limbo
+   * isc_info_marks
+   * isc_info_max_memory
+   * isc_info_next_transaction
+   * isc_info_no_reserve
+   * isc_info_num_buffers
+   * isc_info_ods_minor_version
+   * isc_info_ods_version
+   * isc_info_oldest_active
+   * isc_info_oldest_snapshot
+   * isc_info_oldest_transaction
+   * isc_info_page_errors
+   * isc_info_page_size
+   * isc_info_ppage_errors
+   * isc_info_purge_count
+   * isc_info_read_idx_count
+   * isc_info_read_seq_count
+   * isc_info_reads
+   * isc_info_record_errors
+   * isc_info_set_page_buffers
+   * isc_info_sql_stmt_commit
+   * isc_info_sql_stmt_ddl
+   * isc_info_sql_stmt_delete
+   * isc_info_sql_stmt_exec_procedure
+   * isc_info_sql_stmt_get_segment
+   * isc_info_sql_stmt_insert
+   * isc_info_sql_stmt_put_segment
+   * isc_info_sql_stmt_rollback
+   * isc_info_sql_stmt_savepoint
+   * isc_info_sql_stmt_select
+   * isc_info_sql_stmt_select_for_upd
+   * isc_info_sql_stmt_set_generator
+   * isc_info_sql_stmt_start_trans
+   * isc_info_sql_stmt_update
+   * isc_info_sweep_interval
+   * isc_info_tpage_errors
+   * isc_info_tra_access
+   * isc_info_tra_concurrency
+   * isc_info_tra_consistency
+   * isc_info_tra_id
+   * isc_info_tra_isolation
+   * isc_info_tra_lock_timeout
+   * isc_info_tra_no_rec_version
+   * isc_info_tra_oldest_active
+   * isc_info_tra_oldest_interesting
+   * isc_info_tra_oldest_snapshot
+   * isc_info_tra_read_committed
+   * isc_info_tra_readonly
+   * isc_info_tra_readwrite
+   * isc_info_tra_rec_version
+   * fb_info_tra_dbpath
+   * isc_info_update_count
+   * isc_info_user_names
+   * isc_info_version
+   * isc_info_writes
+   * isc_tpb_autocommit
+   * isc_dpb_version2
+   * fb_info_implementation
+   * fb_info_page_warns
+   * fb_info_record_warns
+   * fb_info_bpage_warns
+   * fb_info_dpage_warns
+   * fb_info_ipage_warns
+   * fb_info_ppage_warns
+   * fb_info_tpage_warns
+   * fb_info_pip_errors
+   * fb_info_pip_warns
+   * isc_tpb_commit_time
+   * isc_tpb_concurrency
+   * isc_tpb_consistency
+   * isc_tpb_exclusive
+   * isc_tpb_ignore_limbo
+   * isc_tpb_lock_read
+   * isc_tpb_lock_timeout
+   * isc_tpb_lock_write
+   * isc_tpb_no_auto_undo
+   * isc_tpb_no_rec_version
+   * isc_tpb_nowait
+   * isc_tpb_protected
+   * isc_tpb_read
+   * isc_tpb_read_committed
+   * isc_tpb_rec_version
+   * isc_tpb_restart_requests
+   * isc_tpb_shared
+   * isc_tpb_verb_time
+   * isc_tpb_version3
+   * isc_tpb_wait
+   * isc_tpb_write
+   * charset_map
+   * XSQLDA_PTR
+   * ISC_SHORT
+   * ISC_LONG
+   * ISC_SCHAR
+   * ISC_UCHAR
+   * ISC_QUAD
+   * ISC_DATE
+   * ISC_TIME
+   * SHRT_MIN
+   * SHRT_MAX
+   * USHRT_MAX
+   * INT_MIN
+   * INT_MAX
+   * LONG_MIN
+   * LONG_MAX
+   * SQL_TEXT
+   * SQL_VARYING
+   * SQL_SHORT
+   * SQL_LONG
+   * SQL_FLOAT
+   * SQL_DOUBLE
+   * SQL_D_FLOAT
+   * SQL_TIMESTAMP
+   * SQL_BLOB
+   * SQL_ARRAY
+   * SQL_QUAD
+   * SQL_TYPE_TIME
+   * SQL_TYPE_DATE
+   * SQL_INT64
+   * SQL_BOOLEAN
+   * SUBTYPE_NUMERIC
+   * SUBTYPE_DECIMAL
+   * MAX_BLOB_SEGMENT_SIZE
+   * ISC_INT64
+   * XSQLVAR
+   * ISC_TEB
+   * RESULT_VECTOR
+   * ISC_STATUS
+   * ISC_STATUS_ARRAY
+   * ISC_STATUS_PTR
+   * ISC_EVENT_CALLBACK
+   * ISC_ARRAY_DESC
+   * blr_varying
+   * blr_varying2
+   * blr_text
+   * blr_text2
+   * blr_short
+   * blr_long
+   * blr_int64
+   * blr_float
+   * blr_d_float
+   * blr_double
+   * blr_timestamp
+   * blr_sql_date
+   * blr_sql_time
+   * blr_cstring
+   * blr_quad
+   * blr_blob
+   * blr_bool
+   * SQLDA_version1
+   * isc_segment
+   * isc_db_handle
+   * isc_tr_handle
+   * isc_stmt_handle
+   * isc_blob_handle
+   * sys_encoding
 
 Exceptions
 ==========
 
-.. autoexception:: Warning
-   :show-inheritance:
-
 .. autoexception:: Error
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: InterfaceError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: DatabaseError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: DataError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: OperationalError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: IntegrityError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: InternalError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: ProgrammingError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: NotSupportedError
    :show-inheritance:
+   :no-inherited-members:
 
 .. autoexception:: TransactionConflict
    :show-inheritance:
+   :no-inherited-members:
+
+.. autoexception:: ParseError
+   :show-inheritance:
+   :no-inherited-members:
 
 This is the exception inheritance layout::
 
@@ -122,6 +396,7 @@ This is the exception inheritance layout::
     |__Warning
     |__Error
        |__InterfaceError
+       |__ParseError
        |__DatabaseError
           |__DataError
           |__OperationalError
@@ -133,11 +408,32 @@ This is the exception inheritance layout::
 Functions
 =========
 
+connect
+-------
+
 .. autofunction:: connect
+
+create_database
+---------------
 
 .. autofunction:: create_database
 
+load_api
+--------
+
 .. autofunction:: load_api
+
+hook-related functions
+----------------------
+
+.. autofunction:: add_hook
+
+.. autofunction:: remove_hook
+
+.. autofunction:: get_hooks
+
+.. autofunction:: is_dead_proxy
+
 
 Classes
 =======
@@ -146,13 +442,13 @@ Connection
 ----------
 
 .. autoclass:: Connection
-   :member-order: groupwise
-   :members:
-   :inherited-members:
+
+ConnectionWithSchema
+--------------------
 
 .. autoclass:: ConnectionWithSchema
-   :member-order: groupwise
-   :members:
+   :no-members:
+   :no-inherited-members:
    :undoc-members:
 
 .. note::
@@ -163,82 +459,52 @@ Cursor
 ------
 
 .. autoclass:: Cursor
-   :member-order: groupwise
-   :members:
-   :inherited-members:
    :undoc-members:
 
 Transaction
 -----------
 
 .. autoclass:: Transaction
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 PreparedStatement
 -----------------
 
 .. autoclass:: PreparedStatement
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 ConnectionGroup
 ---------------
 
 .. autoclass:: ConnectionGroup
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 TransactionContext
 ------------------
 
 .. autoclass:: TransactionContext
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 EventConduit
 ------------
 
 .. autoclass:: EventConduit
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 BlobReader
 ----------
 
 .. autoclass:: BlobReader
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 TPB
 ---
 
 .. autoclass:: TPB
-   :member-order: groupwise
-   :members:
-   :undoc-members:
 
 TableReservation
 ----------------
 
 .. autoclass:: TableReservation
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
+ParameterBuffer
+---------------
+
+.. autoclass:: ParameterBuffer
 
 Internally used classes exposed to driver users
 ===============================================
@@ -246,123 +512,102 @@ Internally used classes exposed to driver users
 .. module:: fdb.fbcore
    :synopsis: Implementation of Firebird driver
 
-RowMapping
-----------
+_RowMapping
+-----------
 
 .. autoclass:: _RowMapping
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 EventBlock
 ----------
 
 .. autoclass:: EventBlock
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 TableAccessStats
 ----------------
 
 .. autoclass:: _TableAccessStats
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 .. _services_api:
 
+========
 Services
 ========
 
 .. module:: fdb.services
    :synopsis: Submodule for work with Firebird Services
 
-Module globals
---------------
+Constants
+=========
 
-.. data:: SHUT_LEGACY
+`shutdown_mode` codes for :meth:`Connection.shutdown` and :meth:`Connection.bring_online`
+-----------------------------------------------------------------------------------------
 
-.. data:: SHUT_NORMAL
+- SHUT_LEGACY
+- SHUT_NORMAL
+- SHUT_MULTI
+- SHUT_SINGLE
+- SHUT_FULL
 
-.. data:: SHUT_MULTI
+`shutdown_method` codes for :meth:`Connection.shutdown`
+-------------------------------------------------------
 
-.. data:: SHUT_SINGLE
+- SHUT_FORCE
+- SHUT_DENY_NEW_TRANSACTIONS
+- SHUT_DENY_NEW_ATTACHMENTS
 
-.. data:: SHUT_FULL
+`mode` codes for :meth:`Connection.setWriteMode`
+------------------------------------------------
 
-   These constants are to be passed as the `shutdown_mode` parameter to :meth:`Connection.shutdown`
-   and :meth:`Connection.bring_online`.
+- WRITE_FORCED
+- WRITE_BUFFERED
 
+`mode` codes for :meth:`Connection.setAccessMode`
+-------------------------------------------------
 
-.. data:: SHUT_FORCE
+- ACCESS_READ_WRITE
+- ACCESS_READ_ONLY
 
-.. data:: SHUT_DENY_NEW_TRANSACTIONS
+:meth:`Connection.get_server_capabilities` return codes
+-------------------------------------------------------
 
-.. data:: SHUT_DENY_NEW_ATTACHMENTS
+- CAPABILITY_MULTI_CLIENT
+- CAPABILITY_REMOTE_HOP
+- CAPABILITY_SERVER_CONFIG
+- CAPABILITY_QUOTED_FILENAME
+- CAPABILITY_NO_SERVER_SHUTDOWN
 
-   These constants are to be passed as the `shutdown_method` parameter to :meth:`Connection.shutdown`
+'stats' codes for :meth:`Connection.backup`/:meth:`Connection.restore`
+----------------------------------------------------------------------
 
-.. data:: WRITE_FORCED
+- STATS_TOTAL_TIME
+- STATS_TIME_DELTA
+- STATS_PAGE_READS
+- STATS_PAGE_WRITES
 
-.. data:: WRITE_BUFFERED
-
-   These constants are to be passed as the `mode` parameter to :meth:`Connection.setWriteMode`
-
-.. data:: ACCESS_READ_WRITE
-
-.. data:: ACCESS_READ_ONLY
-
-   These constants are to be passed as the `mode` parameter to :meth:`Connection.setAccessMode`
-
-.. data:: CAPABILITY_MULTI_CLIENT
-
-.. data:: CAPABILITY_REMOTE_HOP
-
-.. data:: CAPABILITY_SERVER_CONFIG
-
-.. data:: CAPABILITY_QUOTED_FILENAME
-
-.. data:: CAPABILITY_NO_SERVER_SHUTDOWN
-
-   These constants are return values of :meth:`Connection.get_server_capabilities`
-
-.. data:: STATS_TOTAL_TIME
-
-.. data:: STATS_TIME_DELTA
-
-.. data:: STATS_PAGE_READS
-
-.. data:: STATS_PAGE_WRITES
-
-   These constants are options for :meth:`Connection.backup`/:meth:`Connection.restore` 'stats' parameter.
 
 Functions
----------
+=========
+
+connect
+-------
 
 .. autofunction:: connect
+
+Classes
+=======
 
 Connection
 ----------
 
 .. autoclass:: Connection
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 User
 ----
 
 .. autoclass:: User
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
+
+===============
 Database schema
 ===============
 
@@ -370,333 +615,356 @@ Database schema
    :synopsis: Submodule for work with database metadata (schema)
 
 Module globals
---------------
+==============
 
-.. data:: COLUMN_TYPES
+Firebird field type codes
+-------------------------
 
-.. data:: INTEGRAL_SUBTYPES
+.. hlist::
+   :columns: 6
 
-.. data:: BLOB_SUBTYPES
+   - FBT_SMALLINT
+   - FBT_INTEGER
+   - FBT_QUAD
+   - FBT_FLOAT
+   - FBT_CHAR
+   - FBT_DOUBLE_PRECISION
+   - FBT_DATE
+   - FBT_VARCHAR
+   - FBT_CSTRING
+   - FBT_BLOB_ID
+   - FBT_BLOB
+   - FBT_SQL_DATE
+   - FBT_SQL_TIME
+   - FBT_SQL_TIMESTAMP
+   - FBT_BIGINT
+   - FBT_BOOLEAN
 
-.. data:: RESERVED
+Trigger masks
+-------------
 
-.. data:: NON_RESERVED
+.. hlist::
+   :columns: 6
 
-Section codes for :meth:`Schema.get_metadata_ddl`:
+   - TRIGGER_TYPE_SHIFT
+   - TRIGGER_TYPE_MASK
+   - TRIGGER_TYPE_DML
+   - TRIGGER_TYPE_DB
+   - TRIGGER_TYPE_DDL
 
-.. data:: SCRIPT_COLLATIONS
+Trigger type codes
+------------------
 
-.. data:: SCRIPT_CHARACTER_SETS
+.. hlist::
+   :columns: 4
 
-.. data:: SCRIPT_UDFS
+   - DDL_TRIGGER_ANY
+   - DDL_TRIGGER_CREATE_TABLE
+   - DDL_TRIGGER_ALTER_TABLE
+   - DDL_TRIGGER_DROP_TABLE
+   - DDL_TRIGGER_CREATE_PROCEDURE
+   - DDL_TRIGGER_ALTER_PROCEDURE
+   - DDL_TRIGGER_DROP_PROCEDURE
+   - DDL_TRIGGER_CREATE_FUNCTION
+   - DDL_TRIGGER_ALTER_FUNCTION
+   - DDL_TRIGGER_DROP_FUNCTION
+   - DDL_TRIGGER_CREATE_TRIGGER
+   - DDL_TRIGGER_ALTER_TRIGGER
+   - DDL_TRIGGER_DROP_TRIGGER
+   - DDL_TRIGGER_CREATE_EXCEPTION
+   - DDL_TRIGGER_ALTER_EXCEPTION
+   - DDL_TRIGGER_DROP_EXCEPTION
+   - DDL_TRIGGER_CREATE_VIEW
+   - DDL_TRIGGER_ALTER_VIEW
+   - DDL_TRIGGER_DROP_VIEW
+   - DDL_TRIGGER_CREATE_DOMAIN
+   - DDL_TRIGGER_ALTER_DOMAIN
+   - DDL_TRIGGER_DROP_DOMAIN
+   - DDL_TRIGGER_CREATE_ROLE
+   - DDL_TRIGGER_ALTER_ROLE
+   - DDL_TRIGGER_DROP_ROLE
+   - DDL_TRIGGER_CREATE_INDEX
+   - DDL_TRIGGER_ALTER_INDEX
+   - DDL_TRIGGER_DROP_INDEX
+   - DDL_TRIGGER_CREATE_SEQUENCE
+   - DDL_TRIGGER_ALTER_SEQUENCE
+   - DDL_TRIGGER_DROP_SEQUENCE
+   - DDL_TRIGGER_CREATE_USER
+   - DDL_TRIGGER_ALTER_USER
+   - DDL_TRIGGER_DROP_USER
+   - DDL_TRIGGER_CREATE_COLLATION
+   - DDL_TRIGGER_DROP_COLLATION
+   - DDL_TRIGGER_ALTER_CHARACTER_SET
+   - DDL_TRIGGER_CREATE_PACKAGE
+   - DDL_TRIGGER_ALTER_PACKAGE
+   - DDL_TRIGGER_DROP_PACKAGE
+   - DDL_TRIGGER_CREATE_PACKAGE_BODY
+   - DDL_TRIGGER_DROP_PACKAGE_BODY
+   - DDL_TRIGGER_CREATE_MAPPING
+   - DDL_TRIGGER_ALTER_MAPPING
+   - DDL_TRIGGER_DROP_MAPPING
 
-.. data:: SCRIPT_GENERATORS
+Collation parameters codes
+--------------------------
 
-.. data:: SCRIPT_EXCEPTIONS
+- COLLATION_PAD_SPACE
+- COLLATION_CASE_INSENSITIVE
+- COLLATION_ACCENT_INSENSITIVE
 
-.. data:: SCRIPT_DOMAINS
+Index type names
+----------------
 
-.. data:: SCRIPT_PACKAGE_DEFS
+- INDEX_TYPE_ASCENDING
+- INDEX_TYPE_DESCENDING
 
-.. data:: SCRIPT_FUNCTION_DEFS
+Relation type codes
+-------------------
 
-.. data:: SCRIPT_PROCEDURE_DEFS
+- RELATION_TYPE_TABLE
+- RELATION_TYPE_VIEW
+- RELATION_TYPE_GTT
+- RELATION_TYPE_GTT_PRESERVE
+- RELATION_TYPE_GTT_DELETE
 
-.. data:: SCRIPT_TABLES
+Procedure parameter type codes
+------------------------------
 
-.. data:: SCRIPT_PRIMARY_KEYS
+- PROCPAR_DATATYPE
+- PROCPAR_DOMAIN
+- PROCPAR_TYPE_OF_DOMAIN
+- PROCPAR_TYPE_OF_COLUMN
 
-.. data:: SCRIPT_UNIQUE_CONSTRAINTS
 
-.. data:: SCRIPT_CHECK_CONSTRAINTS
+Section codes for :meth:`Schema.get_metadata_ddl`
+-------------------------------------------------
 
-.. data:: SCRIPT_FOREIGN_CONSTRAINTS
+.. hlist::
+   :columns: 4
 
-.. data:: SCRIPT_INDICES
+   - SCRIPT_COLLATIONS
+   - SCRIPT_CHARACTER_SETS
+   - SCRIPT_UDFS
+   - SCRIPT_GENERATORS
+   - SCRIPT_EXCEPTIONS
+   - SCRIPT_DOMAINS
+   - SCRIPT_PACKAGE_DEFS
+   - SCRIPT_FUNCTION_DEFS
+   - SCRIPT_PROCEDURE_DEFS
+   - SCRIPT_TABLES
+   - SCRIPT_PRIMARY_KEYS
+   - SCRIPT_UNIQUE_CONSTRAINTS
+   - SCRIPT_CHECK_CONSTRAINTS
+   - SCRIPT_FOREIGN_CONSTRAINTS
+   - SCRIPT_INDICES
+   - SCRIPT_VIEWS
+   - SCRIPT_PACKAGE_BODIES
+   - SCRIPT_PROCEDURE_BODIES
+   - SCRIPT_FUNCTION_BODIES
+   - SCRIPT_TRIGGERS
+   - SCRIPT_ROLES
+   - SCRIPT_GRANTS
+   - SCRIPT_COMMENTS
+   - SCRIPT_SHADOWS
+   - SCRIPT_SET_GENERATORS
+   - SCRIPT_INDEX_DEACTIVATIONS
+   - SCRIPT_INDEX_ACTIVATIONS
+   - SCRIPT_TRIGGER_DEACTIVATIONS
+   - SCRIPT_TRIGGER_ACTIVATIONS
 
-.. data:: SCRIPT_VIEWS
+Lists and disctionary maps
+--------------------------
 
-.. data:: SCRIPT_PACKAGE_BODIES
-
-.. data:: SCRIPT_PROCEDURE_BODIES
-
-.. data:: SCRIPT_FUNCTION_BODIES
-
-.. data:: SCRIPT_TRIGGERS
-
-.. data:: SCRIPT_ROLES
-
-.. data:: SCRIPT_GRANTS
-
-.. data:: SCRIPT_COMMENTS
-
-.. data:: SCRIPT_SHADOWS
-
-.. data:: SCRIPT_SET_GENERATORS
-
-.. data:: SCRIPT_INDEX_DEACTIVATIONS
-
-.. data:: SCRIPT_INDEX_ACTIVATIONS
-
-.. data:: SCRIPT_TRIGGER_DEACTIVATIONS
-
-.. data:: SCRIPT_TRIGGER_ACTIVATIONS
-
+:COLUMN_TYPES: Dictionary map from filed type codes to type names
+:INTEGRAL_SUBTYPES: List of integral type names, works as map
+:INDEX_TYPES: List of index types
+:BLOB_SUBTYPES: List of blob type names, works as map
+:TRIGGER_PREFIX_TYPES: List of trigger prefix type names, works as map
+:TRIGGER_SUFFIX_TYPES: List of trigger suffix type names, works as map
+:TRIGGER_DB_TYPES: List of db trigger type names, works as map
+:TRIGGER_DDL_TYPES: List of DLL trigger type names, works as map
+:RESERVED: List of reserved Firebird words
+:NON_RESERVED: List of non-reserved Firebird words
+:SCRIPT_DEFAULT_ORDER: List of default sections (in order) for :meth:`Schema.get_metadata_ddl`
 
 Functions
----------
+=========
+
+get_grants
+----------
 
 .. autofunction:: get_grants
 
-.. autofunction:: isKeyword
+iskeyword
+---------
+
+.. autofunction:: iskeyword
+
+escape_single_quotes
+--------------------
 
 .. autofunction:: escape_single_quotes
 
+Classes
+=======
 
 Schema
 ------
 
 .. autoclass:: Schema
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 BaseSchemaItem
 --------------
 
 .. autoclass:: BaseSchemaItem
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Collation
 ---------
 
 .. autoclass:: Collation
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 CharacterSet
 ------------
 
 .. autoclass:: CharacterSet
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 DatabaseException
 -----------------
 
 .. autoclass:: DatabaseException
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Sequence
 --------
 
 .. autoclass:: Sequence
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Index
 -----
 
 .. autoclass:: Index
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 TableColumn
 -----------
 
 .. autoclass:: TableColumn
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 ViewColumn
 ----------
 
 .. autoclass:: ViewColumn
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Domain
 ------
 
 .. autoclass:: Domain
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Dependency
 ----------
 
 .. autoclass:: Dependency
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Constraint
 ----------
 
 .. autoclass:: Constraint
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Table
 -----
 
 .. autoclass:: Table
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 View
 ----
 
 .. autoclass:: View
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Trigger
 -------
 
 .. autoclass:: Trigger
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 ProcedureParameter
 ------------------
 
 .. autoclass:: ProcedureParameter
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Procedure
 ---------
 
 .. autoclass:: Procedure
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Role
 ----
 
 .. autoclass:: Role
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 FunctionArgument
 ----------------
 
 .. autoclass:: FunctionArgument
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Function
 --------
 
 .. autoclass:: Function
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 DatabaseFile
 ------------
 
 .. autoclass:: DatabaseFile
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Shadow
 ------
 
 .. autoclass:: Shadow
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Privilege
 ---------
 
 .. autoclass:: Privilege
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Package
 -------
 
 .. autoclass:: Package
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 BackupHistory
 -------------
 
 .. autoclass:: BackupHistory
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 Filter
 ------
 
 .. autoclass:: Filter
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
-
-SchemaVisitor
--------------
-
-.. autoclass:: SchemaVisitor
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 
+======================
 Monitoring information
 ======================
 
@@ -704,129 +972,360 @@ Monitoring information
    :synopsis: Submodule for work with database monitoring tables
 
 Constants
----------
+=========
 
-.. data:: SHUTDOWN_MODE_ONLINE
-.. data:: SHUTDOWN_MODE_MULTI
-.. data:: SHUTDOWN_MODE_SINGLE
-.. data:: SHUTDOWN_MODE_FULL
+Shutdown modes for :attr:`DatabaseInfo.shutdown_mode`
+-----------------------------------------------------
 
-   Shutdown modes for :attr:`DatabaseInfo.shutdown_mode`.
+- SHUTDOWN_MODE_ONLINE
+- SHUTDOWN_MODE_MULTI
+- SHUTDOWN_MODE_SINGLE
+- SHUTDOWN_MODE_FULL
 
-.. data:: BACKUP_STATE_NORMAL
-.. data:: BACKUP_STATE_STALLED
-.. data:: BACKUP_STATE_MERGE
+Backup states for  :attr:`DatabaseInfo.backup_state`
+----------------------------------------------------
 
-   Backup states for  :attr:`DatabaseInfo.backup_state`.
+- BACKUP_STATE_NORMAL
+- BACKUP_STATE_STALLED
+- BACKUP_STATE_MERGE
 
-.. data:: STATE_IDLE
-.. data:: STATE_ACTIVE
+States for :attr:`AttachmentInfo.state`, :attr:`TransactionInfo.state` and :attr:`StatementInfo.state`
+------------------------------------------------------------------------------------------------------
 
-   States for :attr:`AttachmentInfo.state`, :attr:`TransactionInfo.state`.
-   and :attr:`StatementInfo.state`.
+- STATE_IDLE
+- STATE_ACTIVE
 
-.. data:: ISOLATION_CONSISTENCY
-.. data:: ISOLATION_CONCURRENCY
-.. data:: ISOLATION_READ_COMMITTED_RV
-.. data:: ISOLATION_READ_COMMITTED_NO_RV
+Isolation modes for :attr:`TransactionInfo.isolation_mode`
+----------------------------------------------------------
 
-   Isolation modes for :attr:`TransactionInfo.isolation_mode`.
+- ISOLATION_CONSISTENCY
+- ISOLATION_CONCURRENCY
+- ISOLATION_READ_COMMITTED_RV
+- ISOLATION_READ_COMMITTED_NO_RV
 
-.. data:: INFINITE_WAIT
-.. data:: NO_WAIT
+Special timeout values for :attr:`TransactionInfo.lock_timeout`
+---------------------------------------------------------------
 
-   Special timeout values for :attr:`TransactionInfo.lock_timeout`.
+- INFINITE_WAIT
+- NO_WAIT
 
-.. data:: STAT_DATABASE
-.. data:: STAT_ATTACHMENT
-.. data:: STAT_TRANSACTION
-.. data:: STAT_STATEMENT
-.. data:: STAT_CALL
+Group codes for :attr:`IOStatsInfo.group`
+-----------------------------------------
 
-   Group codes for :attr:`IOStatsInfo.group`.
+- STAT_DATABASE
+- STAT_ATTACHMENT
+- STAT_TRANSACTION
+- STAT_STATEMENT
+- STAT_CALL
+
+Security database
+-----------------
+
+- SEC_DEFAULT
+- SEC_SELF
+- SEC_OTHER
+
+Classes
+=======
 
 Monitor
 -------
 
 .. autoclass:: Monitor
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
 
 BaseInfoItem
 ------------
 
 .. autoclass:: BaseInfoItem
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 DatabaseInfo
 ------------
 
 .. autoclass:: DatabaseInfo
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 AttachmentInfo
 --------------
 
 .. autoclass:: AttachmentInfo
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 TransactionInfo
 ---------------
 
 .. autoclass:: TransactionInfo
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 StatementInfo
 -------------
 
 .. autoclass:: StatementInfo
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 CallStackInfo
 -------------
 
 .. autoclass:: CallStackInfo
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 IOStatsInfo
 -----------
 
 .. autoclass:: IOStatsInfo
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
+
+TableStatsInfo
+--------------
+
+.. autoclass:: TableStatsInfo
+   :show-inheritance:
 
 ContextVariableInfo
 -------------------
 
 .. autoclass:: ContextVariableInfo
-   :member-order: groupwise
-   :members:
-   :inherited-members:
-   :undoc-members:
+   :show-inheritance:
 
 
+======================
+Firebird trace & audit
+======================
+
+.. module:: fdb.trace
+   :synopsis: Firebird Trace & Audit log processing
+
+Constants
+=========
+
+Trace event status codes
+------------------------
+
+- STATUS_OK
+- STATUS_FAILED
+- STATUS_UNAUTHORIZED
+- STATUS_UNKNOWN
+
+Trace event codes
+-----------------
+
+.. note: Also works as index to :data:`EVENTS` list.
+
+.. hlist::
+   :columns: 5
+
+   - EVENT_TRACE_INIT
+   - EVENT_TRACE_SUSPEND
+   - EVENT_TRACE_END
+   - EVENT_CREATE_DATABASE
+   - EVENT_DROP_DATABASE
+   - EVENT_ATTACH
+   - EVENT_DETACH
+   - EVENT_TRANSACTION_START
+   - EVENT_COMMIT
+   - EVENT_ROLLBACK
+   - EVENT_COMMIT_R
+   - EVENT_ROLLBACK_R
+   - EVENT_STMT_PREPARE
+   - EVENT_STMT_START
+   - EVENT_STMT_END
+   - EVENT_STMT_FREE
+   - EVENT_STMT_CLOSE
+   - EVENT_TRG_START
+   - EVENT_TRG_END
+   - EVENT_PROC_START
+   - EVENT_PROC_END
+   - EVENT_SVC_START
+   - EVENT_SVC_ATTACH
+   - EVENT_SVC_DETACH
+   - EVENT_SVC_QUERY
+   - EVENT_SET_CONTEXT
+   - EVENT_ERROR
+   - EVENT_WARNING
+   - EVENT_SWEEP_START
+   - EVENT_SWEEP_PROGRESS
+   - EVENT_SWEEP_FINISH
+   - EVENT_SWEEP_FAILED
+   - EVENT_BLR_COMPILE
+   - EVENT_BLR_EXECUTE
+   - EVENT_DYN_EXECUTE
+   - EVENT_UNKNOWN
+
+:EVENTS: List of trace event names in order matching their numeric codes
+
+Classes
+=======
+
+Named tuples for information packages
+-------------------------------------
+
+.. autofunction:: AttachmentInfo
+.. autofunction:: TransactionInfo
+.. autofunction:: ServiceInfo
+.. autofunction:: SQLInfo
+.. autofunction:: ParamInfo
+.. autofunction:: AccessTuple
+
+Named tuples for individual trace events
+----------------------------------------
+
+.. autofunction:: EventTraceInit
+.. autofunction:: EventTraceSuspend
+.. autofunction:: EventTraceFinish
+.. autofunction:: EventCreate
+.. autofunction:: EventDrop
+.. autofunction:: EventAttach
+.. autofunction:: EventDetach
+.. autofunction:: EventTransactionStart
+.. autofunction:: EventCommit
+.. autofunction:: EventRollback
+.. autofunction:: EventCommitRetaining
+.. autofunction:: EventRollbackRetaining
+.. autofunction:: EventPrepareStatement
+.. autofunction:: EventStatementStart
+.. autofunction:: EventStatementFinish
+.. autofunction:: EventFreeStatement
+.. autofunction:: EventCloseCursor
+.. autofunction:: EventTriggerStart
+.. autofunction:: EventTriggerFinish
+.. autofunction:: EventProcedureStart
+.. autofunction:: EventProcedureFinish
+.. autofunction:: EventServiceAttach
+.. autofunction:: EventServiceDetach
+.. autofunction:: EventServiceStart
+.. autofunction:: EventServiceQuery
+.. autofunction:: EventSetContext
+.. autofunction:: EventError
+.. autofunction:: EventServiceError
+.. autofunction:: EventWarning
+.. autofunction:: EventServiceWarning
+.. autofunction:: EventSweepStart
+.. autofunction:: EventSweepProgress
+.. autofunction:: EventSweepFinish
+.. autofunction:: EventSweepFailed
+.. autofunction:: EventBLRCompile
+.. autofunction:: EventBLRExecute
+.. autofunction:: EventDYNExecute
+.. autofunction:: EventUnknown
+
+TraceParser
+-----------
+
+.. autoclass:: TraceParser
+
+
+===============
+GSTAT protocols
+===============
+
+.. module:: fdb.gstat
+   :synopsis: Firebird gstat output processing
+
+Module globals
+==============
+
+GSTAT version
+-------------
+
+- GSTAT_25
+- GSTAT_30
+
+Database attribute codes
+------------------------
+
+- ATTR_FORCE_WRITE
+- ATTR_NO_RESERVE
+- ATTR_NO_SHARED_CACHE
+- ATTR_ACTIVE_SHADOW
+- ATTR_SHUTDOWN_MULTI
+- ATTR_SHUTDOWN_SINGLE
+- ATTR_SHUTDOWN_FULL
+- ATTR_READ_ONLY
+- ATTR_BACKUP_LOCK
+- ATTR_BACKUP_MERGE
+- ATTR_BACKUP_WRONG
+
+.. note:: Also works as index to ATTRIBUTES.
+
+:ATTRIBUTES: List with database attribute names
+
+Functions
+=========
+
+empty_str
+---------
+
+.. autofunction:: empty_str
+
+parse
+-----
+
+.. autofunction:: parse
+
+Classes
+=======
+
+Named tuples
+------------
+
+.. autofunction:: FillDistribution
+.. autofunction:: Encryption
+
+StatDatabase
+------------
+
+.. autoclass:: StatDatabase
+   :show-inheritance:
+
+StatTable
+---------
+
+.. autoclass:: StatTable
+   :show-inheritance:
+
+StatTable3
+----------
+
+.. autoclass:: StatTable3
+   :show-inheritance:
+
+StatIndex
+---------
+
+.. autoclass:: StatIndex
+   :show-inheritance:
+
+StatIndex3
+----------
+
+.. autoclass:: StatIndex3
+   :show-inheritance:
+
+===================
+Firebird server log
+===================
+
+.. module:: fdb.log
+   :synopsis: Firebird server log processing
+
+Functions
+=========
+
+parse
+-----
+
+.. autofunction:: parse
+
+Classes
+=======
+
+Named tuples
+------------
+
+.. autofunction:: LogEntry
+
+
+=========
 Utilities
 =========
 
@@ -835,56 +1334,1505 @@ Utilities
 
 
 Functions
----------
+=========
 
 .. autofunction:: update_meta
 .. autofunction:: iter_class_properties
 .. autofunction:: iter_class_variables
 .. autofunction:: embed_attributes
 
+Classes
+=======
+
 LateBindingProperty
 -------------------
 
 .. autoclass:: LateBindingProperty
-   :member-order: groupwise
-   :members:
+   :show-inheritance:
+   :no-inherited-members:
 
 Iterator
 --------
 
 .. autoclass:: Iterator
-   :member-order: groupwise
    :members: __iter__, next, __next__
-   :inherited-members:
-   :undoc-members:
 
 EmbeddedProperty
 ----------------
 
 .. autoclass:: EmbeddedProperty
-   :member-order: groupwise
-   :members: 
+   :show-inheritance:
+   :no-inherited-members:
 
 EmbeddedAttribute
 -----------------
 
 .. autoclass:: EmbeddedAttribute
-   :member-order: groupwise
-   :members: 
+   :show-inheritance:
+   :no-inherited-members:
 
-.. module:: fdb.blr
-   :synopsis: Python ctypes interface to Firebird client library (BLR)
+ObjectList
+----------
+
+.. autoclass:: ObjectList
+   :show-inheritance:
+   :no-inherited-members:
+
+Visitable
+---------
+
+.. autoclass:: Visitable
+
+Visitor
+-------
+
+.. autoclass:: Visitor
+
 
 .. module:: fdb.ibase
    :synopsis: Python ctypes interface to Firebird client library
 
+===========================================
 ctypes interface to Firebird client library
 ===========================================
 
 :ref:`ctypes <python:module-ctypes>` interface to `fbclient.so/dll` is defined in submodule :mod:`fdb.ibase`
 and :mod:`fdb.blr`.
 
-.. autoclass:: fbclient_API
-   :member-order: groupwise
-   :members: 
 
+The :mod:`fdb.ibase` is the main module for Firebird API. The :mod:`fdb.blr` module contains only constants related to Firebird's low-level Binary Language Representation (BLR).
+
+Constants
+=========
+
+C integer limit constants
+-------------------------
+
+.. hlist::
+   :columns: 6
+
+   - SHRT_MIN
+   - SHRT_MAX
+   - USHRT_MAX
+   - INT_MIN
+   - INT_MAX
+   - UINT_MAX
+   - LONG_MIN
+   - LONG_MAX
+   - SSIZE_T_MIN
+   - SSIZE_T_MAX
+
+Type codes
+----------
+
+.. hlist::
+   :columns: 6
+
+   - SQL_TEXT
+   - SQL_VARYING
+   - SQL_SHORT
+   - SQL_LONG
+   - SQL_FLOAT
+   - SQL_DOUBLE
+   - SQL_D_FLOAT
+   - SQL_TIMESTAMP
+   - SQL_BLOB
+   - SQL_ARRAY
+   - SQL_QUAD
+   - SQL_TYPE_TIME
+   - SQL_TYPE_DATE
+   - SQL_INT64
+   - SQL_BOOLEAN
+   - SQL_NULL
+   - SUBTYPE_NUMERIC
+   - SUBTYPE_DECIMAL
+
+Internal type codes (for example used by ARRAY descriptor)
+----------------------------------------------------------
+
+.. hlist::
+   :columns: 6
+
+   - blr_text
+   - blr_text2
+   - blr_short
+   - blr_long
+   - blr_quad
+   - blr_float
+   - blr_double
+   - blr_d_float
+   - blr_timestamp
+   - blr_varying
+   - blr_varying2
+   - blr_blob
+   - blr_cstring
+   - blr_cstring2
+   - blr_blob_id
+   - blr_sql_date
+   - blr_sql_time
+   - blr_int64
+   - blr_blob2
+   - blr_domain_name
+   - blr_domain_name2
+   - blr_not_nullable
+   - blr_column_name
+   - blr_column_name2
+   - blr_bool
+
+
+Database parameter block stuff
+------------------------------
+
+.. hlist::
+   :columns: 5
+
+   - isc_dpb_version1
+   - isc_dpb_version2
+   - isc_dpb_cdd_pathname
+   - isc_dpb_allocation
+   - isc_dpb_page_size
+   - isc_dpb_num_buffers
+   - isc_dpb_buffer_length
+   - isc_dpb_debug
+   - isc_dpb_garbage_collect
+   - isc_dpb_verify
+   - isc_dpb_sweep
+   - isc_dpb_dbkey_scope
+   - isc_dpb_number_of_users
+   - isc_dpb_trace
+   - isc_dpb_no_garbage_collect
+   - isc_dpb_damaged
+   - isc_dpb_sys_user_name
+   - isc_dpb_encrypt_key
+   - isc_dpb_activate_shadow
+   - isc_dpb_sweep_interval
+   - isc_dpb_delete_shadow
+   - isc_dpb_force_write
+   - isc_dpb_begin_log
+   - isc_dpb_quit_log
+   - isc_dpb_no_reserve
+   - isc_dpb_user_name
+   - isc_dpb_password
+   - isc_dpb_password_enc
+   - isc_dpb_sys_user_name_enc
+   - isc_dpb_interp
+   - isc_dpb_online_dump
+   - isc_dpb_old_file_size
+   - isc_dpb_old_num_files
+   - isc_dpb_old_file
+   - isc_dpb_old_start_page
+   - isc_dpb_old_start_seqno
+   - isc_dpb_old_start_file
+   - isc_dpb_old_dump_id
+   - isc_dpb_lc_messages
+   - isc_dpb_lc_ctype
+   - isc_dpb_cache_manager
+   - isc_dpb_shutdown
+   - isc_dpb_online
+   - isc_dpb_shutdown_delay
+   - isc_dpb_reserved
+   - isc_dpb_overwrite
+   - isc_dpb_sec_attach
+   - isc_dpb_connect_timeout
+   - isc_dpb_dummy_packet_interval
+   - isc_dpb_gbak_attach
+   - isc_dpb_sql_role_name
+   - isc_dpb_set_page_buffers
+   - isc_dpb_working_directory
+   - isc_dpb_sql_dialect
+   - isc_dpb_set_db_readonly
+   - isc_dpb_set_db_sql_dialect
+   - isc_dpb_gfix_attach
+   - isc_dpb_gstat_attach
+   - isc_dpb_set_db_charset
+   - isc_dpb_gsec_attach
+   - isc_dpb_address_path
+   - isc_dpb_process_id
+   - isc_dpb_no_db_triggers
+   - isc_dpb_trusted_auth
+   - isc_dpb_process_name
+   - isc_dpb_trusted_role
+   - isc_dpb_org_filename
+   - isc_dpb_utf8_filename
+   - isc_dpb_ext_call_depth
+   - isc_dpb_auth_block
+   - isc_dpb_remote_protocol
+   - isc_dpb_client_version
+   - isc_dpb_host_name
+   - isc_dpb_os_user
+   - isc_dpb_specific_auth_data
+   - isc_dpb_auth_plugin_list
+   - isc_dpb_auth_plugin_name
+   - isc_dpb_config
+   - isc_dpb_nolinger
+   - isc_dpb_reset_icu
+   - isc_dpb_map_attach
+
+Info structural codes
+---------------------
+
+.. hlist::
+   :columns: 6
+
+   - isc_info_end
+   - isc_info_truncated
+   - isc_info_error
+   - isc_info_data_not_ready
+   - isc_info_length
+   - isc_info_flag_end
+   
+
+
+DB Info item codes
+------------------
+
+:isc_info_db_id:            [db_filename,site_name[,site_name...]]
+:isc_info_reads:            number of page reads
+:isc_info_writes:           number of page writes
+:isc_info_fetches:          number of reads from the memory buffer cache
+:isc_info_marks:            number of writes to the memory buffer cache
+:isc_info_implementation:   (implementation code, implementation class)
+:isc_info_isc_version:      interbase server version identification string
+:isc_info_base_level:       capability version of the server
+:isc_info_page_size:        database page size
+:isc_info_num_buffers:      number of memory buffers currently allocated
+:isc_info_limbo:            limbo transactions
+:isc_info_current_memory:   amount of server memory (in bytes) currently in use
+:isc_info_max_memory:       maximum amount of memory (in bytes) used at one time since the first process attached to the database
+:isc_info_allocation:       number of last database page allocated
+:isc_info_attachment_id:    attachment id number
+
+all `*_count` codes below return {[table_id]=operation_count,...}; table IDs are in the system table RDB$RELATIONS.
+
+:isc_info_read_seq_count:   number of sequential table scans (row reads) done on each table since the database was last attached
+:isc_info_read_idx_count:   number of reads done via an index since the database was last attached
+:isc_info_insert_count:     number of inserts into the database since the database was last attached
+:isc_info_update_count:     number of database updates since the database was last attached
+:isc_info_delete_count:     number of database deletes since the database was last attached
+:isc_info_backout_count:    number of removals of a version of a record
+:isc_info_purge_count:      number of removals of old versions of fully mature records (records that are committed, so that older ancestor versions are no longer needed)
+:isc_info_expunge_count:    number of removals of a record and all of its ancestors, for records whose deletions have been committed
+
+:isc_info_sweep_interval:   number of transactions that are committed between sweeps to remove database record versions that are no longer needed
+:isc_info_ods_version:      On-disk structure (ODS) minor major version number
+:isc_info_ods_minor_version: On-disk structure (ODS) minor version number
+:isc_info_no_reserve:       20% page space reservation for holding backup versions of modified records: 0=yes, 1=no
+:isc_info_forced_writes:    mode in which database writes are performed: 0=sync, 1=async
+:isc_info_user_names:       array of names of all the users currently attached to the database
+:isc_info_page_errors:      number of page level errors validate found
+:isc_info_record_errors:    number of record level errors validate found
+:isc_info_bpage_errors:     number of blob page errors validate found
+:isc_info_dpage_errors:     number of data page errors validate found
+:isc_info_ipage_errors:     number of index page errors validate found
+:isc_info_ppage_errors:     number of pointer page errors validate found
+:isc_info_tpage_errors:     number of transaction page errors validate found
+:isc_info_set_page_buffers: number of memory buffers that should be allocated
+:isc_info_db_sql_dialect:   dialect of currently attached database
+:isc_info_db_read_only:     whether the database is read-only (1) or not (0)
+:isc_info_db_size_in_pages: number of allocated pages
+:frb_info_att_charset:      charset of current attachment
+:isc_info_db_class:         server architecture
+:isc_info_firebird_version: firebird server version identification string
+:isc_info_oldest_transaction: ID of oldest transaction
+:isc_info_oldest_active:    ID of oldest active transaction
+:isc_info_oldest_snapshot:  ID of oldest snapshot transaction
+:isc_info_next_transaction: ID of next transaction
+:isc_info_db_provider:      for firebird is 'isc_info_db_code_firebird'
+:isc_info_active_transactions:  array of active transaction IDs
+:isc_info_active_tran_count:    number of active transactions
+:isc_info_creation_date:    time_t struct representing database creation date & time
+:isc_info_db_file_size:     added in FB 2.1, nbackup-related - size (in pages) of locked db
+:fb_info_page_contents:     added in FB 2.5, get raw page contents; takes page_number as parameter;
+:fb_info_implementation:    (cpu code, OS code, compiler code, flags, implementation class)
+:fb_info_page_warns:        number of page level warnings validate found
+:fb_info_record_warns:      number of record level warnings validate found
+:fb_info_bpage_warns:       number of blob page level warnings validate found
+:fb_info_dpage_warns:       number of data page level warnings validate found
+:fb_info_ipage_warns:       number of index page level warnings validate found
+:fb_info_ppage_warns:       number of pointer page level warnings validate found
+:fb_info_tpage_warns:       number of trabsaction page level warnings validate found
+:fb_info_pip_errors:        number of pip page level errors validate found
+:fb_info_pip_warns:         number of pip page level warnings validate found
+
+:isc_info_version: = isc_info_isc_version
+
+Blob information items
+----------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_blob_num_segments
+   - isc_info_blob_max_segment
+   - isc_info_blob_total_length
+   - isc_info_blob_type
+
+Transaction information items
+-----------------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_tra_id
+   - isc_info_tra_oldest_interesting
+   - isc_info_tra_oldest_snapshot
+   - isc_info_tra_oldest_active
+   - isc_info_tra_isolation
+   - isc_info_tra_access
+   - isc_info_tra_lock_timeout
+   - fb_info_tra_dbpath
+   
+
+**isc_info_tra_isolation responses:**
+
+- isc_info_tra_consistency
+- isc_info_tra_concurrency
+- isc_info_tra_read_committed
+
+**isc_info_tra_read_committed options:**
+
+- isc_info_tra_no_rec_version
+- isc_info_tra_rec_version
+
+**isc_info_tra_access responses:**
+
+- isc_info_tra_readonly
+- isc_info_tra_readwrite
+
+SQL information items
+---------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_sql_select
+   - isc_info_sql_bind
+   - isc_info_sql_num_variables
+   - isc_info_sql_describe_vars
+   - isc_info_sql_describe_end
+   - isc_info_sql_sqlda_seq
+   - isc_info_sql_message_seq
+   - isc_info_sql_type
+   - isc_info_sql_sub_type
+   - isc_info_sql_scale
+   - isc_info_sql_length
+   - isc_info_sql_null_ind
+   - isc_info_sql_field
+   - isc_info_sql_relation
+   - isc_info_sql_owner
+   - isc_info_sql_alias
+   - isc_info_sql_sqlda_start
+   - isc_info_sql_stmt_type
+   - isc_info_sql_get_plan
+   - isc_info_sql_records
+   - isc_info_sql_batch_fetch
+   - isc_info_sql_relation_alias
+   - isc_info_sql_explain_plan
+   - isc_info_sql_stmt_flags
+
+SQL information return values
+-----------------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_sql_stmt_select
+   - isc_info_sql_stmt_insert
+   - isc_info_sql_stmt_update
+   - isc_info_sql_stmt_delete
+   - isc_info_sql_stmt_ddl
+   - isc_info_sql_stmt_get_segment
+   - isc_info_sql_stmt_put_segment
+   - isc_info_sql_stmt_exec_procedure
+   - isc_info_sql_stmt_start_trans
+   - isc_info_sql_stmt_commit
+   - isc_info_sql_stmt_rollback
+   - isc_info_sql_stmt_select_for_upd
+   - isc_info_sql_stmt_set_generator
+   - isc_info_sql_stmt_savepoint
+
+Transaction parameter block stuff
+---------------------------------
+
+.. hlist::
+   :columns: 6
+   
+   - isc_tpb_version1
+   - isc_tpb_version3
+   - isc_tpb_consistency
+   - isc_tpb_concurrency
+   - isc_tpb_shared
+   - isc_tpb_protected
+   - isc_tpb_exclusive
+   - isc_tpb_wait
+   - isc_tpb_nowait
+   - isc_tpb_read
+   - isc_tpb_write
+   - isc_tpb_lock_read
+   - isc_tpb_lock_write
+   - isc_tpb_verb_time
+   - isc_tpb_commit_time
+   - isc_tpb_ignore_limbo
+   - isc_tpb_read_committed
+   - isc_tpb_autocommit
+   - isc_tpb_rec_version
+   - isc_tpb_no_rec_version
+   - isc_tpb_restart_requests
+   - isc_tpb_no_auto_undo
+   - isc_tpb_lock_timeout
+
+BLOB parameter buffer
+---------------------
+
+.. hlist::
+   :columns: 6
+   
+   - isc_bpb_version1
+   - isc_bpb_source_type
+   - isc_bpb_target_type
+   - isc_bpb_type
+   - isc_bpb_source_interp
+   - isc_bpb_target_interp
+   - isc_bpb_filter_parameter
+   - isc_bpb_storage
+   - isc_bpb_type_segmented
+   - isc_bpb_type_stream
+   - isc_bpb_storage_main
+   - isc_bpb_storage_temp
+
+Service parameter block stuff
+-----------------------------
+
+.. hlist::
+   :columns: 6
+   
+   - isc_spb_current_version
+   - isc_spb_version
+   - isc_spb_version3
+   - isc_spb_user_name
+   - isc_spb_sys_user_name
+   - isc_spb_sys_user_name_enc
+   - isc_spb_password
+   - isc_spb_password_enc
+   - isc_spb_command_line
+   - isc_spb_dbname
+   - isc_spb_verbose
+   - isc_spb_options
+   - isc_spb_address_path
+   - isc_spb_process_id
+   - isc_spb_trusted_auth
+   - isc_spb_process_name
+   - isc_spb_trusted_role
+   - isc_spb_verbint
+   - isc_spb_auth_block
+   - isc_spb_auth_plugin_name
+   - isc_spb_auth_plugin_list
+   - isc_spb_utf8_filename
+   - isc_spb_client_version
+   - isc_spb_remote_protocol
+   - isc_spb_host_name
+   - isc_spb_os_user
+   - isc_spb_config
+   - isc_spb_expected_db
+
+**Parameters for isc_action_{add|del|mod|disp)_user:**
+
+.. hlist::
+   :columns: 6
+   
+   - isc_spb_sec_userid
+   - isc_spb_sec_groupid
+   - isc_spb_sec_username
+   - isc_spb_sec_password
+   - isc_spb_sec_groupname
+   - isc_spb_sec_firstname
+   - isc_spb_sec_middlename
+   - isc_spb_sec_lastname
+   - isc_spb_sec_admin
+
+**Parameters for isc_action_svc_backup:**
+
+.. hlist::
+   :columns: 4
+   
+   - isc_spb_bkp_file
+   - isc_spb_bkp_factor
+   - isc_spb_bkp_length
+   - isc_spb_bkp_skip_data
+   - isc_spb_bkp_stat
+   - isc_spb_bkp_ignore_checksums
+   - isc_spb_bkp_ignore_limbo
+   - isc_spb_bkp_metadata_only
+   - isc_spb_bkp_no_garbage_collect
+   - isc_spb_bkp_old_descriptions
+   - isc_spb_bkp_non_transportable
+   - isc_spb_bkp_convert
+   - isc_spb_bkp_expand
+   - isc_spb_bkp_no_triggers
+
+**Parameters for isc_action_svc_properties:**
+
+.. hlist::
+   :columns: 4
+   
+   - isc_spb_prp_page_buffers
+   - isc_spb_prp_sweep_interval
+   - isc_spb_prp_shutdown_db
+   - isc_spb_prp_deny_new_attachments
+   - isc_spb_prp_deny_new_transactions
+   - isc_spb_prp_reserve_space
+   - isc_spb_prp_write_mode
+   - isc_spb_prp_access_mode
+   - isc_spb_prp_set_sql_dialect
+   - isc_spb_prp_activate
+   - isc_spb_prp_db_online
+   - isc_spb_prp_nolinger
+   - isc_spb_prp_force_shutdown
+   - isc_spb_prp_attachments_shutdown
+   - isc_spb_prp_transactions_shutdown
+   - isc_spb_prp_shutdown_mode
+   - isc_spb_prp_online_mode
+
+**Parameters for isc_spb_prp_shutdown_mode and isc_spb_prp_online_mode:**
+
+.. hlist::
+   :columns: 4
+   
+   - isc_spb_prp_sm_normal
+   - isc_spb_prp_sm_multi
+   - isc_spb_prp_sm_single
+   - isc_spb_prp_sm_full
+
+**Parameters for isc_spb_prp_reserve_space:**
+
+.. hlist::
+   
+   - isc_spb_prp_res_use_full
+   - isc_spb_prp_res
+
+**Parameters for isc_spb_prp_write_mode:**
+
+.. hlist::
+   
+   - isc_spb_prp_wm_async
+   - isc_spb_prp_wm_sync
+
+**Parameters for isc_action_svc_validate:**
+
+.. hlist::
+   :columns: 5
+   
+   - isc_spb_val_tab_incl
+   - isc_spb_val_tab_excl
+   - isc_spb_val_idx_incl
+   - isc_spb_val_idx_excl
+   - isc_spb_val_lock_timeout
+
+**Parameters for isc_spb_prp_access_mode:**
+
+.. hlist::
+   :columns: 5
+   
+   - isc_spb_rpr_commit_trans
+   - isc_spb_rpr_rollback_trans
+   - isc_spb_rpr_recover_two_phase
+   - isc_spb_tra_id
+   - isc_spb_single_tra_id
+   - isc_spb_multi_tra_id
+   - isc_spb_tra_state
+   - isc_spb_tra_state_limbo
+   - isc_spb_tra_state_commit
+   - isc_spb_tra_state_rollback
+   - isc_spb_tra_state_unknown
+   - isc_spb_tra_host_site
+   - isc_spb_tra_remote_site
+   - isc_spb_tra_db_path
+   - isc_spb_tra_advise
+   - isc_spb_tra_advise_commit
+   - isc_spb_tra_advise_rollback
+   - isc_spb_tra_advise_unknown
+   - isc_spb_tra_id_64
+   - isc_spb_single_tra_id_64
+   - isc_spb_multi_tra_id_64
+   - isc_spb_rpr_commit_trans_64
+   - isc_spb_rpr_rollback_trans_64
+   - isc_spb_rpr_recover_two_phase_64
+
+   - isc_spb_rpr_validate_db
+   - isc_spb_rpr_sweep_db
+   - isc_spb_rpr_mend_db
+   - isc_spb_rpr_list_limbo_trans
+   - isc_spb_rpr_check_db
+   - isc_spb_rpr_ignore_checksum
+   - isc_spb_rpr_kill_shadows
+   - isc_spb_rpr_full
+   - isc_spb_rpr_icu
+
+**Parameters for isc_action_svc_restore:**
+
+.. hlist::
+   :columns: 4
+   
+   - isc_spb_res_skip_data
+   - isc_spb_res_buffers
+   - isc_spb_res_page_size
+   - isc_spb_res_length
+   - isc_spb_res_access_mode
+   - isc_spb_res_fix_fss_data
+   - isc_spb_res_fix_fss_metadata
+   - isc_spb_res_stat
+   - isc_spb_res_metadata_only
+   - isc_spb_res_deactivate_idx
+   - isc_spb_res_no_shadow
+   - isc_spb_res_no_validity
+   - isc_spb_res_one_at_a_time
+   - isc_spb_res_replace
+   - isc_spb_res_create
+   - isc_spb_res_use_all_space
+
+**Parameters for isc_spb_res_access_mode:**
+
+.. hlist::
+   
+   - isc_spb_res_am_readonly
+   - isc_spb_res_am_readwrite
+
+**Parameters for isc_info_svc_svr_db_info:**
+
+.. hlist::
+   
+   - isc_spb_num_att
+   - isc_spb_num_db
+
+**Parameters for isc_info_svc_db_stats:**
+
+.. hlist::
+   :columns: 4
+   
+   - isc_spb_sts_data_pages
+   - isc_spb_sts_db_log
+   - isc_spb_sts_hdr_pages
+   - isc_spb_sts_idx_pages
+   - isc_spb_sts_sys_relations
+   - isc_spb_sts_record_versions
+   - isc_spb_sts_table
+   - isc_spb_sts_nocreation
+   - isc_spb_sts_encryption
+
+**Parameters for isc_action_svc_nbak:**
+
+.. hlist::
+   :columns: 4
+   
+   - isc_spb_nbk_level
+   - isc_spb_nbk_file
+   - isc_spb_nbk_direct
+   - isc_spb_nbk_no_triggers
+
+**Parameters for trace:**
+
+.. hlist::
+   
+   - isc_spb_trc_id
+   - isc_spb_trc_name
+   - isc_spb_trc_cfg
+
+
+Service action items
+--------------------
+
+.. hlist::
+   :columns: 5
+   
+   - isc_action_svc_backup
+   - isc_action_svc_restore
+   - isc_action_svc_repair
+   - isc_action_svc_add_user
+   - isc_action_svc_delete_user
+   - isc_action_svc_modify_user
+   - isc_action_svc_display_user
+   - isc_action_svc_properties
+   - isc_action_svc_add_license
+   - isc_action_svc_remove_license
+   - isc_action_svc_db_stats
+   - isc_action_svc_get_ib_log
+   - isc_action_svc_get_fb_log
+   - isc_action_svc_nbak
+   - isc_action_svc_nrest
+   - isc_action_svc_trace_start
+   - isc_action_svc_trace_stop
+   - isc_action_svc_trace_suspend
+   - isc_action_svc_trace_resume
+   - isc_action_svc_trace_list
+   - isc_action_svc_set_mapping
+   - isc_action_svc_drop_mapping
+   - isc_action_svc_display_user_adm
+   - isc_action_svc_validate
+
+Service information items
+-------------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_svc_svr_db_info
+   - isc_info_svc_get_config
+   - isc_info_svc_version
+   - isc_info_svc_server_version
+   - isc_info_svc_implementation
+   - isc_info_svc_capabilities
+   - isc_info_svc_user_dbpath
+   - isc_info_svc_get_env
+   - isc_info_svc_get_env_lock
+   - isc_info_svc_get_env_msg
+   - isc_info_svc_line
+   - isc_info_svc_to_eof
+   - isc_info_svc_timeout
+   - isc_info_svc_limbo_trans
+   - isc_info_svc_running
+   - isc_info_svc_get_users
+   - isc_info_svc_auth_block
+   - isc_info_svc_stdin
+
+BLOB action codes
+-----------------
+
+.. hlist::
+   :columns: 5
+   
+   - blb_got_eof
+   - blb_got_fragment
+   - blb_got_full_segment
+   - blb_seek_relative
+   - blb_seek_from_tail
+
+Implementation codes
+--------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_db_impl_rdb_vms
+   - isc_info_db_impl_rdb_eln
+   - isc_info_db_impl_rdb_eln_dev
+   - isc_info_db_impl_rdb_vms_y
+   - isc_info_db_impl_rdb_eln_y
+   - isc_info_db_impl_jri
+   - isc_info_db_impl_jsv
+   - isc_info_db_impl_isc_apl_68K
+   - isc_info_db_impl_isc_vax_ultr
+   - isc_info_db_impl_isc_vms
+   - isc_info_db_impl_isc_sun_68k
+   - isc_info_db_impl_isc_os2
+   - isc_info_db_impl_isc_sun4
+   - isc_info_db_impl_isc_hp_ux
+   - isc_info_db_impl_isc_sun_386i
+   - isc_info_db_impl_isc_vms_orcl
+   - isc_info_db_impl_isc_mac_aux
+   - isc_info_db_impl_isc_rt_aix
+   - isc_info_db_impl_isc_mips_ult
+   - isc_info_db_impl_isc_xenix
+   - isc_info_db_impl_isc_dg
+   - isc_info_db_impl_isc_hp_mpexl
+   - isc_info_db_impl_isc_hp_ux68K
+   - isc_info_db_impl_isc_sgi
+   - isc_info_db_impl_isc_sco_unix
+   - isc_info_db_impl_isc_cray
+   - isc_info_db_impl_isc_imp
+   - isc_info_db_impl_isc_delta
+   - isc_info_db_impl_isc_next
+   - isc_info_db_impl_isc_dos
+   - isc_info_db_impl_m88K
+   - isc_info_db_impl_unixware
+   - isc_info_db_impl_isc_winnt_x86
+   - isc_info_db_impl_isc_epson
+   - isc_info_db_impl_alpha_osf
+   - isc_info_db_impl_alpha_vms
+   - isc_info_db_impl_netware_386
+   - isc_info_db_impl_win_only
+   - isc_info_db_impl_ncr_3000
+   - isc_info_db_impl_winnt_ppc
+   - isc_info_db_impl_dg_x86
+   - isc_info_db_impl_sco_ev
+   - isc_info_db_impl_i386
+   - isc_info_db_impl_freebsd
+   - isc_info_db_impl_netbsd
+   - isc_info_db_impl_darwin_ppc
+   - isc_info_db_impl_sinixz
+   - isc_info_db_impl_linux_sparc
+   - isc_info_db_impl_linux_amd64
+   - isc_info_db_impl_freebsd_amd64
+   - isc_info_db_impl_winnt_amd64
+   - isc_info_db_impl_linux_ppc
+   - isc_info_db_impl_darwin_x86
+   - isc_info_db_impl_linux_mipsel
+   - isc_info_db_impl_linux_mips
+   - isc_info_db_impl_darwin_x64
+   - isc_info_db_impl_sun_amd64
+   - isc_info_db_impl_linux_arm
+   - isc_info_db_impl_linux_ia64
+   - isc_info_db_impl_darwin_ppc64
+   - isc_info_db_impl_linux_s390x
+   - isc_info_db_impl_linux_s390
+   - isc_info_db_impl_linux_sh
+   - isc_info_db_impl_linux_sheb
+   - isc_info_db_impl_linux_hppa
+   - isc_info_db_impl_linux_alpha
+   - isc_info_db_impl_linux_arm64
+   - isc_info_db_impl_linux_ppc64el
+   - isc_info_db_impl_linux_ppc64
+
+Info DB provider codes
+----------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_db_code_rdb_eln
+   - isc_info_db_code_rdb_vms
+   - isc_info_db_code_interbase
+   - isc_info_db_code_firebird
+
+Info DB class codes
+-------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_db_class_access
+   - isc_info_db_class_y_valve
+   - isc_info_db_class_rem_int
+   - isc_info_db_class_rem_srvr
+   - isc_info_db_class_pipe_int
+   - isc_info_db_class_pipe_srvr
+   - isc_info_db_class_sam_int
+   - isc_info_db_class_sam_srvr
+   - isc_info_db_class_gateway
+   - isc_info_db_class_cache
+   - isc_info_db_class_classic_access
+   - isc_info_db_class_server_access
+
+Request information items
+-------------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_number_messages
+   - isc_info_max_message
+   - isc_info_max_send
+   - isc_info_max_receive
+   - isc_info_state
+   - isc_info_message_number
+   - isc_info_message_size
+   - isc_info_request_cost
+   - isc_info_access_path
+   - isc_info_req_select_count
+   - isc_info_req_insert_count
+   - isc_info_req_update_count
+   - isc_info_req_delete_count
+
+Access path items
+-----------------
+
+.. hlist::
+   :columns: 5
+   
+   - isc_info_rsb_end
+   - isc_info_rsb_begin
+   - isc_info_rsb_type
+   - isc_info_rsb_relation
+   - isc_info_rsb_plan
+
+Record Source Block (RSB) types
+-------------------------------
+
+.. hlist::
+   :columns: 5
+   
+   - isc_info_rsb_unknown
+   - isc_info_rsb_indexed
+   - isc_info_rsb_navigate
+   - isc_info_rsb_sequential
+   - isc_info_rsb_cross
+   - isc_info_rsb_sort
+   - isc_info_rsb_first
+   - isc_info_rsb_boolean
+   - isc_info_rsb_union
+   - isc_info_rsb_aggregate
+   - isc_info_rsb_merge
+   - isc_info_rsb_ext_sequential
+   - isc_info_rsb_ext_indexed
+   - isc_info_rsb_ext_dbkey
+   - isc_info_rsb_left_cross
+   - isc_info_rsb_select
+   - isc_info_rsb_sql_join
+   - isc_info_rsb_simulate
+   - isc_info_rsb_sim_cross
+   - isc_info_rsb_once
+   - isc_info_rsb_procedure
+   - isc_info_rsb_skip
+   - isc_info_rsb_virt_sequential
+   - isc_info_rsb_recursive
+   - isc_info_rsb_window
+   - isc_info_rsb_singular
+   - isc_info_rsb_writelock
+   - isc_info_rsb_buffer
+   - isc_info_rsb_hash
+
+RSB Bitmap expressions
+----------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_rsb_and
+   - isc_info_rsb_or
+   - isc_info_rsb_dbkey
+   - isc_info_rsb_index
+   
+Info request response codes
+---------------------------
+
+.. hlist::
+   :columns: 4
+   
+   - isc_info_req_active
+   - isc_info_req_inactive
+   - isc_info_req_send
+   - isc_info_req_receive
+   - isc_info_req_select
+   - isc_info_req_sql_stall
+
+Blob Subtypes
+-------------
+
+.. hlist::
+   :columns: 6
+   
+   - isc_blob_untyped
+   - isc_blob_text
+   - isc_blob_blr
+   - isc_blob_acl
+   - isc_blob_ranges
+   - isc_blob_summary
+   - isc_blob_format
+   - isc_blob_tra
+   - isc_blob_extfile
+   - isc_blob_debug_info
+   - isc_blob_max_predefined_subtype
+
+Cancel types for fb_cancel_operation
+------------------------------------
+
+.. hlist::
+   :columns: 4
+   
+   - fb_cancel_disable
+   - fb_cancel_enable
+   - fb_cancel_raise
+   - fb_cancel_abort
+
+Other constants
+---------------
+
+- DSQL_close
+- DSQL_drop
+- DSQL_unprepare
+- SQLDA_version1
+
+- isc_info_req_select_count
+- isc_info_req_insert_count
+- isc_info_req_update_count
+- isc_info_req_delete_count
+
+flags set in fb_info_crypt_state:
+
+- fb_info_crypt_encrypted
+- fb_info_crypt_process
+
+:FB_API_VER: (int) Firebird API version number
+:MAX_BLOB_SEGMENT_SIZE: (int) Max size for BLOB segment
+
+Types
+=====
+
+Basic types
+-----------
+
+.. autoclass:: STRING
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: WSTRING
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: FB_API_HANDLE
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_STATUS
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_STATUS_PTR
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_STATUS_ARRAY
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: FB_SQLSTATE_STRING
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_LONG
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_ULONG
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_SHORT
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_USHORT
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_UCHAR
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_SCHAR
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_INT64
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_UINT64
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_DATE
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_TIME
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_TIMESTAMP
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: GDS_QUAD_t
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: GDS_QUAD
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_QUAD
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_ARRAY_BOUND
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_ARRAY_DESC
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: ISC_BLOB_DESC
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: isc_blob_ctl
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: bstream
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: BSTREAM
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: FB_BLOB_STREAM
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: paramdsc
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: paramvary
+   :no-show-inheritance:
+   :no-inherited-members:
+
+ISC_TEB
+-------
+
+.. autoclass:: ISC_TEB
+   :no-show-inheritance:
+   :no-inherited-members:
+
+XSQLVAR
+-------
+
+.. autoclass:: XSQLVAR
+   :no-show-inheritance:
+   :no-inherited-members:
+
+XSQLDA
+------
+
+.. autoclass:: XSQLDA
+   :no-show-inheritance:
+   :no-inherited-members:
+
+.. autoclass:: XSQLDA_PTR
+   :no-show-inheritance:
+   :no-inherited-members:
+
+USER_SEC_DATA
+-------------
+
+.. autoclass:: USER_SEC_DATA
+   :no-show-inheritance:
+   :no-inherited-members:
+
+RESULT_VECTOR
+-------------
+
+.. autoclass:: RESULT_VECTOR
+   :no-show-inheritance:
+   :no-inherited-members:
+
+Callbacks
+---------
+
+.. class:: FB_SHUTDOWN_CALLBACK
+
+   ctypes.CFUNCTYPE(UNCHECKED(c_int), c_int, c_int, POINTER(None))
+   
+.. class:: ISC_CALLBACK
+
+   ctypes.CFUNCTYPE(None)
+
+.. class:: ISC_PRINT_CALLBACK
+
+   ctypes.CFUNCTYPE(None, c_void_p, c_short, STRING)
+
+.. class:: ISC_VERSION_CALLBACK
+
+   ctypes.CFUNCTYPE(None, c_void_p, STRING)
+
+.. class:: ISC_EVENT_CALLBACK
+
+   ctypes.CFUNCTYPE(None, POINTER(ISC_UCHAR), c_ushort, POINTER(ISC_UCHAR))
+
+.. autoclass:: blobcallback
+   :no-show-inheritance:
+   :no-inherited-members:
+
+
+Other globals
+=============
+
+:charset_map: Dictionary that maps DB CHAR SET NAME to PYTHON CODEC NAME (CANONICAL)
+
+.. data:: ISC_TRUE
+.. data:: ISC_FALSE
+
+Functions
+=========
+
+
+Classes
+=======
+
+fbclient_API
+------------
+
+.. autoclass:: fbclient_API
+   :members:
+
+.. module:: fdb.blr
+   :synopsis: Python ctypes interface to Firebird client library (BLR)
+
+BLR Constants
+=============
+
+.. note:: BLR data types are defined in :mod:`fdb.ibase`
+
+Main BLR codes
+--------------
+
+.. hlist::
+   :columns: 7
+   
+   - blr_inner
+   - blr_left
+   - blr_right
+   - blr_full
+   - blr_gds_code
+   - blr_sql_code
+   - blr_exception
+   - blr_trigger_code
+   - blr_default_code
+   - blr_raise
+   - blr_exception_msg
+   - blr_exception_params
+   - blr_sql_state
+   - blr_version4
+   - blr_version5
+   - blr_eoc
+   - blr_end
+   - blr_assignment
+   - blr_begin
+   - blr_dcl_variable
+   - blr_message
+   - blr_erase
+   - blr_fetch
+   - blr_for
+   - blr_if
+   - blr_loop
+   - blr_modify
+   - blr_handler
+   - blr_receive
+   - blr_select
+   - blr_send
+   - blr_store
+   - blr_label
+   - blr_leave
+   - blr_store2
+   - blr_post
+   - blr_literal
+   - blr_dbkey
+   - blr_field
+   - blr_fid
+   - blr_parameter
+   - blr_variable
+   - blr_average
+   - blr_count
+   - blr_maximum
+   - blr_minimum
+   - blr_total
+   - blr_add
+   - blr_subtract
+   - blr_multiply
+   - blr_divide
+   - blr_negate
+   - blr_concatenate
+   - blr_substring
+   - blr_parameter2
+   - blr_from
+   - blr_via
+   - blr_parameter2_old
+   - blr_user_name
+   - blr_null
+   - blr_equiv
+   - blr_eql
+   - blr_neq
+   - blr_gtr
+   - blr_geq
+   - blr_lss
+   - blr_leq
+   - blr_containing
+   - blr_matching
+   - blr_starting
+   - blr_between
+   - blr_or
+   - blr_and
+   - blr_not
+   - blr_any
+   - blr_missing
+   - blr_unique
+   - blr_like
+   - blr_rse
+   - blr_first
+   - blr_project
+   - blr_sort
+   - blr_boolean
+   - blr_ascending
+   - blr_descending
+   - blr_relation
+   - blr_rid
+   - blr_union
+   - blr_map
+   - blr_group_by
+   - blr_aggregate
+   - blr_join_type
+   - blr_agg_count
+   - blr_agg_max
+   - blr_agg_min
+   - blr_agg_total
+   - blr_agg_average
+   - blr_parameter3
+   - blr_agg_count2
+   - blr_agg_count_distinct
+   - blr_agg_total_distinct
+   - blr_agg_average_distinct
+   - blr_function
+   - blr_gen_id
+   - blr_prot_mask
+   - blr_upcase
+   - blr_lock_state
+   - blr_value_if
+   - blr_matching2
+   - blr_index
+   - blr_ansi_like
+   - blr_scrollable
+   - blr_run_count
+   - blr_rs_stream
+   - blr_exec_proc
+   - blr_procedure
+   - blr_pid
+   - blr_exec_pid
+   - blr_singular
+   - blr_abort
+   - blr_block
+   - blr_error_handler
+   - blr_cast
+   - blr_pid2
+   - blr_procedure2
+   - blr_start_savepoint
+   - blr_end_savepoint
+
+Other BLR codes
+---------------
+
+.. hlist::
+   :columns: 6
+   
+   - blr_domain_type_of
+   - blr_domain_full
+   - blr_date 
+   - blr_plan
+   - blr_merge
+   - blr_join
+   - blr_sequential
+   - blr_navigational
+   - blr_indices
+   - blr_retrieve
+   - blr_relation2
+   - blr_rid2
+   - blr_set_generator
+   - blr_ansi_any
+   - blr_exists
+   - blr_record_version
+   - blr_stall
+   - blr_ansi_all
+   - blr_extract
+   - blr_continue
+   - blr_forward
+   - blr_backward
+   - blr_bof_forward
+   - blr_eof_backward
+   - blr_extract_year
+   - blr_extract_month
+   - blr_extract_day
+   - blr_extract_hour
+   - blr_extract_minute
+   - blr_extract_second
+   - blr_extract_weekday
+   - blr_extract_yearday
+   - blr_extract_millisecond
+   - blr_extract_week
+   - blr_current_date
+   - blr_current_timestamp
+   - blr_current_time
+   - blr_post_arg
+   - blr_exec_into
+   - blr_user_savepoint
+   - blr_dcl_cursor
+   - blr_cursor_stmt
+   - blr_current_timestamp2
+   - blr_current_time2
+   - blr_agg_list
+   - blr_agg_list_distinct
+   - blr_modify2
+   - blr_current_role
+   - blr_skip
+   - blr_exec_sql
+   - blr_internal_info
+   - blr_nullsfirst
+   - blr_writelock
+   - blr_nullslast
+   - blr_lowcase
+   - blr_strlen
+   - blr_strlen_bit
+   - blr_strlen_char
+   - blr_strlen_octet
+   - blr_trim
+   - blr_trim_both
+   - blr_trim_leading
+   - blr_trim_trailing
+   - blr_trim_spaces
+   - blr_trim_characters
+   - blr_savepoint_set
+   - blr_savepoint_release
+   - blr_savepoint_undo
+   - blr_savepoint_release_single
+   - blr_cursor_open
+   - blr_cursor_close
+   - blr_cursor_fetch
+   - blr_cursor_fetch_scroll
+   - blr_croll_forward
+   - blr_croll_backward
+   - blr_croll_bof
+   - blr_croll_eof
+   - blr_croll_absolute
+   - blr_croll_relative
+   - blr_init_variable
+   - blr_recurse
+   - blr_sys_function
+   - blr_auto_trans
+   - blr_similar
+   - blr_exec_stmt
+   - blr_exec_stmt_inputs
+   - blr_exec_stmt_outputs
+   - blr_exec_stmt_sql
+   - blr_exec_stmt_proc_block
+   - blr_exec_stmt_data_src
+   - blr_exec_stmt_user
+   - blr_exec_stmt_pwd
+   - blr_exec_stmt_tran
+   - blr_exec_stmt_tran_clone
+   - blr_exec_stmt_privs
+   - blr_exec_stmt_in_params
+   - blr_exec_stmt_in_params2
+   - blr_exec_stmt_out_params
+   - blr_exec_stmt_role
+   - blr_stmt_expr
+   - blr_derived_expr
+   - blr_procedure3
+   - blr_exec_proc2
+   - blr_function2
+   - blr_window
+   - blr_partition_by
+   - blr_continue_loop
+   - blr_procedure4
+   - blr_agg_function
+   - blr_substring_similar
+   - blr_bool_as_value
+   - blr_coalesce
+   - blr_decode
+   - blr_exec_subproc
+   - blr_subproc_decl
+   - blr_subproc
+   - blr_subfunc_decl
+   - blr_subfunc
+   - blr_record_version2
+   - blr_gen_id2
