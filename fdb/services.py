@@ -573,11 +573,9 @@ class Connection(object):
     def wait(self):
         """Wait until running service completes, i.e. stops sending data.
         """
-        if self.isrunning:
-            x = 1
-            while not self.__eof:
-                x = self.__fetchline()
-            #self.__fetching = False
+        while self.isrunning():
+            for x in self:
+                pass
     def get_service_manager_version(self):
         """Get Firebird Service Manager version number.
 

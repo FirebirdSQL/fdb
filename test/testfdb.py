@@ -327,7 +327,7 @@ class TestConnection(FDBTestBase):
             self.assertEqual(len(res), 2)
             self.assertIsInstance(res[0], int)
             self.assertIsInstance(res[1], int)
-            self.assertNotEqual(ibase.get_implementation_name_map().get(res[0], 'Unknown'), 'Unknown')
+            self.assertNotEqual(fdb.IMPLEMENTATION_NAMES.get(res[0], 'Unknown'), 'Unknown')
             self.assertIn('Firebird', con.db_info(fdb.isc_info_version))
             self.assertIn('Firebird', con.db_info(fdb.isc_info_firebird_version))
             self.assertIn(con.db_info(fdb.isc_info_no_reserve), (0, 1))
