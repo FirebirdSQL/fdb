@@ -47,29 +47,26 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        isc_dpb_address_path, isc_dpb_allocation, isc_dpb_begin_log,
                        isc_dpb_buffer_length, isc_dpb_cache_manager, isc_dpb_cdd_pathname,
                        isc_dpb_connect_timeout, isc_dpb_damaged, isc_dpb_dbkey_scope,
-                       isc_dpb_debug, isc_dpb_delete_shadow, isc_dpb_disable_journal,
-                       isc_dpb_disable_wal, isc_dpb_drop_walfile,
-                       isc_dpb_dummy_packet_interval, isc_dpb_enable_journal,
+                       isc_dpb_debug, isc_dpb_delete_shadow,
+                       isc_dpb_dummy_packet_interval,
                        isc_dpb_encrypt_key, isc_dpb_force_write, isc_dpb_garbage_collect,
                        isc_dpb_gbak_attach, isc_dpb_gfix_attach, isc_dpb_gsec_attach,
-                       isc_dpb_gstat_attach, isc_dpb_interp, isc_dpb_journal,
-                       isc_dpb_lc_ctype, isc_dpb_lc_messages, isc_dpb_license,
+                       isc_dpb_gstat_attach, isc_dpb_interp,
+                       isc_dpb_lc_ctype, isc_dpb_lc_messages,
                        isc_dpb_no_garbage_collect, isc_dpb_no_reserve,
                        isc_dpb_num_buffers, isc_dpb_number_of_users, isc_dpb_old_dump_id,
                        isc_dpb_old_file, isc_dpb_old_file_size, isc_dpb_old_num_files,
                        isc_dpb_old_start_file, isc_dpb_old_start_page,
                        isc_dpb_old_start_seqno, isc_dpb_online, isc_dpb_online_dump,
                        isc_dpb_overwrite, isc_dpb_page_size, isc_dpb_password,
-                       isc_dpb_password_enc, isc_dpb_quit_log, isc_dpb_reserved,
+                       isc_dpb_password_enc, isc_dpb_reserved,
                        isc_dpb_sec_attach, isc_dpb_set_db_charset,
                        isc_dpb_set_db_readonly, isc_dpb_set_db_sql_dialect,
                        isc_dpb_set_page_buffers, isc_dpb_shutdown, isc_dpb_shutdown_delay,
                        isc_dpb_sql_dialect, isc_dpb_sql_role_name, isc_dpb_sweep,
                        isc_dpb_sweep_interval, isc_dpb_sys_user_name,
                        isc_dpb_sys_user_name_enc, isc_dpb_trace, isc_dpb_user_name,
-                       isc_dpb_verify, isc_dpb_version1, isc_dpb_wal_backup_dir,
-                       isc_dpb_wal_bufsize, isc_dpb_wal_chkptlen,
-                       isc_dpb_wal_grp_cmt_wait, isc_dpb_wal_numbufs,
+                       isc_dpb_verify, isc_dpb_version1,
                        isc_dpb_working_directory, isc_dpb_no_db_triggers, isc_dpb_nolinger,
                        isc_info_active_tran_count, isc_info_end, isc_info_truncated,
                        isc_info_sql_stmt_type, isc_info_sql_get_plan, isc_info_sql_records,
@@ -149,11 +146,11 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        #
                        SQLDA_version1, isc_segment,
                        isc_db_handle, isc_tr_handle, isc_stmt_handle, isc_blob_handle,
-                       sys_encoding, get_implementation_name_map, get_db_class_name_map,
-                       get_db_provider_name_map)
+                       sys_encoding)
 
 PYTHON_MAJOR_VER = sys.version_info[0]
 
+#: Current driver version
 __version__ = '2.0'
 
 apilevel = '2.0'
@@ -473,6 +470,7 @@ def tebarray_factory(size):
 buf_pointer = ctypes.POINTER(ctypes.c_char)
 
 def is_dead_proxy(obj):
+    "Return True if object is a dead :func:`weakref.proxy`."
     return isinstance(obj, weakref.ProxyType) and not dir(obj)
 
 def b2u(st, charset):
@@ -720,15 +718,15 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
     :returns: Connection to database.
     :rtype: :class:`Connection` instance.
 
-    :raises fdb.ProgrammingError: For bad parameter values.
-    :raises fdb.DatabaseError: When connection cannot be established.
+    :raises `~fdb.ProgrammingError`: For bad parameter values.
+    :raises `~fdb.DatabaseError`: When connection cannot be established.
 
     .. important::
 
        You may specify the database using either `dns` or `database` (with optional `host`),
        but not both.
 
-    Examples:
+    **Examples:**
 
     .. code-block:: python
 
@@ -737,9 +735,9 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
        con = fdb.connect(host='myhost', database='/path/database.fdb',
                          user='sysdba', password='pass', charset='UTF8')
 
-    Hooks:
+    **Hooks:**
 
-    Event HOOK_DATABASE_ATTACH_REQUEST: Executed after all parameters
+    Event `HOOK_DATABASE_ATTACH_REQUEST`: Executed after all parameters
     are preprocessed and before :class:`Connection` is created. Hook
     must have signature: hook_func(dsn, dpb) where `dpb` is
     :class:`ParameterBuffer` instance.
@@ -748,7 +746,7 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
     First instance returned by any hook will become the return value
     of this function and other hooks are not called.
 
-    Event HOOK_DATABASE_ATTACHED: Executed before :class:`Connection`
+    Event `HOOK_DATABASE_ATTACHED`: Executed before :class:`Connection`
     (or subclass) instance is returned. Hook must have signature:
     hook_func(connection). Any value returned by hook is ignored.
     """
@@ -885,19 +883,19 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
     :returns: Connection to the newly created database.
     :rtype: :class:`Connection` instance.
 
-    :raises fdb.ProgrammingError: For bad parameter values.
-    :raises fdb.DatabaseError: When database creation fails.
+    :raises `~fdb.ProgrammingError`: For bad parameter values.
+    :raises `~fdb.DatabaseError`: When database creation fails.
 
-    Example:
+    **Example:**
 
     .. code-block:: python
 
        con = fdb.create_database("create database '/temp/db.fdb' user 'sysdba' password 'pass'")
        con = fdb.create_database(dsn='/temp/db.fdb',user='sysdba',password='pass',page_size=8192)
 
-    Hooks:
+    **Hooks:**
 
-    Event HOOK_DATABASE_ATTACHED: Executed before :class:`Connection`
+    Event` HOOK_DATABASE_ATTACHED`: Executed before :class:`Connection`
     (or subclass) instance is returned. Hook must have signature:
     hook_func(connection). Any value returned by hook is ignored.
     """
@@ -1345,8 +1343,8 @@ class Connection(object):
         Unlike plain file deletion, this method behaves responsibly, in that
         it removes shadow files and other ancillary files for this database.
 
-        :raises fdb.ProgrammingError: When connection is a member of a :class:`ConnectionGroup`.
-        :raises fdb.DatabaseError: When error is returned from server.
+        :raises `~fdb.ProgrammingError`: When connection is a member of a :class:`ConnectionGroup`.
+        :raises `~fdb.DatabaseError`: When error is returned from server.
         """
         self.__ensure_group_membership(False, "Cannot drop database via"
                                        " connection that is part of a ConnectionGroup.")
@@ -1375,8 +1373,8 @@ class Connection(object):
 
         :param string sql: SQL statement to execute.
 
-        :raises fdb.ProgrammingError: When connection is closed.
-        :raises fdb.DatabaseError: When error is returned from server.
+        :raises `~fdb.ProgrammingError`: When connection is closed.
+        :raises `~fdb.DatabaseError`: When error is returned from server.
         """
         self.__check_attached()
         self.main_transaction.execute_immediate(sql)
@@ -1402,10 +1400,10 @@ class Connection(object):
            or ‘i’ if you expect an integer result.
         :param integer page_number: Page number for `fb_info_page_contents` info code.
 
-        :raises fdb.DatabaseError: When error is returned from server.
-        :raises fdb.OperationalError: When returned information is bigger than SHRT_MAX.
-        :raises fdb.InternalError: On unexpected processing condition.
-        :raises fdb.ValueError: On illegal `result_type` value.
+        :raises `~fdb.DatabaseError`: When error is returned from server.
+        :raises `~fdb.OperationalError`: When returned information is bigger than SHRT_MAX.
+        :raises `~fdb.InternalError`: On unexpected processing condition.
+        :raises `ValueError`: On illegal `result_type` value.
 
         .. seealso:: Extracting data with the database_info function is rather
            clumsy. See :meth:`db_info` for higher-level means of accessing the
@@ -1477,8 +1475,8 @@ class Connection(object):
         :param request: Single `fdb.isc_info_*` info request code or a sequence
                         of such codes.
         :returns: Mapping of (info request code -> result).
-        :raises fdb.ValueError: When requested code is not recognized.
-        :raises fdb.OperationalError: On unexpected processing condition.
+        :raises `ValueError`: When requested code is not recognized.
+        :raises `~fdb.OperationalError`: On unexpected processing condition.
         """
         def _extract_database_info_counts(buf):
             # Extract a raw binary sequence
@@ -1674,7 +1672,7 @@ class Connection(object):
                     Transaction. If not specified, :attr:`default_tpb` is used.
         :type default_tpb: :class:`TPB` instance, list/tuple of `isc_tpb_*` constants
                    or `bytestring`
-        :raises fdb.ProgrammingError: If Connection is :attr:`closed`.
+        :raises `~fdb.ProgrammingError`: If Connection is :attr:`closed`.
         """
         self.__check_attached()
         if default_tpb:
@@ -1694,9 +1692,9 @@ class Connection(object):
         Also closes all :class:`EventConduit`, :class:`Cursor` and :class:`Transaction`
         instances associated with this connection.
 
-        :raises fdb.ProgrammingError: When connection is a member of a :class:`ConnectionGroup`.
+        :raises `~fdb.ProgrammingError`: When connection is a member of a :class:`ConnectionGroup`.
 
-        Hooks:
+        **Hooks:**
 
         Event HOOK_DATABASE_DETACH_REQUEST: Executed before connection
         is closed. Hook must have signature: hook_func(connection).
@@ -1734,9 +1732,9 @@ class Connection(object):
         See :meth:`Transaction.savepoint` for details.
 
         :param string name: Name for savepoint.
-        :raises fdb.ProgrammingError: If Connection is :attr:`closed`.
+        :raises `~fdb.ProgrammingError`: If Connection is :attr:`closed`.
 
-        Example:
+        **Example:**
 
         .. code-block:: python
 
@@ -1754,7 +1752,7 @@ class Connection(object):
         :param boolean retaining:  (Optional) Indicates whether the transactional
                                    context of the transaction being resolved
                                    should be recycled.
-        :raises fdb.ProgrammingError: If Connection is :attr:`closed`.
+        :raises `~fdb.ProgrammingError`: If Connection is :attr:`closed`.
         """
         self.__check_attached()
         self._main_transaction.commit(retaining)
@@ -1769,7 +1767,7 @@ class Connection(object):
         :param string savepoint: (Optional) Causes the transaction to roll back
                                  only as far as the designated savepoint, rather
                                  than rolling back entirely.
-        :raises fdb.ProgrammingError: If Connection is :attr:`closed`.
+        :raises `~fdb.ProgrammingError`: If Connection is :attr:`closed`.
         """
         self.__check_attached()
         self._main_transaction.rollback(retaining, savepoint)
@@ -1778,7 +1776,7 @@ class Connection(object):
         associated with :attr:`main_transaction`.
         See :meth:`Transaction.cursor` for details.
 
-        :raises fdb.ProgrammingError: If Connection is :attr:`closed`.
+        :raises `~fdb.ProgrammingError`: If Connection is :attr:`closed`.
         """
         self.__check_attached()
         return self.main_transaction.cursor()
@@ -3552,8 +3550,8 @@ class Cursor(object):
         :type parameters: List or Tuple
         :returns: parameters, as required by Python DB API 2.0 Spec.
         :raises TypeError: When parameters is not List or Tuple.
-        :raises fdb.ProgrammingError: When more parameters than expected are suplied.
-        :raises fdb.DatabaseError: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When more parameters than expected are suplied.
+        :raises `~fdb.DatabaseError`: When error is returned by server.
         """
         if not parameters:
             params = []
@@ -3608,8 +3606,8 @@ class Cursor(object):
         :raises ValueError: When operation PreparedStatement belongs to different
                             Cursor instance.
         :raises TypeError: When parameters is not List or Tuple.
-        :raises fdb.ProgrammingError: When more parameters than expected are suplied.
-        :raises fdb.DatabaseError: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When more parameters than expected are suplied.
+        :raises `~fdb.DatabaseError`: When error is returned by server.
         """
         if is_dead_proxy(self._ps):
             self._ps = None
@@ -3640,8 +3638,8 @@ class Cursor(object):
 
         :param string operation: SQL command
         :returns: :class:`PreparedStatement` instance.
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.InternalError: On unexpected processing condition.
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.InternalError`: On unexpected processing condition.
         """
         if not self._transaction.active:
             self._transaction.begin()
@@ -3670,9 +3668,9 @@ class Cursor(object):
         :raises ValueError: When operation PreparedStatement belongs to different
                             Cursor instance.
         :raises TypeError: When seq_of_parameters is not List or Tuple.
-        :raises fdb.ProgrammingError: When there are more parameters in any sequence
+        :raises `~fdb.ProgrammingError`: When there are more parameters in any sequence
                                   than expected.
-        :raises fdb.DatabaseError: When error is returned by server.
+        :raises `~fdb.DatabaseError`: When error is returned by server.
         """
         if not isinstance(operation, PreparedStatement):
             operation = self.prep(operation)
@@ -3683,8 +3681,8 @@ class Cursor(object):
         """Fetch the next row of a query result set.
 
         :returns: tuple of returned values, or None when no more data is available.
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.ProgrammingError: When underlying :class:`PreparedStatement` is
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When underlying :class:`PreparedStatement` is
                                       closed, statement was not yet executed, or
                                       unknown status is returned by fetch operation.
         """
@@ -3705,8 +3703,8 @@ class Cursor(object):
 
         :param integer size: Max. number of rows to fetch.
         :returns: List of tuples, where each tuple is one row of returned values.
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.ProgrammingError: When underlying :class:`PreparedStatement` is
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When underlying :class:`PreparedStatement` is
                                       closed, statement was not yet executed, or
                                       unknown status is returned by fetch operation.
         """
@@ -3724,8 +3722,8 @@ class Cursor(object):
         """Fetch all (remaining) rows of a query result.
 
         :returns: List of tuples, where each tuple is one row of returned values.
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.ProgrammingError: When underlying :class:`PreparedStatement` is
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When underlying :class:`PreparedStatement` is
                                       closed, statement was not yet executed, or
                                       unknown status is returned by fetch operation.
         """
@@ -3737,8 +3735,8 @@ class Cursor(object):
 
         :returns: :class:`fbcore._RowMapping` of returned values, or None when
                   no more data is available.
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.ProgrammingError: When underlying :class:`PreparedStatement` is
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When underlying :class:`PreparedStatement` is
                                       closed, statement was not yet executed, or
                                       unknown status is returned by fetch operation.
         """
@@ -3754,8 +3752,8 @@ class Cursor(object):
         :param integer size: Max. number of rows to fetch.
         :returns: List of :class:`fbcore._RowMapping` instances, one such instance for
                   each row.
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.ProgrammingError: When underlying :class:`PreparedStatement` is
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When underlying :class:`PreparedStatement` is
                                       closed, statement was not yet executed, or
                                       unknown status is returned by fetch operation.
         """
@@ -3776,8 +3774,8 @@ class Cursor(object):
 
         :returns: List of :class:`fbcore._RowMapping` instances, one such instance for
                   each row.
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.ProgrammingError: When underlying :class:`PreparedStatement` is
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When underlying :class:`PreparedStatement` is
                                       closed, statement was not yet executed, or
                                       unknown status is returned by fetch operation.
         """
@@ -3822,7 +3820,7 @@ class Cursor(object):
            the same command executed repeatedly will retain this setting.
 
         :param string blob_name: Name of BLOB column.
-        :raises fdb.ProgrammingError:
+        :raises `~fdb.ProgrammingError`:
         """
         if self._ps:
             self._ps.set_stream_blob(blob_name)
@@ -3913,7 +3911,7 @@ class Transaction(object):
         :param default_action: Action taken when active transaction is ended
                                automatically (during :meth:`close` or :meth:`begin`).
         :type default_action: string 'commit' or 'rollback'
-        :raises fdb.ProgrammingError: When zero or more than 16 connections are given.
+        :raises `~fdb.ProgrammingError`: When zero or more than 16 connections are given.
         """
         if len(connections) > 16:
             raise ProgrammingError("Transaction can't accept more than 16 Connections")
@@ -3994,7 +3992,7 @@ class Transaction(object):
 
         :param string sql: SQL statement to execute.
 
-        :raises fdb.DatabaseError: When error is returned from server.
+        :raises `~fdb.DatabaseError`: When error is returned from server.
         """
         if not self.active:
             self.begin()
@@ -4035,8 +4033,8 @@ class Transaction(object):
            a :meth:`commit` or :meth:`rollback` will be performed first, accordingly
            to :attr:`default_action` value.
 
-        :raises fdb.DatabaseError: When error is returned by server.
-        :raises fdb.ProgrammingError: When TPB is in usupported format, or transaction
+        :raises `~fdb.DatabaseError`: When error is returned by server.
+        :raises `~fdb.ProgrammingError`: When TPB is in usupported format, or transaction
                                       is permanently :attr:`closed`.
         """
         if self.__closed:
@@ -4089,7 +4087,7 @@ class Transaction(object):
 
         :param boolean retaining: Indicates whether the transactional context of
                                   the transaction being resolved should be recycled.
-        :raises fdb.DatabaseError: When error is returned by server as response to commit.
+        :raises `~fdb.DatabaseError`: When error is returned by server as response to commit.
         """
         if not self.active:
             return
@@ -4119,8 +4117,8 @@ class Transaction(object):
                                  back only as far as the designated savepoint,
                                  rather than rolling back entirely. Mutually
                                  exclusive with 'retaining`.
-        :raises fdb.ProgrammingError: If both `savepoint` and `retaining` are specified.
-        :raises fdb.DatabaseError: When error is returned by server as response to rollback.
+        :raises `~fdb.ProgrammingError`: If both `savepoint` and `retaining` are specified.
+        :raises `~fdb.DatabaseError`: When error is returned by server as response to rollback.
         """
         if not self.active:
             return
@@ -4187,7 +4185,7 @@ class Transaction(object):
                            returned Cursor should be bound.
         :type connection: :class:`Connection` instance
 
-        :raises fdb.ProgrammingError: When transaction operates on multiple `Connections`
+        :raises `~fdb.ProgrammingError`: When transaction operates on multiple `Connections`
                                       and: `connection` parameter is not specified, or
                                       specified `connection` is not among `Connections`
                                       this Transaction is bound to.
@@ -4258,10 +4256,10 @@ class Transaction(object):
         :param integer info_code: One from the `isc_info_tra_*` constants.
         :param result_type: Code for result type.
         :type result_type: 'b' for binary string  or 'i' for integer
-        :raises fdb.ProgrammingError: If transaction is not active.
-        :raises fdb.OperationalError: When result is too large to fit into buffer of
+        :raises `~fdb.ProgrammingError`: If transaction is not active.
+        :raises `~fdb.OperationalError`: When result is too large to fit into buffer of
                                       size SHRT_MAX.
-        :raises fdb.InternalError: On unexpected processing condition.
+        :raises `~fdb.InternalError`: On unexpected processing condition.
         :raises ValueError: When illegal result type code is specified.
         """
         self.__check_active()
@@ -4414,7 +4412,7 @@ class ConnectionGroup(object):
 
         :param con: A :class:`Connection` instance to add to this group.
         :raises TypeError: When `con` is not :class:`Connection` instance.
-        :raises fdb.ProgrammingError: When `con` is already member of this or another
+        :raises `~fdb.ProgrammingError`: When `con` is already member of this or another
                                       group, or :attr:`~Connection.closed`.
                                       When this group has unresolved transaction or
                                       contains 16 connections.
@@ -4460,7 +4458,7 @@ class ConnectionGroup(object):
         """Removes specified connection from group.
 
         :param con: A :class:`Connection` instance to remove.
-        :raises fdb.ProgrammingError: When `con` doesn't belong to this group or
+        :raises `~fdb.ProgrammingError`: When `con` doesn't belong to this group or
                                       transaction is active.
         """
         if con not in self:
@@ -4473,7 +4471,7 @@ class ConnectionGroup(object):
     def clear(self):
         """Removes all connections from group.
 
-        :raises fdb.ProgrammingError: When transaction is active.
+        :raises `~fdb.ProgrammingError`: When transaction is active.
         """
         self.__require_transaction_state(False, "Cannot clear group that has an unresolved transaction.")
         self.__drop_transaction()
@@ -4488,7 +4486,7 @@ class ConnectionGroup(object):
         .. note:: Automatically starts transaction if it's not already started.
 
         :param connection: :class:`Connection` instance.
-        :raises fdb.ProgrammingError: When group is empty or specified `connection`
+        :raises `~fdb.ProgrammingError`: When group is empty or specified `connection`
                                       doesn't belong to this group.
         """
         if not self._transaction:
@@ -4546,7 +4544,7 @@ class ConnectionGroup(object):
 
         :param string sql: SQL statement to execute.
 
-        :raises fdb.DatabaseError: When error is returned from server.
+        :raises `~fdb.DatabaseError`: When error is returned from server.
         """
         self.__ensure_transaction()
         self._transaction.execute_immediate(sql)
@@ -4557,7 +4555,7 @@ class ConnectionGroup(object):
                     transaction. If not specified, :attr:`default_tpb` is used.
         :type tpb: :class:`TPB` instance, list/tuple of `isc_tpb_*` constants
                    or `bytestring`
-        :raises fdb.ProgrammingError: When group is empty or has active transaction.
+        :raises `~fdb.ProgrammingError`: When group is empty or has active transaction.
         """
         self.__require_transaction_state(False, "Must resolve current transaction before starting another.")
         self.__ensure_transaction()
@@ -4567,7 +4565,7 @@ class ConnectionGroup(object):
         See :meth:`Transaction.savepoint` for details.
 
         :param string name: Name for savepoint.
-        :raises fdb.ProgrammingError: When group is empty.
+        :raises `~fdb.ProgrammingError`: When group is empty.
         """
         self.__require_non_empty_group('savepoint')
         return self._transaction.savepoint(name)
@@ -4589,7 +4587,7 @@ class ConnectionGroup(object):
 
         :param boolean retaining: Indicates whether the transactional context of
                                   the transaction being resolved should be recycled.
-        :raises fdb.ProgrammingError: When group is empty.
+        :raises `~fdb.ProgrammingError`: When group is empty.
         """
         self.__require_non_empty_group('commit')
         # The consensus among Python DB API experts is that transactions should
@@ -4609,7 +4607,7 @@ class ConnectionGroup(object):
 
         :param boolean retaining: Indicates whether the transactional context of
                                   the transaction being resolved should be recycled.
-        :raises fdb.ProgrammingError: When group is empty.
+        :raises `~fdb.ProgrammingError`: When group is empty.
         """
         self.__require_non_empty_group('rollback')
         # The consensus among Python DB API experts is that transactions should
@@ -4723,7 +4721,7 @@ class BlobReader(object):
     def close(self):
         """Closes the Reader. Like :meth:`file.close`.
 
-        :raises fdb.DatabaseError: When error is returned by server.
+        :raises `~fdb.DatabaseError`: When error is returned by server.
         """
         if self.__opened and not self.closed:
             self.__closed = True
@@ -4756,7 +4754,7 @@ class BlobReader(object):
         object. An empty string is returned when EOF is encountered immediately.
         Like :meth:`file.read`.
 
-        :raises fdb.ProgrammingError: When reader is closed.
+        :raises `~fdb.ProgrammingError`: When reader is closed.
 
         .. note::
 
@@ -4796,7 +4794,7 @@ class BlobReader(object):
         line). An empty string is returned when EOF is encountered immediately.
         Like :meth:`file.readline`.
 
-        :raises fdb.ProgrammingError: When reader is closed.
+        :raises `~fdb.ProgrammingError`: When reader is closed.
 
         .. note::
 
@@ -4856,7 +4854,7 @@ class BlobReader(object):
         :param whence: (Optional) Context for offset.
         :type whence: os.SEEK_SET, os.SEEK_CUR or os.SEEK_END
 
-        :raises fdb.ProgrammingError: When reader is closed.
+        :raises `~fdb.ProgrammingError`: When reader is closed.
 
         .. warning::
 

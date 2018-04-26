@@ -229,14 +229,19 @@ already defined in decorated class are injected.
     return d
 
 def make_lambda(expr, params='item', context=None):
-    "Make lambda function from expression."
+    """Make lambda function from expression.
+
+    .. versionadded:: 2.0
+"""
     if context:
         return eval('lambda %s:%s' % (params, expr), context)
     else:
         return eval('lambda %s:%s' % (params, expr))
 
 class ObjectList(list):
-    """Mutable sequence of objects with additional functionality.
+    """List of objects with additional functionality.
+
+    .. versionadded:: 2.0
 """
     def __init__(self, items=None, _cls=None, key_expr=None):
         """
@@ -400,8 +405,7 @@ class ObjectList(list):
             fce = make_lambda(attrs)
         return [fce(item) for item in self]
     def ireport(self, *args):
-        """Return generator that yields data produced by expression(s) evaluated
-on list items.
+        """Return generator that yields data produced by expression(s) evaluated on list items.
 
         Parameter(s) could be one from:
 
@@ -537,7 +541,7 @@ on list items.
                 return False
         return True
     def any(self, expr):
-        """Return True if `expr` is evaluated as True for all list elements.
+        """Return True if `expr` is evaluated as True for any list element.
 
         :param expr:   Boolean expression, a callable accepting one parameter or expression as string referencing list item as `item`.
 
@@ -554,3 +558,82 @@ on list items.
     #
     frozen = property(fget=lambda self: self.__frozen, doc='True if list is immutable')
     key = property(fget=lambda self: self.__key_expr, doc='Key expression')
+
+class Visitable(object):
+    """Base class for Visitor Pattern support.
+
+    .. versionadded:: 2.0
+"""
+    def accept(self, visitor):
+        """Visitor Pattern support. Calls `visit(self)` on parameter object.
+
+        :param visitor: Visitor object of Visitor Pattern.
+        """
+        visitor.visit(self)
+
+class Visitor(object):
+    """Base class for Visitor Pattern visitors.
+
+    .. versionadded:: 2.0
+
+    Descendants may implement methods to handle individual object types that follow naming pattern `visit_<class_name>`.
+    Calls :meth:`default_action` if appropriate special method is not defined.
+
+    .. important::
+
+       This implementation uses Python Method Resolution Order (__mro__) to find special handling method, so special
+       method for given class is used also for its decendants.
+
+    Example::
+
+       class Node(object): pass
+       class A(Node): pass
+       class B(Node): pass
+       class C(A,B): pass
+
+       class MyVisitor(object):
+           def default_action(self, obj):
+               print 'default_action '+obj.__class__.__name__
+
+           def visit_B(self, obj):
+               print 'visit_B '+obj.__class__.__name__
+
+
+       a = A()
+       b = B()
+       c = C()
+       visitor = MyVisitor()
+       visitor.visit(a)
+       visitor.visit(b)
+       visitor.visit(c)
+
+    Will create output::
+
+       default_action A
+       visit_B B
+       visit_B C
+"""
+    def visit(self, obj):
+        """Dispatch to method that handles `obj`.
+
+        First traverses the `obj.__mro__` to try find method with name following `visit_<class_name>` pattern and calls it with
+        `obj`. Otherwise it calls :meth:`default_action`.
+
+        :param object obj: Object to be handled by visitor.
+"""
+        meth = None
+        for cls in obj.__class__.__mro__:
+            meth = getattr(self, 'visit_'+cls.__name__, None)
+            if meth:
+                break
+        if not meth:
+            meth = self.default_action
+        return meth(obj)
+    def default_action(self, obj):
+        """Default handler for visited objects.
+
+        :param object obj: Object to be handled.
+
+        .. note:: This implementation does nothing!
+"""
+        pass

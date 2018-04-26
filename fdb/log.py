@@ -33,7 +33,7 @@ def parse(lines):
 
         :param lines: Iterable of lines from Firebird server log.
 
-        :raises fdb.ParseError: When any problem is found in input stream.
+        :raises `~fdb.ParseError`: When any problem is found in input stream.
 """
     line_no = 0
     locale = getlocale(LC_ALL)

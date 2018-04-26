@@ -212,7 +212,7 @@ class TraceParser(object):
                             EVENT_BLR_EXECUTE: self.__parser_blr_execute,
                             EVENT_DYN_EXECUTE: self.__parser_dyn_execute,
                             EVENT_UNKNOWN: self.__parser_unknown}
-    def is_entry_header(self, line):
+    def _is_entry_header(self, line):
         """Returns True if parameter is trace log entry header. This version only checks that first item is a timestamp in valid format.
 
     :param string line: Line of text to be checked.
@@ -223,32 +223,32 @@ class TraceParser(object):
             return True
         except:
             return False
-    def is_session_suspended(self, line):
+    def _is_session_suspended(self, line):
         """Returns True if parameter is trace log message that trace session was suspended due to full log.
 
     :param string line: Line of text to be checked.
 """
         return line.rfind('is suspended as its log is full ---') >= 0
-    def is_plan_separator(self, line):
+    def _is_plan_separator(self, line):
         """Returns True if parameter is statement plan separator.
 
     :param string line: Line of text to be checked.
 """
         return line == '^'*79
-    def is_perf_start(self, line):
+    def _is_perf_start(self, line):
         """Returns True if parameter is first item of statement performance information.
 
     :param string line: Line of text to be checked.
 """
         return line.endswith(' records fetched')
-    def is_blr_perf_start(self, line):
+    def _is_blr_perf_start(self, line):
         """Returns True if parameter is first item of BLR/DYN performance information.
 
     :param string line: Line of text to be checked.
 """
         parts = line.split()
         return 'ms' in parts or 'fetch(es)' in parts or 'mark(s)' in parts or 'read(s)' in parts or 'write(s)' in parts
-    def is_param_start(self, line):
+    def _is_param_start(self, line):
         """Returns True if parameter is first item in list of parameters.
 
     :param string line: Line of text to be checked.
@@ -260,24 +260,24 @@ class TraceParser(object):
             line = line.strip()
             if line:
                 if not lines:
-                    if self.is_entry_header(line):
+                    if self._is_entry_header(line):
                         lines.append(line)
                 else:
-                    if self.is_entry_header(line) or self.is_session_suspended(line):
+                    if self._is_entry_header(line) or self._is_session_suspended(line):
                         yield lines
                         lines = [line]
                     else:
                         lines.append(line)
         if lines:
             yield lines
-    def parse_header(self, line):
+    def _parse_header(self, line):
         """Parses trace entry header into 3-item tuple.
 
     :param string line: Line of text to be parsed.
 
     :returns: Tuple with items: (timestamp, status, trace_entry_type_id)
 
-    :raises fdb.ParseError: When event is not recognized
+    :raises `~fdb.ParseError`: When event is not recognized
 """
         items = line.split()
         timestamp = datetime.datetime.strptime(items[0], '%Y-%m-%dT%H:%M:%S.%f')
@@ -393,7 +393,7 @@ class TraceParser(object):
             self.__current_block.popleft()
             content = []
             line = self.__current_block.popleft()
-            while line and not self.is_blr_perf_start(line):
+            while line and not self._is_blr_perf_start(line):
                 content.append(line)
                 if self.__current_block:
                     line = self.__current_block.popleft()
@@ -416,7 +416,7 @@ class TraceParser(object):
             return
         line = self.__current_block.popleft()
         sql = []
-        while line and not (self.is_plan_separator(line) or self.is_perf_start(line) or self.is_param_start(line)):
+        while line and not (self._is_plan_separator(line) or self._is_perf_start(line) or self._is_param_start(line)):
             sql.append(line)
             if self.__current_block:
                 line = self.__current_block.popleft()
@@ -429,17 +429,17 @@ class TraceParser(object):
         if not self.__current_block:
             return
         line = self.__current_block.popleft()
-        if self.is_perf_start(line):
+        if self._is_perf_start(line):
             self.__current_block.appendleft(line)
             return
-        if self.is_param_start(line):
+        if self._is_param_start(line):
             self.__current_block.appendleft(line)
             return
-        if not self.is_plan_separator(line):
+        if not self._is_plan_separator(line):
             raise fdb.ParseError("Separator '^'*79 line expected")
         line = self.__current_block.popleft()
         plan = []
-        while line and not (self.is_perf_start(line) or self.is_param_start(line)):
+        while line and not (self._is_perf_start(line) or self._is_param_start(line)):
             plan.append(line)
             if self.__current_block:
                 line = self.__current_block.popleft()
@@ -630,7 +630,7 @@ class TraceParser(object):
                 self.__current_block.appendleft(line)
                 break
     def __parse_trace_header(self):
-        self.__last_timestamp, status, self.__current_event = self.parse_header(self.__current_block.popleft())
+        self.__last_timestamp, status, self.__current_event = self._parse_header(self.__current_block.popleft())
         self.__event_values['event_id'] = self.next_event_id
         self.next_event_id += 1
         self.__event_values['status'] = status
@@ -949,17 +949,19 @@ class TraceParser(object):
     :returns: Named tuple with parsed event.
 """
         self.__current_block = collections.deque(trace_block)
-        if self.is_session_suspended(self.__current_block[0]):
+        if self._is_session_suspended(self.__current_block[0]):
             record_parser = self.__parser_trace_suspend
         else:
-            timestamp, status, trace_event = self.parse_header(self.__current_block[0])
+            timestamp, status, trace_event = self._parse_header(self.__current_block[0])
             record_parser = self.__parse_map[trace_event]
         #
         return self._parse_block(record_parser)
     def parse(self, lines):
-        """Parse output from Firebird trace session and yields named tuples describing individual trace log entries/events.
+        """Parse output from Firebird trace session and yield named tuples describing individual trace log entries/events.
 
-        :param lines: Iterable that returns lines produced by firebird trace session.
+        :param lines: Iterable that return lines produced by firebird trace session.
+
+        :raises `~fdb.ParseError`: When any problem is found in input stream.
 """
         for rec in (self.parse_event(x) for x in self._iter_trace_blocks(lines)):
             while len(self.__buffer) > 0:

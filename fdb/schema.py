@@ -21,13 +21,13 @@
 # See LICENSE.TXT for details.
 
 import fdb
-from fdb.utils import LateBindingProperty, ObjectList
+from fdb.utils import LateBindingProperty, ObjectList, Visitable
 import string
 import weakref
 from itertools import groupby
+import collections
 
-# Firebird Field Types
-
+# Firebird field type codes
 FBT_SMALLINT = 7
 FBT_INTEGER = 8
 FBT_QUAD = 9
@@ -47,13 +47,14 @@ FBT_BOOLEAN = 23
 
 MAX_INTSUBTYPES = 2
 MAX_BLOBSUBTYPES = 8
-
+# Trigger masks
 TRIGGER_TYPE_SHIFT = 13
 TRIGGER_TYPE_MASK = (0x3 << TRIGGER_TYPE_SHIFT)
 TRIGGER_TYPE_DML = (0 << TRIGGER_TYPE_SHIFT)
 TRIGGER_TYPE_DB	= (1 << TRIGGER_TYPE_SHIFT)
 TRIGGER_TYPE_DDL = (2 << TRIGGER_TYPE_SHIFT)
 
+# Trigger type codes
 DDL_TRIGGER_ANY = 4611686018427375615 # 9223372036854751229
 DDL_TRIGGER_CREATE_TABLE = 1
 DDL_TRIGGER_ALTER_TABLE = 2
@@ -101,7 +102,7 @@ DDL_TRIGGER_CREATE_MAPPING = 45
 DDL_TRIGGER_ALTER_MAPPING = 46
 DDL_TRIGGER_DROP_MAPPING = 47
 
-
+# Lists and disctionary maps
 COLUMN_TYPES = {None: 'UNKNOWN', FBT_SMALLINT: 'SMALLINT', FBT_INTEGER: 'INTEGER',
                 FBT_QUAD: 'QUAD', FBT_FLOAT: 'FLOAT', FBT_CHAR: 'CHAR',
                 FBT_DOUBLE_PRECISION: 'DOUBLE PRECISION', FBT_VARCHAR: 'VARCHAR',
@@ -134,25 +135,31 @@ TRIGGER_DDL_TYPES = [None, "CREATE TABLE", "ALTER TABLE", "DROP TABLE",
                      "CREATE PACKAGE BODY", "DROP PACKAGE BODY",
                      "CREATE MAPPING", "ALTER MAPPING", "DROP MAPPING"]
 
+
+# Collation parameters codes
 COLLATION_PAD_SPACE = 1
 COLLATION_CASE_INSENSITIVE = 2
 COLLATION_ACCENT_INSENSITIVE = 4
 
+# Index type names
 INDEX_TYPE_ASCENDING = 'ASCENDING'
 INDEX_TYPE_DESCENDING = 'DESCENDING'
 INDEX_TYPES = [INDEX_TYPE_ASCENDING, INDEX_TYPE_DESCENDING]
 
+# Relation type codes
 RELATION_TYPE_TABLE = 0
 RELATION_TYPE_VIEW = 1
 RELATION_TYPE_GTT = 5
 RELATION_TYPE_GTT_PRESERVE = 4
 RELATION_TYPE_GTT_DELETE = 5
 
+# Procedure parameter type codes
 PROCPAR_DATATYPE = 0
 PROCPAR_DOMAIN = 1
 PROCPAR_TYPE_OF_DOMAIN = 2
 PROCPAR_TYPE_OF_COLUMN = 3
 
+# Section codes for Schema.get_metadata_ddl()
 SCRIPT_COLLATIONS = 1
 SCRIPT_CHARACTER_SETS = 2
 SCRIPT_UDFS = 3
@@ -183,6 +190,31 @@ SCRIPT_INDEX_ACTIVATIONS = 27
 SCRIPT_TRIGGER_DEACTIVATIONS = 28
 SCRIPT_TRIGGER_ACTIVATIONS = 29
 
+# Schema information collection codes
+SCHEMA_TABLES = 1
+SCHEMA_VIEWS = 2
+SCHEMA_DOMAINS = 3
+SCHEMA_INDICES = 4
+SCHEMA_DEPENDENCIES = 5
+SCHEMA_GENERATORS = 6
+SCHEMA_SEQUENCES = 6
+SCHEMA_TRIGGERS = 7
+SCHEMA_PROCEDURES = 8
+SCHEMA_CONSTRAINTS = 9
+SCHEMA_COLLATIONS = 10
+SCHEMA_CHARACTER_SETS = 11
+SCHEMA_EXCEPTIONS = 12
+SCHEMA_ROLES = 13
+SCHEMA_FUNCTIONS = 14
+SCHEMA_FILES = 15
+SCHEMA_SHADOWS = 16
+SCHEMA_PRIVILEGES = 17
+SCHEMA_USERS = 18
+SCHEMA_PACKAGES = 19
+SCHEMA_BACKUP_HISTORY = 20
+SCHEMA_FILTERS = 21
+
+# List of default sections (in order) for Schema.get_metadata_ddl()
 SCRIPT_DEFAULT_ORDER = [SCRIPT_COLLATIONS, SCRIPT_CHARACTER_SETS,
                         SCRIPT_UDFS, SCRIPT_GENERATORS,
                         SCRIPT_EXCEPTIONS, SCRIPT_DOMAINS,
@@ -198,6 +230,7 @@ SCRIPT_DEFAULT_ORDER = [SCRIPT_COLLATIONS, SCRIPT_CHARACTER_SETS,
                         SCRIPT_GRANTS, SCRIPT_ROLES, SCRIPT_COMMENTS,
                         SCRIPT_SHADOWS, SCRIPT_SET_GENERATORS]
 
+# List of reserved Firebird words
 RESERVED = ['ACTIVE', 'ADD', 'ADMIN', 'AFTER', 'ALL', 'ALTER', 'AND',
             'ANY', 'ARE', 'AS', 'ASC', 'ASCENDING', 'AT', 'AUTO', 'AUTODDL', 'AVG',
             'BASED', 'BASE_NAME', 'BEFORE', 'BEGIN', 'BETWEEN', 'BIGINT', 'BIT_LENGTH',
@@ -254,6 +287,7 @@ RESERVED = ['ACTIVE', 'ADD', 'ADMIN', 'AFTER', 'ALL', 'ALTER', 'AND',
             'VAR_SAMP',
             'WAIT', 'WHEN', 'WHENEVER', 'WHERE', 'WHILE', 'WITH', 'WORK', 'WRITE',
             'YEAR']
+# List of non-reserved Firebird words
 NON_RESERVED = ['ABS', 'ACCENT', 'ACOS', 'ALWAYS', 'ASCII_CHAR', 'ASCII_VAL', 'ASIN', 'ATAN',
                 'ATAN2', 'AUTONOMOUS', 'ACTION', 'ABSOLUTE', 'ACOSH', 'ASINH', 'ATANH',
                 'BIN_AND', 'BIN_OR', 'BIN_NOT', 'BIN_SHL', 'BIN_SHR', 'BIN_XOR',
@@ -361,16 +395,15 @@ def get_grants(privileges, grantors=None):
                                                   granted_by))
     return grants
 def iskeyword(ident):
-    "Returns True if `ident` is Firebird keyword."
+    "Return True if `ident` is (any) Firebird keyword."
     return (ident in RESERVED) or (ident in NON_RESERVED)
 def escape_single_quotes(text):
+    "Return `text` with any single quotes escaped (doubled)."
     return text.replace("'", "''")
 
-#--- Exceptions
 
 #--- Classes
-
-class Schema(object):
+class Schema(Visitable):
     """This class represents database schema.
     """
 
@@ -459,57 +492,56 @@ class Schema(object):
 
     def __clear(self, data=None):
         if data:
-            data = data.lower()
-            if data not in ['tables', 'views', 'domains', 'indices', 'dependencies',
-                            'generators', 'sequences', 'triggers', 'procedures',
-                            'constraints', 'collations', 'character sets',
-                            'exceptions', 'roles', 'functions', 'files', 'shadows',
-                            'privileges', 'users', 'packages', 'backup_history',
-                            'filters']:
-                raise fdb.ProgrammingError("Unknown metadata category '%s'" % data)
-        if not data or data == 'tables':
-            self.__tables = None
-        if not data or data == 'views':
-            self.__views = None
-        if not data or data == 'domains':
-            self.__domains = None
-        if not data or data == 'indices':
-            self.__indices = None
-            self.__constraint_indices = None
-        if not data or data == 'dependencies':
-            self.__dependencies = None
-        if not data or data in ['generators', 'sequences']:
-            self.__generators = None
-        if not data or data == 'triggers':
-            self.__triggers = None
-        if not data or data == 'procedures':
-            self.__procedures = None
-        if not data or data == 'constraints':
-            self.__constraints = None
-        if not data or data == 'collations':
-            self.__collations = None
-        if not data or data == 'character sets':
-            self.__character_sets = None
-        if not data or data == 'exceptions':
-            self.__exceptions = None
-        if not data or data == 'roles':
-            self.__roles = None
-        if not data or data == 'functions':
-            self.__functions = None
-        if not data or data == 'files':
-            self.__files = None
-        if not data or data == 'shadows':
-            self.__shadows = None
-        if not data or data == 'privileges':
-            self.__privileges = None
-        if not data or data == 'users':
-            self.__users = None
-        if not data or data == 'packages':
-            self.__packages = None
-        if not data or data == 'backup_history':
-            self.__backup_history = None
-        if not data or data == 'filters':
-            self.__filters = None
+            if not isinstance(data, collections.Iterable):
+                data = (data, )
+        else:
+            data = range(1, SCHEMA_FILTERS + 1)
+        for item in data:
+            if item == SCHEMA_TABLES:
+                self.__tables = None
+            elif item == SCHEMA_VIEWS:
+                self.__views = None
+            elif item == SCHEMA_DOMAINS:
+                self.__domains = None
+            elif item == SCHEMA_INDICES:
+                self.__indices = None
+                self.__constraint_indices = None
+            elif item == SCHEMA_DEPENDENCIES:
+                self.__dependencies = None
+            elif item == SCHEMA_GENERATORS:
+                self.__generators = None
+            elif item == SCHEMA_TRIGGERS:
+                self.__triggers = None
+            elif item == SCHEMA_PROCEDURES:
+                self.__procedures = None
+            elif item == SCHEMA_CONSTRAINTS:
+                self.__constraints = None
+            elif item == SCHEMA_COLLATIONS:
+                self.__collations = None
+            elif item == SCHEMA_CHARACTER_SETS:
+                self.__character_sets = None
+            elif item == SCHEMA_EXCEPTIONS:
+                self.__exceptions = None
+            elif item == SCHEMA_ROLES:
+                self.__roles = None
+            elif item == SCHEMA_FUNCTIONS:
+                self.__functions = None
+            elif item == SCHEMA_FILES:
+                self.__files = None
+            elif item == SCHEMA_SHADOWS:
+                self.__shadows = None
+            elif item == SCHEMA_PRIVILEGES:
+                self.__privileges = None
+            elif item == SCHEMA_USERS:
+                self.__users = None
+            elif item == SCHEMA_PACKAGES:
+                self.__packages = None
+            elif item == SCHEMA_BACKUP_HISTORY:
+                self.__backup_history = None
+            elif item == SCHEMA_FILTERS:
+                self.__filters = None
+            else:
+                raise fdb.ProgrammingError("Unknown metadata category '%d'" % item)
 
     #--- protected
 
@@ -861,37 +893,37 @@ FROM RDB$FILTERS""")
     owner_name = property(lambda self: self.__owner, doc="Database owner name.")
     default_character_set = LateBindingProperty(_get_default_character_set, doc="Default :class:`CharacterSet` for database")
     security_class = property(lambda self: self.__security_class, doc="Can refer to the security class applied as databasewide access control limits.")
-    collations = LateBindingProperty(_get_collations, doc=":class:`ObjectList` of all collations in database.\nItems are :class:`Collation` objects.")
-    character_sets = LateBindingProperty(_get_character_sets, doc=":class:`ObjectList` of all character sets in database.\nItems are :class:`CharacterSet` objects.")
-    exceptions = LateBindingProperty(_get_exceptions, doc=":class:`ObjectList` of all exceptions in database.\nItems are :class:`DatabaseException` objects.")
-    generators = LateBindingProperty(_get_generators, doc=":class:`ObjectList` of all user generators in database.\nItems are :class:`Sequence` objects.")
-    sysgenerators = LateBindingProperty(_get_sysgenerators, doc=":class:`ObjectList` of all system generators in database.\nItems are :class:`Sequence` objects.")
-    sequences = LateBindingProperty(_get_generators, doc=":class:`ObjectList` of all user generators in database.\nItems are :class:`Sequence` objects.")
-    syssequences = LateBindingProperty(_get_sysgenerators, doc=":class:`ObjectList` of all system generators in database.\nItems are :class:`Sequence` objects.")
-    domains = LateBindingProperty(_get_domains, doc=":class:`ObjectList` of all user domains in database.\nItems are :class:`Domain` objects.")
-    sysdomains = LateBindingProperty(_get_sysdomains, doc=":class:`ObjectList` of all system domains in database.\nItems are :class:`Domain` objects.")
-    indices = LateBindingProperty(_get_indices, doc=":class:`ObjectList` of all user indices in database.\nItems are :class:`Index` objects.")
-    sysindices = LateBindingProperty(_get_sysindices, doc=":class:`ObjectList` of all system indices in database.\nItems are :class:`Index` objects.")
-    tables = LateBindingProperty(_get_tables, doc=":class:`ObjectList` of all user tables in database.\nItems are :class:`Table` objects.")
-    systables = LateBindingProperty(_get_systables, doc=":class:`ObjectList` of all system tables in database.\nItems are :class:`Table` objects.")
-    views = LateBindingProperty(_get_views, doc=":class:`ObjectList` of all user views in database.\nItems are :class:`View` objects.")
-    sysviews = LateBindingProperty(_get_sysviews, doc=":class:`ObjectList` of all system views in database.\nItems are :class:`View` objects.")
-    triggers = LateBindingProperty(_get_triggers, doc=":class:`ObjectList` of all user triggers in database.\nItems are :class:`Trigger` objects.")
-    systriggers = LateBindingProperty(_get_systriggers, doc=":class:`ObjectList` of all system triggers in database.\nItems are :class:`Trigger` objects.")
-    procedures = LateBindingProperty(_get_procedures, doc=":class:`ObjectList` of all user procedures in database.\nItems are :class:`Procedure` objects.")
-    sysprocedures = LateBindingProperty(_get_sysprocedures, doc=":class:`ObjectList` of all system procedures in database.\nItems are :class:`Procedure` objects.")
-    constraints = LateBindingProperty(_get_constraints, doc=":class:`ObjectList` of all constraints in database.\nItems are :class:`Constraint` objects.")
-    roles = LateBindingProperty(_get_roles, doc=":class:`ObjectList` of all roles in database.\nItems are :class:`Role` objects.")
-    dependencies = LateBindingProperty(_get_dependencies, doc=":class:`ObjectList` of all dependencies in database.\nItems are :class:`Dependency` objects.")
-    functions = LateBindingProperty(_get_functions, doc=":class:`ObjectList` of all user functions defined in database.\nItems are :class:`Function` objects.")
-    sysfunctions = LateBindingProperty(_get_sysfunctions, doc=":class:`ObjectList` of all system functions defined in database.\nItems are :class:`Function` objects.")
-    files = LateBindingProperty(_get_files, doc=":class:`ObjectList` of all extension files defined for database.\nItems are :class:`DatabaseFile` objects.")
-    shadows = LateBindingProperty(_get_shadows, doc=":class:`ObjectList` of all shadows defined for database.\nItems are :class:`Shadow` objects.")
-    privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of all privileges defined for database.\nItems are :class:`Privilege` objects.")
-    backup_history = LateBindingProperty(_get_backup_history, doc=":class:`ObjectList` of all nbackup hisotry records.\nItems are :class:`BackupHistory` objects.")
-    filters = LateBindingProperty(_get_filters, doc=":class:`ObjectList` of all user-defined BLOB filters.\nItems are :class:`Filter` objects.")
+    collations = LateBindingProperty(_get_collations, doc=":class:`~fdb.utils.ObjectList` of all collations in database.\nItems are :class:`Collation` objects.")
+    character_sets = LateBindingProperty(_get_character_sets, doc=":class:`~fdb.utils.ObjectList` of all character sets in database.\nItems are :class:`CharacterSet` objects.")
+    exceptions = LateBindingProperty(_get_exceptions, doc=":class:`~fdb.utils.ObjectList` of all exceptions in database.\nItems are :class:`DatabaseException` objects.")
+    generators = LateBindingProperty(_get_generators, doc=":class:`~fdb.utils.ObjectList` of all user generators in database.\nItems are :class:`Sequence` objects.")
+    sysgenerators = LateBindingProperty(_get_sysgenerators, doc=":class:`~fdb.utils.ObjectList` of all system generators in database.\nItems are :class:`Sequence` objects.")
+    sequences = LateBindingProperty(_get_generators, doc=":class:`~fdb.utils.ObjectList` of all user generators in database.\nItems are :class:`Sequence` objects.")
+    syssequences = LateBindingProperty(_get_sysgenerators, doc=":class:`~fdb.utils.ObjectList` of all system generators in database.\nItems are :class:`Sequence` objects.")
+    domains = LateBindingProperty(_get_domains, doc=":class:`~fdb.utils.ObjectList` of all user domains in database.\nItems are :class:`Domain` objects.")
+    sysdomains = LateBindingProperty(_get_sysdomains, doc=":class:`~fdb.utils.ObjectList` of all system domains in database.\nItems are :class:`Domain` objects.")
+    indices = LateBindingProperty(_get_indices, doc=":class:`~fdb.utils.ObjectList` of all user indices in database.\nItems are :class:`Index` objects.")
+    sysindices = LateBindingProperty(_get_sysindices, doc=":class:`~fdb.utils.ObjectList` of all system indices in database.\nItems are :class:`Index` objects.")
+    tables = LateBindingProperty(_get_tables, doc=":class:`~fdb.utils.ObjectList` of all user tables in database.\nItems are :class:`Table` objects.")
+    systables = LateBindingProperty(_get_systables, doc=":class:`~fdb.utils.ObjectList` of all system tables in database.\nItems are :class:`Table` objects.")
+    views = LateBindingProperty(_get_views, doc=":class:`~fdb.utils.ObjectList` of all user views in database.\nItems are :class:`View` objects.")
+    sysviews = LateBindingProperty(_get_sysviews, doc=":class:`~fdb.utils.ObjectList` of all system views in database.\nItems are :class:`View` objects.")
+    triggers = LateBindingProperty(_get_triggers, doc=":class:`~fdb.utils.ObjectList` of all user triggers in database.\nItems are :class:`Trigger` objects.")
+    systriggers = LateBindingProperty(_get_systriggers, doc=":class:`~fdb.utils.ObjectList` of all system triggers in database.\nItems are :class:`Trigger` objects.")
+    procedures = LateBindingProperty(_get_procedures, doc=":class:`~fdb.utils.ObjectList` of all user procedures in database.\nItems are :class:`Procedure` objects.")
+    sysprocedures = LateBindingProperty(_get_sysprocedures, doc=":class:`~fdb.utils.ObjectList` of all system procedures in database.\nItems are :class:`Procedure` objects.")
+    constraints = LateBindingProperty(_get_constraints, doc=":class:`~fdb.utils.ObjectList` of all constraints in database.\nItems are :class:`Constraint` objects.")
+    roles = LateBindingProperty(_get_roles, doc=":class:`~fdb.utils.ObjectList` of all roles in database.\nItems are :class:`Role` objects.")
+    dependencies = LateBindingProperty(_get_dependencies, doc=":class:`~fdb.utils.ObjectList` of all dependencies in database.\nItems are :class:`Dependency` objects.")
+    functions = LateBindingProperty(_get_functions, doc=":class:`~fdb.utils.ObjectList` of all user functions defined in database.\nItems are :class:`Function` objects.")
+    sysfunctions = LateBindingProperty(_get_sysfunctions, doc=":class:`~fdb.utils.ObjectList` of all system functions defined in database.\nItems are :class:`Function` objects.")
+    files = LateBindingProperty(_get_files, doc=":class:`~fdb.utils.ObjectList` of all extension files defined for database.\nItems are :class:`DatabaseFile` objects.")
+    shadows = LateBindingProperty(_get_shadows, doc=":class:`~fdb.utils.ObjectList` of all shadows defined for database.\nItems are :class:`Shadow` objects.")
+    privileges = LateBindingProperty(_get_privileges, doc=":class:`~fdb.utils.ObjectList` of all privileges defined for database.\nItems are :class:`Privilege` objects.")
+    backup_history = LateBindingProperty(_get_backup_history, doc=":class:`~fdb.utils.ObjectList` of all nbackup hisotry records.\nItems are :class:`BackupHistory` objects.")
+    filters = LateBindingProperty(_get_filters, doc=":class:`~fdb.utils.ObjectList` of all user-defined BLOB filters.\nItems are :class:`Filter` objects.")
     # FB 3
-    packages = LateBindingProperty(_get_packages, doc=":class:`ObjectList` of all packages defined for database.\nItems are :class:`Package` objects.")
+    packages = LateBindingProperty(_get_packages, doc=":class:`~fdb.utils.ObjectList` of all packages defined for database.\nItems are :class:`Package` objects.")
     linger = property(lambda self: self.__linger, doc="Database linger value.")
 
     #--- Public
@@ -901,7 +933,7 @@ FROM RDB$FILTERS""")
 
         :param connection: :class:`~fdb.Connection` instance.
 
-        :raises fdb.ProgrammingError: If Schema object was set as internal (via
+        :raises `~fdb.ProgrammingError`: If Schema object was set as internal (via
             :meth:`_set_as_internal`).
         """
         if self.__internal:
@@ -980,19 +1012,13 @@ FROM RDB$FILTERS""")
     def close(self):
         """Sever link to :class:`~fdb.Connection`.
 
-        :raises fdb.ProgrammingError: If Schema object was set as internal (via
+        :raises `~fdb.ProgrammingError`: If Schema object was set as internal (via
             :meth:`_set_as_internal`).
         """
         if self.__internal:
             raise fdb.ProgrammingError("Call to 'close' not allowed for embedded Schema.")
         self._close()
         self.__clear()
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitSchema(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitSchema(self)
 
     #--- Basic Database manipulation routines
 
@@ -1003,32 +1029,9 @@ FROM RDB$FILTERS""")
         """Drop all or specified category of cached metadata objects, so they're
         reloaded from database on next reference.
 
-        :param string data: `None` or name of metadata category.
+        :param string data: `None`, metadata category code or iterable with category codes.
 
-        Recognized (case insensitive) names of metadata categories:
-
-        - tables
-        - views
-        - domain
-        - indices
-        - dependencies
-        - generators
-        - sequences
-        - triggers
-        - procedures
-        - constraints
-        - collations
-        - character sets
-        - exceptions
-        - roles
-        - functions
-        - files
-        - shadows
-        - privileges
-        - users
-        - packages
-        - backup_history
-        - filters
+        .. note:: Category codes are defined by `SCHEMA_*` globals.
 
         :raises fdb.ProgrammingError: For undefined metadata category.
 
@@ -1039,18 +1042,15 @@ FROM RDB$FILTERS""")
             self._ic.transaction.commit()
 
     def get_metadata_ddl(self, sections=SCRIPT_DEFAULT_ORDER):
-        """Returns list of DDL SQL commands for creation of specified categories of
-database objects.
+        """Return list of DDL SQL commands for creation of specified categories of database objects.
 
         :param list sections: List of section identifiers.
 
         :returns: List with SQL commands.
 
-        Sections identifiers are represented by SCRIPT_* contants
-        defined in schema module.
+        Sections identifiers are represented by `SCRIPT_*` contants defined in schema module.
 
-        Sections are created in the order of occerence in list.
-        Uses SCRIPT_DEFAULT_ORDER list when sections are not specified.
+        Sections are created in the order of occerence in list. Uses `SCRIPT_DEFAULT_ORDER` list when sections are not specified.
 """
         def order_by_dependency(items, get_dependencies):
             ordered = []
@@ -1340,7 +1340,7 @@ database objects.
             Numeric code for user type, see :attr:`Schema.enum_object_types`.
         :returns: List of :class:`Privilege` objects.
 
-        :raises fdb.ProgrammingError: For unknown `user_type` code.
+        :raises `~fdb.ProgrammingError`: For unknown `user_type` code.
         """
         if isinstance(user, (fdb.StringType, fdb.UnicodeType)):
             if (user_type is None) or (user_type not in self.enum_object_types):
@@ -1365,7 +1365,7 @@ database objects.
         """
         return self.packages.get(name)
 
-class BaseSchemaItem(object):
+class BaseSchemaItem(Visitable):
     """Base class for all database schema objects."""
     #: Weak reference to parent :class:`Schema` instance.
     schema = None
@@ -1376,7 +1376,6 @@ class BaseSchemaItem(object):
         self._actions = []
 
     #--- protected
-
     def _strip_attribute(self, attr):
         if self._attributes.get(attr):
             self._attributes[attr] = self._attributes[attr].strip()
@@ -1414,19 +1413,10 @@ class BaseSchemaItem(object):
         return 'CREATE OR ALTER' + self._get_create_sql(**params)[6:]
 
     #--- properties
-
     name = LateBindingProperty(_get_name, doc="Database object name or None if object doesn't have a name.")
     description = LateBindingProperty(_get_description, doc="Database object description or None if object doesn't have a description.")
     actions = LateBindingProperty(_get_actions, doc="List of supported SQL operations on metadata object instance.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitMetadatItem(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitMetadataItem(self)
     def issystemobject(self):
         "Returns True if this database object is system object."
         return True if self._attributes.get('RDB$SYSTEM_FLAG', False) else False
@@ -1446,7 +1436,7 @@ class BaseSchemaItem(object):
 
         Supported actions are defined by :attr:`actions` list.
 
-        :raises fdb.ProgrammingError: For unsupported action or wrong parameters passed.
+        :raises `~fdb.ProgrammingError`: For unsupported action or wrong parameters passed.
         """
         _action = action.lower()
         if _action in self._actions:
@@ -1478,7 +1468,6 @@ class Collation(BaseSchemaItem):
             self._actions.extend(['create', 'drop'])
 
     #--- Protected
-
     def _get_drop_sql(self, **params):
         self._check_params(params, [])
         return 'DROP COLLATION %s' % self.get_quoted_name()
@@ -1527,7 +1516,6 @@ class Collation(BaseSchemaItem):
         return self._attributes.get('RDB$OWNER_NAME')
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="Collation ID.")
     character_set = LateBindingProperty(_get_character_set, doc="Character set object associated with collation.")
     base_collation = LateBindingProperty(_get_base_collation, doc="Base Collation object that's extended by this one or None.")
@@ -1537,15 +1525,7 @@ class Collation(BaseSchemaItem):
     # FB 3.0
     security_class = LateBindingProperty(_get_security_class, doc="Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name, doc="Creator user name.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitCollation(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitCollation(self)
     def ispadded(self):
         """Returns True if collation has PAD SPACE attribute."""
         return bool(self.attributes & COLLATION_PAD_SPACE)
@@ -1576,7 +1556,6 @@ class CharacterSet(BaseSchemaItem):
         self._actions = ['alter', 'comment']
 
     #--- protected
-
     def _get_alter_sql(self, **params):
         self._check_params(params, ['collation'])
         collation = params.get('collation')
@@ -1607,23 +1586,14 @@ class CharacterSet(BaseSchemaItem):
         return self._attributes.get('RDB$OWNER_NAME')
 
     #--- properties
-
     id = LateBindingProperty(_get_id, doc="Character set ID.")
     bytes_per_character = LateBindingProperty(_get_bytes_per_character, doc="Size of characters in bytes.")
     default_collate = LateBindingProperty(_get_default_collate, doc="Collate object of default collate.")
-    collations = LateBindingProperty(_get_collations, doc=":class:`ObjectList` of Collations associated with character set.")
+    collations = LateBindingProperty(_get_collations, doc=":class:`~fdb.utils.ObjectList` of Collations associated with character set.")
     # FB 3.0
     security_class = LateBindingProperty(_get_security_class, doc="Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name, doc="Creator user name.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitCharacterSet(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitCharacterSet(self)
     def get_collation(self, name):
         """Return :class:`Collation` object with specified name that belongs to
 this character set.
@@ -1660,7 +1630,6 @@ class DatabaseException(BaseSchemaItem):
 
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, [])
         return "CREATE EXCEPTION %s '%s'" % (self.get_quoted_name(),
@@ -1692,21 +1661,11 @@ class DatabaseException(BaseSchemaItem):
         return self._attributes.get('RDB$OWNER_NAME')
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="System-assigned unique exception number.")
     message = LateBindingProperty(_get_message, doc="Custom message text.")
     # FB 3.0
     security_class = LateBindingProperty(_get_security_class, doc="Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name, doc="Creator user name.")
-
-    #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitException(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitException(self)
 
 class Sequence(BaseSchemaItem):
     """Represents database generator/sequence.
@@ -1729,7 +1688,6 @@ class Sequence(BaseSchemaItem):
             self._actions.extend(['create', 'alter', 'drop'])
 
     #--- protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, [])
         return 'CREATE %s %s' % (self.schema.opt_generator_keyword,
@@ -1768,7 +1726,6 @@ class Sequence(BaseSchemaItem):
         return self._attributes.get('RDB$GENERATOR_INCREMENT')
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="Internal ID number of the sequence.")
     value = LateBindingProperty(_get_value, doc="Current sequence value.")
     # FB 3.0
@@ -1776,15 +1733,7 @@ class Sequence(BaseSchemaItem):
     owner_name = LateBindingProperty(_get_owner_name, doc="Creator user name.")
     inital_value = LateBindingProperty(_get_inital_value, doc="Initial sequence value.")
     increment = LateBindingProperty(_get_increment, doc="Sequence increment.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitGenerator(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitGenerator(self)
     def isidentity(self):
         "Returns True for system generators created for IDENTITY columns."
         return self._attributes['RDB$SYSTEM_FLAG'] == 6
@@ -1814,7 +1763,6 @@ class TableColumn(BaseSchemaItem):
             self._actions.extend(['alter', 'drop'])
 
     #--- Protected
-
     def _get_alter_sql(self, **params):
         self._check_params(params, ['expression', 'datatype', 'name', 'position', 'restart'])
         new_expr = params.get('expression')
@@ -1890,7 +1838,6 @@ class TableColumn(BaseSchemaItem):
         return self._attributes.get('RDB$IDENTITY_TYPE')
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="Internam number ID for the column.")
     table = LateBindingProperty(_get_table, doc="The Table object this column belongs to.")
     domain = LateBindingProperty(_get_domain, doc="Domain object this column is based on.")
@@ -1899,19 +1846,11 @@ class TableColumn(BaseSchemaItem):
     default = LateBindingProperty(_get_default, doc="Default value for column or None.")
     collation = LateBindingProperty(_get_collation, doc="Collation object or None.")
     datatype = LateBindingProperty(_get_datatype, doc="Comlete SQL datatype definition.")
-    privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
+    privileges = LateBindingProperty(_get_privileges, doc=":class:`~fdb.utils.ObjectList` of :class:`Privilege` objects granted to this object.")
     # FB 3.0
     generator = LateBindingProperty(_get_generator, doc="Internal flags.")
     identity_type = LateBindingProperty(_get_identity_type, doc="Internal flags.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitTableColumn(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitTableColumn(self)
     def get_dependents(self):
         "Return list of all database objects that depend on this one."
         return [d for d in self.schema.dependencies
@@ -1967,7 +1906,6 @@ class Index(BaseSchemaItem):
             self._actions.extend(['create', 'deactivate', 'drop'])
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, [])
         return """CREATE %s%s INDEX %s ON %s %s""" % ('UNIQUE ' if self.isunique() else '',
@@ -2037,7 +1975,6 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
             return None
 
     #--- Properties
-
     table = LateBindingProperty(_get_table, doc="The :class:`Table` instance the index applies to.")
     id = LateBindingProperty(_get_id, doc="Internal number ID of the index.")
     index_type = LateBindingProperty(_get_index_type, doc="ASCENDING or DESCENDING.")
@@ -2046,17 +1983,9 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
     statistics = LateBindingProperty(_get_statistics, doc="Latest selectivity of the index.")
     segment_names = LateBindingProperty(_get_segment_names, doc="List of index segment names.")
     segment_statistics = LateBindingProperty(_get_segment_statistics, doc="List of index segment statistics (for ODS 11.1 and higher).")
-    segments = LateBindingProperty(_get_segments, doc=":class:`ObjectList` of index segments as :class:`TableColumn` instances.")
+    segments = LateBindingProperty(_get_segments, doc=":class:`~fdb.utils.ObjectList` of index segments as :class:`TableColumn` instances.")
     constraint = LateBindingProperty(_get_constraint, doc=":class:`Constraint` instance that uses this index or None.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitIndex(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitIndex(self)
     def issystemobject(self):
         "Returns True if this database object is system object."
         return bool(self._attributes['RDB$SYSTEM_FLAG']
@@ -2094,7 +2023,6 @@ class ViewColumn(BaseSchemaItem):
         self._actions = ['comment']
 
     #--- Protected
-
     def _get_comment_sql(self, **params):
         return 'COMMENT ON COLUMN %s.%s IS %s' % (self.view.get_quoted_name(),
                                                   self.get_quoted_name(),
@@ -2136,7 +2064,6 @@ class ViewColumn(BaseSchemaItem):
                                                         p.subject_type == 0)) # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
-
     base_field = LateBindingProperty(_get_base_field, doc="The source column from the base relation. Result could be either "
                                      ":class:`TableColumn`, :class:`ViewColumn` or :class:`ProcedureParameter` "
                                      "instance or None.")
@@ -2146,16 +2073,8 @@ class ViewColumn(BaseSchemaItem):
     security_class = LateBindingProperty(_get_security_class, doc="Security class name or None.")
     collation = LateBindingProperty(_get_collation, doc="Collation object or None.")
     datatype = LateBindingProperty(_get_datatype, doc="Comlete SQL datatype definition.")
-    privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
-
+    privileges = LateBindingProperty(_get_privileges, doc=":class:`~fdb.utils.ObjectList` of :class:`Privilege` objects granted to this object.")
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitViewColumn(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitViewColumn(self)
     def get_dependents(self):
         "Return list of all database objects that depend on this one."
         return [d for d in self.schema.dependencies
@@ -2195,7 +2114,6 @@ class Domain(BaseSchemaItem):
             self._actions.extend(['create', 'alter', 'drop'])
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, [])
         sql = 'CREATE DOMAIN %s AS %s' % (self.get_quoted_name(), self.datatype)
@@ -2323,7 +2241,6 @@ class Domain(BaseSchemaItem):
         return self._attributes.get('RDB$OWNER_NAME')
 
     #--- Properties
-
     expression = LateBindingProperty(_get_expression, doc="Expression that defines the COMPUTED BY column or None.")
     validation = LateBindingProperty(_get_validation, doc="CHECK constraint for the domain or None.")
     default = LateBindingProperty(_get_default, doc="Expression that defines the default value or None.")
@@ -2344,15 +2261,7 @@ class Domain(BaseSchemaItem):
     # FB 3.0
     security_class = LateBindingProperty(_get_security_class, doc="Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name, doc="Creator user name.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitDomain(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitDomain(self)
     def issystemobject(self):
         "Return True if this database object is system object."
         return (self._attributes['RDB$SYSTEM_FLAG'] == 1) or self.name.startswith('RDB$')
@@ -2386,7 +2295,6 @@ class Dependency(BaseSchemaItem):
         self._strip_attribute('RDB$PACKAGE_NAME')
 
     #--- Protected
-
     def _get_dependent_name(self):
         return self._attributes['RDB$DEPENDENT_NAME']
     def _get_dependent_type(self):
@@ -2495,7 +2403,6 @@ class Dependency(BaseSchemaItem):
         return self.schema.get_package(self._attributes.get('RDB$PACKAGE_NAME'))
 
     #--- Properties
-
     dependent = LateBindingProperty(_get_dependent, doc="Dependent database object.")
     dependent_name = LateBindingProperty(_get_dependent_name, doc="Dependent database object name.")
     dependent_type = LateBindingProperty(_get_dependent_type, doc="Dependent database object type.")
@@ -2505,15 +2412,7 @@ class Dependency(BaseSchemaItem):
     depended_on_type = LateBindingProperty(_get_depended_on_type, doc="Type of db object on which dependent depends.")
     # FB 3.0
     package = LateBindingProperty(_get_package, doc=":class:`Package` instance if dependent depends on object in package or None.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitDependency(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitDependency(self)
     def issystemobject(self):
         "Returns True as dependency entries are considered as system objects."
         return True
@@ -2554,7 +2453,6 @@ class Constraint(BaseSchemaItem):
             self._actions = ['create', 'drop']
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, [])
         const_def = 'ALTER TABLE %s ADD ' % self.table.get_quoted_name()
@@ -2617,7 +2515,6 @@ class Constraint(BaseSchemaItem):
         return self._attributes['RDB$DELETE_RULE']
 
     #--- Properties
-
     constraint_type = LateBindingProperty(_get_constraint_type, doc="primary key/unique/foreign key/check/not null.")
     table = LateBindingProperty(_get_table, doc=":class:`Table` instance this constraint applies to.")
     index = LateBindingProperty(_get_index, doc=":class:`Index` instance that enforces the constraint.\n`None` if constraint is not primary key/unique or foreign key.")
@@ -2628,15 +2525,7 @@ class Constraint(BaseSchemaItem):
     match_option = LateBindingProperty(_get_match_option, doc="For a FOREIGN KEY constraint only. Current value is FULL in all cases.")
     update_rule = LateBindingProperty(_get_update_rule, doc="For a FOREIGN KEY constraint, this is the action applicable to when primary key is updated.")
     delete_rule = LateBindingProperty(_get_delete_rule, doc="For a FOREIGN KEY constraint, this is the action applicable to when primary key is deleted.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitConstraint(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitConstraint(self)
     def issystemobject(self):
         "Returns True if this database object is system object."
         return self.schema.get_table(self._attributes['RDB$RELATION_NAME']).issystemobject()
@@ -2688,7 +2577,6 @@ class Table(BaseSchemaItem):
             self._actions.extend(['create', 'recreate', 'drop'])
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         try:
             self._check_params(params, ['no_pk', 'no_unique'])
@@ -2816,7 +2704,6 @@ where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""" % ','.join(cols), (se
                                                         (p.subject_type in self._type_code)))
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="Internam number ID for the table.")
     dbkey_length = LateBindingProperty(_get_dbkey_length, doc="Length of the RDB$DB_KEY column in bytes.")
     format = LateBindingProperty(_get_format, doc="Internal format ID for the table.")
@@ -2827,22 +2714,13 @@ where RDB$RELATION_NAME = ? order by RDB$FIELD_POSITION""" % ','.join(cols), (se
     default_class = LateBindingProperty(_get_default_class, doc="Default security class.")
     flags = LateBindingProperty(_get_flags, doc="Internal flags.")
     primary_key = LateBindingProperty(_get_primary_key, doc="PRIMARY KEY :class:`Constraint` for this table or None.")
-    foreign_keys = LateBindingProperty(_get_foreign_keys, doc=":class:`ObjectList` of FOREIGN KEY :class:`Constraint` instances for this table.")
-    columns = LateBindingProperty(_get_columns, doc="Returns :class:`ObjectList` of columns defined for table.\nItems are :class:`TableColumn` objects.")
-    constraints = LateBindingProperty(_get_constraints, doc="Returns :class:`ObjectList` of constraints defined for table.\nItems are :class:`Constraint` objects.")
-    indices = LateBindingProperty(_get_indices, doc="Returns :class:`ObjectList` of indices defined for table.\nItems are :class:`Index` objects.")
-    triggers = LateBindingProperty(_get_triggers, doc="Returns :class:`ObjectList` of triggers defined for table.\nItems are :class:`Trigger` objects.")
-    privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
-    # FB 3.0
-
+    foreign_keys = LateBindingProperty(_get_foreign_keys, doc=":class:`~fdb.utils.ObjectList` of FOREIGN KEY :class:`Constraint` instances for this table.")
+    columns = LateBindingProperty(_get_columns, doc="Returns :class:`~fdb.utils.ObjectList` of columns defined for table.\nItems are :class:`TableColumn` objects.")
+    constraints = LateBindingProperty(_get_constraints, doc="Returns :class:`~fdb.utils.ObjectList` of constraints defined for table.\nItems are :class:`Constraint` objects.")
+    indices = LateBindingProperty(_get_indices, doc="Returns :class:`~fdb.utils.ObjectList` of indices defined for table.\nItems are :class:`Index` objects.")
+    triggers = LateBindingProperty(_get_triggers, doc="Returns :class:`~fdb.utils.ObjectList` of triggers defined for table.\nItems are :class:`Trigger` objects.")
+    privileges = LateBindingProperty(_get_privileges, doc=":class:`~fdb.utils.ObjectList` of :class:`Privilege` objects granted to this object.")
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitTable(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitTable(self)
     def get_column(self, name):
         "Return :class:`TableColumn` object with specified name."
         return self.columns.get(name)
@@ -2898,7 +2776,6 @@ class View(BaseSchemaItem):
             self._actions.extend(['create', 'recreate', 'alter', 'create_or_alter', 'drop'])
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, [])
         return "CREATE VIEW %s (%s)\n   AS\n     %s" % (self.get_quoted_name(),
@@ -2965,7 +2842,6 @@ v.RDB$RELATION_NAME as BASE_RELATION
                                                         (p.subject_type == 0))) # Views are logged as Tables in RDB$USER_PRIVILEGES
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="Internal number ID for the view.")
     sql = LateBindingProperty(_get_sql, doc="The query specification.")
     dbkey_length = LateBindingProperty(_get_dbkey_length, doc="Length of the RDB$DB_KEY column in bytes.")
@@ -2974,19 +2850,10 @@ v.RDB$RELATION_NAME as BASE_RELATION
     owner_name = LateBindingProperty(_get_owner_name, doc="User name of view's creator.")
     default_class = LateBindingProperty(_get_default_class, doc="Default security class.")
     flags = LateBindingProperty(_get_flags, doc="Internal flags.")
-
-    columns = LateBindingProperty(_get_columns, doc="Returns :class:`ObjectList` of columns defined for view.\nItems are :class:`ViewColumn` objects.")
-    triggers = LateBindingProperty(_get_triggers, doc="Returns :class:`ObjectList` of triggers defined for view.\nItems are :class:`Trigger` objects.")
-    privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
-
+    columns = LateBindingProperty(_get_columns, doc="Returns :class:`~fdb.utils.ObjectList` of columns defined for view.\nItems are :class:`ViewColumn` objects.")
+    triggers = LateBindingProperty(_get_triggers, doc="Returns :class:`~fdb.utils.ObjectList` of triggers defined for view.\nItems are :class:`Trigger` objects.")
+    privileges = LateBindingProperty(_get_privileges, doc=":class:`~fdb.utils.ObjectList` of :class:`Privilege` objects granted to this object.")
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitView(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitView(self)
     def get_column(self, name):
         "Return :class:`TableColumn` object with specified name."
         for col in self.columns:
@@ -3027,7 +2894,6 @@ class Trigger(BaseSchemaItem):
             self._actions.extend(['create', 'recreate', 'alter', 'create_or_alter', 'drop'])
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, ['inactive'])
         inactive = params.get('inactive', False)
@@ -3132,7 +2998,6 @@ class Trigger(BaseSchemaItem):
         return False
 
     #--- Properties
-
     relation = LateBindingProperty(_get_relation, doc=":class:`Table` or :class:`View` that the trigger is for, or None for database triggers")
     sequence = LateBindingProperty(_get_sequence, doc="Sequence (position) of trigger. Zero usually means no sequence defined.")
     trigger_type = LateBindingProperty(_get_trigger_type, doc="Numeric code for trigger type that define what event and when are covered by trigger.")
@@ -3142,15 +3007,7 @@ class Trigger(BaseSchemaItem):
     # FB 3
     engine_name = LateBindingProperty(_get_engine_name, doc="Engine name.")
     entrypoint = LateBindingProperty(_get_entrypoint, doc="Entrypoint.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitTrigger(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitTrigger(self)
     def isactive(self):
         "Returns True if this trigger is active."
         return self._attributes['RDB$TRIGGER_INACTIVE'] == 0
@@ -3216,7 +3073,6 @@ class ProcedureParameter(BaseSchemaItem):
         self._actions = ['comment']
 
     #--- Protected
-
     def _get_comment_sql(self, **params):
         return 'COMMENT ON PARAMETER %s.%s IS %s' % (self.procedure.get_quoted_name(),
                                                      self.get_quoted_name(),
@@ -3267,7 +3123,6 @@ class ProcedureParameter(BaseSchemaItem):
         return self.schema.get_package(self._attributes.get('RDB$PACKAGE_NAME'))
 
     #--- Properties
-
     procedure = LateBindingProperty(_get_procedure, doc="Name of the stored procedure.")
     sequence = LateBindingProperty(_get_sequence, doc="Sequence (position) of parameter.")
     domain = LateBindingProperty(_get_domain, doc=":class:`Domain` for this parameter.")
@@ -3281,15 +3136,7 @@ class ProcedureParameter(BaseSchemaItem):
     column = LateBindingProperty(_get_column, doc=":class:`TableColumn` for this parameter.")
     # FB 3.0
     package = LateBindingProperty(_get_package, doc="Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitProcedureParameter(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitProcedureParameter(self)
     def get_sql_definition(self):
         "Returns SQL definition for parameter."
         typedef = self.datatype
@@ -3352,7 +3199,6 @@ class Procedure(BaseSchemaItem):
             self._actions.extend(['create', 'recreate', 'alter', 'create_or_alter', 'drop'])
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, ['no_code'])
         no_code = params.get('no_code')
@@ -3388,9 +3234,8 @@ class Procedure(BaseSchemaItem):
         outpars = params.get('output')
         declare = params.get('declare')
         code = params.get('code')
-        body = params.get('body')
-        if (code is None) and (body is None):
-            raise fdb.ProgrammingError("Either 'code' or 'body' must be specified.")
+        if 'code' not in params:
+            raise fdb.ProgrammingError("Missing required parameter: 'code'.")
         #
         header = ''
         if inpars is not None:
@@ -3516,14 +3361,13 @@ and rdb$parameter_type = 1 order by rdb$parameter_number"""
         return self._attributes.get('RDB$PRIVATE_FLAG')
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="Internal unique ID number.")
     source = LateBindingProperty(_get_source, doc="PSQL source code.")
     security_class = LateBindingProperty(_get_security_class, doc="Security class that define access limits to the procedure.")
     owner_name = LateBindingProperty(_get_owner_name, doc="User name of procedure's creator.")
-    input_params = LateBindingProperty(_get_input_params, doc=":class:`ObjectList` of input parameters.\nInstances are :class:`ProcedureParameter` instances.")
-    output_params = LateBindingProperty(_get_output_params, doc=":class:`ObjectList` of output parameters.\nInstances are :class:`ProcedureParameter` instances.")
-    privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
+    input_params = LateBindingProperty(_get_input_params, doc=":class:`~fdb.utils.ObjectList` of input parameters.\nInstances are :class:`ProcedureParameter` instances.")
+    output_params = LateBindingProperty(_get_output_params, doc=":class:`~fdb.utils.ObjectList` of output parameters.\nInstances are :class:`ProcedureParameter` instances.")
+    privileges = LateBindingProperty(_get_privileges, doc=":class:`~fdb.utils.ObjectList` of :class:`Privilege` objects granted to this object.")
     # FB 2.1
     proc_type = LateBindingProperty(_get_proc_type, doc="Procedure type code. See :attr:`~fdb.schema.Schema.enum_procedure_types`.")
     valid_blr = LateBindingProperty(_get_valid_blr, doc="Procedure BLR invalidation flag. Coul be True/False or None.")
@@ -3532,15 +3376,7 @@ and rdb$parameter_type = 1 order by rdb$parameter_number"""
     entrypoint = LateBindingProperty(_get_entrypoint, doc="Entrypoint.")
     package = LateBindingProperty(_get_package, doc="Package this procedure belongs to. \nObject is :class:`Package` instance or None.")
     privacy = LateBindingProperty(_get_privacy, doc="Privacy flag.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitProcedure(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitProcedure(self)
     def get_param(self, name):
         "Returns :class:`ProcedureParameter` with specified name or None"
         for p in self.output_params:
@@ -3581,7 +3417,6 @@ class Role(BaseSchemaItem):
             self._actions.extend(['create', 'drop'])
 
     #--- Protected
-
     def _get_create_sql(self, **params):
         self._check_params(params, [])
         return 'CREATE ROLE %s' % self.get_quoted_name()
@@ -3603,19 +3438,9 @@ class Role(BaseSchemaItem):
                                                         (p.user_type in self._type_code)))
 
     #--- Properties
-
     owner_name = LateBindingProperty(_get_owner_name, doc="User name of role owner.")
-    privileges = LateBindingProperty(_get_privileges, doc=":class:`ObjectList` of :class:`Privilege` objects granted to this object.")
+    privileges = LateBindingProperty(_get_privileges, doc=":class:`~fdb.utils.ObjectList` of :class:`Privilege` objects granted to this object.")
     security_class = LateBindingProperty(_get_security_class, doc="Security class name or None.")
-
-    #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitRole(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitRole(self)
 
 class FunctionArgument(BaseSchemaItem):
     """Represets UDF argument.
@@ -3637,7 +3462,6 @@ class FunctionArgument(BaseSchemaItem):
         self._strip_attribute('RDB$DESCRIPTION')
 
     #--- Protected
-
     def _get_name(self):
         return self.argument_name if self.argument_name else (self.function.name+
                                                               '_'+str(self._get_position()))
@@ -3739,7 +3563,6 @@ class FunctionArgument(BaseSchemaItem):
             raise fdb.InternalError("Unknown parameter mechanism code: %d" % m)
 
     #--- Properties
-
     function = LateBindingProperty(_get_function, doc=":class:`Function` to which this argument belongs.")
     position = LateBindingProperty(_get_position, doc="Argument position.")
     mechanism = LateBindingProperty(_get_mechanism, doc="How argument is passed.")
@@ -3760,15 +3583,7 @@ class FunctionArgument(BaseSchemaItem):
     column = LateBindingProperty(_get_column, doc=":class:`TableColumn` for this parameter.")
     type_from = LateBindingProperty(_get_type_from, doc="Numeric code. See :attr:`Schema.enum_param_type_from`.`")
     package = LateBindingProperty(_get_package, doc="Package this function belongs to.\nObject is :class:`Package` instance or None.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitFunctionArgument(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitFunctionArgument(self)
     def get_sql_definition(self):
         "Returns SQL definition for parameter."
         if self.function.isexternal():
@@ -3862,7 +3677,6 @@ class Function(BaseSchemaItem):
                     self._actions = ['create', 'recreate', 'alter', 'create_or_alter', 'drop']
 
     #--- Protected
-
     def _get_declare_sql(self, **params):
         self._check_params(params, [])
         fdef = 'DECLARE EXTERNAL FUNCTION %s\n' % self.get_quoted_name()
@@ -3908,7 +3722,7 @@ class Function(BaseSchemaItem):
             raise fdb.ProgrammingError("Missing required parameter: 'returns'.")
         declare = params.get('declare')
         code = params.get('code')
-        if code is None:
+        if 'code' not in params:
             raise fdb.ProgrammingError("Missing required parameter: 'code'.")
         #
         header = ''
@@ -4009,12 +3823,11 @@ where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols), 
         return self._attributes.get('RDB$DETERMINISTIC_FLAG')
 
     #--- Properties
-
     module_name = LateBindingProperty(_get_module_name, doc="Module name.")
     entrypoint = LateBindingProperty(_get_entrypoint, doc="Entrypoint in module.")
     returns = LateBindingProperty(_get_returns, doc="Returning :class:`FunctionArgument` or None.")
     arguments = LateBindingProperty(_get_arguments,
-                                    doc=":class:`ObjectList` of function arguments."
+                                    doc=":class:`~fdb.utils.ObjectList` of function arguments."
                                     " Items are :class:`FunctionArgument` instances.")
     # Firebird 3.0
     engine_mame = LateBindingProperty(_get_engine_mame, doc="Engine name.")
@@ -4029,15 +3842,7 @@ where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols), 
     owner_name = LateBindingProperty(_get_owner_name, doc="Owner name.")
     legacy_flag = LateBindingProperty(_get_legacy_flag, doc="Legacy flag.")
     deterministic_flag = LateBindingProperty(_get_deterministic_flag, doc="Deterministic flag.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitFunction(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitFunction(self)
     def isexternal(self):
         "Returns True if function is external UDF, False for PSQL functions."
         return True if self.module_name else False
@@ -4066,7 +3871,6 @@ class DatabaseFile(BaseSchemaItem):
         self._strip_attribute('RDB$FILE_NAME')
 
     #--- Protected
-
     def _get_name(self):
         return 'FILE_%d' % self.sequence
     def _get_filename(self):
@@ -4079,20 +3883,11 @@ class DatabaseFile(BaseSchemaItem):
         return self._attributes['RDB$FILE_LENGTH']
 
     #--- Properties
-
     filename = LateBindingProperty(_get_filename, doc="File name.")
     sequence = LateBindingProperty(_get_sequence, doc="File sequence number.")
     start = LateBindingProperty(_get_start, doc="File start page number.")
     length = LateBindingProperty(_get_length, doc="File length in pages.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitDatabaseFile(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitDatabaseFile(self)
     def issystemobject(self):
         "Returns True."
         return True
@@ -4153,20 +3948,11 @@ order by RDB$FILE_SEQUENCE""", (self._attributes['RDB$SHADOW_NUMBER'],))]
         return self.__files
 
     #--- Properties
-
     id = LateBindingProperty(_get_id, doc="Shadow ID number.")
     flags = LateBindingProperty(_get_flags, doc="Shadow flags.")
     files = LateBindingProperty(_get_files,
                                 doc="List of shadow files. Items are :class:`DatabaseFile` instances.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitShadow(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitShadow(self)
     def issystemobject(self):
         "Returns False."
         return False
@@ -4287,7 +4073,6 @@ class Privilege(BaseSchemaItem):
         return self._attributes['RDB$FIELD_NAME']
 
     #--- Properties
-
     user = LateBindingProperty(_get_user,
                                doc="Grantee. Either :class:`~fdb.services.User`, :class:`Role`,"
                                " :class:`Procedure`, :class:`Trigger` or :class:`View` object.")
@@ -4302,13 +4087,7 @@ class Privilege(BaseSchemaItem):
     subject_name = LateBindingProperty(_get_subject_name, doc="Subject name.")
     subject_type = LateBindingProperty(_get_subject_type, doc="Subject type.")
     field_name = LateBindingProperty(_get_field_name, doc="Field name.")
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitPrivilege(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitPrivilege(self)
+    #--- Public
     def has_grant(self):
         "Returns True if privilege comes with GRANT OPTION."
         return bool(self._attributes['RDB$GRANT_OPTION'])
@@ -4340,8 +4119,8 @@ class Privilege(BaseSchemaItem):
 class Package(BaseSchemaItem):
     """Represents PSQL package.
 
-    Supported SQL actions: create(body=bool), recreate(body=bool), create_or_alter,
-      alter(header=string_or_list), drop(body=bool),alter
+    Supported SQL actions: create(body=bool), recreate(body=bool), create_or_alter(body=bool),
+      alter(header=string_or_list), drop(body=bool), alter
     """
     def __init__(self, schema, attributes):
         super(Package, self).__init__(schema, attributes)
@@ -4390,26 +4169,17 @@ class Package(BaseSchemaItem):
                                              proc._attributes['RDB$PACKAGE_NAME'] == self.name)
 
     #--- Properties
-
     header = LateBindingProperty(_get_header, doc="Package header source.")
     body = LateBindingProperty(_get_body, doc="Package body source.")
     security_class = LateBindingProperty(_get_security_class, doc="Security class name or None.")
     owner_name = LateBindingProperty(_get_owner_name, doc="User name of package creator.")
     functions = LateBindingProperty(_get_functions,
-                                    doc=":class:`ObjectList` of package functions."
+                                    doc=":class:`~fdb.utils.ObjectList` of package functions."
                                     " Items are :class:`Function` instances.")
     procedures = LateBindingProperty(_get_procedures,
-                                     doc=":class:`ObjectList` of package procedures."
+                                     doc=":class:`~fdb.utils.ObjectList` of package procedures."
                                      " Items are :class:`Procedure` instances.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitProcedure(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitPackage(self)
     def has_valid_body(self):
         result = self._attributes.get('RDB$VALID_BODY_FLAG')
         return bool(result) if result is not None else None
@@ -4427,7 +4197,6 @@ using the nBackup utility.
         self._strip_attribute('RDB$FILE_NAME')
 
     #--- Protected
-
     def _get_name(self):
         return 'BCKP_%d' % self.sequence
     def _get_backup_id(self):
@@ -4444,22 +4213,13 @@ using the nBackup utility.
         return self._attributes['RDB$GUID']
 
     #--- Properties
-
     backup_id = LateBindingProperty(_get_backup_id, doc="The identifier assigned by the engine.")
     filename = LateBindingProperty(_get_filename, doc="Full path and file name of backup file.")
     created = LateBindingProperty(_get_created, doc="Backup date and time.")
     level = LateBindingProperty(_get_level, doc="Backup level.")
     scn = LateBindingProperty(_get_scn, doc="System (scan) number.")
     guid = LateBindingProperty(_get_guid, doc="Unique identifier.")
-
     #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitBackupHistory(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitBackupHistory(self)
     def issystemobject(self):
         "Returns True."
         return True
@@ -4487,7 +4247,6 @@ class Filter(BaseSchemaItem):
             self._actions = ['comment', 'declare', 'drop']
 
     #--- Protected
-
     def _get_declare_sql(self, **params):
         self._check_params(params, [])
         fdef = 'DECLARE FILTER %s\nINPUT_TYPE %d OUTPUT_TYPE %d\n' % (self.get_quoted_name(),
@@ -4513,80 +4272,8 @@ class Filter(BaseSchemaItem):
         return self._attributes.get('RDB$OUTPUT_SUB_TYPE')
 
     #--- Properties
-
     module_name = LateBindingProperty(_get_module_name, doc="The name of the dynamic library or shared object where the code of the BLOB filter is located.")
     entrypoint = LateBindingProperty(_get_entrypoint, doc="The exported name of the BLOB filter in the filter library.")
     input_sub_type = LateBindingProperty(_get_input_sub_type, doc="The BLOB subtype of the data to be converted by the function.")
     output_sub_type = LateBindingProperty(_get_output_sub_type, doc="The BLOB subtype of the converted data.")
 
-    #--- Public
-
-    def accept_visitor(self, visitor):
-        """Visitor Pattern support. Calls `visitFilter(self)` on parameter object.
-
-        :param visitor: Visitor object of Vistior Pattern.
-        """
-        visitor.visitFilter(self)
-
-class SchemaVisitor(object):
-    """Helper class for implementation of schema Visitor.
-
-    Implements all `visit*` methods supported by schema classes as calls to
-    :meth:`default_action`.
-    """
-    def default_action(self, obj):
-        "Does nothing."
-        pass
-    def visitSchema(self, schema):
-        self.default_action(schema)
-    def visitMetadataItem(self, item):
-        self.default_action(item)
-    def visitCollation(self, collation):
-        self.default_action(collation)
-    def visitCharacterSet(self, character_set):
-        self.default_action(character_set)
-    def visitException(self, exception):
-        self.default_action(exception)
-    def visitGenerator(self, generator):
-        self.default_action(generator)
-    def visitTableColumn(self, column):
-        self.default_action(column)
-    def visitIndex(self, index):
-        self.default_action(index)
-    def visitViewColumn(self, column):
-        self.default_action(column)
-    def visitDomain(self, domain):
-        self.default_action(domain)
-    def visitDependency(self, dependency):
-        self.default_action(dependency)
-    def visitConstraint(self, constraint):
-        self.default_action(constraint)
-    def visitTable(self, table):
-        self.default_action(table)
-    def visitView(self, view):
-        self.default_action(view)
-    def visitTrigger(self, trigger):
-        self.default_action(trigger)
-    def visitProcedureParameter(self, param):
-        self.default_action(param)
-    def visitProcedure(self, procedure):
-        self.default_action(procedure)
-    def visitRole(self, role):
-        self.default_action(role)
-    def visitFunctionArgument(self, arg):
-        self.default_action(arg)
-    def visitFunction(self, function):
-        self.default_action(function)
-    def visitDatabaseFile(self, dbfile):
-        self.default_action(dbfile)
-    def visitShadow(self, shadow):
-        self.default_action(shadow)
-    def visitPrivilege(self, privilege):
-        self.default_action(privilege)
-    def visitPackage(self, package):
-        self.default_action(package)
-
-    def visitBackupHistory(self, backup_history):
-        self.default_action(backup_history)
-    def visitFilter(self, _filter):
-        self.default_action(_filter)

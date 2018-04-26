@@ -186,13 +186,6 @@ blr_scrollable = 109 # Firebird 3.0
 #blr_seek = 112 # Defined in FB < 3.0
 # unused codes 110..117
 
-# these indicate directions for blr_seek and blr_find
-blr_continue = 0
-blr_forward = 1
-blr_backward = 2
-blr_bof_forward = 3
-blr_eof_backward = 4
-
 blr_run_count = 118
 blr_rs_stream = 119
 blr_exec_proc = 120
@@ -234,6 +227,13 @@ blr_stall = 155
 # unused codes 156..157
 blr_ansi_all = 158
 blr_extract = 159
+
+# these indicate directions for blr_seek and blr_find
+blr_continue = 0
+blr_forward = 1
+blr_backward = 2
+blr_bof_forward = 3
+blr_eof_backward = 4
 
 # sub parameters for blr_extract
 blr_extract_year = 0

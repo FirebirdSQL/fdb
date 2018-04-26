@@ -78,7 +78,7 @@ def get_object_data(obj, skip=[]):
         add(item)
     return data
 
-class SchemaVisitor(fdb.schema.SchemaVisitor):
+class SchemaVisitor(fdb.utils.Visitor):
     def __init__(self, test, action, follow='dependencies'):
         self.test = test
         self.seen = []
@@ -90,35 +90,23 @@ class SchemaVisitor(fdb.schema.SchemaVisitor):
                 for dependency in obj.get_dependencies():
                     d = dependency.depended_on
                     if d and d not in self.seen:
-                        d.accept_visitor(self)
+                        d.accept(self)
             elif self.follow == 'dependents':
                 for dependency in obj.get_dependents():
                     d = dependency.dependent
                     if d and d not in self.seen:
-                        d.accept_visitor(self)
+                        d.accept(self)
             if obj not in self.seen:
                 self.test.printout(obj.get_sql_for(self.action))
                 self.seen.append(obj)
-    def visitSchema(self, schema):
-        pass
-    def visitMetadataItem(self, item):
-        pass
-    def visitTableColumn(self, column):
-        column.table.accept_visitor(self)
-    def visitViewColumn(self, column):
-        column.view.accept_visitor(self)
-    def visitDependency(self, dependency):
-        pass
-    def visitConstraint(self, constraint):
-        pass
-    def visitProcedureParameter(self, param):
-        param.procedure.accept_visitor(self)
-    def visitFunctionArgument(self, arg):
-        arg.function.accept_visitor(self)
-    def visitDatabaseFile(self, dbfile):
-        pass
-    def visitShadow(self, shadow):
-        pass
+    def visit_TableColumn(self, column):
+        column.table.accept(self)
+    def visit_ViewColumn(self, column):
+        column.view.accept(self)
+    def visit_ProcedureParameter(self, param):
+        param.procedure.accept(self)
+    def visit_FunctionArgument(self, arg):
+        arg.function.accept(self)
 
 class FDBTestBase(unittest.TestCase):
     def __init__(self, methodName='runTest'):
@@ -5421,7 +5409,7 @@ END""")
     def testVisitor(self):
         v = SchemaVisitor(self, 'create', follow='dependencies')
         c = self.con.schema.get_procedure('ALL_LANGS')
-        c.accept_visitor(v)
+        c.accept(v)
         self.maxDiff = None
         output = "CREATE TABLE JOB (\n  JOB_CODE JOBCODE NOT NULL,\n" \
             "  JOB_GRADE JOBGRADE NOT NULL,\n" \
@@ -5483,7 +5471,7 @@ END""")
         v = SchemaVisitor(self, 'drop', follow='dependents')
         c = self.con.schema.get_table('JOB')
         self.clear_output()
-        c.accept_visitor(v)
+        c.accept(v)
         self.assertEqual(self.output.getvalue(), """DROP PROCEDURE ALL_LANGS
 DROP PROCEDURE SHOW_LANGS
 DROP TABLE JOB

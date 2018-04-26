@@ -169,9 +169,9 @@ def connect(host='service_mgr', user=None, password=None):
        host.  Therefore, the database specified as a parameter to methods such as
        `getStatistics` MUST NOT include the host name of the database server.
 
-    Hooks:
+    **Hooks:**
 
-    Event HOOK_SERVICE_ATTACHED: Executed before :class:`Connection`
+    Event `HOOK_SERVICE_ATTACHED`: Executed before :class:`Connection`
     instance is returned. Hook must have signature:
     hook_func(connection). Any value returned by hook is ignored.
 
@@ -557,7 +557,7 @@ class Connection(object):
         """Get list of remaining output lines from last service query.
 
         :returns list: Service output.
-        :raises fdb.ProgrammingError: When service is not in :attr:`fetching` mode.
+        :raises `~fdb.ProgrammingError`: When service is not in :attr:`fetching` mode.
         """
         return [line for line in self]
     def isrunning(self):
@@ -634,7 +634,7 @@ class Connection(object):
             CAPABILITY_QUOTED_FILENAME
             CAPABILITY_NO_SERVER_SHUTDOWN
 
-        Example::
+        **Example**::
 
             >>>fdb.services.CAPABILITY_REMOTE_HOP in svc.get_server_capabilities()
             True
@@ -696,7 +696,7 @@ class Connection(object):
 
         :param string database: Database filename or alias.
         :returns list: Transaction IDs.
-        :raises fdb.InternalError: When can't process the result buffer.
+        :raises `~fdb.InternalError`: When can't process the result buffer.
         """
         self.__check_active()
         _check_string(database)
@@ -1395,8 +1395,8 @@ class Connection(object):
 
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was stopped.
-        :raises fdb.DatabaseError: When trace session is not stopped.
-        :raises fdb.OperationalError: When server can't perform requested operation.
+        :raises `~fdb.DatabaseError`: When trace session is not stopped.
+        :raises `~fdb.OperationalError`: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1413,8 +1413,8 @@ class Connection(object):
 
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was paused.
-        :raises fdb.DatabaseError: When trace session is not paused.
-        :raises fdb.OperationalError: When server can't perform requested operation.
+        :raises `~fdb.DatabaseError`: When trace session is not paused.
+        :raises `~fdb.OperationalError`: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1431,8 +1431,8 @@ class Connection(object):
 
         :param integer trace_id: Trace session ID.
         :returns string: Text with confirmation that session was resumed.
-        :raises fdb.DatabaseError: When trace session is not resumed.
-        :raises fdb.OperationalError: When server can't perform requested operation.
+        :raises `~fdb.DatabaseError`: When trace session is not resumed.
+        :raises `~fdb.OperationalError`: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1456,7 +1456,7 @@ class Connection(object):
           :user:  (string) Trace user name.
           :flags: (list of strings) Session flags.
 
-        :raises fdb.OperationalError: When server can't perform requested operation.
+        :raises `~fdb.OperationalError`: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1984,7 +1984,7 @@ class User(object):
         :type svc: :class:`Connection`
         :returns: True if information was successfuly retrieved, False otherwise.
 
-        :raises fdb.ProgrammingError: If user name is not defined.
+        :raises `~fdb.ProgrammingError`: If user name is not defined.
         """
         if self.name is None:
             raise fdb.ProgrammingError("Can't load information about user without name.")

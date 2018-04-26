@@ -214,15 +214,15 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     #: True if link to :class:`~fdb.Connection` is closed.
     closed = property(__get_closed)
     db = LateBindingProperty(_get_database, doc=":class:`DatabaseInfo` object for attached database.")
-    attachments = LateBindingProperty(_get_attachments, doc=":class:`ObjectList` of all attachments.\nItems are :class:`AttachmentInfo` objects.")
+    attachments = LateBindingProperty(_get_attachments, doc=":class:`~fdb.utils.ObjectList` of all attachments.\nItems are :class:`AttachmentInfo` objects.")
     this_attachment = LateBindingProperty(_get_this_attachment, doc=":class:`AttachmentInfo` object for current connection.")
-    transactions = LateBindingProperty(_get_transactions, doc=":class:`ObjectList` of all transactions.\nItems are :class:`TransactionInfo` objects.")
-    statements = LateBindingProperty(_get_statements, doc=":class:`ObjectList` of all statements.\nItems are :class:`StatementInfo` objects.")
-    callstack = LateBindingProperty(_get_callstack, doc=":class:`ObjectList` with complete call stack.\nItems are :class:`CallStackInfo` objects.")
-    iostats = LateBindingProperty(_get_iostats, doc=":class:`ObjectList` of all I/O statistics.\nItems are :class:`IOStatsInfo` objects.")
-    variables = LateBindingProperty(_get_variables, doc=":class:`ObjectList` of all context variables.\nItems are :class:`ContextVariableInfo` objects.")
+    transactions = LateBindingProperty(_get_transactions, doc=":class:`~fdb.utils.ObjectList` of all transactions.\nItems are :class:`TransactionInfo` objects.")
+    statements = LateBindingProperty(_get_statements, doc=":class:`~fdb.utils.ObjectList` of all statements.\nItems are :class:`StatementInfo` objects.")
+    callstack = LateBindingProperty(_get_callstack, doc=":class:`~fdb.utils.ObjectList` with complete call stack.\nItems are :class:`CallStackInfo` objects.")
+    iostats = LateBindingProperty(_get_iostats, doc=":class:`~fdb.utils.ObjectList` of all I/O statistics.\nItems are :class:`IOStatsInfo` objects.")
+    variables = LateBindingProperty(_get_variables, doc=":class:`~fdb.utils.ObjectList` of all context variables.\nItems are :class:`ContextVariableInfo` objects.")
     # FB 3.0
-    tablestats = LateBindingProperty(_get_tablestats, doc=":class:`ObjectList` of all table record I/O statistics.\nItems are :class:`TableStatsInfo` objects.")
+    tablestats = LateBindingProperty(_get_tablestats, doc=":class:`~fdb.utils.ObjectList` of all table record I/O statistics.\nItems are :class:`TableStatsInfo` objects.")
 
     #--- Public
 
@@ -515,9 +515,9 @@ class AttachmentInfo(BaseInfoItem):
     remote_process = property(__get_remote_process, doc="Remote client process pathname.")
     character_set = property(__get_character_set, doc=":class:`~fdb.schema.CharacterSet` for this attachment.")
     timestamp = property(__get_timestamp, doc="Attachment date/time.")
-    transactions = LateBindingProperty(_get_transactions, doc=":class:`ObjectList` of transactions associated with attachment.\nItems are :class:`TransactionInfo` objects.")
-    statements = LateBindingProperty(_get_statements, doc=":class:`ObjectList` of statements associated with attachment.\nItems are :class:`StatementInfo` objects.")
-    variables = LateBindingProperty(_get_variables, doc=":class:`ObjectList` of variables associated with attachment.\nItems are :class:`ContextVariableInfo` objects.")
+    transactions = LateBindingProperty(_get_transactions, doc=":class:`~fdb.utils.ObjectList` of transactions associated with attachment.\nItems are :class:`TransactionInfo` objects.")
+    statements = LateBindingProperty(_get_statements, doc=":class:`~fdb.utils.ObjectList` of statements associated with attachment.\nItems are :class:`StatementInfo` objects.")
+    variables = LateBindingProperty(_get_variables, doc=":class:`~fdb.utils.ObjectList` of variables associated with attachment.\nItems are :class:`ContextVariableInfo` objects.")
     iostats = property(__get_iostats, doc=":class:`IOStatsInfo` for this object.")
     # FB 3.0
     auth_method = property(__get_auth_method, doc="Authentication method.")
@@ -606,8 +606,8 @@ class TransactionInfo(BaseInfoItem):
     oldest_active = property(__get_oldest_active, doc="Oldest active transaction (local OAT).")
     isolation_mode = property(__get_isolation_mode, doc="Transaction isolation mode code.")
     lock_timeout = property(__get_lock_timeout, doc="Lock timeout.")
-    statements = LateBindingProperty(_get_statements, doc=":class:`ObjectList` of statements associated with transaction.\nItems are :class:`StatementInfo` objects.")
-    variables = LateBindingProperty(_get_variables, doc=":class:`ObjectList` of variables associated with transaction.\nItems are :class:`ContextVariableInfo` objects.")
+    statements = LateBindingProperty(_get_statements, doc=":class:`~fdb.utils.ObjectList` of statements associated with transaction.\nItems are :class:`StatementInfo` objects.")
+    variables = LateBindingProperty(_get_variables, doc=":class:`~fdb.utils.ObjectList` of variables associated with transaction.\nItems are :class:`ContextVariableInfo` objects.")
     iostats = property(__get_iostats, doc=":class:`IOStatsInfo` for this object.")
     # FB 3.0
     tablestats = property(__get_tablestats, doc="Dictionary of :class:`TableStatsInfo` instances for this object.")
@@ -688,7 +688,7 @@ class StatementInfo(BaseInfoItem):
     state = property(__get_state, doc="Statement state (idle/active).")
     timestamp = property(__get_timestamp, doc="Statement start date/time.")
     sql_text = property(__get_sql_text, doc="Statement text, if appropriate.")
-    callstack = property(__get_callstack, doc=":class:`ObjectList` with call stack for statement.\nItems are :class:`CallStackInfo` objects.")
+    callstack = property(__get_callstack, doc=":class:`~fdb.utils.ObjectList` with call stack for statement.\nItems are :class:`CallStackInfo` objects.")
     iostats = property(__get_iostats, doc=":class:`IOStatsInfo` for this object.")
     # FB 3.0
     plan = property(__get_plan, doc="Explained execution plan.")
