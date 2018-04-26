@@ -1,6 +1,6 @@
-FDB is a Python library package that implements Python Database API 2.0-compliant support for the open source relational
-database Firebird®. In addition to the minimal feature set of the standard Python DB API, FDB also exposes the entire native
-client API of the database engine. Notably:
+FDB is a `Python`_ library package that implements `Python Database API 2.0`_-compliant support for the open source relational
+database `Firebird`_ ®. In addition to the minimal feature set of the standard Python DB API, FDB also exposes the entire native
+(old-style) client API of the database engine. Notably:
 
     * Automatic data conversion from strings on input.
     * Automatic input/output conversions of textual data between UNICODE and database character sets.
@@ -31,3 +31,6 @@ FDB is replacement for discontinued KInterbasDB library, and as such it's design
 with KInterbasDB as possible, but there are some differences. See FDB documentation for full description
 of these differences.
 
+.. _Python: http://python.org
+.. _Python Database API 2.0: http://www.python.org/dev/peps/pep-0249/
+.. _Firebird: http://www.firebirdsql.org
