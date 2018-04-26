@@ -2,37 +2,48 @@
 Changelog
 #########
 
-* `Version 1.8`_ (20.9.2017)
-* `Version 1.7`_ (15.2.2017)
-* `Version 1.6.1`_ (30.11.2016)
-* `Version 1.6`_ (30.3.2016)
-* `Version 1.5.1`_ (22.2.2016)
-* `Version 1.5`_ (7.1.2016)
-* `Version 1.4.11`_ (12.11.2015)
-* `Version 1.4.10`_ (31.8.2015)
-* `Version 1.4.9`_ (30.6.2015)
-* `Version 1.4.8`_ (23.6.2015)
-* `Version 1.4.7`_ (4.6.2015)
-* `Version 1.4.6`_ (29.5.2015)
-* `Version 1.4.5`_ (31.3.2015)
-* `Version 1.4.4`_ (27.2.2015)
-* `Version 1.4.3`_ (14.11.2014)
-* `Version 1.4.2`_ (13.11.2014)
-* `Version 1.4.1`_ (25.6.2014)
-* `Version 1.4`_ (24.6.2013)
-* `Version 1.3`_ (7.6.2013)
-* `Version 1.2`_ (31.5.2013)
-* `Version 1.1.1`_ (14.5.2013)
-* `Version 1.1`_ (9.4.2013)
-* `Version 1.0`_ (7.3.2013)
-* `Version 0.9.9`_ (30.11.2012)
-* `Version 0.9.1`_ (8.9.2012)
-* `Version 0.9`_ (5.9.2012)
-* `Version 0.8.5`_ (28.6.2012)
-* `Version 0.8`_ (31.5.2012)
-* `Version 0.7.2`_ (27.3.2012)
-* `Version 0.7.1`_ (31.1.2012)
-* `Version 0.7`_ (21.12.2011)
+
+Version 2.0
+===========
+
+.. important::
+
+   This is initial release of new *"SweetBitter"* driver generation. 
+   
+   During this (v2) generation FDB driver will undergo a transition from development centered around Python 2.7 / Firebird 2.x to development centered around Python 3 / Firebird 3. There are some backward incompatible changes between v2 and v1 generation, and you may expect some also between individual releases of second generation. To *soften* this *bitter* pill, the second generation will have new functionality, enhancements and optimalizations gradually added into each public release. 
+   
+   **The second generation is also the last one that will directly support Python 2.7 and will be tested with Firebird 2.**
+   
+   The plan is to move forward with v3 generation (Python 3/Firebird 3+) as soon as v2 code base will become mature.
+
+Improvements
+------------
+
+- Hooks.
+- New modules for parsing Firebird trace & audit logs (:mod:`fdb.trace`), gstat output (:mod:`fdb.gstat`) and server log (:mod:`fdb.log`)
+- Added :class:`fdb.utils.ObjectList` class for improved object collection manipulation.
+- Modules :mod:`~fdb.monitor` and :mod:`~fdb.schema` now use new :class:`fdb.utils.ObjectList` for collections of information objects.
+- Methods :meth:`fdb.Connection.database_info()` and :meth:`fdb.Transaction.transaction_info()` now distinguish between 
+  text and binary strings with `result_type` code.
+- Significant changes to documentation.
+
+Other changes
+-------------
+
+- Exception fdb.Warning removed as duplicate to standard Warning exception.
+- Changes to make pylint more happy about fdb code.
+- Parameter `result_type` in methods :meth:`fdb.Transaction.transaction_info()` and :meth:`fdb.Connection.database_info()` now does not support value 's' for string results as these converted strings to unicode in Python 3 which does not makes sense (it's always binary data, at least partially). Instead new value 'b' is introduced for binary string results.
+- Reworked Visitor Pattern support in :mod:`~fdb.schema` module, added classes :class:`fdb.utils.Visitable` and :class:`fdb.utils.Visitor`.
+- Method :meth:`fdb.schema.Schema.reload` now takes as parameter numeric metadata category code(s) instead string name.
+- Cleanup of unused constants
+
+Bugs Fixed
+----------
+
+- (PYFB-72) - exception_from_status function gives an UnicodeDecodeError
+- (PYFB-73) - Buffer filled with zero-characters is returned instead of actual content of page when page number more than 64 K
+- (Unregistered) - BOOLEAN arrays were not supported
+- (Unregistered) - Issues with Python 3 and Windows compatibility from latest 1.x versions.
 
 Version 1.8
 ===========

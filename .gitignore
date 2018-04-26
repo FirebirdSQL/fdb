@@ -2,6 +2,7 @@
 build/
 dist/
 docs/
+sphinx/.build/
 *.egg-info/
 *.egg
 *.py[cod]

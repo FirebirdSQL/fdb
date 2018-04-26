@@ -1,41 +1,36 @@
 
-########################
-Getting Started with FDB
-########################
+###############
+Getting Started
+###############
 
 Installation
 ************
 
-FDB is written as pure-Python module on top of Firebird client library (fbclient.so/dll) using ctypes_, so *make sure you have Firebird client properly installed before you try to install FDB*, otherwise the installation will fail. FDB supports Firebird version 2.0 and higher.
+FDB is written as pure-Python module (requires Python 2.7 or 3.4+) on top of Firebird client library (fbclient.so/dll) using ctypes_, so **make sure you have Firebird client properly installed before you try to install FDB**, otherwise the installation will fail. FDB supports Firebird version 2.0 and higher.
 
-FDB is distributed as `setuptools`_ package, so you'll need setuptools or 
-`compatible package <http://pypi.python.org/pypi/distribute>`_ installed to
-install FDB properly.
+FDB is distributed as `setuptools`_ package and the preferred installation method is via pip_ tool.
 
 Installation from PYPI_
 =======================
 
-Run easy_install or pip::
+Run pip::
 
   $ pip install fdb
 
-or::
-
-  $ easy_install fdb
 
 Installation from source
 ========================
 
 Download the source tarball, uncompress it, then run the install command::
 
-  $ curl -O http://pypi.python.org/packages/source/f/fdb/fdb-1.2.tar.gz
-  $ tar -xzvf fdb-1.2.tar.gz
-  $ cd fdb-1.2
+  $ tar -xzvf fdb-2.0.tar.gz
+  $ cd fdb-2.0
   $ python setup.py install
 
-.. _setuptools: https://bitbucket.org/pypa/setuptools
-.. _PYPI: http://pypi.python.org
+.. _setuptools: https://pypi.org/project/setuptools/
+.. _PYPI: https://pypi.org/
 .. _ctypes: http://docs.python.org/library/ctypes.html
+.. _pip: https://pypi.org/project/pip/
 
 
 Quick-start Guide
