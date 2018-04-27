@@ -2,7 +2,7 @@
 FDB - The Python driver for Firebird
 ====================================
 
-|docs|   Documentation_ || Home_ || `Bug Reports`_ || Source_ || `Say Thanks!`_
+|docs|   || Home_ || `Bug Reports`_ || Source_ || `Say Thanks!`_
 
 FDB is a `Python`_ library package that implements `Python Database API 2.0`_-compliant support for the open source relational
 database `Firebird`_ ®. In addition to the minimal feature set of the standard Python DB API, FDB also exposes the entire native
@@ -42,19 +42,17 @@ of these differences.
 .. _Python: http://python.org
 .. _Python Database API 2.0: http://www.python.org/dev/peps/pep-0249/
 .. _Firebird: http://www.firebirdsql.org
-.. _Documentation: http://fdb2.readthedocs.io/en/latest/
 .. _Bug Reports: http://tracker.firebirdsql.org/browse/PYFB
 .. _Home: http://www.firebirdsql.org/en/devel-python-driver/
 .. _Source: https://github.com/FirebirdSQL/fdb
 .. _Say Thanks!: https://saythanks.io/to/pcisar
-.. _Donate: https://www.firebirdsql.org/en/donate/
 
 .. |donate| image:: https://www.firebirdsql.org/img/donate/donate_to_firebird.gif
     :alt: Contribute to the development
     :scale: 100%
     :target: https://www.firebirdsql.org/en/donate/
 
-.. |docs| image:: https://readthedocs.org/projects/fdb2/badge/?version=latest
+.. |docs| image:: https://readthedocs.org/projects/fdb/badge/?version=v2.0
     :alt: Documentation Status
     :scale: 100%
-    :target: http://fdb2.readthedocs.io/en/latest/
+    :target: http://fdb.readthedocs.io/en/v2.0/
