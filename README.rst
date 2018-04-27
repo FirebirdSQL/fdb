@@ -2,7 +2,9 @@
 FDB - The Python driver for Firebird
 ====================================
 
-|docs|   || Home_ || `Bug Reports`_ || Source_ || `Say Thanks!`_
+|pypi-latest| |docs| |pyversions|
+
+Home_ * Documentation_ * `Bug Reports`_ * Source_ * `Say Thanks!`_
 
 FDB is a `Python`_ library package that implements `Python Database API 2.0`_-compliant support for the open source relational
 database `Firebird`_ ®. In addition to the minimal feature set of the standard Python DB API, FDB also exposes the entire native
@@ -27,16 +29,6 @@ FDB also contains extensive collection of submodules that simplify various Fireb
 * Parsing Firebird server log
 * Parsing Firebird gstat utility output
 
-FDB is implemented on top of Firebird client library using ctypes, and currently uses only traditional Firebird API.
-
-FDB works with Firebird 2.0 and newer, and Python 2.7 and 3.4+.
-
-FDB is free – covered by a permissive BSD-style license that both commercial and noncommercial users should find agreeable.
-
-FDB is replacement for discontinued KInterbasDB library, and as such it's designed to be as much compatible
-with KInterbasDB as possible, but there are some differences. See FDB documentation for full description
-of these differences.
-
 |donate|
 
 .. _Python: http://python.org
@@ -46,6 +38,7 @@ of these differences.
 .. _Home: http://www.firebirdsql.org/en/devel-python-driver/
 .. _Source: https://github.com/FirebirdSQL/fdb
 .. _Say Thanks!: https://saythanks.io/to/pcisar
+.. _Documentation: http://fdb.readthedocs.io/en/v2.0/
 
 .. |donate| image:: https://www.firebirdsql.org/img/donate/donate_to_firebird.gif
     :alt: Contribute to the development
@@ -56,3 +49,14 @@ of these differences.
     :alt: Documentation Status
     :scale: 100%
     :target: http://fdb.readthedocs.io/en/v2.0/
+
+.. |pyversions| https://img.shields.io/pypi/pyversions/fdb.svg
+    :alt: Python versions supported
+    :scale: 100%
+    :target: http://fdb.readthedocs.io/en/v2.0/
+
+.. |pypi-latest| https://img.shields.io/pypi/v/fdb.svg
+    :alt: Latest stable release
+    :scale: 100%
+    :target: https://pypi.org/project/fdb/
+

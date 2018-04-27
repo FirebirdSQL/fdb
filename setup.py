@@ -27,7 +27,7 @@ setup(
     description='The Python driver for Firebird',
     long_description=long_description,
     long_description_content_type='text/x-rst',
-    url='http://www.firebirdsql.org/en/devel-python-driver/',
+    url='https://github.com/FirebirdSQL/fdb',
     author='Pavel Císař',
     author_email='pcisar@users.sourceforge.net',
     classifiers=[
