@@ -4,16 +4,6 @@ FDB - The Python driver for Firebird
 
 |docs|
 
-.. sidebar:: Important links
-
-   * Documentation_
-   * Home_
-   * `Bug Reports`_
-   * Source_
-   * `Say Thanks!`_
-
-   |donate|
-
 FDB is a `Python`_ library package that implements `Python Database API 2.0`_-compliant support for the open source relational
 database `Firebird`_ ®. In addition to the minimal feature set of the standard Python DB API, FDB also exposes the entire native
 (old-style) client API of the database engine. Notably:
@@ -46,6 +36,17 @@ FDB is free – covered by a permissive BSD-style license that both commercial a
 FDB is replacement for discontinued KInterbasDB library, and as such it's designed to be as much compatible
 with KInterbasDB as possible, but there are some differences. See FDB documentation for full description
 of these differences.
+
+.. sidebar:: Important links
+
+   * Documentation_
+   * Home_
+   * `Bug Reports`_
+   * Source_
+   * `Say Thanks!`_
+
+   |donate|
+
 
 .. _Python: http://python.org
 .. _Python Database API 2.0: http://www.python.org/dev/peps/pep-0249/
