@@ -2,7 +2,7 @@
 FDB - The Python driver for Firebird
 ====================================
 
-|pypi-latest| |docs| |pyversions|
+|docs|
 
 Home_ * Documentation_ * `Bug Reports`_ * Source_ * `Say Thanks!`_
 
@@ -50,13 +50,4 @@ FDB also contains extensive collection of submodules that simplify various Fireb
     :scale: 100%
     :target: http://fdb.readthedocs.io/en/v2.0/
 
-.. |pyversions| https://img.shields.io/pypi/pyversions/fdb.svg
-    :alt: Python versions supported
-    :scale: 100%
-    :target: http://fdb.readthedocs.io/en/v2.0/
-
-.. |pypi-latest| https://img.shields.io/pypi/v/fdb.svg
-    :alt: Latest stable release
-    :scale: 100%
-    :target: https://pypi.org/project/fdb/
 
