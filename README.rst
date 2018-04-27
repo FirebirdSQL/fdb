@@ -6,11 +6,12 @@ FDB - The Python driver for Firebird
 
 .. sidebar:: Important links
 
-   Documentation_
-   Home_
-   `Bug Reports`_
-   Source_
-   `Say Thanks!`_
+   * Documentation_
+   * Home_
+   * `Bug Reports`_
+   * Source_
+   * `Say Thanks!`_
+
    |donate|
 
 FDB is a `Python`_ library package that implements `Python Database API 2.0`_-compliant support for the open source relational
