@@ -636,38 +636,47 @@ order by r.RDB$DIMENSION""" % field.name)]
             if self._con.ods >= fdb.ODS_FB_30:
                 cols.extend(['RDB$SECURITY_CLASS', 'RDB$OWNER_NAME'])
             self._ic.execute("""select %s from RDB$FIELDS""" % ','.join(cols))
-            self.__domains = ObjectList((Domain(self, row) for row in self._ic.itermap()),
-                                        Domain, 'item.name')
-            self.__domains.freeze()
+            sys_domains, user_domains = ObjectList((Domain(self, row) for row in self._ic.itermap()),
+                                                   Domain, 'item.name').split(lambda item:
+                                                                              item.issystemobject())
+            sys_domains.freeze()
+            user_domains.freeze()
+            self.__domains = (user_domains, sys_domains)
         return self.__domains
     def _get_domains(self):
-        return self._get_all_domains().filter(lambda item: not item.issystemobject())
+        return self._get_all_domains()[0]
     def _get_sysdomains(self):
-        return self._get_all_domains().filter(lambda item: item.issystemobject())
+        return self._get_all_domains()[1]
     def _get_all_tables(self):
         if self.__tables is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$relations where rdb$view_blr is null")
-            self.__tables = ObjectList((Table(self, row) for row in self._ic.itermap()),
-                                       Table, 'item.name')
-            self.__tables.freeze()
+            sys_tables, user_tables = ObjectList((Table(self, row) for row in self._ic.itermap()),
+                                                 Table, 'item.name').split(lambda item:
+                                                                           item.issystemobject())
+            sys_tables.freeze()
+            user_tables.freeze()
+            self.__tables = (user_tables, sys_tables)
         return self.__tables
     def _get_tables(self):
-        return self._get_all_tables().filter(lambda item: not item.issystemobject())
+        return self._get_all_tables()[0]
     def _get_systables(self):
-        return self._get_all_tables().filter(lambda item: item.issystemobject())
+        return self._get_all_tables()[1]
     def _get_all_views(self):
         if self.__views is None:
             self.__fail_if_closed()
             self._ic.execute("select * from rdb$relations where rdb$view_blr is not null")
-            self.__views = ObjectList((View(self, row) for row in self._ic.itermap()),
-                                      View, 'item.name')
-            self.__views.freeze()
+            sys_views, user_views = ObjectList((View(self, row) for row in self._ic.itermap()),
+                                               View, 'item.name').split(lambda item:
+                                                                        item.issystemobject())
+            sys_views.freeze()
+            user_views.freeze()
+            self.__views = (user_views, sys_views)
         return self.__views
     def _get_views(self):
-        return self._get_all_views().filter(lambda item: not item.issystemobject())
+        return self._get_all_views()[0]
     def _get_sysviews(self):
-        return self._get_all_views().filter(lambda item: item.issystemobject())
+        return self._get_all_views()[1]
     def _get_constraint_indices(self):
         if self.__constraint_indices is None:
             self.__fail_if_closed()
@@ -686,14 +695,17 @@ from RDB$RELATION_CONSTRAINTS where RDB$INDEX_NAME is not null""")
 RDB$INDEX_ID, RDB$UNIQUE_FLAG, RDB$DESCRIPTION, RDB$SEGMENT_COUNT,
 RDB$INDEX_INACTIVE, RDB$INDEX_TYPE, RDB$FOREIGN_KEY, RDB$SYSTEM_FLAG,
 RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
-            self.__indices = ObjectList((Index(self, row) for row in self._ic.itermap()),
-                                        Index, 'item.name')
-            self.__indices.freeze()
+            sys_indices, user_indices = ObjectList((Index(self, row) for row in self._ic.itermap()),
+                                                   Index, 'item.name').split(lambda item:
+                                                                             item.issystemobject())
+            sys_indices.freeze()
+            user_indices.freeze()
+            self.__indices = (user_indices, sys_indices)
         return self.__indices
     def _get_indices(self):
-        return self._get_all_indices().filter(lambda item: not item.issystemobject())
+        return self._get_all_indices()[0]
     def _get_sysindices(self):
-        return self._get_all_indices().filter(lambda item: item.issystemobject())
+        return self._get_all_indices()[1]
     def _get_all_generators(self):
         if self.__generators is None:
             self.__fail_if_closed()
@@ -703,14 +715,17 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
                 cols.extend(['RDB$SECURITY_CLASS', 'RDB$OWNER_NAME', 'RDB$INITIAL_VALUE',
                              'RDB$GENERATOR_INCREMENT'])
             self._ic.execute("select %s from rdb$generators" % ','.join(cols))
-            self.__generators = ObjectList((Sequence(self, row) for row in self._ic.itermap()),
-                                           Sequence, 'item.name')
-            self.__generators.freeze()
+            sys_generators, user_generators = ObjectList((Sequence(self, row) for row in self._ic.itermap()),
+                                                         Sequence, 'item.name').split(lambda item:
+                                                                                      item.issystemobject())
+            sys_generators.freeze()
+            user_generators.freeze()
+            self.__generators = (user_generators, sys_generators)
         return self.__generators
     def _get_generators(self):
-        return self._get_all_generators().filter(lambda item: not item.issystemobject())
+        return self._get_all_generators()[0]
     def _get_sysgenerators(self):
-        return self._get_all_generators().filter(lambda item: item.issystemobject())
+        return self._get_all_generators()[1]
     def _get_all_triggers(self):
         if self.__triggers is None:
             self.__fail_if_closed()
@@ -720,14 +735,17 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
             if self._con.ods >= fdb.ODS_FB_30:
                 cols.extend(['RDB$VALID_BLR', 'RDB$ENGINE_NAME', 'RDB$ENTRYPOINT'])
             self._ic.execute("select %s from RDB$TRIGGERS" % ','.join(cols))
-            self.__triggers = ObjectList((Trigger(self, row) for row in self._ic.itermap()),
-                                         Trigger, 'item.name')
-            self.__triggers.freeze()
+            sys_triggers, user_triggers = ObjectList((Trigger(self, row) for row in self._ic.itermap()),
+                                                     Trigger, 'item.name').split(lambda item:
+                                                                                 item.issystemobject())
+            sys_triggers.freeze()
+            user_triggers.freeze()
+            self.__triggers = (user_triggers, sys_triggers)
         return self.__triggers
     def _get_triggers(self):
-        return self._get_all_triggers().filter(lambda item: not item.issystemobject())
+        return self._get_all_triggers()[0]
     def _get_systriggers(self):
-        return self._get_all_triggers().filter(lambda item: item.issystemobject())
+        return self._get_all_triggers()[1]
     def _get_all_procedures(self):
         if self.__procedures is None:
             self.__fail_if_closed()
@@ -740,14 +758,17 @@ RDB$EXPRESSION_SOURCE, RDB$STATISTICS from RDB$INDICES""")
                 cols.extend(['RDB$ENGINE_NAME', 'RDB$ENTRYPOINT',
                              'RDB$PACKAGE_NAME', 'RDB$PRIVATE_FLAG'])
             self._ic.execute("select %s from rdb$procedures" % ','.join(cols))
-            self.__procedures = ObjectList((Procedure(self, row) for row in self._ic.itermap()),
-                                           Procedure, 'item.name')
-            self.__procedures.freeze()
+            sys_procedures, user_procedures = ObjectList((Procedure(self, row) for row in self._ic.itermap()),
+                                                         Procedure, 'item.name').split(lambda item:
+                                                                                       item.issystemobject())
+            sys_procedures.freeze()
+            user_procedures.freeze()
+            self.__procedures = (user_procedures, sys_procedures)
         return self.__procedures
     def _get_procedures(self):
-        return self._get_all_procedures().filter(lambda item: not item.issystemobject())
+        return self._get_all_procedures()[0]
     def _get_sysprocedures(self):
-        return self._get_all_procedures().filter(lambda item: item.issystemobject())
+        return self._get_all_procedures()[1]
     def _get_constraints(self):
         if self.__constraints is None:
             self.__fail_if_closed()
@@ -805,14 +826,17 @@ and (c.RDB$CONSTRAINT_TYPE in ('CHECK','NOT NULL'))""")
                              'RDB$SECURITY_CLASS', 'RDB$OWNER_NAME', 'RDB$LEGACY_FLAG',
                              'RDB$DETERMINISTIC_FLAG'])
             self._ic.execute("select %s from rdb$functions" % ','.join(cols))
-            self.__functions = ObjectList((Function(self, row) for row in self._ic.itermap()),
-                                          Function, 'item.name')
-            self.__functions.freeze()
+            sys_functions, user_functions = ObjectList((Function(self, row) for row in self._ic.itermap()),
+                                                       Function, 'item.name').split(lambda item:
+                                                                                    item.issystemobject())
+            sys_functions.freeze()
+            user_functions.freeze()
+            self.__functions = (user_functions, sys_functions)
         return self.__functions
     def _get_functions(self):
-        return self._get_all_functions().filter(lambda item: not item.issystemobject())
+        return self._get_all_functions()[0]
     def _get_sysfunctions(self):
-        return self._get_all_functions().filter(lambda item: item.issystemobject())
+        return self._get_all_functions()[1]
     def _get_files(self):
         if self.__files is None:
             self.__fail_if_closed()
@@ -1231,7 +1255,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`Sequence` with specified name or `None`.
         """
-        return self._get_all_generators().get(name)
+        generator = self.generators.get(name)
+        if generator is None:
+            generator = self.sysgenerators.get(name)
+        return generator
     get_sequence = get_generator
     def get_index(self, name):
         """Get :class:`Index` by name.
@@ -1240,7 +1267,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`Index` with specified name or `None`.
         """
-        return self._get_all_indices().get(name)
+        index = self.indices.get(name)
+        if index is None:
+            index = self.sysindices.get(name)
+        return index
     def get_domain(self, name):
         """Get :class:`Domain` by name.
 
@@ -1248,7 +1278,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`Domain` with specified name or `None`.
         """
-        return self._get_all_domains().get(name)
+        domain = self.domains.get(name)
+        if domain is None:
+            domain = self.sysdomains.get(name)
+        return domain
     def get_table(self, name):
         """Get :class:`Table` by name.
 
@@ -1256,7 +1289,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`Table` with specified name or `None`.
         """
-        return self._get_all_tables().get(name)
+        table = self.tables.get(name)
+        if table is None:
+            table = self.systables.get(name)
+        return table
     def get_view(self, name):
         """Get :class:`View` by name.
 
@@ -1264,7 +1300,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`View` with specified name or `None`.
         """
-        return self._get_all_views().get(name)
+        view = self.views.get(name)
+        if view is None:
+            view = self.sysviews.get(name)
+        return view
     def get_trigger(self, name):
         """Get :class:`Trigger` by name.
 
@@ -1272,7 +1311,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`Trigger` with specified name or `None`.
         """
-        return self._get_all_triggers().get(name)
+        trigger = self.triggers.get(name)
+        if trigger is None:
+            trigger = self.systriggers.get(name)
+        return trigger
     def get_procedure(self, name):
         """Get :class:`Procedure` by name.
 
@@ -1280,7 +1322,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`Procedure` with specified name or `None`.
         """
-        return self._get_all_procedures().get(name)
+        procedure = self.procedures.get(name)
+        if procedure is None:
+            procedure = self.sysprocedures.get(name)
+        return procedure
     def get_constraint(self, name):
         """Get :class:`Constraint` by name.
 
@@ -1304,7 +1349,10 @@ FROM RDB$FILTERS""")
 
         :returns: :class:`Function` with specified name or `None`.
         """
-        return self._get_all_functions().get(name)
+        function = self.functions.get(name)
+        if function is None:
+            function = self.sysfunctions.get(name)
+        return function
     def get_collation_by_id(self, charset_id, collation_id):
         """Get :class:`Collation` by ID.
 
@@ -2674,7 +2722,10 @@ class Table(BaseSchemaItem):
     def _get_flags(self):
         return self._attributes['RDB$FLAGS']
     def _get_indices(self):
-        return self.schema._get_all_indices().filter(lambda i: i._attributes['RDB$RELATION_NAME'] == self.name)
+        user_indices, sys_indices = self.schema._get_all_indices()
+        result = user_indices.filter(lambda i: i._attributes['RDB$RELATION_NAME'] == self.name)
+        result.extend(sys_indices.filter(lambda i: i._attributes['RDB$RELATION_NAME'] == self.name))
+        return result
     def _get_triggers(self):
         return self.schema.triggers.filter(lambda t: t._attributes['RDB$RELATION_NAME'] == self.name)
     def _get_constraints(self):
