@@ -3433,7 +3433,7 @@ class TestSchema(FDBTestBase):
                               'INTEG_26', 'INTEG_27', 'INTEG_28', 'INTEG_29',
                               'INTEG_30'])
         self.assertListEqual([x.name for x in c.indices],
-                             ['RDB$PRIMARY7', 'RDB$FOREIGN8', 'RDB$FOREIGN9', 'NAMEX'])
+                             ['NAMEX', 'RDB$PRIMARY7', 'RDB$FOREIGN8', 'RDB$FOREIGN9'])
         self.assertListEqual([x.name for x in c.triggers],
                              ['SET_EMP_NO', 'SAVE_SALARY_CHANGE'])
         #
@@ -8700,7 +8700,8 @@ class TestUtils(FDBTestBase):
         self.assertFalse(olist.all('item.size > 0'))
         self.assertTrue(olist.all('item.size < 200'))
         self.assertTrue(olist.any('item.size > 0'))
-        self.assertFalse(olist.any('item.size < 200'))
+        self.assertTrue(olist.any('item.size < 200'))
+        self.assertFalse(olist.any('item.size > 300'))
 
 class TestGstatParse(FDBTestBase):
     def setUp(self):
