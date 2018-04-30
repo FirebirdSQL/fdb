@@ -308,15 +308,12 @@ class ObjectList(list):
 
            Only one parameter (`attrs` or `expr`) could be specified. If none is present then uses default list sorting rule.
 
-        :raises TypeError: When list is frozen.
-
         Examples::
 
             sort(attrs=['name','degree'])       # Sort by item.name, item.degree
             sort(expr=lambda x: x.name.upper()) # Sort by upper item.name
             sort(expr='item.name.upper()')      # Sort by upper item.name
     """
-        self.__check_mutability()
         if attrs:
             super(ObjectList, self).sort(key=attrgetter(*attrs), reverse=reverse)
         elif expr:
@@ -337,7 +334,13 @@ class ObjectList(list):
         while len(self) > 0:
             del self[0]
     def freeze(self):
-        """Set list to immutable (frozen) state."""
+        """Set list to immutable (frozen) state.
+
+        Freezing list makes internal map from `key_expr` to item index that significantly speeds up retrieval by key using the
+        :meth:`get` method.
+
+        It's not possible to `add`, `delete` or `change` items in frozen list, but `sort` is allowed.
+"""
         self.__frozen = True
         if self.__key_expr:
             fce = make_lambda(self.__key_expr)
@@ -556,8 +559,9 @@ class ObjectList(list):
                 return True
         return False
     #
-    frozen = property(fget=lambda self: self.__frozen, doc='True if list is immutable')
+    frozen = property(fget=lambda self: self.__frozen, doc="True if list items couldn't be changed")
     key = property(fget=lambda self: self.__key_expr, doc='Key expression')
+    class_type = property(fget=lambda self: self._cls, doc='Class or list/tuple of classes that this list accepts.')
 
 class Visitable(object):
     """Base class for Visitor Pattern support.
