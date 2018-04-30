@@ -552,7 +552,7 @@ class ObjectList(list):
 """
         fce = expr if callable(expr) else make_lambda(expr)
         for item in self:
-            if not fce(item):
+            if fce(item):
                 return True
         return False
     #
