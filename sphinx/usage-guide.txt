@@ -31,8 +31,8 @@ Databases
 
 Access to the database is made available through :class:`Connection` objects. FDB provides two constructors for these:
 
-* :func:`connect` - Returns `Connection` to database that already exists.
-* :func:`create_database` - Returns `Connection` to newly created database.
+* :func:`connect` - Returns :class:`Connection` to database that already exists.
+* :func:`create_database` - Returns :class:`Connection` to newly created database.
 
 
 .. index::
@@ -48,10 +48,6 @@ This constructor has number of keyword parameters that could be divided into sev
 * Connection options (parameters `sql_dialect`, `charset`, `isolation_level`, `buffers`, `force_writes`, `no_reserve` and `db_key_scope`)
 
 To establish a connection to database, you always must specify the database, either as `connection string` parameter `dsn`, or as required combination of parameters `host`, `database` and `port`.
-
-.. important::
-
-   Current driver version ignores the value of `port` parameter. If you need to specify the port number, you have to use `dsn` parameter instead.
 
 Although specification of `user` and `password` parameters is optional (if environment variables `ISC_USER` and `ISC_PASSWORD` are set, their values are used if these parameters are ommited), it's recommended practice to use them. Parameter `role` is needed only when you use Firebird roles.
 
@@ -154,11 +150,11 @@ Connection object
 with it:
 
 * `Executing SQL Statements`_: methods :meth:`~Connection.execute_immediate` and :meth:`~Connection.cursor`.
-* Dropping database: method :meth:`~Connection.drop_database`.
+* `Dropping database <Deleting databases>`_: method :meth:`~Connection.drop_database`.
 * `Transanction management`_: methods :meth:`~Connection.begin`, :meth:`~Connection.commit`, :meth:`~Connection.rollback`, :meth:`~Connection.savepoint`, :meth:`~Connection.trans`, :meth:`~Connection.trans_info` and :meth:`~Connection.transaction_info`, and attributes :attr:`~Connection.main_transaction`, :attr:`~Connection.transactions`, :attr:`~Connection.default_tpb` and :attr:`~Connection.group`.
 * Work with `Database Events`_: method :meth:`~Connection.event_conduit`.
 * `Getting information about Firebird version`_: attributes :attr:`~Connection.server_version`, :attr:`~Connection.firebird_version`, :attr:`~Connection.version` and :attr:`~Connection.engine_version`.
-* `Getting information about database`_: methods :meth:`~Connection.db_info` and   :meth:`~Connection.database_info`.
+* `Getting information about database`_: attribute :class:`~fdb.Connection.monitor`, methods :meth:`~Connection.db_info` and   :meth:`~Connection.database_info`.
 * :ref:`Getting information about database metadata <working-with-schema>`: attribute :attr:`~Connection.schema` and :attr:`~Connection.ods`.
 
 
@@ -180,7 +176,7 @@ However, this version string contains more information than version number. For 
 - :attr:`~Connection.version` - Only Firebird version number. It's a string with format: major.minor.subrelease.build
 - :attr:`~Connection.engine_version` - Engine (major.minor) version as (float) number.
 
-FDB also provides convenient constants for supported engine versions: `ODS_FB_20`,`ODS_FB_21` and `ODS_FB_25`.
+FDB also provides convenient constants for supported engine versions: `ODS_FB_20`, `ODS_FB_21` and `ODS_FB_25`.
 
 .. index::
    pair: Database; On-disk Structure
@@ -214,7 +210,7 @@ Getting information about database
 
 Firebird provides various informations about server and connected database via `database_info` API call. FDB surfaces this API through methods :meth:`~Connection.db_info` and :meth:`~Connection.database_info` on Connection object.
 
-:meth:`Connection.database_info` is a `very thin` wrapper around function `isc_database_info()`. This method does not attempt to interpret its results except with regard to whether they are a string or an integer. For example, requesting `isc_info_user_names` with the call::
+:meth:`Connection.database_info` is a `very thin` wrapper around function :meth:`~fdb.ibase.fbclient_API.isc_database_info()`. This method does not attempt to interpret its results except with regard to whether they are a string or an integer. For example, requesting `isc_info_user_names` with the call::
 
    con.database_info(fdb.isc_info_user_names, 's')
 
@@ -265,7 +261,7 @@ Sample output::
    The server is currently using 8931328 bytes of memory.
    We are connected to the database at C:\TEMP\TEST.DB on host WEASEL.
 
-A more convenient way to access the same functionality is via the :meth:`~Connection.db_info` method, which is high-level convenience wrapper around the `database_info()` method that parses the output of database_info into Python-friendly objects instead of returning raw binary buffers in the case of complex 
+A more convenient way to access the same functionality is via the :meth:`~Connection.db_info` method, which is high-level convenience wrapper around the :meth:`~fdb.Connection.database_info()` method that parses the output of database_info into Python-friendly objects instead of returning raw binary buffers in the case of complex 
 result types. For example, requesting `isc_info_user_names` with the call::
 
    con.db_info(fdb.isc_info_user_names)
@@ -341,10 +337,10 @@ FDB implements two ways for execution of SQL commands against connected database
 Cursor object
 -------------
 
-Because `Cursor` objects always operate in context of single :class:`Connection` (and :class:`Transaction`), `Cursor` instances are not created directly, but by constructor method. Python DB API 2.0 assume that if database engine supports transactions, it supports only one transaction per connection, hence it defines constructor method :meth:`~Connection.cursor` (and other transaction-related methods) as part of :class:`Connection` interface. However, Firebird supports multiple independent transactions per connection. To conform to Python DB API, FDB uses concept of internal :attr:`~Connection.main_transaction` and secondary :attr:`~Connection.transactions`. Cursor constructor is primarily defined by 
+Because :class:`~fdb.Cursor` objects always operate in context of single :class:`Connection` (and :class:`Transaction`), :class:`~fdb.Cursor` instances are not created directly, but by constructor method. Python DB API 2.0 assume that if database engine supports transactions, it supports only one transaction per connection, hence it defines constructor method :meth:`~Connection.cursor` (and other transaction-related methods) as part of :class:`Connection` interface. However, Firebird supports multiple independent transactions per connection. To conform to Python DB API, FDB uses concept of internal :attr:`~Connection.main_transaction` and secondary :attr:`~Connection.transactions`. Cursor constructor is primarily defined by 
 :class:`Transaction`, and Cursor constructor on `Connection` is therefore a shortcut for `main_transaction.cursor()`.
 
-`Cursor` objects are used for next operations:
+:class:`~fdb.Cursor` objects are used for next operations:
 
 * Execution of SQL Statemets: methods :meth:`~Cursor.execute`, :meth:`~Cursor.executemany` and :meth:`~Cursor.callproc`.
 * Creating :class:`PreparedStatement` objects for efficient repeated execution of SQL statements, and to obtain additional information about SQL statements (like execution :attr:`~PreparedStatement.plan`): method :meth:`~Cursor.prep`.
@@ -464,7 +460,7 @@ Result of SQL statement execution consists from sequence of zero to unknown numb
 
 * :meth:`~Cursor.itermap` - Equivalent to the :meth:`~Cursor.fetchallmap`, except that it returns :ref:`iterator <python:typeiter>` rather than materialized list.
 
-* Call to :meth:`~Cursor.execute` returns self (Cursor instance) that itself supports the :ref:`iterator protocol <python:typeiter>`, yielding tuples of values like :meth:`~Cursor.fetchone`.
+* Call to :meth:`~Cursor.execute` returns `self` (Cursor instance) that itself supports the :ref:`iterator protocol <python:typeiter>`, yielding tuples of values like :meth:`~Cursor.fetchone`.
 
 .. important::
 
@@ -504,7 +500,7 @@ Result of SQL statement execution consists from sequence of zero to unknown numb
 
 .. tip::
 
-   :meth:`Cursor.execute` and :meth:`Cursor.executemany` return self, so you can use calls to them
+   :meth:`Cursor.execute` and :meth:`Cursor.executemany` return `self`, so you can use calls to them
    as iterators (see example above).
 
 .. index:: 
@@ -743,7 +739,7 @@ Data handling and conversions
 Implicit Conversion of Input Parameters from Strings
 ----------------------------------------------------
 
-The database engine treats most SQL data types in a weakly typed fashion: the engine may attempt to convert the raw value to a different type, as appropriate for the current context. For instance, the SQL expressions `123` (integer) and `‘123’` (string) are treated equivalently when the value is to be inserted into an `integer` field; the same applies when `‘123’` and `123` are to be inserted into a `varchar` field.
+The Firebird database engine treats most SQL data types in a weakly typed fashion: the engine may attempt to convert the raw value to a different type, as appropriate for the current context. For instance, the SQL expressions `123` (integer) and `‘123’` (string) are treated equivalently when the value is to be inserted into an `integer` field; the same applies when `‘123’` and `123` are to be inserted into a `varchar` field.
 
 This weak typing model is quite unlike Python’s dynamic yet strong typing. Although weak typing is regarded with suspicion by most experienced Python programmers, the database engine is in certain situations so aggressive about its typing model that FDB must compromise in order to remain an elegant means of programming the database engine.
 
@@ -1241,7 +1237,7 @@ Getting information about transaction
 
 :class:`Transaction` object exposes two methods that return information about currently managed active transaction (the same methods are exposed also by :class:`Connection` object for :attr:`~Connection.main_transaction`):
 
-:meth:`~Transaction.transaction_info` is a very thin wrapper around function `isc_transaction_info()`. This method does not attempt to interpret its results except with regard to whether they are a string or an integer.
+:meth:`~Transaction.transaction_info` is a very thin wrapper around function :meth:`~fdb.ibase.fbclient_API.isc_transaction_info()`. This method does not attempt to interpret its results except with regard to whether they are a string or an integer.
 
 A more convenient way to access the same functionality is via the :meth:`~Transaction.trans_info` method, which is high-level convenience wrapper around the `transaction_info` method that parses the output of `transaction_info` into Python-friendly objects instead of returning raw binary buffers in the case 
 of complex result types. 
@@ -1583,7 +1579,7 @@ Output::
 
 Transaction Context Manager
 ---------------------------
-FDB provides context manager :class:`TransactionContext` that allows automatic transaction management using :ref:`WITH`. It can work with any object that supports `begin()`, `commit()` and `rollback()` methods, i.e. :class:`Connection`, :class:`ConnectionGroup` or :class:`Transaction`.
+FDB provides context manager :class:`TransactionContext` that allows automatic transaction management using :ref:`WITH statement <WITH>`. It can work with any object that supports `begin()`, `commit()` and `rollback()` methods, i.e. :class:`Connection`, :class:`ConnectionGroup` or :class:`Transaction`.
 
 It starts transaction when WITH block is entered and commits it if no exception occurst within it, or calls `rollback()` otherwise. Exceptions raised in WITH block are never suppressed.
 
@@ -1933,7 +1929,7 @@ Server Configuration and State
       LI-V2.5.2.26536 Firebird 2.5
 
    At first glance, this method appears to duplicate the functionality of the 
-   :attr:`fdb.Connection.server_version` property, but when working with Firebird, there is a difference. :attr:`fdb.Connection.server_version` is based on a C API call (`isc_database_info()`) that existed long before the introduction of the Services API. Some programs written before the advent of Firebird test the version number in the return value of `isc_database_info()`, and refuse to work if it indicates that the server is too old. Since the first stable version of Firebird was labeled 1.0, this pre-Firebird version testing scheme incorrectly concludes that (e.g.) Firebird 1.0 is older than Interbase 5.0.
+   :attr:`fdb.Connection.server_version` property, but when working with Firebird, there is a difference. :attr:`fdb.Connection.server_version` is based on a C API call (:meth:`~fdb.ibase.fbclient_API.isc_database_info`) that existed long before the introduction of the Services API. Some programs written before the advent of Firebird test the version number in the return value of `isc_database_info()`, and refuse to work if it indicates that the server is too old. Since the first stable version of Firebird was labeled 1.0, this pre-Firebird version testing scheme incorrectly concludes that (e.g.) Firebird 1.0 is older than Interbase 5.0.
 
    Firebird addresses this problem by making `isc_database_info()` return a “pseudo-InterBase” version number, whereas the Services API returns the true Firebird version, as shown:
 
@@ -2628,6 +2624,10 @@ Output::
 Working with database schema
 ============================
 
+.. versionchanged:: 2.0
+
+   Module now uses :class:`~fdb.utils.ObjectList` for lists of schema objects.
+
 Description of database objects like tables, views, stored procedures, triggers or UDF functions that represent database schema is stored in set of system tables present in every database. Firebird users can query these tables to get information about these objects and their relations. But querying system tables is inconvenient, as it requires good knowledge how this information is structured and requires significant amount of Python code. Changes in system tables between Firebird versions further add to this complexity. Hence FDB provides set of classes (isolated in separate module :mod:`fdb.schema`) that transform information stored in system tables into set of Python objects that surface the vital information in meaningful way, and additionaly provide set of methods for most commonly used operations or checks.
 
 Database schema could be accessed in three different ways, each suitable for different use case:
@@ -2731,7 +2731,7 @@ Attributes:
 
 Methods:
 
-- :meth:`~fdb.schema.BaseSchemaItem.accept_visitor`: :ref:`Visitor Pattern support <visitor-pattern-support>`.
+- :meth:`~fdb.schema.BaseSchemaItem.accept`: :ref:`Visitor Pattern support <visitor-pattern-support>`.
 - :meth:`~fdb.schema.BaseSchemaItem.issystemobject`: Returns True if this database object is system object.
 - :meth:`~fdb.schema.BaseSchemaItem.get_quoted_name`: Returns quoted (if necessary) name of database object.
 - :meth:`~fdb.schema.BaseSchemaItem.get_dependents`: Returns list of all database objects that :ref:`depend <object-dependencies>` on this one.
@@ -2838,6 +2838,28 @@ Whenever possible, schema module uses enhanced :class:`~fdb.utils.ObjectList` li
 - testing - :meth:`~fdb.utils.ObjectList.contains`, :meth:`~fdb.utils.ObjectList.all` and :meth:`~fdb.utils.ObjectList.any`
 - reporting - :meth:`~fdb.utils.ObjectList.ecount`, :meth:`~fdb.utils.ObjectList.report` and :meth:`~fdb.utils.ObjectList.ireport`
 - fast key access - :attr:`~fdb.utils.ObjectList.key`, :attr:`~fdb.utils.ObjectList.frozen`, :meth:`~fdb.utils.ObjectList.freeze` and :meth:`~fdb.utils.ObjectList.get`
+
+.. important:: Schema module uses :attr:`~fdb.utils.ObjectList.frozen` ObjectLists for fast access to individual list items using their `name` as a key.
+
+**Examples:**
+
+.. code-block:: python
+
+   con = fdb.connect(dsn='employee',user='sysdba',password='masterkey')
+   
+   # Get list of all tables that have column named 'JOB_CODE', 
+   job_code_tables = con.schema.tables.filter(lambda tbl: tbl.columns.any("item.name=='JOB_CODE'"))
+   
+   # Sorting tables by name
+   con.schema.tables.sort(attrs=['name'])
+   # Sorting tables by number of columns
+   con.schema.tables.sort(expr='len(item.columns)')
+   
+   # Return (table_name, num_columns) tuples 
+   con.schema.tables.report(['item.name', 'len(item.columns)'])
+   
+   # Get ObjectLists for tables with computed and without computed columns
+   computed, no_computed = con.schema.tables.split(lambda tbl: tbl.columns.any("item.iscomputed()"))
 
 .. _sql-operations:
 
@@ -3482,6 +3504,10 @@ Normally generated GRANT/REVOKE statements don't contain grantor's name, because
 Working with monitoring tables
 ==============================
 
+.. versionchanged:: 2.0
+
+   Module now uses :class:`~fdb.utils.ObjectList` for lists of monitoring objects.
+
 Starting from Firebird 2.1 (ODS 11.1) its possible to monitor server-side activity happening inside a particular database. The engine offers a set of “virtual” tables (so-called "monitoring tables") that provides the user with a snapshot of the current activity within the given database. FDB provides access to this information through set of classes (isolated in separate module :mod:`fdb.monitor`) that transform information stored in monitoring tables into set of Python objects that surface the information in meaningful way, and additionaly provide set of methods for available operations or checks.
 
 Like database schema, monitoring tables could be accessed in two different ways, each suitable for different use case:
@@ -3571,7 +3597,7 @@ FDB provides internal notification mechanism that allows installation of custom 
 .. index:: HOOK_API_LOADED, HOOK_DATABASE_ATTACHED, HOOK_DATABASE_ATTACH_REQUEST
 .. index:: HOOK_DATABASE_DETACH_REQUEST, HOOK_DATABASE_CLOSED, HOOK_SERVICE_ATTACHED
 
-FDB provides next *hook types* (exposed as constants in *fdb* namespace):
+FDB provides next `hook types` (exposed as constants in *fdb* namespace):
 
 .. data:: HOOK_API_LOADED
 
