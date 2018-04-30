@@ -677,7 +677,7 @@ div.note {
     border: 2px solid #7a9eec;
     border-right-style: none;
     border-left-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
     background: #e1ecfe url(dialog-note.png) no-repeat 10px 8px;
 }
  
@@ -686,7 +686,7 @@ div.danger {
     border: 2px solid #fbc2c4;
     border-right-style: none;
     border-left-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
     background: #fbe3e4 url(dialog-note.png) no-repeat 10px 8px;
 }
  
@@ -695,7 +695,7 @@ div.attention {
     border: 2px solid #ffd324;
     border-right-style: none;
     border-left-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
     background: #fff6bf url(dialog-note.png) no-repeat 10px 8px;
 }
  
@@ -704,7 +704,7 @@ div.caution {
     border: 2px solid #ffd324;
     border-right-style: none;
     border-left-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
     background: #fff6bf url(dialog-warning.png) no-repeat 10px 8px;
 }
  
@@ -714,7 +714,7 @@ div.important {
     border: 2px solid #fbc2c4;
     border-left-style: none;
     border-right-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
 }
 
 div.seealso {
@@ -723,7 +723,7 @@ div.seealso {
     border: 2px solid #ffd324;
     border-left-style: none;
     border-right-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
 }
 
 div.hint, div.tip {
@@ -732,7 +732,7 @@ div.hint, div.tip {
     border: 2px solid #aacc99;
     border-left-style: none;
     border-right-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
 }
 
 div.warning, div.error {
@@ -741,7 +741,7 @@ div.warning, div.error {
     border: 2px solid #fbc2c4;
     border-right-style: none;
     border-left-style: none;
-    padding: 10px 20px 10px 60px;
+    padding: 10px 20px 0px 60px;
 }
  
 p {
@@ -788,3 +788,25 @@ h4 {
     /* text-align: center; */
 }
 
+cite {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #e1e1e8;
+    background: #f7f7f9;
+    margin: 0 0 10px;
+    padding: 0 5px 0 5px;
+    font-size: 13px;
+    font-style: italic;
+}
+
+.program {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #e1e1e8;
+    background: #f7f7f9;
+    margin: 0 0 10px;
+    padding: 0 5px 0 5px;
+    font-size: 13px;
+}
