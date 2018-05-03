@@ -229,10 +229,12 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     def bind(self, connection):
         """Bind this instance to specified :class:`~fdb.Connection`.
 
-        :param connection: :class:`~fdb.Connection` instance.
+        Args:
+            connection: :class:`~fdb.Connection` instance.
 
-        :raises fdb.ProgrammingError: If Monitor object was set as internal (via
-            :meth:`_set_as_internal`) or database has ODS lower than 11.1.
+        Raises:
+            fdb.ProgrammingError: If Monitor object was set as internal (via
+                :meth:`_set_as_internal`) or database has ODS lower than 11.1.
         """
         if self.__internal:
             raise fdb.ProgrammingError("Call to 'bind' not allowed for embedded Monitor.")
@@ -247,8 +249,9 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     def close(self):
         """Sever link to :class:`~fdb.Connection`.
 
-        :raises fdb.ProgrammingError: If Monitor object was set as internal (via
-            :meth:`_set_as_internal`).
+        Raises:
+            fdb.ProgrammingError: If Monitor object was set as internal (via
+                :meth:`_set_as_internal`).
         """
         if self.__internal:
             raise fdb.ProgrammingError("Call to 'close' not allowed for embedded Monitor.")
@@ -276,9 +279,11 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     def get_attachment(self, id):
         """Get :class:`AttachmentInfo` by ID.
 
-        :param int id: Attachment ID.
+        Args:
+            id (int): Attachment ID.
 
-        :returns: :class:`AttachmentInfo` with specified ID or `None`.
+        Returns:
+            :class:`AttachmentInfo` with specified ID or `None`.
         """
         for attachment in self.attachments:
             if attachment.id == id:
@@ -288,9 +293,11 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     def get_transaction(self, id):
         """Get :class:`TransactionInfo` by ID.
 
-        :param int id: Transaction ID.
+        Args:
+            id (int): Transaction ID.
 
-        :returns: :class:`TransactionInfo` with specified ID or `None`.
+        Returns:
+            :class:`TransactionInfo` with specified ID or `None`.
         """
         for transaction in self.transactions:
             if transaction.id == id:
@@ -300,9 +307,11 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     def get_statement(self, id):
         """Get :class:`StatementInfo` by ID.
 
-        :param int id: Statement ID.
+        Args:
+            id (int): Statement ID.
 
-        :returns: :class:`StatementInfo` with specified ID or `None`.
+        Returns:
+            :class:`StatementInfo` with specified ID or `None`.
         """
         for statement in self.statements:
             if statement.id == id:
@@ -312,9 +321,11 @@ FROM MON$TABLE_STATS ts join MON$RECORD_STATS r
     def get_call(self, id):
         """Get :class:`CallStackInfo` by ID.
 
-        :param int id: Callstack ID.
+        Args:
+            id (int): Callstack ID.
 
-        :returns: :class:`CallStackInfo` with specified ID or `None`.
+        Returns:
+            :class:`CallStackInfo` with specified ID or `None`.
         """
         for call in self.callstack:
             if call.id == id:
@@ -545,8 +556,9 @@ class AttachmentInfo(BaseInfoItem):
     def terminate(self):
         """Terminates client session associated with this attachment.
 
-        :raises fdb.ProgrammingError: If database has ODS lower than 11.2 or
-            this attachement is current session.
+        Raises
+            fdb.ProgrammingError: If database has ODS lower than 11.2 or
+                this attachement is current session.
         """
         if self.monitor._con.ods < fdb.ODS_FB_25:
             raise fdb.ProgrammingError("Attachments could be terminated only " \
@@ -705,7 +717,8 @@ class StatementInfo(BaseInfoItem):
     def terminate(self):
         """Terminates execution of statement.
 
-        :raises fdb.ProgrammingError: If this attachement is current session.
+        Raises:
+            fdb.ProgrammingError: If this attachement is current session.
         """
         if self.attachment == self.monitor.this_attachment:
             raise fdb.ProgrammingError("Can't terminate statement from current session.")

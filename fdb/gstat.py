@@ -60,200 +60,200 @@ def empty_str(str_):
 class StatTable(object):
     "Statisctics for single database table."
     def __init__(self):
-        #: (str) Table name
+        #: str: Table name
         self.name = None
-        #: (int) Table ID
+        #: int: Table ID
         self.table_id = None
-        #: (int) Primary Pointer Page for table
+        #: int: Primary Pointer Page for table
         self.primary_pointer_page = None
-        #: (int) Index Root Page for table
+        #: int: Index Root Page for table
         self.index_root_page = None
-        #: (float) Average record length
+        #: float: Average record length
         self.avg_record_length = None
-        #: (int) Total number of record in table
+        #: int: Total number of record in table
         self.total_records = None
-        #: (float) Average record version length
+        #: float: Average record version length
         self.avg_version_length = None
-        #: (int) Total number of record versions
+        #: int: Total number of record versions
         self.total_versions = None
-        #: (int) Max number of versions for single record
+        #: int: Max number of versions for single record
         self.max_versions = None
-        #: (int) Number of data pages for table
+        #: int: Number of data pages for table
         self.data_pages = None
-        #: (int) Number of data page slots for table
+        #: int: Number of data page slots for table
         self.data_page_slots = None
-        #: (float) Average data page fill ratio
+        #: float: Average data page fill ratio
         self.avg_fill = None
-        #: (:class:`FillDistribution`) Data page fill distribution statistics
+        #: :class:`FillDistribution`: Data page fill distribution statistics
         self.distribution = None
-        #: (:class:`~fdb.utils.ObjectList`) Indices belonging to table
+        #: :class:`~fdb.utils.ObjectList`: Indices belonging to table
         self.indices = []
 
 class StatTable3(StatTable):
     "Statisctics for single database table (Firebird 3 and above)."
     def __init__(self):
         super(StatTable3, self).__init__()
-        #: (int) Number of Pointer Pages
+        #: int: Number of Pointer Pages
         self.pointer_pages = None
-        #: (int) Number of record formats
+        #: int: Number of record formats
         self.total_formats = None
-        #: (int) Number of actually used record formats
+        #: int: Number of actually used record formats
         self.used_formats = None
-        #: (float) Average length of record fragments
+        #: float: Average length of record fragments
         self.avg_fragment_length = None
-        #: (int) Total number of record fragments
+        #: int: Total number of record fragments
         self.total_fragments = None
-        #: (int) Max number of fragments for single record
+        #: int: Max number of fragments for single record
         self.max_fragments = None
-        #: (float) Average length of unpacked record
+        #: float: Average length of unpacked record
         self.avg_unpacked_length = None
-        #: (float) Record compression ratio
+        #: float: Record compression ratio
         self.compression_ratio = None
-        #: (int) Number of Primary Data Pages
+        #: int: Number of Primary Data Pages
         self.primary_pages = None
-        #: (int) Number of Secondary Data Pages
+        #: int: Number of Secondary Data Pages
         self.secondary_pages = None
-        #: (int) Number of swept data pages
+        #: int: Number of swept data pages
         self.swept_pages = None
-        #: (int) Number of empty data pages
+        #: int: Number of empty data pages
         self.empty_pages = None
-        #: (int) Number of full data pages
+        #: int: Number of full data pages
         self.full_pages = None
-        #: (int) Number of BLOB values
+        #: int: Number of BLOB values
         self.blobs = None
-        #: (int) Total length of BLOB values (bytes)
+        #: int: Total length of BLOB values (bytes)
         self.blobs_total_length = None
-        #: (int) Number of BLOB pages
+        #: int: Number of BLOB pages
         self.blob_pages = None
-        #: (int) Number of Level 0 BLOB values
+        #: int: Number of Level 0 BLOB values
         self.level_0 = None
-        #: (int) Number of Level 1 BLOB values
+        #: int: Number of Level 1 BLOB values
         self.level_1 = None
-        #: (int) Number of Level 2 BLOB values
+        #: int: Number of Level 2 BLOB values
         self.level_2 = None
 
 class StatIndex(object):
     "Statisctics for single database index."
     def __init__(self, table):
-        #: (wekref.proxy) Proxy to parent :class:`TableStats`
+        #: wekref.proxy: Proxy to parent :class:`TableStats`
         self.table = weakref.proxy(table)
         table.indices.append(weakref.proxy(self))
-        #: (str) Index name
+        #: str: Index name
         self.name = None
-        #: (int) Index ID
+        #: int: Index ID
         self.index_id = None
-        #: (int) Depth of index tree
+        #: int: Depth of index tree
         self.depth = None
-        #: (int) Number of leaft index tree buckets
+        #: int: Number of leaft index tree buckets
         self.leaf_buckets = None
-        #: (int) Number of index tree nodes
+        #: int: Number of index tree nodes
         self.nodes = None
-        #: (float) Average data length
+        #: float: Average data length
         self.avg_data_length = None
-        #: (int) Total number of duplicate keys
+        #: int: Total number of duplicate keys
         self.total_dup = None
-        #: (int) Max number of occurences for single duplicate key
+        #: int: Max number of occurences for single duplicate key
         self.max_dup = None
-        #: (:class:`FillDistribution`) Index page fill distribution statistics
+        #: :class:`FillDistribution`: Index page fill distribution statistics
         self.distribution = None
 
 class StatIndex3(StatIndex):
     "Statisctics for single database index (Firebird 3 and above)."
     def __init__(self, table):
         super(StatIndex3, self).__init__(table)
-        #: (int) Index Root page
+        #: int: Index Root page
         self.root_page = None
-        #: (float) Average node length
+        #: float: Average node length
         self.avg_node_length = None
-        #: (float) Average key length
+        #: float: Average key length
         self.avg_key_length = None
-        #: (float) Index key compression ratio
+        #: float: Index key compression ratio
         self.compression_ratio = None
-        #: (float) Average key prefix length
+        #: float: Average key prefix length
         self.avg_prefix_length = None
-        #: (float) Index clustering factor
+        #: float: Index clustering factor
         self.clustering_factor = None
-        #: (float) Ration
+        #: float: Ration
         self.ratio = None
 
 class StatDatabase(object):
     """Firebird database statistics (produced by gstat).
 """
     def __init__(self):
-        #: (int) GSTAT version
+        #: int: GSTAT version
         self.gstat_version = None
-        #: (int) System change number (v3 only)
+        #: int: System change number (v3 only)
         self.system_change_number = None # ver3
-        #: (datetime) gstat execution timestamp
+        #: datetime.datetime: gstat execution timestamp
         self.executed = None
-        #: (datetime) gstat completion timestamp
+        #: datetime.datetime; gstat completion timestamp
         self.completed = None # ver3
-        #: (str) Database filename
+        #: str: Database filename
         self.filename = None
-        #: (int) Database flags
+        #: int: Database flags
         self.flags = 0
-        #: (int) Checksum (v2 only)
+        #: int: Checksum (v2 only)
         self.checksum = 12345 # ver2
-        #: (int) Database header generation
+        #: int: Database header generation
         self.generation = 0
-        #: (int) Database page size
+        #: int: Database page size
         self.page_size = 0
         #self.ods_version = None
-        #: (int) Oldest Interesting Transaction
+        #: int: Oldest Interesting Transaction
         self.oit = 0
-        #: (int) Oldest Active Transaction
+        #: int: Oldest Active Transaction
         self.oat = 0
-        #: (int) Oldest Snapshot Transaction
+        #: int: Oldest Snapshot Transaction
         self.ost = 0
-        #: (int) Next Transaction
+        #: int: Next Transaction
         self.next_transaction = 0
-        #: (int) Bumped Transaction (v2 only)
+        #: int: Bumped Transaction (v2 only)
         self.bumped_transaction = None # ver2
         #self.sequence_number = 0
-        #: (int) Next attachment ID
+        #: int: Next attachment ID
         self.next_attachment_id = 0
-        #: (int) Implementation ID (v2 only)
+        #: int: Implementation ID (v2 only)
         self.implementation_id = 0 # ver2
-        #: (str) Implementation (v3 only)
+        #: str: Implementation (v3 only)
         self.implementation = None # ver3
-        #: (int) Number of shadows
+        #: int: Number of shadows
         self.shadow_count = 0
-        #: (int) Number of page buffers
+        #: int: Number of page buffers
         self.page_buffers = 0
-        #: (int) Next header page
+        #: int: Next header page
         self.next_header_page = 0
-        #: (int) SQL Dialect
+        #: int: SQL Dialect
         self.database_dialect = 0
-        #: (datetime) Database creation timestamp
+        #: datetime.datetime: Database creation timestamp
         self.creation_date = None
-        #: (list) Database attributes
+        #: list: Database attributes
         self.attributes = []
         # Variable data
-        #: (int) Sweep interval (variable hdr item)
+        #: int: Sweep interval (variable hdr item)
         self.sweep_interval = None
-        #: (str) Continuation file (variable hdr item)
+        #: str: Continuation file (variable hdr item)
         self.continuation_file = None
-        #: (int) Last logical page (variable hdr item)
+        #: int: Last logical page (variable hdr item)
         self.last_logical_page = None
-        #: (str) Backup GUID (variable hdr item)
+        #: str: Backup GUID (variable hdr item)
         self.backup_guid = None
-        #: (str) Root file name (variable hdr item)
+        #: str: Root file name (variable hdr item)
         self.root_filename = None
-        #: (str) replay logging file (variable hdr item)
+        #: str: replay logging file (variable hdr item)
         self.replay_logging_file = None
-        #: (str) Backup difference file (variable hdr item)
+        #: str: Backup difference file (variable hdr item)
         self.backup_diff_file = None
-        #: (Encryption) Stats for enxrypted data page
+        #: Encryption: Stats for enxrypted data page
         self.encrypted_data_pages = None
-        #: (Encryption) Stats for enxrypted index page
+        #: Encryption: Stats for enxrypted index page
         self.encrypted_index_pages = None
-        #: (Encryption) Stats for enxrypted blob page
+        #: Encryption: Stats for enxrypted blob page
         self.encrypted_blob_pages = None
-        #: List of database file names
+        #: list: database file names
         self.continuation_files = []
-        #: :class:`~fdb.utils.ObjectList` with :class:`StatTable` or :class:`StatTable3` instances
+        #: :class:`~fdb.utils.ObjectList`: :class:`StatTable` or :class:`StatTable3` instances
         self.tables = None
-        #: :class:`~fdb.utils.ObjectList` with :class:`StatIndex` or :class:`StatIndex3` instances
+        #: :class:`~fdb.utils.ObjectList`: :class:`StatIndex` or :class:`StatIndex3` instances
         self.indices = None
     def has_table_stats(self):
         """Return True if instance contains information about tables.
@@ -282,10 +282,14 @@ class StatDatabase(object):
 def parse(lines):
     """Parse output from Firebird gstat utility.
 
-        :param lines: Iterable of lines produced by Firebird gstat utility.
-        :returns: :class:`~fdb.gstat.StatDatabase` instance with parsed results.
+    Args:
+        lines (iterable): Lines produced by Firebird gstat utility.
 
-        :raises `~fdb.ParseError`: When any problem is found in input stream.
+    Returns:
+        :class:`~fdb.gstat.StatDatabase` instance with parsed results.
+
+    Raises:
+        fdb.ParseError: When any problem is found in input stream.
 """
     def parse_hdr(line):
         "Parse line from header"

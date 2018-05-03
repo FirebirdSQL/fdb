@@ -451,9 +451,6 @@ ConnectionWithSchema
    :no-inherited-members:
    :undoc-members:
 
-.. note::
-
-   For list of methods see :class:`fdb.schema.Schema`.
 
 Cursor
 ------

@@ -156,25 +156,22 @@ def _render_sized_integer_for_spb(i, myformat):
 def connect(host='service_mgr', user=None, password=None):
     """Establishes a connection to the Services Manager.
 
-    :param string host: (optional) Host machine specification. Local by default.
-    :param string user: (optional) Administrative user name. Defaults to content
-       of environment variable `'ISC_USER'` or `'SYSDBA'`.
-    :param string password: Administrative user password. Default is content
-       of environment variable `'ISC_PASSWORD'`.
+    Args:
+        host (str): (optional) Host machine specification. Local by default.
+        user (str): (optional) Administrative user name. Defaults to content
+            of environment variable `ISC_USER` or `SYSDBA`.
+        password (str): Administrative user password. Default is content
+            of environment variable `ISC_PASSWORD`.
 
-
-    .. note::
-
+    Note:
        By definition, a Services Manager connection is bound to a particular
        host.  Therefore, the database specified as a parameter to methods such as
        `getStatistics` MUST NOT include the host name of the database server.
 
-    **Hooks:**
-
-    Event `HOOK_SERVICE_ATTACHED`: Executed before :class:`Connection`
-    instance is returned. Hook must have signature:
-    hook_func(connection). Any value returned by hook is ignored.
-
+    Hooks:
+        Event `HOOK_SERVICE_ATTACHED`: Executed before :class:`Connection`
+        instance is returned. Hook must have signature:
+        hook_func(connection). Any value returned by hook is ignored.
     """
     setattr(sys.modules[__name__], 'api', fdb.load_api())
     if not user:
@@ -280,7 +277,8 @@ class Connection(object):
         """Return the next result line from service manager. Part of *iterator
         protocol*.
 
-        :raises StopIteration: If there are no further lines.
+        Raises:
+            StopIteration: If there are no further lines.
         """
         line = self.readline()
         if line is not None:
@@ -547,7 +545,8 @@ class Connection(object):
     def readline(self):
         """Get next line of textual output from last service query.
 
-        :returns string: Output line.
+        Returns:
+            str: Output line.
         """
         if self.__fetching:
             return self.__fetchline()
@@ -556,15 +555,17 @@ class Connection(object):
     def readlines(self):
         """Get list of remaining output lines from last service query.
 
-        :returns list: Service output.
-        :raises `~fdb.ProgrammingError`: When service is not in :attr:`fetching` mode.
+        Returns:
+            list: Service output.
+
+        Raises:
+            fdb.ProgrammingError: When service is not in :attr:`fetching` mode.
         """
         return [line for line in self]
     def isrunning(self):
         """Returns True if service is running.
 
-        .. note::
-
+        Note:
            Some services like :meth:`backup` or :meth:`sweep` may take time to
            comlete, so they're called asynchronously. Until they're finished,
            no other async service could be started.
@@ -579,52 +580,58 @@ class Connection(object):
     def get_service_manager_version(self):
         """Get Firebird Service Manager version number.
 
-        :returns integer: Version number.
+        Returns:
+            int: Version number.
         """
         self.__check_active()
         return self._QI(ibase.isc_info_svc_version)
     def get_server_version(self):
         """Get Firebird version.
 
-        :returns string: Firebird version (example: 'LI-V2.5.2.26536 Firebird 2.5').
+        Returns:
+            str: Firebird version (example: 'LI-V2.5.2.26536 Firebird 2.5').
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_server_version)
     def get_architecture(self):
         """Get Firebird Server architecture.
 
-        :returns string: Architecture (example: 'Firebird/linux AMD64').
+        Returns:
+            str: Architecture (example: 'Firebird/linux AMD64').
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_implementation)
     def get_home_directory(self):
         """Get Firebird Home (installation) Directory.
 
-        :returns string: Directory path.
+        Returns:
+            str: Directory path.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_get_env)
     def get_security_database_path(self):
         """Get full path to Firebird security database.
 
-        :returns string: Path (path+filename) to security database.
+        Returns:
+            str: Path (path+filename) to security database.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_user_dbpath)
     def get_lock_file_directory(self):
         """Get directory location for Firebird lock files.
 
-        :returns string: Directory path.
+        Returns:
+            str: Directory path.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_get_env_lock)
     def get_server_capabilities(self):
         """Get list of Firebird capabilities.
 
-        :returns tuple: Capability info codes for each capability reported by
-           server.
+        Returns:
+            tuple: Capability info codes for each capability reported by server.
 
-        Next fdb.services constants define possible info codes returned::
+        Next `fdb.services` constants define possible info codes returned::
 
             CAPABILITY_MULTI_CLIENT
             CAPABILITY_REMOTE_HOP
@@ -632,10 +639,11 @@ class Connection(object):
             CAPABILITY_QUOTED_FILENAME
             CAPABILITY_NO_SERVER_SHUTDOWN
 
-        **Example**::
+        Example:
+            .. code-block:: python
 
-            >>>fdb.services.CAPABILITY_REMOTE_HOP in svc.get_server_capabilities()
-            True
+                >>>fdb.services.CAPABILITY_REMOTE_HOP in svc.get_server_capabilities()
+                True
         """
         self.__check_active()
         capabilities = self._QI(ibase.isc_info_svc_capabilities)
@@ -648,36 +656,39 @@ class Connection(object):
     def get_message_file_directory(self):
         """Get directory with Firebird message file.
 
-        :returns string: Directory path.
+        Returns:
+            str: Directory path.
         """
         self.__check_active()
         return self._QS(ibase.isc_info_svc_get_env_msg)
     def get_connection_count(self):
         """Get number of attachments to server.
 
-        :returns integer: Number of attachments.
+        Returns:
+            int: Number of attachments.
         """
         self.__check_active()
         return self._get_isc_info_svc_svr_db_info()[0]
     def get_attached_database_names(self):
         """Get list of attached databases.
 
-        :returns list: Filenames of attached databases.
+        Returns:
+            list: Filenames of attached databases.
         """
         self.__check_active()
         return self._get_isc_info_svc_svr_db_info()[1]
     def get_log(self, callback=None):
         """Request content of Firebird Server log. **(ASYNC service)**
 
-        :param function callback: Function to call back with each output line.
-          Function must accept only one parameter: line of output.
+        Keyword Args:
+            callback (callable): Function to call back with each output line.
+                Function must accept only one parameter: line of output.
 
         If `callback` is not specified, log content could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
         ignored via call to :meth:`wait`.
 
-        .. note::
-
+        Note:
            Until log content is not fully fetched from service (or ignored via
            :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
@@ -692,9 +703,14 @@ class Connection(object):
     def get_limbo_transaction_ids(self, database):
         """Get list of transactions in limbo.
 
-        :param string database: Database filename or alias.
-        :returns list: Transaction IDs.
-        :raises `~fdb.InternalError`: When can't process the result buffer.
+        Args:
+            database (str): Database filename or alias.
+
+        Returns:
+            list: Transaction IDs.
+
+        Raises:
+            fdb.InternalError: When can't process the result buffer.
         """
         self.__check_active()
         _check_string(database)
@@ -729,8 +745,9 @@ class Connection(object):
     def commit_limbo_transaction(self, database, transaction_id):
         """Resolve limbo transaction with commit.
 
-        :param string database: Database filename or alias.
-        :param integer transaction_id: ID of Transaction to resolve.
+        Args:
+            database (str): Database filename or alias.
+            transaction_id (int): ID of Transaction to resolve.
         """
         self.__check_active()
         self._resolve_limbo_transaction(ibase.isc_spb_rpr_commit_trans,
@@ -738,8 +755,9 @@ class Connection(object):
     def rollback_limbo_transaction(self, database, transaction_id):
         """Resolve limbo transaction with rollback.
 
-        :param string database: Database filename or alias.
-        :param integer transaction_id: ID of Transaction to resolve.
+        Args:
+            database (str): Database filename or alias.
+            transaction_id (int): ID of Transaction to resolve.
         """
         self.__check_active()
         self._resolve_limbo_transaction(ibase.isc_spb_rpr_rollback_trans,
@@ -750,25 +768,27 @@ class Connection(object):
                        show_record_versions=0, callback=None, tables=None):
         """Request database statisctics. **(ASYNC service)**
 
-        :param string database: Database specification.
-        :param integer show_only_db_log_pages: `1` to analyze only log pages.
-        :param integer show_only_db_header_pages: `1` to analyze only database
-           header. When set, all other parameters are ignored.
-        :param integer show_user_data_pages: `0` to skip user data analysis.
-        :param integer show_user_index_pages: `0` to skip user index analysis.
-        :param integer show_system_tables_and_indexes: `1` to analyze system
-           tables and indices.
-        :param integer show_record_versions: `1` to analyze record versions.
-        :param function callback: Function to call back with each output line.
-          Function must accept only one parameter: line of output.
-        :param string_or_list tables: table name or iterable of table names.
+        Args:
+            database (str): Database specification.
+
+        Keyword Args:
+            show_only_db_log_pages (int): `1` to analyze only log pages.
+            show_only_db_header_pages (int): `1` to analyze only database
+                header. When set, all other parameters are ignored.
+            show_user_data_pages (int): `0` to skip user data analysis.
+            show_user_index_pages (int): `0` to skip user index analysis.
+            show_system_tables_and_indexes (int): `1` to analyze system
+                tables and indices.
+            show_record_versions (int): `1` to analyze record versions.
+            callback (callable): Function to call back with each output line.
+                Function must accept only one parameter: line of output.
+            tables (str or list): table name or iterable of table names.
 
         If `callback` is not specified, statistical report could be retrieved
         through :meth:`readline`, :meth:`readlines`, iteration over `Connection`
         or ignored via call to :meth:`wait`.
 
-        .. note::
-
+        Note:
            Until report is not fully fetched from service (or ignored via
            :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
@@ -830,30 +850,29 @@ class Connection(object):
                stats=None):
         """Request logical (GBAK) database backup. **(ASYNC service)**
 
-        :param string source_database: Source database specification.
-        :param dest_filenames: Backup file(s) specification.
-        :type dest_filenames: string or tuple of strings
-        :param dest_file_sizes: (optional) specification of backup file max. sizes.
-        :type dest_file_sizes: tuple of integers
-        :param integer ignore_checksums: `1` to ignore checksums.
-        :param integer ignore_limbo_transactions: `1` to ignore limbo transactions.
-        :param integer metadata_only: `1` to create only metadata backup.
-        :param integer collect_garbage: `0` to skip garbage collection.
-        :param integer transportable: `0` to do not create transportable backup.
-        :param integer convert_external_tables: `1` to convert
-           external table to internal ones.
-        :param integer compressed: `0` to create uncompressed backup.
-        :param integer no_db_triggers: `1` to disable database triggers temporarily.
-        :param function callback: Function to call back with each output line.
-          Function must accept only one parameter: line of output.
-        :param list stats: List of arguments for run-time statistics, see STATS_* constants.
+        Args:
+            source_database (str): Source database specification.
+            dest_filenames (str or tuple(str)): Backup file(s) specification.
+
+        Keyword Args:
+            dest_file_sizes (tuple(int)): Specification of backup file max. sizes.
+            ignore_checksums (int): `1` to ignore checksums.
+            ignore_limbo_transactions (int): `1` to ignore limbo transactions.
+            metadata_only (int): `1` to create only metadata backup.
+            collect_garbage (int): `0` to skip garbage collection.
+            transportable (int): `0` to do not create transportable backup.
+            convert_external_tables (int): `1` to convert external table to internal ones.
+            compressed (int): `0` to create uncompressed backup.
+            no_db_triggers (int): `1` to disable database triggers temporarily.
+            callback (callable): Function to call back with each output line.
+                Function must accept only one parameter: line of output.
+            stats (list): List of arguments for run-time statistics, see STATS_* constants.
 
         If `callback` is not specified, backup log could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
         ignored via call to :meth:`wait`.
 
-        .. note::
-
+        Note:
            Until backup report is not fully fetched from service (or ignored via
            :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
@@ -941,17 +960,19 @@ class Connection(object):
                      no_db_triggers=0):
         """Request logical (GBAK) database backup into local byte stream. **(SYNC service)**
 
-        :param string source_database: Source database specification.
-        :param backup_stream: Backup stream.
-        :param integer ignore_checksums: `1` to ignore checksums.
-        :param integer ignore_limbo_transactions: `1` to ignore limbo transactions.
-        :param integer metadata_only: `1` to create only metadata backup.
-        :param integer collect_garbage: `0` to skip garbage collection.
-        :param integer transportable: `0` to do not create transportable backup.
-        :param integer convert_external_tables: `1` to convert
-           external table to internal ones.
-        :param integer compressed: `0` to create uncompressed backup.
-        :param integer no_db_triggers: `1` to disable database triggers temporarily.
+        Args:
+            source_database (str): Source database specification.
+            backup_stream (stream): Backup stream.
+
+        Keyword Args:
+            ignore_checksums (int): `1` to ignore checksums.
+            ignore_limbo_transactions (int): `1` to ignore limbo transactions.
+            metadata_only (int): `1` to create only metadata backup.
+            collect_garbage (int): `0` to skip garbage collection.
+            transportable (int): `0` to do not create transportable backup.
+            convert_external_tables (int): `1` to convert external table to internal ones.
+            compressed (int): `0` to create uncompressed backup.
+            no_db_triggers (int): `1` to disable database triggers temporarily.
         """
         self.__check_active()
         # Begin parameter validation section.
@@ -1024,37 +1045,32 @@ class Connection(object):
                 stats=None):
         """Request database restore from logical (GBAK) backup. **(ASYNC service)**
 
-        :param source_filenames: Backup file(s) specification.
-        :type source_filenames: string or tuple of strings
-        :param dest_filenames: Database file(s) specification.
-        :type dest_filenames: string or tuple of strings
-        :param dest_file_pages: (optional) specification of database file max.
-           # of pages.
-        :type dest_file_pages: tuple of integers
-        :param integer page_size: (optional) Page size.
-        :param integer cache_buffers: (optional) Size of page-cache for this
-           database.
-        :param integer access_mode_read_only: `1` to create R/O database.
-        :param integer replace: `1` to replace existing database.
-        :param integer deactivate_indexes: `1` to do not activate indices.
-        :param integer do_not_restore_shadows: `1` to do not restore shadows.
-        :param integer do_not_enforce_constraints: `1` to do not enforce
-           constraints during restore.
-        :param integer commit_after_each_table: `1` to commit after each table
-           is restored.
-        :param integer use_all_page_space: `1` to use all space on data pages.
-        :param integer no_db_triggers: `1` to disable database triggers temporarily.
-        :param integer metadata_only: `1` to restore only database metadata.
-        :param function callback: Function to call back with each output line.
-          Function must accept only one parameter: line of output.
-        :param list stats: List of arguments for run-time statistics, see STATS_* constants.
+        Args:
+            source_filenames (str or tuple(str)): Backup file(s) specification.
+            dest_filenames (str or tuple(str)): Database file(s) specification.
+
+        Keyword Args:
+            dest_file_pages (tuple(int)): Specification of database file max. # of pages.
+            page_size (int): Page size.
+            cache_buffers (int): Size of page-cache for this database.
+            access_mode_read_only (int): `1` to create R/O database.
+            replace (int): `1` to replace existing database.
+            deactivate_indexes (int): `1` to do not activate indices.
+            do_not_restore_shadows (int): `1` to do not restore shadows.
+            do_not_enforce_constraints (int): `1` to do not enforce constraints during restore.
+            commit_after_each_table (int): `1` to commit after each table is restored.
+            use_all_page_space (int): `1` to use all space on data pages.
+            no_db_triggers (int): `1` to disable database triggers temporarily.
+            metadata_only (int): `1` to restore only database metadata.
+            callback (callable): Function to call back with each output line.
+                Function must accept only one parameter: line of output.
+            stats (list): List of arguments for run-time statistics, see STATS_* constants.
 
         If `callback` is not specified, restore log could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
         ignored via call to :meth:`wait`.
 
-        .. note::
-
+        Note:
            Until restore report is not fully fetched from service (or ignored via
            :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
@@ -1142,26 +1158,23 @@ class Connection(object):
                       metadata_only=0):
         """Request database restore from logical (GBAK) backup stored in local byte stream. **(SYNC service)**
 
-        :param backup_stream: Backup stream.
-        :param dest_filenames: Database file(s) specification.
-        :type dest_filenames: string or tuple of strings
-        :param dest_file_pages: (optional) specification of database file max.
-           # of pages.
-        :type dest_file_pages: tuple of integers
-        :param integer page_size: (optional) Page size.
-        :param integer cache_buffers: (optional) Size of page-cache for this
-           database.
-        :param integer access_mode_read_only: `1` to create R/O database.
-        :param integer replace: `1` to replace existing database.
-        :param integer deactivate_indexes: `1` to do not activate indices.
-        :param integer do_not_restore_shadows: `1` to do not restore shadows.
-        :param integer do_not_enforce_constraints: `1` to do not enforce
-           constraints during restore.
-        :param integer commit_after_each_table: `1` to commit after each table
-           is restored.
-        :param integer use_all_page_space: `1` to use all space on data pages.
-        :param integer no_db_triggers: `1` to disable database triggers temporarily.
-        :param integer metadata_only: `1` to restore only database metadata.
+        Args:
+            backup_stream (stream): Backup stream.
+            dest_filenames (str or tuple(str)): Database file(s) specification.
+
+        Keyword Args:
+            dest_file_pages (tuple(int)): Specification of database file max. # of pages.
+            page_size (int): Page size.
+            cache_buffers (int): Size of page-cache for this database.
+            access_mode_read_only (int): `1` to create R/O database.
+            replace (int): `1` to replace existing database.
+            deactivate_indexes (int): `1` to do not activate indices.
+            do_not_restore_shadows (int): `1` to do not restore shadows.
+            do_not_enforce_constraints (int): `1` to do not enforce constraints during restore.
+            commit_after_each_table (int): `1` to commit after each table is restored.
+            use_all_page_space (int): `1` to use all space on data pages.
+            no_db_triggers (int): `1` to disable database triggers temporarily.
+            metadata_only (int): `1` to restore only database metadata.
         """
         self.__check_active()
         # Begin parameter validation section.
@@ -1273,12 +1286,16 @@ class Connection(object):
                 no_db_triggers=0):
         """Perform physical (NBACKUP) database backup.
 
-        :param string source_database: Source database specification.
-        :param dest_filename: Backup file specification.
-        :param integer nbackup_level: Incremental backup level.
-        :param integer no_db_triggers: `1` to disable database triggers temporarily.
+        Args:
+            source_database (str): Source database specification.
+            dest_filename (str): Backup file specification.
 
-        .. note:: Method call will not return until action is finished.
+        Keyword Args:
+            nbackup_level (int): Incremental backup level.
+            no_db_triggers (int): `1` to disable database triggers temporarily.
+
+        Note:
+            Method call will not return until action is finished.
         """
         self.__check_active()
         # Begin parameter validation section.
@@ -1315,12 +1332,15 @@ class Connection(object):
                  no_db_triggers=0):
         """Perform restore from physical (NBACKUP) database backup.
 
-        :param source_filenames: Backup file(s) specification.
-        :type source_filenames: string or tuple of strings
-        :param dest_filename: Database file specification.
-        :param integer no_db_triggers: `1` to disable database triggers temporarily.
+        Args:
+            source_filenames (str or tuple(str)): Backup file(s) specification.
+            dest_filename (str): Database file specification.
 
-        .. note:: Method call will not return until action is finished.
+        Keyword Args:
+            no_db_triggers (int): `1` to disable database triggers temporarily.
+
+        Note:
+            Method call will not return until action is finished.
         """
         self.__check_active()
         # Begin parameter validation section.
@@ -1353,17 +1373,23 @@ class Connection(object):
     def trace_start(self, config, name=None):
         """Start new trace session. **(ASYNC service)**
 
-        :param string config: Trace session configuration.
-        :param string name: (optional) Trace session name.
-        :returns integer: Trace session ID.
-        :raises fdb.DatabaseError: When session ID is not returned on start.
+        Args:
+            config (str): Trace session configuration.
+
+        Keyword Args:
+            name (str): Trace session name.
+
+        Returns:
+            integer: Trace session ID.
+
+        Raises:
+            fdb.DatabaseError: When session ID is not returned on start.
 
         Trace session output could be retrieved through :meth:`readline`,
         :meth:`readlines`, iteration over `Connection` or ignored via call to
         :meth:`wait`.
 
-        .. note::
-
+        Note:
            Until session output is not fully fetched from service (or ignored
            via :meth:`wait`), any attempt to start another asynchronous service
            including call to any `trace_` method will fail with exception.
@@ -1391,10 +1417,15 @@ class Connection(object):
     def trace_stop(self, trace_id):
         """Stop trace session.
 
-        :param integer trace_id: Trace session ID.
-        :returns string: Text with confirmation that session was stopped.
-        :raises `~fdb.DatabaseError`: When trace session is not stopped.
-        :raises `~fdb.OperationalError`: When server can't perform requested operation.
+        Args:
+            trace_id (int): Trace session ID.
+
+        Returns:
+            str: Text with confirmation that session was stopped.
+
+        Raises:
+            fdb.DatabaseError: When trace session is not stopped.
+            fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1409,10 +1440,15 @@ class Connection(object):
     def trace_suspend(self, trace_id):
         """Suspend trace session.
 
-        :param integer trace_id: Trace session ID.
-        :returns string: Text with confirmation that session was paused.
-        :raises `~fdb.DatabaseError`: When trace session is not paused.
-        :raises `~fdb.OperationalError`: When server can't perform requested operation.
+        Args:
+            trace_id (int): Trace session ID.
+
+        Returns:
+            str: Text with confirmation that session was paused.
+
+        Raises:
+            fdb.DatabaseError: When trace session is not paused.
+            fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1427,10 +1463,15 @@ class Connection(object):
     def trace_resume(self, trace_id):
         """Resume trace session.
 
-        :param integer trace_id: Trace session ID.
-        :returns string: Text with confirmation that session was resumed.
-        :raises `~fdb.DatabaseError`: When trace session is not resumed.
-        :raises `~fdb.OperationalError`: When server can't perform requested operation.
+        Args:
+            trace_id (int): Trace session ID.
+
+        Returns:
+            str: Text with confirmation that session was resumed.
+
+        Raises:
+            fdb.DatabaseError: When trace session is not resumed.
+            fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1445,16 +1486,18 @@ class Connection(object):
     def trace_list(self):
         """Get information about existing trace sessions.
 
-        :returns dictionary: Mapping `SESSION_ID -> SESSION_PARAMS`
+        Returns:
+            dict: Mapping `SESSION_ID -> SESSION_PARAMS`
 
-          Session parameters is another dictionary with next keys:
+        Session parameters is another dictionary with next keys:
 
-          :name:  (string) (optional) Session name if specified.
+          :name:  (str) (optional) Session name if specified.
           :date:  (datetime.datetime) Session start date and time.
-          :user:  (string) Trace user name.
-          :flags: (list of strings) Session flags.
+          :user:  (str) Trace user name.
+          :flags: (list(str)) Session flags.
 
-        :raises `~fdb.OperationalError`: When server can't perform requested operation.
+        Raises:
+            fdb.OperationalError: When server can't perform requested operation.
         """
         self.__check_active()
         # Construct the request buffer.
@@ -1486,8 +1529,9 @@ class Connection(object):
     def set_default_page_buffers(self, database, n):
         """Set individual page cache size for Database.
 
-        :param string database: Database filename or alias.
-        :param integer n: Number of pages.
+        Args:
+            database (str): Database filename or alias.
+            n (int): Number of pages.
         """
         self.__check_active()
         _check_string(database)
@@ -1497,8 +1541,9 @@ class Connection(object):
     def set_sweep_interval(self, database, n):
         """Set treshold for automatic sweep.
 
-        :param string database: Database filename or alias.
-        :param integer n: Sweep treshold, or `0` to disable automatic sweep.
+        Args:
+            database (str): Database filename or alias.
+            n (int): Sweep treshold, or `0` to disable automatic sweep.
         """
         self.__check_active()
         _check_string(database)
@@ -1508,8 +1553,9 @@ class Connection(object):
     def set_reserve_page_space(self, database, reserve_space):
         """Set data page space reservation policy.
 
-        :param string database: Database filename or alias.
-        :param boolean reserve_space: `True` to reserve space, `False` to do not.
+        Args:
+            database (str): Database filename or alias.
+            reserve_space (bool): `True` to reserve space, `False` to do not.
         """
         self.__check_active()
         _check_string(database)
@@ -1523,10 +1569,11 @@ class Connection(object):
     def set_write_mode(self, database, mode):
         """Set Disk Write Mode: Sync (forced writes) or Async (buffered).
 
-        :param string database: Database filename or alias.
-        :param integer mode: One from following constants:
-           :data:`~fdb.services.WRITE_FORCED` or
-           :data:`~fdb.services.WRITE_BUFFERED`
+        Args:
+            database (str): Database filename or alias.
+            mode (int): One from following constants:
+                        :data:`~fdb.services.WRITE_FORCED` or
+                        :data:`~fdb.services.WRITE_BUFFERED`
         """
         self.__check_active()
         _check_string(database)
@@ -1539,10 +1586,11 @@ class Connection(object):
     def set_access_mode(self, database, mode):
         """Set Database Access mode: Read Only or Read/Write
 
-        :param string database: Database filename or alias.
-        :param integer mode: One from following constants:
-           :data:`~fdb.services.ACCESS_READ_WRITE` or
-           :data:`~fdb.services.ACCESS_READ_ONLY`
+        Args:
+            database (str): Database filename or alias.
+            mode (int): One from following constants:
+                        :data:`~fdb.services.ACCESS_READ_WRITE` or
+                        :data:`~fdb.services.ACCESS_READ_ONLY`
         """
         self.__check_active()
         _check_string(database)
@@ -1555,8 +1603,9 @@ class Connection(object):
     def set_sql_dialect(self, database, dialect):
         """Set SQL Dialect for Database.
 
-        :param string database: Database filename or alias.
-        :param integer dialect: `1` or `3`.
+        Args:
+            database (str): Database filename or alias.
+            dialect (int): `1` or `3`.
         """
         self.__check_active()
         _check_string(database)
@@ -1569,7 +1618,8 @@ class Connection(object):
     def activate_shadow(self, database):
         """Activate Database Shadow(s).
 
-        :param string database: Database filename or alias.
+        Args:
+            database (str): Database filename or alias.
         """
         self.__check_active()
         _check_string(database)
@@ -1579,7 +1629,8 @@ class Connection(object):
     def no_linger(self, database):
         """Set one-off override for database linger.
 
-        :param string database: Database filename or alias.
+        Args:
+            database (str): Database filename or alias.
         """
         self.__check_active()
         _check_string(database)
@@ -1590,17 +1641,19 @@ class Connection(object):
     def shutdown(self, database, shutdown_mode, shutdown_method, timeout):
         """Database shutdown.
 
-        :param string database: Database filename or alias.
-        :param integer shutdown_mode: One from following constants:
-           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`,
-           :data:`~fdb.services.SHUT_MULTI` or :data:`~fdb.services.SHUT_FULL`.
-        :param integer shutdown_method: One from following constants:
-           :data:`~fdb.services.SHUT_FORCE`,
-           :data:`~fdb.services.SHUT_DENY_NEW_TRANSACTIONS`
-           or :data:`~fdb.services.SHUT_DENY_NEW_ATTACHMENTS`.
-        :param integer timeout: Time in seconds, that the shutdown must complete in.
+        Args:
+            database (str): Database filename or alias.
+            shutdown_mode (int): One from following constants:
+                                 :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`,
+                                 :data:`~fdb.services.SHUT_MULTI` or :data:`~fdb.services.SHUT_FULL`.
+            shutdown_method (int): One from following constants:
+                                   :data:`~fdb.services.SHUT_FORCE`,
+                                   :data:`~fdb.services.SHUT_DENY_NEW_TRANSACTIONS`
+                                   or :data:`~fdb.services.SHUT_DENY_NEW_ATTACHMENTS`.
+            timeout (int): Time in seconds, that the shutdown must complete in.
 
-        .. seealso:: See also :meth:`~Connection.bring_online` method.
+        See also:
+            Method :meth:`bring_online`
         """
         self.__check_active()
         _check_string(database)
@@ -1624,12 +1677,16 @@ class Connection(object):
     def bring_online(self, database, online_mode=SHUT_NORMAL):
         """Bring previously shut down database back online.
 
-        :param string database: Database filename or alias.
-        :param integer online_mode: (Optional) One from following constants:
-           :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`,
-           :data:`~fdb.services.SHUT_MULTI` or :data:`~fdb.services.SHUT_NORMAL` (**Default**).
+        Args:
+            database (str): Database filename or alias.
 
-        .. seealso:: See also :meth:`~Connection.shutdown` method.
+        Keyword Args:
+            online_mode (int): One from following constants:
+                :data:`~fdb.services.SHUT_LEGACY`, :data:`~fdb.services.SHUT_SINGLE`,
+                :data:`~fdb.services.SHUT_MULTI` or (**Default**) :data:`~fdb.services.SHUT_NORMAL`.
+
+        See also:
+            Method :meth:`shutdown`
         """
         self.__check_active()
         _check_string(database)
@@ -1648,9 +1705,11 @@ class Connection(object):
     def sweep(self, database):
         """Perform Database Sweep.
 
-        .. note:: Method call will not return until sweep is finished.
+        Note:
+            Method call will not return until sweep is finished.
 
-        :param string database: Database filename or alias.
+        Args:
+            database (str): Database filename or alias.
         """
         self.__check_active()
         _check_string(database)
@@ -1667,16 +1726,19 @@ class Connection(object):
                validate_record_fragments=1):
         """Database Validation and Repair.
 
-        :param string database: Database filename or alias.
-        :param integer read_only_validation: `1` to prevent any database changes.
-        :param integer ignore_checksums: `1` to ignore page checksum errors.
-        :param integer kill_unavailable_shadows: `1` to kill unavailable shadows.
-        :param integer mend_database: `1` to fix database for backup.
-        :param integer validate_database: `0` to skip database validation.
-        :param integer validate_record_fragments: `0` to skip validation of
-           record fragments.
+        Args:
+            database (str): Database filename or alias.
 
-        .. note:: Method call will not return until action is finished.
+        Keyword Args:
+            read_only_validation (int): `1` to prevent any database changes.
+            ignore_checksums (int): `1` to ignore page checksum errors.
+            kill_unavailable_shadows (int): `1` to kill unavailable shadows.
+            mend_database (int): `1` to fix database for backup.
+            validate_database (int): `0` to skip database validation.
+            validate_record_fragments (int): `0` to skip validation of record fragments.
+
+        Note:
+            Method call will not return until action is finished.
         """
         self.__check_active()
         _check_string(database)
@@ -1718,32 +1780,34 @@ class Connection(object):
                  lock_timeout=None, callback=None):
         """On-line database validation.
 
-        :param string database: Database filename or alias.
-        :param string include_tables: Pattern for table names to include in validation run.
-        :param string exclude_tables: Pattern for table names to exclude from validation run.
-        :param string include_indices: Pattern for index names to include in validation run.
-        :param string exclude_indices: Pattern for index names to exclude from validation run.
-        :param integer lock_timeout: lock timeout, used to acquire locks for table to validate,
-          in seconds, default is 10 secs. 0 is no-wait, -1 is infinite wait.
-        :param function callback: Function to call back with each output line.
-          Function must accept only one parameter: line of output.
+        Args:
+            database (str): Database filename or alias.
 
-        .. note:: Patterns are regular expressions, processed by the same rules as SIMILAR TO
-           expressions. All patterns are case-sensitive, regardless of database dialect. If the
-           pattern for tables is omitted then all user tables will be validated. If the pattern
-           for indexes is omitted then all indexes of the appointed tables will be validated.
-           System tables are not validated.
+        Keyword Args:
+            include_tables (str): Pattern for table names to include in validation run.
+            exclude_tables (str): Pattern for table names to exclude from validation run.
+            include_indices (str): Pattern for index names to include in validation run.
+            exclude_indices (str): Pattern for index names to exclude from validation run.
+            lock_timeout (int): lock timeout, used to acquire locks for table to validate,
+                in seconds, default is 10 secs. 0 is no-wait, -1 is infinite wait.
+            callback (callable): Function to call back with each output line.
+                Function must accept only one parameter: line of output.
+
+        Note:
+            Patterns are regular expressions, processed by the same rules as SIMILAR TO
+            expressions. All patterns are case-sensitive, regardless of database dialect. If the
+            pattern for tables is omitted then all user tables will be validated. If the pattern
+            for indexes is omitted then all indexes of the appointed tables will be validated.
+            System tables are not validated.
 
         If `callback` is not specified, validation log could be retrieved through
         :meth:`readline`, :meth:`readlines`, iteration over `Connection` or
         ignored via call to :meth:`wait`.
 
-        .. note::
-
+        Note:
            Until validate report is not fully fetched from service (or ignored via
            :meth:`wait`), any attempt to start another asynchronous service will
            fail with exception.
-
         """
         self.__check_active()
         _check_string(database)
@@ -1772,9 +1836,12 @@ class Connection(object):
     def get_users(self, user_name=None):
         """Get information about user(s).
 
-        :param string user_name: (Optional) When specified, returns information
-           only about user with specified user name.
-        :returns list: :class:`User` instances.
+        Keyword Args:
+            user_name (str): When specified, returns information
+                only about user with specified user name.
+
+        Returns:
+            list: List of :class:`User` instances.
         """
         self.__check_active()
         if user_name is not None:
@@ -1826,13 +1893,12 @@ class Connection(object):
     def add_user(self, user):
         """Add new user.
 
-        :param user: Instance of :class:`User` with **at least** its
-           :attr:`~User.name` and :attr:`~User.password` attributes specified
-           as non-empty values. All other attributes are optional.
-        :type user: :class:`User`
+        Args:
+            user (:class:`User`): Instance of :class:`User` with **at least** its
+                :attr:`~User.name` and :attr:`~User.password` attributes specified
+                as non-empty values. All other attributes are optional.
 
-        .. note::
-
+        Note:
            This method ignores the :attr:`~User.user_id` and :attr:`~User.group_id`
            attributes of :class:`~User` regardless of their values.
         """
@@ -1868,12 +1934,11 @@ class Connection(object):
     def modify_user(self, user):
         """Modify user information.
 
-        :param user: Instance of :class:`User` with **at least** its
-           :attr:`~User.name` attribute specified as non-empty value.
-        :type user: :class:`User`
+        Args:
+            user (:class:`User`): Instance of :class:`User` with **at least** its
+                :attr:`~User.name` attribute specified as non-empty value.
 
-        .. note::
-
+        Note:
            This method sets :attr:`~User.first_name`, :attr:`~User.middle_name`
            and :attr:`~User.last_name` to their actual values, and ignores
            the :attr:`~User.user_id` and :attr:`~User.group_id` attributes
@@ -1904,9 +1969,9 @@ class Connection(object):
     def remove_user(self, user):
         """Remove user.
 
-        :param user: User name or Instance of :class:`User` with **at least** its
-           :attr:`~User.name` attribute specified as non-empty value.
-        :type user: string or :class:`User`
+        Args:
+            user (:class:`User`): User name or Instance of :class:`User` with **at least** its
+                :attr:`~User.name` attribute specified as non-empty value.
         """
         self.__check_active()
         if isinstance(user, User):
@@ -1922,10 +1987,12 @@ class Connection(object):
     def user_exists(self, user):
         """Check for user's existence.
 
-        :param user: User name or Instance of :class:`User` with **at least** its
-           :attr:`~User.name` attribute specified as non-empty value.
-        :type user: string or :class:`User`
-        :returns boolean: `True` when the specified user exists.
+        Args:
+            user (:class:`User`): User name or Instance of :class:`User` with **at least** its
+                :attr:`~User.name` attribute specified as non-empty value.
+
+        Returns:
+            bool: `True` when the specified user exists.
         """
         self.__check_active()
         if isinstance(user, User):
@@ -1950,25 +2017,25 @@ class User(object):
             _check_string(name)
             self.name = name.upper()
         else:
-            #: User `login` name (username).
+            #: str: User `login` name (username).
             self.name = None
-        #: Password. Not returned by user output methods, but must be
+        #: str: Password. Not returned by user output methods, but must be
         #: specified to add a user.
         self.password = None
 
-        #: First name.
+        #: str: First name.
         self.first_name = None
-        #: Middle name
+        #: str: Middle name
         self.middle_name = None
-        #: Last name
+        #: str: Last name
         self.last_name = None
 
         # The user id and group id are not fully supported.  For details, see
         # the documentation of the "User Management Methods" of
         # services.Connection.
-        #: User ID
+        #: int: User ID
         self.user_id = None
-        #: User group ID
+        #: int: User group ID
         self.group_id = None
 
     def __str__(self):
@@ -1978,11 +2045,14 @@ class User(object):
     def load_information(self, svc):
         """Load information about user from server.
 
-        :param svc: Open service connection.
-        :type svc: :class:`Connection`
-        :returns: True if information was successfuly retrieved, False otherwise.
+        Args:
+           svc (:class:`Connection`): Open service connection.
 
-        :raises `~fdb.ProgrammingError`: If user name is not defined.
+        Returns:
+            True if information was successfuly retrieved, False otherwise.
+
+        Raises:
+            fdb.ProgrammingError: If user name is not defined.
         """
         if self.name is None:
             raise fdb.ProgrammingError("Can't load information about user without name.")

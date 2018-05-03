@@ -152,15 +152,14 @@ class TraceParser(object):
     """Parser for standard textual trace log. Produces named tuples describing individual trace log entries/events.
 
     Attributes:
-
-    :seen_attachments:  Set of attachment ids that were already processed.
-    :seen_transactions: Set of transaction ids that were already processed.
-    :seen_services:     Set of service ids that were already processed.
-    :sqlinfo_map:       Dictionary that maps (sql_cmd,plan) keys to internal ids
-    :param_map:         Dictionary that maps parameters (statement or procedure) keys to internal ids
-    :next_event_id:     Sequence id that would be assigned to next parsed event (starts with 1).
-    :next_sql_id:       Sequence id that would be assigned to next parsed unique SQL command (starts with 1).
-    :next_param_id:     Sequence id that would be assigned to next parsed unique parameter (starts with 1).
+        seen_attachments (set): Set of attachment ids that were already processed.
+        seen_transactions (set): Set of transaction ids that were already processed.
+        seen_services (set): Set of service ids that were already processed.
+        sqlinfo_map (dict): Dictionary that maps (sql_cmd,plan) keys to internal ids
+        param_map (dict): Dictionary that maps parameters (statement or procedure) keys to internal ids
+        next_event_id (int): Sequence id that would be assigned to next parsed event (starts with 1).
+        next_sql_id (int): Sequence id that would be assigned to next parsed unique SQL command (starts with 1).
+        next_param_id (int): Sequence id that would be assigned to next parsed unique parameter (starts with 1).
 """
     def __init__(self):
         self.seen_attachments = set()
@@ -944,9 +943,11 @@ class TraceParser(object):
     def parse_event(self, trace_block):
         """Parse single trace event.
 
-    :param list trace_block: List with trace entry lines for single trace event.
+        Args:
+            trace_block (list): List with trace entry lines for single trace event.
 
-    :returns: Named tuple with parsed event.
+        Returns:
+            Named tuple with parsed event.
 """
         self.__current_block = collections.deque(trace_block)
         if self._is_session_suspended(self.__current_block[0]):
@@ -957,11 +958,16 @@ class TraceParser(object):
         #
         return self._parse_block(record_parser)
     def parse(self, lines):
-        """Parse output from Firebird trace session and yield named tuples describing individual trace log entries/events.
+        """Parse output from Firebird trace session.
 
-        :param lines: Iterable that return lines produced by firebird trace session.
+        Args:
+            lines (iterable): Iterable that return lines produced by firebird trace session.
 
-        :raises `~fdb.ParseError`: When any problem is found in input stream.
+        Yields:
+            Named tuples describing individual trace log entries/events.
+
+        Raises:
+            fdb.ParseError: When any problem is found in input stream.
 """
         for rec in (self.parse_event(x) for x in self._iter_trace_blocks(lines)):
             while len(self.__buffer) > 0:

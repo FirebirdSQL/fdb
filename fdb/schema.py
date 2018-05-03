@@ -330,9 +330,12 @@ def get_grants(privileges, grantors=None):
     """Get list of minimal set of SQL GRANT statamenets necessary to grant
     specified privileges.
 
-    :param list privileges: List of :class:`Privilege` instances.
-    :param list grantors: List of standard grantor names. Generates GRANTED BY
-        clause for privileges granted by user that's not in list.
+    Args:
+        privileges (list): List of :class:`Privilege` instances.
+
+    Keyword Args:
+        grantors (list): List of standard grantor names. Generates GRANTED BY
+            clause for privileges granted by user that's not in list.
     """
     tp = {'S':'SELECT', 'I':'INSERT', 'U':'UPDATE', 'D':'DELETE', 'R':'REFERENCES'}
 
@@ -955,10 +958,11 @@ FROM RDB$FILTERS""")
     def bind(self, connection):
         """Bind this instance to specified :class:`~fdb.Connection`.
 
-        :param connection: :class:`~fdb.Connection` instance.
+        Args:
+            connection: :class:`~fdb.Connection` instance.
 
-        :raises `~fdb.ProgrammingError`: If Schema object was set as internal (via
-            :meth:`_set_as_internal`).
+        Raises:
+            fdb.ProgrammingError: If Schema object was set as internal (via :meth:`_set_as_internal`).
         """
         if self.__internal:
             raise fdb.ProgrammingError("Call to 'bind' not allowed for embedded Schema.")
@@ -1036,8 +1040,9 @@ FROM RDB$FILTERS""")
     def close(self):
         """Sever link to :class:`~fdb.Connection`.
 
-        :raises `~fdb.ProgrammingError`: If Schema object was set as internal (via
-            :meth:`_set_as_internal`).
+        Raises:
+            fdb.ProgrammingError: If Schema object was set as internal (via
+                :meth:`_set_as_internal`).
         """
         if self.__internal:
             raise fdb.ProgrammingError("Call to 'close' not allowed for embedded Schema.")
@@ -1053,13 +1058,16 @@ FROM RDB$FILTERS""")
         """Drop all or specified category of cached metadata objects, so they're
         reloaded from database on next reference.
 
-        :param string data: `None`, metadata category code or iterable with category codes.
+        Keyword Args:
+            data: `None`, metadata category code or iterable with category codes.
 
-        .. note:: Category codes are defined by `SCHEMA_*` globals.
+        Note:
+            Category codes are defined by `SCHEMA_*` globals.
 
-        :raises fdb.ProgrammingError: For undefined metadata category.
+            Also commits query transaction!
 
-        .. note:: Also commits query transaction.
+        Raises:
+            fdb.ProgrammingError: For undefined metadata category.
         """
         self.__clear(data)
         if not self.closed:
@@ -1068,9 +1076,11 @@ FROM RDB$FILTERS""")
     def get_metadata_ddl(self, sections=SCRIPT_DEFAULT_ORDER):
         """Return list of DDL SQL commands for creation of specified categories of database objects.
 
-        :param list sections: List of section identifiers.
+        Keyword Args:
+            sections (list): List of section identifiers.
 
-        :returns: List with SQL commands.
+        Returns:
+            List with SQL commands.
 
         Sections identifiers are represented by `SCRIPT_*` contants defined in schema module.
 
@@ -1227,33 +1237,41 @@ FROM RDB$FILTERS""")
     def get_collation(self, name):
         """Get :class:`Collation` by name.
 
-        :param string name: Collation name.
+        Args:
+            name (str): Collation name.
 
-        :returns: :class:`Collation` with specified name or `None`.
+        Returns:
+            :class:`Collation` with specified name or `None`.
         """
         return self.collations.get(name)
     def get_character_set(self, name):
         """Get :class:`CharacterSet` by name.
 
-        :param string name: Character set name.
+        Args:
+            name (str): Character set name.
 
-        :returns: :class:`CharacterSet` with specified name or `None`.
+        Returns:
+            :class:`CharacterSet` with specified name or `None`.
         """
         return self.character_sets.get(name)
     def get_exception(self, name):
         """Get :class:`DatabaseException` by name.
 
-        :param string name: Exception name.
+        Args:
+            name (str): Exception name.
 
-        :returns: :class:`DatabaseException` with specified name or `None`.
+        Returns:
+            :class:`DatabaseException` with specified name or `None`.
         """
         return self.exceptions.get(name)
     def get_generator(self, name):
         """Get :class:`Sequence` by name.
 
-        :param string name: Sequence name.
+        Args:
+            name (str): Sequence name.
 
-        :returns: :class:`Sequence` with specified name or `None`.
+        Returns:
+            :class:`Sequence` with specified name or `None`.
         """
         generator = self.generators.get(name)
         if generator is None:
@@ -1263,9 +1281,11 @@ FROM RDB$FILTERS""")
     def get_index(self, name):
         """Get :class:`Index` by name.
 
-        :param string name: Index name.
+        Args:
+            name (str): Index name.
 
-        :returns: :class:`Index` with specified name or `None`.
+        Returns:
+            :class:`Index` with specified name or `None`.
         """
         index = self.indices.get(name)
         if index is None:
@@ -1274,9 +1294,11 @@ FROM RDB$FILTERS""")
     def get_domain(self, name):
         """Get :class:`Domain` by name.
 
-        :param string name: Domain name.
+        Args:
+            name (str): Domain name.
 
-        :returns: :class:`Domain` with specified name or `None`.
+        Returns:
+            :class:`Domain` with specified name or `None`.
         """
         domain = self.domains.get(name)
         if domain is None:
@@ -1285,9 +1307,11 @@ FROM RDB$FILTERS""")
     def get_table(self, name):
         """Get :class:`Table` by name.
 
-        :param string name: Table name.
+        Args:
+            name (str): Table name.
 
-        :returns: :class:`Table` with specified name or `None`.
+        Returns:
+            :class:`Table` with specified name or `None`.
         """
         table = self.tables.get(name)
         if table is None:
@@ -1296,9 +1320,11 @@ FROM RDB$FILTERS""")
     def get_view(self, name):
         """Get :class:`View` by name.
 
-        :param string name: View name.
+        Args:
+            name (str): View name.
 
-        :returns: :class:`View` with specified name or `None`.
+        Returns:
+            :class:`View` with specified name or `None`.
         """
         view = self.views.get(name)
         if view is None:
@@ -1307,9 +1333,11 @@ FROM RDB$FILTERS""")
     def get_trigger(self, name):
         """Get :class:`Trigger` by name.
 
-        :param string name: Trigger name.
+        Args:
+            name (str): Trigger name.
 
-        :returns: :class:`Trigger` with specified name or `None`.
+        Returns:
+            :class:`Trigger` with specified name or `None`.
         """
         trigger = self.triggers.get(name)
         if trigger is None:
@@ -1318,9 +1346,11 @@ FROM RDB$FILTERS""")
     def get_procedure(self, name):
         """Get :class:`Procedure` by name.
 
-        :param string name: Procedure name.
+        Args:
+            name (str): Procedure name.
 
-        :returns: :class:`Procedure` with specified name or `None`.
+        Returns:
+            :class:`Procedure` with specified name or `None`.
         """
         procedure = self.procedures.get(name)
         if procedure is None:
@@ -1329,25 +1359,31 @@ FROM RDB$FILTERS""")
     def get_constraint(self, name):
         """Get :class:`Constraint` by name.
 
-        :param string name: Constraint name.
+        Args:
+            name (str): Constraint name.
 
-        :returns: :class:`Constraint` with specified name or `None`.
+        Returns:
+            :class:`Constraint` with specified name or `None`.
         """
         return self.constraints.get(name)
     def get_role(self, name):
         """Get :class:`Role` by name.
 
-        :param string name: Role name.
+        Args:
+            name (str): Role name.
 
-        :returns: :class:`Role` with specified name or `None`.
+        Returns:
+            :class:`Role` with specified name or `None`.
         """
         return self.roles.get(name)
     def get_function(self, name):
         """Get :class:`Function` by name.
 
-        :param string name: Function name.
+        Args:
+            name (str): Function name.
 
-        :returns: :class:`Function` with specified name or `None`.
+        Returns:
+            :class:`Function` with specified name or `None`.
         """
         function = self.functions.get(name)
         if function is None:
@@ -1356,10 +1392,12 @@ FROM RDB$FILTERS""")
     def get_collation_by_id(self, charset_id, collation_id):
         """Get :class:`Collation` by ID.
 
-        :param integer charset_id: Character set ID.
-        :param integer collation_id: Collation ID.
+        Args:
+            charset_id (int): Character set ID.
+            collation_id (int): Collation ID.
 
-        :returns: :class:`Collation` with specified ID or `None`.
+        Returns:
+            :class:`Collation` with specified ID or `None`.
         """
         for collation in self.collations:
             if (collation._attributes['RDB$CHARACTER_SET_ID'] == charset_id) and (collation.id == collation_id):
@@ -1369,9 +1407,11 @@ FROM RDB$FILTERS""")
     def get_character_set_by_id(self, id):
         """Get :class:`CharacterSet` by ID.
 
-        :param integer name: CharacterSet ID.
+        Args:
+            id (int): CharacterSet ID.
 
-        :returns: :class:`CharacterSet` with specified ID or `None`.
+        Returns:
+            :class:`CharacterSet` with specified ID or `None`.
         """
         for charset in self.character_sets:
             if charset.id == id:
@@ -1381,14 +1421,20 @@ FROM RDB$FILTERS""")
     def get_privileges_of(self, user, user_type=None):
         """Get list of all privileges granted to user/database object.
 
-        :param user: User name or instance of class that represents possible user.
-            Allowed classes are :class:`~fdb.services.User`, :class:`Table`,
-            :class:`View`, :class:`Procedure`, :class:`Trigger` or :class:`Role`.
-        :param int user_type: **Required if** `user` is provided as string name.
-            Numeric code for user type, see :attr:`Schema.enum_object_types`.
-        :returns: List of :class:`Privilege` objects.
+        Args:
+            user: User name or instance of class that represents possible user.
+                Allowed classes are :class:`~fdb.services.User`, :class:`Table`,
+                :class:`View`, :class:`Procedure`, :class:`Trigger` or :class:`Role`.
 
-        :raises `~fdb.ProgrammingError`: For unknown `user_type` code.
+        Keyword Args:
+            user_type (int): **Required if** `user` is provided as string name.
+                Numeric code for user type, see :attr:`Schema.enum_object_types`.
+
+        Returns:
+            List of :class:`Privilege` objects.
+
+        Raises:
+            fdb.ProgrammingError: For unknown `user_type` code.
         """
         if isinstance(user, (fdb.StringType, fdb.UnicodeType)):
             if (user_type is None) or (user_type not in self.enum_object_types):
@@ -1407,9 +1453,11 @@ FROM RDB$FILTERS""")
     def get_package(self, name):
         """Get :class:`Package` by name.
 
-        :param string name: Package name.
+        Args:
+            name (str): Package name.
 
-        :returns: :class:`Package` with specified name or `None`.
+        Returns:
+            :class:`Package` with specified name or `None`.
         """
         return self.packages.get(name)
 
@@ -1484,7 +1532,8 @@ class BaseSchemaItem(Visitable):
 
         Supported actions are defined by :attr:`actions` list.
 
-        :raises `~fdb.ProgrammingError`: For unsupported action or wrong parameters passed.
+        Raises:
+            fdb.ProgrammingError: For unsupported action or wrong parameters passed.
         """
         _action = action.lower()
         if _action in self._actions:
@@ -1497,9 +1546,8 @@ class Collation(BaseSchemaItem):
     """Represents collation.
 
     Supported SQL actions:
-
-    - User collation: create, drop, comment
-    - System collation: comment
+        - User collation: `create`, `drop`, `comment`
+        - System collation: `comment`
     """
     def __init__(self, schema, attributes):
         super(Collation, self).__init__(schema, attributes)
@@ -1590,7 +1638,8 @@ class Collation(BaseSchemaItem):
 class CharacterSet(BaseSchemaItem):
     """Represents character set.
 
-    Supported SQL actions: alter(collation=Collation instance or collation name), comment
+    Supported SQL actions:
+        `alter` (collation=Collation instance or collation name), `comment`
     """
     def __init__(self, schema, attributes):
         super(CharacterSet, self).__init__(schema, attributes)
@@ -1660,9 +1709,8 @@ class DatabaseException(BaseSchemaItem):
     """Represents database exception.
 
     Supported SQL actions:
-
-    - User exception: create, recreate, alter(message=string), create_or_alter, drop, comment
-    - System exception: comment
+        - User exception: `create`, `recreate`, `alter` (message=string), `create_or_alter`, `drop`, `comment`
+        - System exception: `comment`
     """
     def __init__(self, schema, attributes):
         super(DatabaseException, self).__init__(schema, attributes)
@@ -1719,9 +1767,8 @@ class Sequence(BaseSchemaItem):
     """Represents database generator/sequence.
 
     Supported SQL actions:
-
-    - User sequence: create, alter(value=number), drop, comment
-    - System sequence: comment
+        - User sequence: `create`, `alter` (value=number), `drop`, `comment`
+        - System sequence: `comment`
     """
     def __init__(self, schema, attributes):
         super(Sequence, self).__init__(schema, attributes)
@@ -1790,10 +1837,10 @@ class TableColumn(BaseSchemaItem):
     """Represents table column.
 
     Supported SQL actions:
-
-    - User column: alter(name=string,datatype=string_SQLTypeDef,position=number,
-                         expression=computed_by_expr,restart=None_or_init_value), drop, comment
-    - System column: comment
+        - User column: `drop`, `comment`,
+          `alter` (name=string, datatype=string_SQLTypeDef, position=number,
+          expression=computed_by_expr, restart=None_or_init_value)
+        - System column: `comment`
     """
     def __init__(self, schema, table, attributes):
         super(TableColumn, self).__init__(schema, attributes)
@@ -1935,9 +1982,8 @@ class Index(BaseSchemaItem):
     """Represents database index.
 
     Supported SQL actions:
-
-    - User index: create, activate, deactivate, recompute, drop, comment
-    - System index: activate, recompute, comment
+        - User index: `create`, `activate`, `deactivate`, `recompute`, `drop`, `comment`
+        - System index: `activate`, `recompute`, `comment`
     """
     def __init__(self, schema, attributes):
         super(Index, self).__init__(schema, attributes)
@@ -2054,7 +2100,8 @@ from rdb$index_segments where rdb$index_name = ? order by rdb$field_position""",
 class ViewColumn(BaseSchemaItem):
     """Represents view column.
 
-    Supported SQL actions: comment
+    Supported SQL actions:
+        `comment`
     """
     def __init__(self, schema, view, attributes):
         super(ViewColumn, self).__init__(schema, attributes)
@@ -2144,10 +2191,10 @@ class Domain(BaseSchemaItem):
     """Represents SQl Domain.
 
     Supported SQL actions:
-
-    - User domain: create, alter(name=string,default=string_definition_or_None,
-      check=string_definition_or_None,datatype=string_SQLTypeDef), drop, comment
-    - System domain: comment
+        - User domain: `create`, `drop`, `comment`,
+          `alter` (name=string, default=string_definition_or_None,
+          check=string_definition_or_None, datatype=string_SQLTypeDef)
+        - System domain: `comment`
     """
     def __init__(self, schema, attributes):
         super(Domain, self).__init__(schema, attributes)
@@ -2332,7 +2379,8 @@ class Domain(BaseSchemaItem):
 class Dependency(BaseSchemaItem):
     """Maps dependency between database objects.
 
-    Supported SQL actions: none
+    Supported SQL actions:
+        `none`
     """
     def __init__(self, schema, attributes):
         super(Dependency, self).__init__(schema, attributes)
@@ -2478,9 +2526,8 @@ class Constraint(BaseSchemaItem):
     """Represents table or column constraint.
 
     Supported SQL actions:
-
-    - Constraint on user table except NOT NULL constraint: create, drop
-    - Constraint on system table: none
+        - Constraint on user table except NOT NULL constraint: `create`, `drop`
+        - Constraint on system table: `none`
     """
     def __init__(self, schema, attributes):
         super(Constraint, self).__init__(schema, attributes)
@@ -2603,11 +2650,10 @@ class Table(BaseSchemaItem):
     """Represents Table in database.
 
     Supported SQL actions:
-
-    - User table: create (no_pk=bool,no_unique=bool),
-                  recreate (no_pk=bool,no_unique=bool),
-                  drop, comment
-    - System table: comment
+        - User table: `create` (no_pk=bool, no_unique=bool),
+                      `recreate` (no_pk=bool, no_unique=bool),
+                      `drop`, `comment`
+        - System table: `comment`
     """
     def __init__(self, schema, attributes):
         super(Table, self).__init__(schema, attributes)
@@ -2805,10 +2851,9 @@ class View(BaseSchemaItem):
     """Represents database View.
 
     Supported SQL actions:
-
-    - User views: create, recreate, alter(columns=string_or_list,query=string,check=bool),
-      create_or_alter, drop, comment
-    - System views: comment
+        - User views: `create`, `recreate`, `alter` (columns=string_or_list, query=string,check=bool),
+             `create_or_alter`, `drop`, `comment`
+        - System views: `comment`
     """
     def __init__(self, schema, attributes):
         super(View, self).__init__(schema, attributes)
@@ -2925,11 +2970,9 @@ class Trigger(BaseSchemaItem):
     """Represents trigger.
 
     Supported SQL actions:
-
-    - User trigger: create(inactive=bool), recreate, create_or_alter, drop,
-      alter(fire_on=string,active=bool,sequence=int,declare=string_or_list,
-      code=string_or_list), comment
-    - System trigger: comment
+        - User trigger: `create` (inactive=bool), `recreate`, `create_or_alter`, `drop`, `comment`,
+          `alter` (fire_on=string, active=bool,sequence=int, declare=string_or_list, code=string_or_list)
+        - System trigger: `comment`
     """
     def __init__(self, schema, attributes):
         super(Trigger, self).__init__(schema, attributes)
@@ -3108,7 +3151,8 @@ class Trigger(BaseSchemaItem):
 class ProcedureParameter(BaseSchemaItem):
     """Represents procedure parameter.
 
-    Supported SQL actions: comment
+    Supported SQL actions:
+        `comment`
     """
     def __init__(self, schema, proc, attributes):
         super(ProcedureParameter, self).__init__(schema, attributes)
@@ -3223,12 +3267,10 @@ class Procedure(BaseSchemaItem):
     """Represents stored procedure.
 
     Supported SQL actions:
-
-    - User procedure: create(no_code=bool), recreate(no_code=bool),
-      create_or_alter(no_code=bool), drop,
-      alter(input=string_or_list,output=string_or_list,declare=string_or_list,
-      code=string_or_list), comment
-    - System procedure: comment
+        - User procedure: `create` (no_code=bool), `recreate`  no_code=bool),
+          `create_or_alter` (no_code=bool), `drop`, `comment`
+          `alter` (input=string_or_list, output=string_or_list, declare=string_or_list, code=string_or_list)
+        - System procedure: `comment`
     """
     def __init__(self, schema, attributes):
         super(Procedure, self).__init__(schema, attributes)
@@ -3451,9 +3493,8 @@ class Role(BaseSchemaItem):
     """Represents user role.
 
     Supported SQL actions:
-
-    - User role: create, drop, comment
-    - System role: comment
+        - User role: `create`, `drop`, `comment`
+        - System role: `comment`
     """
     def __init__(self, schema, attributes):
         super(Role, self).__init__(schema, attributes)
@@ -3496,7 +3537,8 @@ class Role(BaseSchemaItem):
 class FunctionArgument(BaseSchemaItem):
     """Represets UDF argument.
 
-    Supported SQL actions: none.
+    Supported SQL actions:
+        `none`
     """
     def __init__(self, schema, function, attributes):
         super(FunctionArgument, self).__init__(schema, attributes)
@@ -3696,13 +3738,11 @@ class Function(BaseSchemaItem):
     """Represents user defined function.
 
     Supported SQL actions:
-
-    - External UDF: declare, drop, comment
-    - PSQL UDF (FB 3, not declared in package): create(no_code=bool),
-        recreate(no_code=bool), create_or_alter(no_code=bool), drop,
-        alter(arguments=string_or_list,returns=string,declare=string_or_list,
-        code=string_or_list)
-    - System UDF: none
+        - External UDF: `declare`, `drop`, `comment`
+        - PSQL UDF (FB 3, not declared in package): `create` (no_code=bool),
+          `recreate` (no_code=bool), `create_or_alter` (no_code=bool), `drop`,
+          `alter` (arguments=string_or_list, returns=string, declare=string_or_list, code=string_or_list)
+        - System UDF: `none`
     """
     def __init__(self, schema, attributes):
         super(Function, self).__init__(schema, attributes)
@@ -3913,7 +3953,8 @@ where rdb$function_name = ? order by rdb$argument_position""" % ','.join(cols), 
 class DatabaseFile(BaseSchemaItem):
     """Represents database extension file.
 
-    Supported SQL actions:  create
+    Supported SQL actions:
+        `create`
     """
     def __init__(self, schema, attributes):
         super(DatabaseFile, self).__init__(schema, attributes)
@@ -3946,7 +3987,8 @@ class DatabaseFile(BaseSchemaItem):
 class Shadow(BaseSchemaItem):
     """Represents database shadow.
 
-    Supported SQL actions:  create, drop(preserve=bool)
+    Supported SQL actions:
+        `create`, `drop` (preserve=bool)
     """
     SHADOW_INACTIVE = 2
     SHADOW_MANUAL = 4
@@ -4020,7 +4062,8 @@ order by RDB$FILE_SEQUENCE""", (self._attributes['RDB$SHADOW_NUMBER'],))]
 class Privilege(BaseSchemaItem):
     """Represents priviledge to database object.
 
-    Supported SQL actions: grant(grantors),revoke(grantors,grant_option)
+    Supported SQL actions:
+        `grant` (grantors), `revoke` (grantors, grant_option)
     """
     def __init__(self, schema, attributes):
         super(Privilege, self).__init__(schema, attributes)
@@ -4170,8 +4213,9 @@ class Privilege(BaseSchemaItem):
 class Package(BaseSchemaItem):
     """Represents PSQL package.
 
-    Supported SQL actions: create(body=bool), recreate(body=bool), create_or_alter(body=bool),
-      alter(header=string_or_list), drop(body=bool), alter
+    Supported SQL actions:
+        `create` (body=bool), `recreate` (body=bool), `create_or_alter` (body=bool),
+        `alter` (header=string_or_list), `drop` (body=bool)
     """
     def __init__(self, schema, attributes):
         super(Package, self).__init__(schema, attributes)
@@ -4236,10 +4280,10 @@ class Package(BaseSchemaItem):
         return bool(result) if result is not None else None
 
 class BackupHistory(BaseSchemaItem):
-    """Represents entry of history for backups performed
-using the nBackup utility.
+    """Represents entry of history for backups performed using the nBackup utility.
 
-    Supported SQL actions:  None
+    Supported SQL actions:
+        `None`
     """
     def __init__(self, schema, attributes):
         super(BackupHistory, self).__init__(schema, attributes)
@@ -4280,9 +4324,8 @@ class Filter(BaseSchemaItem):
     """Represents userdefined BLOB filter.
 
     Supported SQL actions:
-
-    - BLOB filter: declare, drop, comment
-    - System UDF: none
+        - BLOB filter: `declare`, `drop`, `comment`
+        - System UDF: `none`
     """
     def __init__(self, schema, attributes):
         super(Filter, self).__init__(schema, attributes)

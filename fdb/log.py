@@ -31,9 +31,11 @@ LogEntry = namedtuple('LogEntry', 'source_id,timestamp,message')
 def parse(lines):
     """Parse Firebird server log and yield named tuples describing individual log entries/events.
 
-        :param lines: Iterable of lines from Firebird server log.
+    Args:
+        lines: Iterable of lines from Firebird server log.
 
-        :raises `~fdb.ParseError`: When any problem is found in input stream.
+    Raises:
+        fdb.ParseError: When any problem is found in input stream.
 """
     line_no = 0
     locale = getlocale(LC_ALL)
