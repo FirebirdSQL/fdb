@@ -67,7 +67,9 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
                        isc_dpb_sweep_interval, isc_dpb_sys_user_name,
                        isc_dpb_sys_user_name_enc, isc_dpb_trace, isc_dpb_user_name,
                        isc_dpb_verify, isc_dpb_version1,
-                       isc_dpb_working_directory, isc_dpb_no_db_triggers, isc_dpb_nolinger,
+                       isc_dpb_working_directory, isc_dpb_no_db_triggers, isc_dpb_trusted_auth,
+                       isc_dpb_trusted_role, isc_dpb_utf8_filename,
+                       isc_dpb_auth_plugin_list, isc_dpb_auth_plugin_name, isc_dpb_specific_auth_data, isc_dpb_nolinger,
                        isc_info_active_tran_count, isc_info_end, isc_info_truncated,
                        isc_info_sql_stmt_type, isc_info_sql_get_plan, isc_info_sql_records,
                        isc_info_req_select_count, isc_info_req_insert_count,
@@ -151,7 +153,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 PYTHON_MAJOR_VER = sys.version_info[0]
 
 #: Current driver version
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -699,7 +701,7 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
             force_write=None, no_reserve=None, db_key_scope=None,
             isolation_level=ISOLATION_LEVEL_READ_COMMITED,
             connection_class=None, fb_library_name=None,
-            no_gc=None, no_db_triggers=None, no_linger=None):
+            no_gc=None, no_db_triggers=None, no_linger=None, utf8params=False):
     """Establish a connection to database.
 
     Keyword Args:
@@ -722,6 +724,7 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
         no_gc (int): No Garbage Collection flag.
         no_db_triggers (int): No database triggers flag (FB 2.1).
         no_linger (int): No linger flag (FB3).
+        utf8params (bool): Notify server that database specification and other string parameters are in UTF-8.
 
     Returns:
         :class:`Connection`: attached database.
@@ -760,7 +763,8 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
     def build_dpb(user, password, sql_dialect, role, charset, buffers,
                   force_write, no_reserve, db_key_scope, no_gc,
                   no_db_triggers, no_linger):
-        dpb = ParameterBuffer(charset)
+        param_encoding = 'utf8' if utf8params else charset
+        dpb = ParameterBuffer(param_encoding)
         dpb.add_parameter_code(isc_dpb_version1)
         if user:
             dpb.add_string_parameter(isc_dpb_user_name, user)
@@ -782,6 +786,8 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
             dpb.add_byte_parameter(isc_dpb_dbkey_scope, db_key_scope)
         if no_gc:
             dpb.add_byte_parameter(isc_dpb_no_garbage_collect, no_gc)
+        if utf8params:
+            dpb.add_byte_parameter(isc_dpb_utf8_filename, 1)
         if no_db_triggers:
             dpb.add_byte_parameter(isc_dpb_no_db_triggers, no_db_triggers)
         if no_linger:
@@ -825,7 +831,10 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
             else:
                 dsn = database
 
-    dsn = b(dsn, _FS_ENCODING)
+    if utf8params:
+        dsn = b(dsn, 'utf8')
+    else:
+        dsn = b(dsn, _FS_ENCODING)
     if charset:
         charset = charset.upper()
     #

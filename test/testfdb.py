@@ -220,6 +220,16 @@ class TestConnection(FDBTestBase):
             dpb.extend([ibase.isc_dpb_no_garbage_collect, 1, 1])
             dpb.extend([ibase.isc_dpb_no_db_triggers, 1, 1])
             self.assertEqual(con._dpb, fdb.bs(dpb))
+        # UTF-8 filenames (FB 2.5+)
+        with fdb.connect(dsn=self.dbfile, user=FBTEST_USER, password=FBTEST_PASSWORD, utf8params=True) as con:
+            self.assertIsNotNone(con._db_handle)
+            dpb = [1, 0x1c, len(FBTEST_USER)]
+            dpb.extend(ord(x) for x in FBTEST_USER)
+            dpb.extend((0x1d, len(FBTEST_PASSWORD)))
+            dpb.extend(ord(x) for x in FBTEST_PASSWORD)
+            dpb.extend((ord('?'), 1, 3))
+            dpb.extend((77, 1, 1))
+            self.assertEqual(con._dpb, fdb.bs(dpb))
     def test_properties(self):
         with fdb.connect(dsn=self.dbfile, user=FBTEST_USER, password=FBTEST_PASSWORD) as con:
             self.assertIn('Firebird', con.server_version)
