@@ -38,7 +38,7 @@ def parse(lines):
         fdb.ParseError: When any problem is found in input stream.
 """
     line_no = 0
-    locale = getlocale(LC_ALL)
+    locale = getlocale() # (LC_ALL)
     if sys.platform == 'win32':
         setlocale(LC_ALL, 'English_United States')
     else:
