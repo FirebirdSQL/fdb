@@ -2122,6 +2122,10 @@ Stream blobs are stored as a continuous array of data bytes with no length indic
             blob_reader.seek(60)
             self.assertEqual(blob_reader.readline(),
                              'The database stores segmented blobs in chunks.\n')
+            self.assertIsInstance(blob_reader.blob_id, ibase.GDS_QUAD)
+            self.assertTrue(blob_reader.is_text)
+            self.assertEqual(blob_reader.blob_charset, None)
+            self.assertEqual(blob_reader.charset, 'UTF-8')
     def testBlobExtended(self):
         blob = """Firebird supports two types of blobs, stream and segmented.
 The database stores segmented blobs in chunks.
@@ -6538,6 +6542,7 @@ class TestTraceParse(FDBTestBase):
         parser = fdb.trace.TraceParser()
         for obj in parser.parse(linesplit_iter(trace_lines)):
             self.printout(str(obj))
+        #print(self.output.getvalue())
         self.assertEqual(self.output.getvalue(), output, "Parsed events do not match expected ones")
     def test_trace_init(self):
         trace_lines = """2014-05-23T11:00:28.5840 (3720:0000000000EFD9E8) TRACE_INIT
@@ -7616,12 +7621,12 @@ EventServiceQuery(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 30
 EventServiceQuery(event_id=4, timestamp=datetime.datetime(2018, 4, 3, 12, 56, 27, 559000), status=' ', service_id=140138600699200, action='Repair Database', parameters=[])
 """
         if sys.version_info.major == 2 and sys.version_info.minor == 7 and sys.version_info.micro > 13:
-            output = """ServiceInfo(service_id=140646174008648L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=385)
-EventServiceQuery(event_id=1, timestamp=datetime.datetime(2018, 3, 29, 14, 2, 10, 918000), status=' ', service_id=140646174008648L, action='Start Trace Session', parameters=['Receive portion of the query:', 'retrieve 1 line of service output per call'])
-ServiceInfo(service_id=140138600699200L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
-EventServiceQuery(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 1, 797000), status=' ', service_id=140138600699200L, action=None, parameters=['retrieve the version of the server engine'])
-EventServiceQuery(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 30, 784000), status=' ', service_id=140138600699200L, action=None, parameters=['retrieve the implementation of the Firebird server'])
-EventServiceQuery(event_id=4, timestamp=datetime.datetime(2018, 4, 3, 12, 56, 27, 559000), status=' ', service_id=140138600699200L, action='Repair Database', parameters=[])
+            output = """ServiceInfo(service_id=140646174008648, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=385)
+EventServiceQuery(event_id=1, timestamp=datetime.datetime(2018, 3, 29, 14, 2, 10, 918000), status=' ', service_id=140646174008648, action='Start Trace Session', parameters=['Receive portion of the query:', 'retrieve 1 line of service output per call'])
+ServiceInfo(service_id=140138600699200, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
+EventServiceQuery(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 1, 797000), status=' ', service_id=140138600699200, action=None, parameters=['retrieve the version of the server engine'])
+EventServiceQuery(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 41, 30, 784000), status=' ', service_id=140138600699200, action=None, parameters=['retrieve the implementation of the Firebird server'])
+EventServiceQuery(event_id=4, timestamp=datetime.datetime(2018, 4, 3, 12, 56, 27, 559000), status=' ', service_id=140138600699200, action='Repair Database', parameters=[])
 """
         self._check_events(trace_lines, output)
     def test_set_context(self):
@@ -7683,8 +7688,8 @@ EventServiceError(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28
 EventError(event_id=1, timestamp=datetime.datetime(2018, 3, 22, 10, 6, 59, 509000), attachment_id=0, place='jrd8_attach_database', details=['335544344 : I/O error during "open" operation for file "/home/test.fdb"', '335544734 : Error while trying to open file', '2 : No such file or directory'])
 AttachmentInfo(attachment_id=519417, database='/home/test.fdb', charset='WIN1250', protocol='TCPv4', address='172.19.54.61', user='SYSDBA', role='NONE', remote_process='/usr/bin/flamerobin', remote_pid=4985)
 EventError(event_id=2, timestamp=datetime.datetime(2018, 3, 22, 11, 0, 59, 509000), attachment_id=519417, place='jrd8_fetch', details=['335544364 : request synchronization error'])
-ServiceInfo(service_id=140138600699200L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
-EventServiceError(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200L, place='jrd8_service_query', details=['335544344 : I/O error during "open" operation for file "bug.fdb"', '335544734 : Error while trying to open file', '2 : No such file or directory'])
+ServiceInfo(service_id=140138600699200, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
+EventServiceError(event_id=3, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200, place='jrd8_service_query', details=['335544344 : I/O error during "open" operation for file "bug.fdb"', '335544734 : Error while trying to open file', '2 : No such file or directory'])
 """
         self._check_events(trace_lines, output)
     def test_warning(self):
@@ -7705,8 +7710,8 @@ EventServiceWarning(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 
         if sys.version_info.major == 2 and sys.version_info.minor == 7 and sys.version_info.micro > 13:
             output = """AttachmentInfo(attachment_id=0, database='/home/test.fdb', charset='NONE', protocol='TCPv4', address='127.0.0.1', user='sysdba', role='NONE', remote_process='/usr/bin/flamerobin', remote_pid=4985)
 EventWarning(event_id=1, timestamp=datetime.datetime(2018, 3, 22, 10, 6, 59, 509000), attachment_id=0, place='jrd8_attach_database', details=['Some reason for the warning.'])
-ServiceInfo(service_id=140138600699200L, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
-EventServiceWarning(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200L, place='jrd8_service_query', details=['Some reason for the warning.'])
+ServiceInfo(service_id=140138600699200, user='SYSDBA', protocol='TCPv4', address='127.0.0.1', remote_process='/job/fbtrace', remote_pid=4631)
+EventServiceWarning(event_id=2, timestamp=datetime.datetime(2018, 4, 3, 12, 49, 28, 508000), service_id=140138600699200, place='jrd8_service_query', details=['Some reason for the warning.'])
 """
         self._check_events(trace_lines, output)
     def test_sweep_start(self):

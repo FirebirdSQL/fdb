@@ -5057,16 +5057,20 @@ class BlobReader(object):
                 offset += length + 2
         #
         return (blob_length, segment_size, num_segments, blob_type)
-    def __get_closed(self):
-        return self.__closed
-    def __get_mode(self):
-        return self.__mode
     def __del__(self):
         self.close()
     #: bool: (R/O) True is BlobReader is closed.
-    closed = property(__get_closed)
+    closed = property(lambda self: self.__closed, doc="True is BlobReader is closed")
     #: str: (R/O) File mode - always "rb"
-    mode = property(__get_mode)
+    mode = property(lambda self: self.__mode, doc="File mode - always 'rb'")
+    #: ISC_QUAD: (R/O) BLOB ID
+    blob_id = property(lambda self: self.__blobid, doc="BLOB ID")
+    #: bool: (R/O) True if BLOB is a text BLOB
+    is_text = property(lambda self: self.__is_text, doc="True if BLOB is a text BLOB")
+    #: str: (R/O) BLOB character set
+    blob_charset = property(lambda self: self.__charset, doc="BLOB character set")
+    #: str: (R/O) Python character set for BLOB
+    charset = property(lambda self: self.__python_charset, doc="Python character set for BLOB")
 
 
 class _RowMapping(object):
