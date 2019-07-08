@@ -304,7 +304,7 @@ class TraceParser(object):
         if protocol_address == '<internal>':
             protocol = address = protocol_address
         else:
-            protocol, address = protocol_address.split(':')
+            protocol, address = protocol_address.split(':', 1)
         values['protocol'] = protocol
         values['address'] = address
         if ':' in user_role:
