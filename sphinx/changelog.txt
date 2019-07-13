@@ -3,6 +3,31 @@ Changelog
 #########
 
 
+Version 2.0.1
+=============
+
+Improvements
+------------
+
+- Enhancements to :class:`~fdb.BlobReader` - protected data as properties (blob_id, is_text, blob_charset, charset)
+- Added support for utf8 database filenames and other string db connection parameters (isc_dpb_utf8_filenames)
+- New attribute: :attr:`fdb.ibase.fbclient_API.client_library_name`
+- ObjectList: (a) class_type property (b) Allow sort on frozen list
+
+Other changes
+-------------
+
+- Better readable code with Google-style docstring and better documentation with sphinx-napoleon extension
+
+Bugs Fixed
+----------
+
+- (Unregistered) - Bug in ObjectList.any()
+- (Unregistered) - fdb.schema: ObjectLists properties for user and system objects of the same type are now stable (not created on getter call)
+- (Unregistered) - fdb.log: Fix minor locale problem in Python 3
+- (Unregistered) - fdb.trace: Fix parsing of IPv6 addresses
+
+
 Version 2.0
 ===========
 

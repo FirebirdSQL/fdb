@@ -1397,7 +1397,9 @@ class fbclient_API(object):
         else:
             fb_library = CDLL(fb_library_name)
 
+        #: Firebird client library name
         self.client_library_name = fb_library_name
+        #: Firebird client library (loaded by ctypes)
         self.client_library = fb_library
 
         #: isc_attach_database(POINTER(ISC_STATUS), c_short, STRING, POINTER(isc_db_handle), c_short, STRING)
