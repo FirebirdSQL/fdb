@@ -30,7 +30,10 @@ import datetime
 import decimal
 import weakref
 import threading
-from builtins import dict
+try:
+    from builtins import dict
+except ImportError:
+    from __builtin__ import dict
 
 from . import ibase
 from . import schema
