@@ -56,7 +56,7 @@ setup(
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
     test_suite='nose.collector',
     project_urls={
-        'Documentation': 'http://fdb2.readthedocs.io/en/latest/',
+        'Documentation': 'http://fdb.readthedocs.io/en/latest/',
         'Bug Reports': 'http://tracker.firebirdsql.org/browse/PYFB',
         'Funding': 'https://www.firebirdsql.org/en/donate/',
         'Say Thanks!': 'https://saythanks.io/to/pcisar',
