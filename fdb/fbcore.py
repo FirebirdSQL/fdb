@@ -3165,7 +3165,7 @@ class PreparedStatement(object):
                                               sqlvar.sqlscale)
                     sqlvar.sqldata = ctypes.cast(ctypes.pointer(
                         ctypes.create_string_buffer(
-                            int_to_bytes(value, sqlvar.sqllen))), buf_pointer)
+                            int_to_bytes(int(value), sqlvar.sqllen))), buf_pointer)
                 elif vartype == SQL_TYPE_DATE:
                     sqlvar.sqldata = ctypes.cast(ctypes.pointer(
                         ctypes.create_string_buffer(
@@ -3181,11 +3181,11 @@ class PreparedStatement(object):
                 elif vartype == SQL_FLOAT:
                     sqlvar.sqldata = ctypes.cast(
                         ctypes.pointer(ctypes.create_string_buffer(
-                            struct.pack('f', value))), buf_pointer)
+                            struct.pack('f', float(value)))), buf_pointer)
                 elif vartype == SQL_DOUBLE:
                     sqlvar.sqldata = ctypes.cast(
                         ctypes.pointer(ctypes.create_string_buffer(
-                            struct.pack('d', value))), buf_pointer)
+                            struct.pack('d', float(value)))), buf_pointer)
                 elif vartype == SQL_BOOLEAN:
                     sqlvar.sqldata = ctypes.cast(ctypes.pointer(
                         ctypes.create_string_buffer(
