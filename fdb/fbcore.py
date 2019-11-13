@@ -601,7 +601,10 @@ def exception_from_status(error, status, preamble=None):
         result = api.fb_interpret(msg, 512, pvector)
         if result != 0:
             if PYTHON_MAJOR_VER == 3:
-                msglist.append('- ' + (msg.value).decode(sys_encoding))
+                try:
+                    msglist.append('- ' + (msg.value).decode(sys_encoding))
+                except:
+                    pass # enough log is coming. sometimes one byte UTF-8 decode may cause error
             else:
                 msglist.append('- ' + msg.value)
         else:
