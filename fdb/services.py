@@ -368,7 +368,11 @@ class Connection(object):
         if timeout == -1:
             spb = ibase.b('')
         else:
-            spb = fdb.bs(ibase.isc_info_svc_timeout, timeout)
+            spb = ctypes.create_string_buffer(8)
+            spb[0] = ibase.int2byte(ibase.isc_info_svc_timeout)
+            spb[1:3] = fdb.uint_to_bytes(4, 2)
+            spb[3:7] = fdb.uint_to_bytes(timeout, 4)
+            spb[7] = ibase.int2byte(ibase.isc_info_end)
         while True:
             result_buffer = ctypes.create_string_buffer(result_size)
             api.isc_service_query(self._isc_status, self._svc_handle, None,
