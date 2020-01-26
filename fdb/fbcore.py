@@ -738,7 +738,7 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
 
     .. important::
 
-       You may specify the database using either `dns` or `database` (with optional `host`),
+       You may specify the database using either `dsn` or `database` (with optional `host`),
        but not both.
 
     Examples:
