@@ -4093,7 +4093,7 @@ class Transaction(object):
             con = connection()
             sql = b(sql, con._python_charset)
             api.isc_dsql_execute_immediate(self._isc_status, con._db_handle, self._tr_handle,
-                                           len(sql), sql, self.__sql_dialect, XSQLDA_PTR)
+                                           len(sql), sql, con.sql_dialect, XSQLDA_PTR)
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                                             "Error while executing SQL statement:")
