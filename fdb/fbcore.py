@@ -4092,8 +4092,13 @@ class Transaction(object):
         for connection in self._connections:
             con = connection()
             sql = b(sql, con._python_charset)
+            xsqlda = xsqlda_factory(1)
+
+    		# For yet unknown reason, the isc_dsql_execute_immediate segfaults when
+    		# NULL (None) is passed as XSQLDA, so we provide one here
             api.isc_dsql_execute_immediate(self._isc_status, con._db_handle, self._tr_handle,
-                                           len(sql), sql, con.sql_dialect, XSQLDA_PTR)
+                                           len(sql), sql, con.sql_dialect,
+		                                   ctypes.cast(ctypes.pointer(xsqlda), XSQLDA_PTR))
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                                             "Error while executing SQL statement:")
