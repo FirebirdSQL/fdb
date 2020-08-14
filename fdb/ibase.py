@@ -2188,6 +2188,15 @@ class fbclient_API(object):
         #: C_isc_event_block(ISC_LONG, POINTER(POINTER(ISC_UCHAR)), POINTER(POINTER(ISC_UCHAR)), ISC_USHORT)
         self.C_isc_event_block = self.P_isc_event_block(('isc_event_block', fb_library))
         self.P_isc_event_block_args = self.C_isc_event_block.argtypes
+        #: fb_shutdown_callback(POINTER(ISC_STATUS), FB_SHUTDOWN_CALLBACK, c_int, c_void_p)
+        self.fb_shutdown_callback = fb_library.fb_shutdown_callback
+        self.fb_shutdown_callback.restype = ISC_STATUS
+        self.fb_shutdown_callback.argtypes = [POINTER(ISC_STATUS), FB_SHUTDOWN_CALLBACK,
+                                              c_int, c_void_p]
+        #: fb_shutdown(c_int, c_uint, c_int)
+        self.fb_shutdown = fb_library.fb_shutdown
+        self.fb_shutdown.restype = c_int
+        self.fb_shutdown.argtypes = [c_uint, c_int]
 
     def isc_event_block(self, event_buffer, result_buffer, *args):
         "Injects variable number of parameters into C_isc_event_block call"
