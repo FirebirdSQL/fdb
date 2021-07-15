@@ -478,7 +478,10 @@ buf_pointer = ctypes.POINTER(ctypes.c_char)
 
 def is_dead_proxy(obj):
     "Return True if object is a dead :func:`weakref.proxy`."
-    return isinstance(obj, weakref.ProxyType) and not dir(obj)
+    try:
+        return isinstance(obj, weakref.ProxyType) and not dir(obj)
+    except ReferenceError:
+        return True
 
 def b2u(st, charset):
     "Decode to unicode if charset is defined. For conversion of result set data."
@@ -3548,8 +3551,11 @@ class Cursor(object):
     def __iter__(self):
         return self
     def __valid_ps(self):
-        return (self._ps is not None) and not (isinstance(self._ps, weakref.ProxyType)
-                                               and not dir(self._ps))
+        try:
+            return (self._ps is not None) and not (isinstance(self._ps, weakref.ProxyType)
+                                                   and not dir(self._ps))
+        except ReferenceError:
+            return False
     def __get_description(self):
         if self.__valid_ps():
             return self._ps.description
