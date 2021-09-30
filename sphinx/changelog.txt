@@ -3,6 +3,16 @@ Changelog
 #########
 
 
+Version 2.0.2
+=============
+
+Bugs Fixed
+----------
+
+- FirebirdSQL/fdb#96 ReferenceError exception when closing weakly referenced cursor [PYFB81]
+- (Unregistered) - Bug in Service get_statistics() when `tables` parameter is specified.
+- (Unregistered) - Use proper locale in `gstat` and `log` according to Python version.
+
 Version 2.0.1
 =============
 
@@ -33,12 +43,12 @@ Version 2.0
 
 .. important::
 
-   This is initial release of new *"SweetBitter"* driver generation. 
-   
-   During this (v2) generation FDB driver will undergo a transition from development centered around Python 2.7 / Firebird 2.x to development centered around Python 3 / Firebird 3. There are some backward incompatible changes between v2 and v1 generation, and you may expect some also between individual releases of second generation. To *soften* this *bitter* pill, the second generation will have new functionality, enhancements and optimalizations gradually added into each public release. 
-   
+   This is initial release of new *"SweetBitter"* driver generation.
+
+   During this (v2) generation FDB driver will undergo a transition from development centered around Python 2.7 / Firebird 2.x to development centered around Python 3 / Firebird 3. There are some backward incompatible changes between v2 and v1 generation, and you may expect some also between individual releases of second generation. To *soften* this *bitter* pill, the second generation will have new functionality, enhancements and optimalizations gradually added into each public release.
+
    **The second generation is also the last one that will directly support Python 2.7 and will be tested with Firebird 2.**
-   
+
    The plan is to move forward with v3 generation (Python 3/Firebird 3+) as soon as v2 code base will become mature.
 
 Improvements
@@ -48,7 +58,7 @@ Improvements
 - New modules for parsing Firebird trace & audit logs (:mod:`fdb.trace`), gstat output (:mod:`fdb.gstat`) and server log (:mod:`fdb.log`)
 - Added :class:`fdb.utils.ObjectList` class for improved object collection manipulation.
 - Modules :mod:`~fdb.monitor` and :mod:`~fdb.schema` now use new :class:`fdb.utils.ObjectList` for collections of information objects.
-- Methods :meth:`fdb.Connection.database_info()` and :meth:`fdb.Transaction.transaction_info()` now distinguish between 
+- Methods :meth:`fdb.Connection.database_info()` and :meth:`fdb.Transaction.transaction_info()` now distinguish between
   text and binary strings with `result_type` code.
 - Significant changes to documentation.
 
@@ -100,7 +110,7 @@ Version 1.6
 - New: Extended support for database and transaction info (new attributes and functions on :class:`~fdb.Connection` and
   :class:`~fdb.Transaction`, fixes and improvements to :meth:`~fdb.Connection.db_info` and :meth:`~fdb.Connection.database_info`).
 - Fix: Missing character sets for automatic translations.
-- (PYFB-64_) - cursor.description throws ReferenceError after executemany INSERT 
+- (PYFB-64_) - cursor.description throws ReferenceError after executemany INSERT
 
 Version 1.5.1
 =============
@@ -143,7 +153,7 @@ Version 1.4.9
 =============
 
 - (PYFB-51_) <procedure>.get_sql_for('<re>create') returns invalid output parameters
-- (PYFB-52_) isc_info* types which are _DATABASE_INFO_CODES_WITH_COUNT_RESULTS raises TypeError: 'float' object cannot be interpreted as an integer 
+- (PYFB-52_) isc_info* types which are _DATABASE_INFO_CODES_WITH_COUNT_RESULTS raises TypeError: 'float' object cannot be interpreted as an integer
 
 Version 1.4.8
 =============
@@ -202,13 +212,13 @@ Improvements
 ------------
 
 - In relation to PYFB-43_ I had to make a **backward incompatible change** to event processing API. Starting from this version
-  `EventConduit` does not automatically starts collection of events upon creation, but it's now necessary to call 
+  `EventConduit` does not automatically starts collection of events upon creation, but it's now necessary to call
   :meth:`~fdb.EventConduit.begin` method. To mitigate the inconvenience, EventConduit now supports context manager
   protocol that ensures calls to begin() and close() via `with` statement.
 - In relation to PYFB-39_ I have decided to drop support for implicitly cached and reused prepared statements. I never
-  liked this feature as I think it's a sneaky method how to put some performance to badly written applications that 
+  liked this feature as I think it's a sneaky method how to put some performance to badly written applications that
   in worst case may lead to significant resource consumption on server side when developers are not only lazy but also stupid.
-  It was implemented for the sake of compatibility with KInterbasDB. 
+  It was implemented for the sake of compatibility with KInterbasDB.
 
   **This change has no impact on API, but may affect performance of your applications.**
 
@@ -228,7 +238,7 @@ Improvements
 
 - PYFB-40_ - fbclient.dll is not found if not in path.
   Aside from registry lookup, client library isn't loaded until first call to :func:`fdb.connect`, :func:`fdb.create_database`
-  or :func:`fdb.load_api` (which now supports optional specification of Firebird Client Library to load). 
+  or :func:`fdb.load_api` (which now supports optional specification of Firebird Client Library to load).
 - Adjustments for Firebird 3.0 (Alpha1)
 - Properties :attr:`~fdb.services.Connection.version` and :attr:`~fdb.services.Connection.engine_version` added to :class:`fdb.services.Connection`
 
@@ -288,14 +298,14 @@ New Features
 - :mod:`fdb.schema` submodule for access to / work with database metadata.
 - :mod:`fdb.utils` submodule with various helper classes and functions.
 - New :attr:`fdb.Connection.schema` property for access to database schema.
-- New :class:`~fdb.ConnectionWithSchema` connection class that provides more direct access 
+- New :class:`~fdb.ConnectionWithSchema` connection class that provides more direct access
   to database schema than `Connection`.
-- New :attr:`fdb.Connection.firebird_version`, :attr:`fdb.Connection.version` and 
+- New :attr:`fdb.Connection.firebird_version`, :attr:`fdb.Connection.version` and
   :attr:`fdb.Connection.engine_version` properties.
 - New `Connection.ods` read only property that returns ODS version number of connected database.
   There are also new module-level constants `ODS_FB_20`, `ODS_FB_21` and `ODS_FB_25`.
-- New :attr:`fdb.Connection.query_transaction` property. This is ReadOnly ReadCommitted transaction 
-  that could be active indefinitely without blocking garbage collection. It’s used internally to query 
+- New :attr:`fdb.Connection.query_transaction` property. This is ReadOnly ReadCommitted transaction
+  that could be active indefinitely without blocking garbage collection. It’s used internally to query
   metadata, but it’s generally useful.
 
 Improvements
@@ -305,13 +315,13 @@ Improvements
 
   - `Connection.Error`, `Connection.ProgrammingError`, etc.
 
-    All exception classes defined by the DB API standard are exposed on the Connection objects 
+    All exception classes defined by the DB API standard are exposed on the Connection objects
     as attributes (in addition to being available at module scope).
   - `Cursor.connection`
 
     This read-only attribute return a reference to the Connection object on which the cursor was created.
 
-- `Cursor.transaction` read-only attribute returns a reference to the Transaction object on which the cursor 
+- `Cursor.transaction` read-only attribute returns a reference to the Transaction object on which the cursor
   was created.
 - Optimized wekref management, especially for `PreparedStatement`.
 - `create_database` now supports two methods for database screation. You can specify CREATE DATABASE statement
@@ -459,7 +469,7 @@ Version 0.7
 
 Initial release.
 
-Almost feature-complete (ready for 95% of users), but it could be still buggy (it’s beta!), and the 
+Almost feature-complete (ready for 95% of users), but it could be still buggy (it’s beta!), and the
 code wasn’t optimized for size and speed. In all other ways it’s ready for wide testing.
 
 What’s missing

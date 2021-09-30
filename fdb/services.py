@@ -828,7 +828,8 @@ class Connection(object):
                 tables = (tables,)
             cmdline = ['-t']
             cmdline.extend(tables)
-            req_buf.add_string(ibase.isc_spb_command_line, ' '.join(cmdline))
+            for item in cmdline:
+                req_buf.add_string(ibase.isc_spb_command_line, item)
         self._act(req_buf)
         self.__fetching = True
         self.__eof = False

@@ -1084,7 +1084,7 @@ FROM RDB$FILTERS""")
 
         Sections identifiers are represented by `SCRIPT_*` contants defined in schema module.
 
-        Sections are created in the order of occerence in list. Uses `SCRIPT_DEFAULT_ORDER` list when sections are not specified.
+        Sections are created in the order of occurence in list. Uses `SCRIPT_DEFAULT_ORDER` list when sections are not specified.
 """
         def order_by_dependency(items, get_dependencies):
             ordered = []

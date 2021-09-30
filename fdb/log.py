@@ -23,10 +23,12 @@
 from fdb import ParseError
 from datetime import datetime
 from collections import namedtuple
-from locale import LC_ALL, getlocale, setlocale, resetlocale
+from locale import LC_ALL, LC_CTYPE, getlocale, setlocale, resetlocale
 import sys
 
 LogEntry = namedtuple('LogEntry', 'source_id,timestamp,message')
+
+_LOCALE_ = LC_CTYPE if sys.version_info[0] == 3 else LC_ALL
 
 def parse(lines):
     """Parse Firebird server log and yield named tuples describing individual log entries/events.
@@ -38,11 +40,11 @@ def parse(lines):
         fdb.ParseError: When any problem is found in input stream.
 """
     line_no = 0
-    locale = getlocale() # (LC_ALL)
+    locale = getlocale() # (_LOCALE_)
     if sys.platform == 'win32':
-        setlocale(LC_ALL, 'English_United States')
+        setlocale(_LOCALE_, 'English_United States')
     else:
-        setlocale(LC_ALL, 'en_US')
+        setlocale(_LOCALE_, 'en_US')
     try:
         clean = (line.strip() for line in lines)
         entry_lines = []
@@ -78,8 +80,8 @@ def parse(lines):
     finally:
         if locale[0] is None:
             if sys.platform == 'win32':
-                setlocale(LC_ALL, '')
+                setlocale(_LOCALE_, '')
             else:
-                resetlocale(LC_ALL)
+                resetlocale(_LOCALE_)
         else:
-            setlocale(LC_ALL, locale)
+            setlocale(_LOCALE_, locale)

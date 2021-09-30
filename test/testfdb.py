@@ -37,9 +37,9 @@ from decimal import Decimal
 from contextlib import closing
 from re import finditer
 from pprint import pprint
-from fdb.gstat import FillDistribution, Encryption, StatDatabase
+from fdb.gstat import FillDistribution, Encryption, StatDatabase, _LOCALE_
 from fdb.log import LogEntry
-from locale import LC_ALL, getlocale, setlocale, getdefaultlocale
+from locale import getlocale, setlocale, getdefaultlocale
 
 if ibase.PYTHON_MAJOR_VER == 3:
     from io import StringIO, BytesIO
@@ -8725,23 +8725,23 @@ class TestGstatParse(FDBTestBase):
         with open(filename) as f:
             return gstat.parse(f)
     def test_locale(self):
-        locale = getlocale(LC_ALL)
+        locale = getlocale(_LOCALE_)
         if locale[0] is None:
-            setlocale(LC_ALL,'')
-            locale = getlocale(LC_ALL)
+            setlocale(_LOCALE_,'')
+            locale = getlocale(_LOCALE_)
         try:
             db = self._parse_file(os.path.join(self.dbpath, 'gstat25-h.out'))
-            self.assertEquals(locale, getlocale(LC_ALL), "Locale must not change")
+            self.assertEquals(locale, getlocale(_LOCALE_), "Locale must not change")
             if sys.platform == 'win32':
-                setlocale(LC_ALL, 'Czech_Czech Republic')
+                setlocale(_LOCALE_, 'Czech_Czech Republic')
             else:
-                setlocale(LC_ALL, 'cs_CZ')
-            nlocale = getlocale(LC_ALL)
+                setlocale(_LOCALE_, 'cs_CZ')
+            nlocale = getlocale(_LOCALE_)
             db = self._parse_file(os.path.join(self.dbpath, 'gstat25-h.out'))
-            self.assertEquals(nlocale, getlocale(LC_ALL), "Locale must not change")
+            self.assertEquals(nlocale, getlocale(_LOCALE_), "Locale must not change")
         finally:
             pass
-            #setlocale(LC_ALL, locale)
+            #setlocale(_LOCALE_, locale)
     def test_parse25_h(self):
         db = self._parse_file(os.path.join(self.dbpath, 'gstat25-h.out'))
         data = {'attributes': (0,), 'backup_diff_file': None, 'backup_guid': None, 'bumped_transaction': 1,
@@ -10811,23 +10811,23 @@ SRVDB1  Tue Apr 04 21:25:40 2017
 """
         output = """LogEntry(source_id='SRVDB1', timestamp=datetime.datetime(2017, 4, 4, 21, 25, 40), message='INET/inet_error: read errno = 10054')
 """
-        locale = getlocale(LC_ALL)
+        locale = getlocale(_LOCALE_)
         if locale[0] is None:
-            setlocale(LC_ALL,'')
-            locale = getlocale(LC_ALL)
+            setlocale(_LOCALE_,'')
+            locale = getlocale(_LOCALE_)
         try:
             self._check_events(data, output)
-            self.assertEquals(locale, getlocale(LC_ALL), "Locale must not change")
+            self.assertEquals(locale, getlocale(_LOCALE_), "Locale must not change")
             self.clear_output()
             if sys.platform == 'win32':
-                setlocale(LC_ALL, 'Czech_Czech Republic')
+                setlocale(_LOCALE_, 'Czech_Czech Republic')
             else:
-                setlocale(LC_ALL, 'cs_CZ')
-            nlocale = getlocale(LC_ALL)
+                setlocale(_LOCALE_, 'cs_CZ')
+            nlocale = getlocale(_LOCALE_)
             self._check_events(data, output)
-            self.assertEquals(nlocale, getlocale(LC_ALL), "Locale must not change")
+            self.assertEquals(nlocale, getlocale(_LOCALE_), "Locale must not change")
         finally:
-            setlocale(LC_ALL, locale)
+            setlocale(_LOCALE_, locale)
     def TestWindowsService(self):
         data = """
 

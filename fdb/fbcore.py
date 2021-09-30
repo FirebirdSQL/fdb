@@ -156,7 +156,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 PYTHON_MAJOR_VER = sys.version_info[0]
 
 #: Current driver version
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 
 apilevel = '2.0'
 threadsafety = 1
@@ -478,7 +478,10 @@ buf_pointer = ctypes.POINTER(ctypes.c_char)
 
 def is_dead_proxy(obj):
     "Return True if object is a dead :func:`weakref.proxy`."
-    return isinstance(obj, weakref.ProxyType) and not dir(obj)
+    try:
+        return isinstance(obj, weakref.ProxyType) and not dir(obj)
+    except ReferenceError:
+        return True
 
 def b2u(st, charset):
     "Decode to unicode if charset is defined. For conversion of result set data."
@@ -811,7 +814,7 @@ def connect(dsn='', user=None, password=None, host=None, port=None, database=Non
         raise ProgrammingError("SQl Dialect must be either 1, 2 or 3")
 
     if ((not dsn and not host and not database) or
-            (dsn and (host or database)) or
+        (dsn and (host or database)) or
             (host and not database)):
         raise ProgrammingError("Must supply one of:\n"
                                " 1. keyword argument dsn='host:/path/to/database'\n"
@@ -935,7 +938,7 @@ def create_database(sql='', sql_dialect=3, dsn='', user=None, password=None,
             raise ProgrammingError("SQl Dialect must be either 1, 2 or 3")
 
         if ((not dsn and not host and not database) or
-                (dsn and (host or database)) or
+            (dsn and (host or database)) or
                 (host and not database)):
             raise ProgrammingError("Must supply one of:\n"
                                    " 1. keyword argument dsn='host:/path/to/database'\n"
@@ -1321,7 +1324,7 @@ class Connection(object):
             return 0
         # Special case for automatic RDB$DB_KEY fields.
         if ((sqlvar.sqlname_length == 6 and sqlvar.sqlname == 'DB_KEY') or
-                (sqlvar.sqlname_length == 10 and sqlvar.sqlname == 'RDB$DB_KEY')):
+            (sqlvar.sqlname_length == 10 and sqlvar.sqlname == 'RDB$DB_KEY')):
             return 0
         precision = self.__precision_cache.get((sqlvar.relname,
                                                 sqlvar.sqlname))
@@ -2563,7 +2566,7 @@ class PreparedStatement(object):
                 res_walk += short_size
                 count = bytes_to_uint(info[res_walk:res_walk + size])
                 if ((cur_count_type == isc_info_req_select_count and self.statement_type == isc_info_sql_stmt_select)
-                        or (cur_count_type == isc_info_req_insert_count and self.statement_type == isc_info_sql_stmt_insert)
+                    or (cur_count_type == isc_info_req_insert_count and self.statement_type == isc_info_sql_stmt_insert)
                         or (cur_count_type == isc_info_req_update_count and self.statement_type == isc_info_sql_stmt_update)
                         or (cur_count_type == isc_info_req_delete_count and self.statement_type == isc_info_sql_stmt_delete)):
                     result = count
@@ -2707,7 +2710,7 @@ class PreparedStatement(object):
                 #value = sqlvar.sqldata[:sqlvar.sqllen]
                 ### Todo: verify handling of P version differences
                 if ((self.__charset or PYTHON_MAJOR_VER == 3) and
-                        sqlvar.sqlsubtype != 1):   # non OCTETS
+                    sqlvar.sqlsubtype != 1):   # non OCTETS
                     value = b2u(value, self.__python_charset)
                 # CHAR with multibyte encoding requires special handling
                 if sqlvar.sqlsubtype in (4, 69):  # UTF8 and GB18030
@@ -2726,7 +2729,7 @@ class PreparedStatement(object):
                 else:
                     value = str(sqlvar.sqldata[2:2 + size])
                 if ((self.__charset or PYTHON_MAJOR_VER == 3) and
-                        sqlvar.sqlsubtype != 1):   # non OCTETS
+                    sqlvar.sqlsubtype != 1):   # non OCTETS
                     value = b2u(value, self.__python_charset)
             elif vartype == SQL_BOOLEAN:
                 value = bool(bytes_to_int(sqlvar.sqldata.contents.value))
@@ -2810,7 +2813,7 @@ class PreparedStatement(object):
                             offset += length + 2
                     # Does the blob size exceeds treshold for streamed one?
                     if ((self.__streamed_blob_treshold >= 0) and
-                            (blob_length > self.__streamed_blob_treshold)):
+                        (blob_length > self.__streamed_blob_treshold)):
                         # Stream BLOB
                         value = BlobReader(blobid, self.cursor._connection._db_handle,
                                            self.cursor._transaction._tr_handle,
@@ -2905,7 +2908,7 @@ class PreparedStatement(object):
                     val = ctypes.string_at(buf[bufpos:bufpos+esize], esize)
                     ### Todo: verify handling of P version differences
                     if ((self.__charset or PYTHON_MAJOR_VER == 3)
-                            and subtype != 1):   # non OCTETS
+                        and subtype != 1):   # non OCTETS
                         val = b2u(val, self.__python_charset)
                     # CHAR with multibyte encoding requires special handling
                     if subtype in (4, 69):  # UTF8 and GB18030
@@ -2918,7 +2921,7 @@ class PreparedStatement(object):
                 elif dtype in (blr_varying, blr_varying2):
                     val = ctypes.string_at(buf[bufpos:bufpos+esize])
                     if ((self.__charset or PYTHON_MAJOR_VER == 3) and
-                            subtype != 1):   # non OCTETS
+                        subtype != 1):   # non OCTETS
                         val = b2u(val, self.__python_charset)
                 elif dtype in (blr_short, blr_long, blr_int64):
                     val = bytes_to_int(buf[bufpos:bufpos+esize])
@@ -3129,7 +3132,7 @@ class PreparedStatement(object):
                     sqlvar.sqlind = ctypes.pointer(ISC_SHORT(0))
                 # Fill in value by type
                 if ((vartype != SQL_BLOB and isinstance(value, (StringType, UnicodeType)))
-                        or vartype in [SQL_TEXT, SQL_VARYING]):
+                    or vartype in [SQL_TEXT, SQL_VARYING]):
                     # Place for Implicit Conversion of Input Parameters
                     # to Strings
                     if not isinstance(value, (UnicodeType, StringType, ibase.mybytes)):
@@ -3341,7 +3344,7 @@ class PreparedStatement(object):
             if (not connection) or (connection and not connection.closed):
                 api.isc_dsql_free_statement(self._isc_status, stmt_handle, ibase.DSQL_drop)
                 if (db_api_error(self._isc_status) and
-                        (self._isc_status[1] not in [335544528, 335544485])):
+                    (self._isc_status[1] not in [335544528, 335544485])):
                     raise exception_from_status(DatabaseError, self._isc_status,
                                                 "Error while closing SQL statement:")
     def _execute(self, parameters=None):
@@ -3364,7 +3367,7 @@ class PreparedStatement(object):
             xsqlda_in = None
         # Execute the statement
         if ((self.statement_type == isc_info_sql_stmt_exec_procedure) and
-                (self._out_sqlda.sqld > 0)):
+            (self._out_sqlda.sqld > 0)):
             # NOTE: We have to pass xsqlda_out only for statements that return
             # single row
             xsqlda_out = ctypes.cast(ctypes.pointer(self._out_sqlda), XSQLDA_PTR)
@@ -3548,8 +3551,11 @@ class Cursor(object):
     def __iter__(self):
         return self
     def __valid_ps(self):
-        return (self._ps is not None) and not (isinstance(self._ps, weakref.ProxyType)
-                                               and not dir(self._ps))
+        try:
+            return (self._ps is not None) and not (isinstance(self._ps, weakref.ProxyType)
+                                                   and not dir(self._ps))
+        except ReferenceError:
+            return False
     def __get_description(self):
         if self.__valid_ps():
             return self._ps.description
@@ -4094,11 +4100,11 @@ class Transaction(object):
             sql = b(sql, con._python_charset)
             xsqlda = xsqlda_factory(1)
 
-    		# For yet unknown reason, the isc_dsql_execute_immediate segfaults when
-    		# NULL (None) is passed as XSQLDA, so we provide one here
+                # For yet unknown reason, the isc_dsql_execute_immediate segfaults when
+                # NULL (None) is passed as XSQLDA, so we provide one here
             api.isc_dsql_execute_immediate(self._isc_status, con._db_handle, self._tr_handle,
                                            len(sql), sql, con.sql_dialect,
-		                                   ctypes.cast(ctypes.pointer(xsqlda), XSQLDA_PTR))
+                                           ctypes.cast(ctypes.pointer(xsqlda), XSQLDA_PTR))
             if db_api_error(self._isc_status):
                 raise exception_from_status(DatabaseError, self._isc_status,
                                             "Error while executing SQL statement:")
@@ -4636,7 +4642,7 @@ class ConnectionGroup(object):
     def __require_transaction_state(self, must_be_active, err_msg=''):
         transaction = self._transaction
         if ((must_be_active and transaction is None) or
-                (not must_be_active and (transaction is not None and transaction.active))):
+            (not must_be_active and (transaction is not None and transaction.active))):
             raise ProgrammingError(err_msg)
     def __require_non_empty_group(self, operation_name):
         if self.count() == 0:
@@ -5486,7 +5492,7 @@ class TableReservation(object):
         else:
             other_values = None
         if ((not isinstance(value, tuple))
-                or len(value) != 2
+            or len(value) != 2
                 or value[0] not in (isc_tpb_shared, isc_tpb_protected, isc_tpb_exclusive)
                 or value[1] not in (isc_tpb_lock_read, isc_tpb_lock_write)):
             raise ValueError("""Table reservation entry must be a 2-tuple of the following form:

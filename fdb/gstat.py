@@ -25,7 +25,7 @@ from fdb.utils import ObjectList
 import datetime
 import weakref
 from collections import namedtuple
-from locale import LC_ALL, getlocale, setlocale, resetlocale
+from locale import LC_ALL, LC_CTYPE, getlocale, setlocale, resetlocale
 import sys
 
 GSTAT_25 = 2
@@ -51,6 +51,8 @@ ATTR_BACKUP_WRONG = 10  #'wrong backup state %d'
 
 FillDistribution = namedtuple('FillDistribution', 'd20,d40,d50,d80,d100')
 Encryption = namedtuple('Encryption', 'pages,encrypted,unencrypted')
+
+_LOCALE_ = LC_CTYPE if sys.version_info[0] == 3 else LC_ALL
 
 def empty_str(str_):
     "Return True if string is empty (whitespace don't count) or None"
@@ -573,12 +575,12 @@ def parse(lines):
     #
     line_no = 0
     step = 0  # Look for sections and skip empty lines
+    locale = getlocale(_LOCALE_)
     try:
-        locale = getlocale(LC_ALL)
         if sys.platform == 'win32':
-            setlocale(LC_ALL, 'English_United States')
+            setlocale(_LOCALE_, 'English_United States')
         else:
-            setlocale(LC_ALL, 'en_US')
+            setlocale(_LOCALE_, 'en_US')
         # Skip empty lines at start
         for line in (x.strip() for x in lines):
             line_no += 1
@@ -654,9 +656,9 @@ def parse(lines):
     finally:
         if locale[0] is None:
             if sys.platform == 'win32':
-                setlocale(LC_ALL, '')
+                setlocale(_LOCALE_, '')
             else:
-                resetlocale(LC_ALL)
+                resetlocale(_LOCALE_)
         else:
-            setlocale(LC_ALL, locale)
+            setlocale(_LOCALE_, locale)
     return db
