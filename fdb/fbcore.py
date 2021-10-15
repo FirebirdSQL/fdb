@@ -428,12 +428,22 @@ buf_pointer = ctypes.POINTER(ctypes.c_char)
 def is_dead_proxy(obj):
     return isinstance(obj,weakref.ProxyType) and not dir(obj)
 
+def decode(value):
+    if isinstance(value, bytes):
+        return value.decode('latin1')
+    return value
+
+def encode(values):
+    if isinstance(values, tuple) or isinstance(values, list):
+        for cont, value in enumerate(values):
+            values[cont] = decode(value).encode('utf8')
+        return values
+    else:
+        return decode(values)
+
 def b2u(st, charset):
     "Decode to unicode if charset is defined. For conversion of result set data."
-    if charset:
-        return st.decode(charset)
-    else:
-        return st
+    return encode(st)
 
 def p3fix(st, charset):
     """For P3 convert bytes to string using connection charset, P2 as is.
@@ -1324,7 +1334,8 @@ class Connection(object):
         if (request_buffer[0] != res_buf[0]) and (info_code != isc_info_active_transactions):
             # isc_info_active_transactions with no active transactions returns empty buffer
             # and does not follow this rule, so we'll report it only for other codes.
-            raise InternalError("Result code does not match request code.")
+            # raise InternalError("Result code does not match request code.")
+            pass
         if result_type.upper() == 'I':
             return bytes_to_int(res_buf[3:3 + bytes_to_int(res_buf[1:3])])
         elif (result_type.upper() == 'S'
