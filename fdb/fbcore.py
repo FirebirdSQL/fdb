@@ -486,7 +486,7 @@ def is_dead_proxy(obj):
 def b2u(st, charset):
     "Decode to unicode if charset is defined. For conversion of result set data."
     if charset:
-        return st.decode(charset)
+        return st.decode(charset, errors='replace')
     else:
         return st
 
@@ -604,7 +604,7 @@ def exception_from_status(error, status, preamble=None):
         result = api.fb_interpret(msg, 512, pvector)
         if result != 0:
             if PYTHON_MAJOR_VER == 3:
-                msglist.append('- ' + (msg.value).decode(sys_encoding, errors = 'replace'))
+                msglist.append('- ' + (msg.value).decode(sys_encoding, errors='replace'))
             else:
                 msglist.append('- ' + msg.value)
         else:
@@ -2151,16 +2151,20 @@ class EventConduit(object):
 
         Must be called directly or through context manager interface."""
         def event_process(queue):
-            while True:
-                operation, data = queue.get()
-                if operation == ibase.OP_RECORD_AND_REREGISTER:
-                    events = data.count_and_reregister()
-                    if events:
-                        for key, value in events.items():
-                            self.__events[key] += value
-                        self.__events_ready.set()
-                elif operation == ibase.OP_DIE:
-                    return
+            try:
+                while True:
+                    operation, data = queue.get()
+                    if operation == ibase.OP_RECORD_AND_REREGISTER:
+                        events = data.count_and_reregister()
+                        if events:
+                            for key, value in events.items():
+                                self.__events[key] += value
+                            self.__events_ready.set()
+                    elif operation == ibase.OP_DIE:
+                        return
+            except:
+                self.__events_ready.set()
+                self.__closed = True
 
         self.__initialized = True
         self.__process_thread = threading.Thread(target=event_process, args=(self.__queue,))
