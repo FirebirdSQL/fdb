@@ -604,7 +604,7 @@ def exception_from_status(error, status, preamble=None):
         result = api.fb_interpret(msg, 512, pvector)
         if result != 0:
             if PYTHON_MAJOR_VER == 3:
-                msglist.append('- ' + (msg.value).decode(sys_encoding))
+                msglist.append('- ' + (msg.value).decode(sys_encoding, errors = 'replace'))
             else:
                 msglist.append('- ' + msg.value)
         else:
