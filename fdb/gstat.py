@@ -25,7 +25,7 @@ from fdb.utils import ObjectList
 import datetime
 import weakref
 from collections import namedtuple
-from locale import LC_ALL, LC_CTYPE, getlocale, setlocale, resetlocale
+from locale import LC_ALL, LC_CTYPE, getlocale, setlocale
 import sys
 
 GSTAT_25 = 2
@@ -658,7 +658,7 @@ def parse(lines):
             if sys.platform == 'win32':
                 setlocale(_LOCALE_, '')
             else:
-                resetlocale(_LOCALE_)
+                setlocale(LC_ALL, '')
         else:
             setlocale(_LOCALE_, locale)
     return db
