@@ -2,6 +2,12 @@
 FDB - The Python driver for Firebird
 ====================================
 
+[![PyPI - Version](https://img.shields.io/pypi/v/fdb.svg)](https://pypi.org/project/fdb)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fdb.svg)](https://pypi.org/project/fdb)
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/fdb)](https://pypi.org/project/fdb)
+[![Libraries.io SourceRank](https://img.shields.io/librariesio/sourcerank/pypi/fdb)](https://libraries.io/pypi/fdb)
+
 |docs|
 
 Home_ * Documentation_ * `Bug Reports`_ * Source_
