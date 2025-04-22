@@ -2,13 +2,7 @@
 FDB - The Python driver for Firebird
 ====================================
 
-[![PyPI - Version](https://img.shields.io/pypi/v/fdb.svg)](https://pypi.org/project/fdb)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fdb.svg)](https://pypi.org/project/fdb)
-[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/fdb)](https://pypi.org/project/fdb)
-[![Libraries.io SourceRank](https://img.shields.io/librariesio/sourcerank/pypi/fdb)](https://libraries.io/pypi/fdb)
-
-|docs|
+|docs| |version| |python| |hatch| |downloads| |rank|
 
 Home_ * Documentation_ * `Bug Reports`_ * Source_
 
@@ -55,4 +49,27 @@ FDB also contains extensive collection of submodules that simplify various Fireb
     :scale: 100%
     :target: http://fdb.readthedocs.io/en/v2.0/
 
+.. |version| image:: https://img.shields.io/pypi/v/fdb.svg
+    :alt: Version
+    :scale: 100%
+    :target: https://pypi.org/project/fdb
 
+.. |python| image:: https://img.shields.io/pypi/pyversions/fdb.svg
+    :alt: Python version
+    :scale: 100%
+    :target: https://pypi.org/project/fdb
+
+.. |hatch| image:: https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg
+    :alt: Hatch
+    :scale: 100%
+    :target: https://pypi.org/project/fdb
+
+.. |downloads| image:: https://img.shields.io/pypi/dm/fdb
+    :alt: Downloads
+    :scale: 100%
+    :target: https://pypi.org/project/fdb
+
+.. |rank| image:: https://img.shields.io/librariesio/sourcerank/pypi/fdb
+    :alt: rank
+    :scale: 100%
+    :target: https://libraries.io/pypi/fdb
