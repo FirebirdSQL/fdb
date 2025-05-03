@@ -1,4 +1,4 @@
 sphinx-bootstrap-theme>=0.8.1
 sphinx-autodoc-typehints>=1.24.0
-sphinx>=5.3
+sphinx==7.2.6
 .
