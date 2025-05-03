@@ -32,7 +32,8 @@ import fdb.log as log
 import sys, os
 import threading
 import time
-import collections
+import collections.abc as collections
+from collections import namedtuple
 from decimal import Decimal
 from contextlib import closing
 from re import finditer
@@ -131,8 +132,8 @@ class FDBTestBase(unittest.TestCase):
             raise Exception("Unsupported Firebird version (%s)" % self.version)
         #
         self.cwd = os.getcwd()
-        self.dbpath = self.cwd if os.path.split(self.cwd)[1] == 'test' \
-            else os.path.join(self.cwd, 'test')
+        self.dbpath = self.cwd if os.path.split(self.cwd)[1] == 'tests' \
+            else os.path.join(self.cwd, 'tests')
     def clear_output(self):
         self.output.close()
         self.output = StringIO()
@@ -8485,8 +8486,8 @@ class TestUtils(FDBTestBase):
         super(TestUtils, self).setUp()
         self.maxDiff = None
     def test_objectlist(self):
-        Item = collections.namedtuple('Item', 'name,size,data')
-        Point = collections.namedtuple('Point', 'x,y')
+        Item = namedtuple('Item', 'name,size,data')
+        Point = namedtuple('Point', 'x,y')
         data = [Item('A', 100, 'X' * 20),
                 Item('Aaa', 95, 'X' * 50),
                 Item('Abb', 90, 'Y' * 20),

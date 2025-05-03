@@ -23,31 +23,31 @@
 
 # BLR data types are defined in fdb.ibase
 
-#blr_text = 14
-#blr_text2 = 15
-#blr_short = 7
-#blr_long = 8
-#blr_quad = 9
-#blr_float = 10
-#blr_double = 27
-#blr_d_float = 11
-#blr_timestamp = 35
-#blr_varying = 37
-#blr_varying2 = 38
-#blr_blob = 261
-#blr_cstring = 40
-#blr_cstring2 = 41
-#blr_blob_id = 45
-#blr_sql_date = 12
-#blr_sql_time = 13
-#blr_int64 = 16
-#blr_blob2 = 17
-#blr_domain_name = 18
-#blr_domain_name2 = 19
-#blr_not_nullable = 20
-#blr_column_name = 21
-#blr_column_name2 = 22
-#blr_bool = 23 # Firebird 3.0
+blr_text = 14
+blr_text2 = 15
+blr_short = 7
+blr_long = 8
+blr_quad = 9
+blr_float = 10
+blr_double = 27
+blr_d_float = 11
+blr_timestamp = 35
+blr_varying = 37
+blr_varying2 = 38
+blr_blob = 261
+blr_cstring = 40
+blr_cstring2 = 41
+blr_blob_id = 45
+blr_sql_date = 12
+blr_sql_time = 13
+blr_int64 = 16
+blr_blob2 = 17
+blr_domain_name = 18
+blr_domain_name2 = 19
+blr_not_nullable = 20
+blr_column_name = 21
+blr_column_name2 = 22
+blr_bool = 23 # Firebird 3.0
 
 # first sub parameter for blr_domain_name[2]
 blr_domain_type_of = 0

@@ -156,7 +156,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
 PYTHON_MAJOR_VER = sys.version_info[0]
 
 #: Current driver version
-__version__ = '2.0.2'
+__version__ = '2.0.3'
 
 apilevel = '2.0'
 threadsafety = 1

@@ -2,6 +2,17 @@
 Changelog
 #########
 
+Version 2.0.3
+=============
+
+Bugs Fixed
+----------
+
+- #17: Add fb_shutdown_callback and fb_shutdown to internal API
+- #3: Function exception_from_status() now properly handles decode errors.
+- #114: EventConduit's wait() method never exits on database disconnect
+- #117: FDB does not work with Python 3.13
+- Build system changed to Hatch and pyproject.toml
 
 Version 2.0.2
 =============
