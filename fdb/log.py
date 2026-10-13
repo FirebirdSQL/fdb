@@ -23,7 +23,7 @@
 from fdb import ParseError
 from datetime import datetime
 from collections import namedtuple
-from locale import LC_ALL, LC_CTYPE, getlocale, setlocale, resetlocale
+from locale import LC_ALL, LC_CTYPE, getlocale, setlocale
 import sys
 
 LogEntry = namedtuple('LogEntry', 'source_id,timestamp,message')
@@ -79,9 +79,6 @@ def parse(lines):
         raise ParseError("Can't parse line %d\n%s" % (line_no, e.message))
     finally:
         if locale[0] is None:
-            if sys.platform == 'win32':
-                setlocale(_LOCALE_, '')
-            else:
-                resetlocale(_LOCALE_)
+            setlocale(_LOCALE_, '')
         else:
             setlocale(_LOCALE_, locale)
