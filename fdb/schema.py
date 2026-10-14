@@ -25,7 +25,10 @@ from fdb.utils import LateBindingProperty, ObjectList, Visitable
 import string
 import weakref
 from itertools import groupby
-import collections
+try:
+    from collections.abc import Iterable
+except ImportError:  # Python 2.7
+    from collections import Iterable
 
 # Firebird field type codes
 FBT_SMALLINT = 7
@@ -495,7 +498,7 @@ class Schema(Visitable):
 
     def __clear(self, data=None):
         if data:
-            if not isinstance(data, collections.Iterable):
+            if not isinstance(data, Iterable):
                 data = (data, )
         else:
             data = range(1, SCHEMA_FILTERS + 1)
