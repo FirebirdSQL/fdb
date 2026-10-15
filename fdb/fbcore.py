@@ -5474,9 +5474,9 @@ class TableReservation(object):
     def items(self):
         return self._res.items()
     def iterkeys(self):
-        return self._res.iterkeys()
+        return iter(self._res.keys())
     def itervalues(self):
-        return self._res.itervalues()
+        return iter(self._res.values())
     def iteritems(self):
         ### Todo: verify handling of P version differences
         if PYTHON_MAJOR_VER == 3:
