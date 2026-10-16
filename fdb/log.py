@@ -76,7 +76,7 @@ def parse(lines):
         if entry_lines:
             yield LogEntry(source_id=source_id, timestamp=timestamp, message='\n'.join(entry_lines))
     except Exception as e:
-        raise ParseError("Can't parse line %d\n%s" % (line_no, e.message))
+        raise ParseError("Can't parse line %d\n%s" % (line_no, e))
     finally:
         if locale[0] is None:
             setlocale(_LOCALE_, '')
